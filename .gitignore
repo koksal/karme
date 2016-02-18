@@ -1,0 +1,11 @@
+data
+evaluation
+log
+target
+.DS_Store
+.RData
+.Rhistory
+*.m~
+*.jar
+*.pdf
+*.svg
