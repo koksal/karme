@@ -46,15 +46,16 @@ object Transformations {
     experiment.copy(measurements = filteredMs)
   }
 
-  def sampleTimePoints(exp: Experiment): Experiment = {
+  def sampleTimePoints(exp: Experiment, seed: Option[Int]): Experiment = {
+    val rand = Util.random(seed)
     val cellsPerStep = exp.measurements.groupBy(_.step)
     val minNbCells = cellsPerStep.values.map(_.size).min
 
-    val absoluteMax = 2000
+    val absoluteMax = 1000
     val nbToSample = math.min(minNbCells, absoluteMax)
+    println(s"Sampling ${nbToSample} cells per time step.")
 
     // inefficient but simple sampling by shuffling
-    val rand = new scala.util.Random()
     val sampledCells = cellsPerStep flatMap { case (step, cells) =>
       rand.shuffle(cells).take(nbToSample)
     }
@@ -67,11 +68,8 @@ object Transformations {
     exp.copy(measurements = fms)
   }
 
-  def shuffle(exp: Experiment): Experiment = {
-    // extract all steps / times
-    // shuffle their order
-    // shuffle values of each measurement
-    val rand = new scala.util.Random()
+  def shuffleTimeLabels(exp: Experiment, seed: Option[Int]): Experiment = {
+    val rand = Util.random(seed)
 
     val stepTimePairs = exp.measurements map { m => (m.step, m.time) }
     val shuffledStepTimePairs = rand.shuffle(stepTimePairs)

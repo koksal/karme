@@ -36,6 +36,10 @@ object ArgHandling {
         o.copy(sample = true)
       } text("sample each time point for the same # cells")
 
+      opt[Int]("seed") action { (v, o) =>
+        o.copy(seed = Some(v))
+      } text("seed value for random sampling")
+
       opt[Double]("timelimit") action { (v, o) =>
         o.copy(maxTime = Some(v))
       } text("maximum time value to filter data")

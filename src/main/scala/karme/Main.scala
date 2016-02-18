@@ -17,13 +17,13 @@ object Main {
       case None =>
     }
     if (opts.sample) {
-      exp = Transformations.sampleTimePoints(exp)
+      exp = Transformations.sampleTimePoints(exp, opts.seed)
     }
 
     exp = Transformations.normalize(exp)
 
     // TODO add CLI argument with seed
-    // exp = Transformations.shuffle(exp)
+    // exp = Transformations.shuffleTimeLabels(exp, seed)
 
     val pseudotimes = PseudotimePropagation.propagateLabels(
       exp, 

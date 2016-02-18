@@ -6,7 +6,7 @@ if [ "$1" != "" ]; then
   OUTFOLDER=${OUTFOLDER}-${LABEL}
 fi
 
-readarray EXPERIMENTS < data/experiments.txt
+readarray EXPERIMENTS < data/experiments-first.txt
 
 for e in ${EXPERIMENTS[@]}
 do
@@ -18,6 +18,7 @@ do
     --outfolder ${OUTFOLDER} \
     --outlabel $e \
     --sample \
+    --seed 0 \
     --arcsinh 5 \
     --alpha 0.5 \
     --neighbors 5 \

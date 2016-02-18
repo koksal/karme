@@ -29,4 +29,9 @@ object Util {
     }
     case Nil => Set(Nil)
   }
+
+  def random(seedOpt: Option[Int]): scala.util.Random = seedOpt match {
+    case Some(v) => new scala.util.Random(v)
+    case None => new scala.util.Random()
+  }
 }
