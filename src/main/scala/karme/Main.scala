@@ -30,6 +30,7 @@ object Main {
       opts.propagationAlpha, 
       opts.propagationNbNeighbors, 
       opts.propagationNbIter, 
+      opts.propagationTimeWeight,
       opts.propagationSplitTime
     )
 

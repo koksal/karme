@@ -56,6 +56,10 @@ object ArgHandling {
         o.copy(propagationNbNeighbors = v)
       } text("# neighbors for label propagation")
 
+      opt[Double]("timeweight") action { (v, o) =>
+        o.copy(propagationTimeWeight = v)
+      } text("relative weight of time difference in label propagation")
+
       opt[Int]("iterations") action { (v, o) =>
         o.copy(propagationNbIter = v)
       } text("# iterations for label propagation")

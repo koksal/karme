@@ -13,5 +13,6 @@ case class Options(
   propagationAlpha:       Double = 0.5,
   propagationNbNeighbors: Int = 5,
   propagationNbIter:      Int = 10,
+  propagationTimeWeight:  Double = 1.0,
   propagationSplitTime:   Option[Double] = None
 )

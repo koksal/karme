@@ -6,7 +6,7 @@ if [ "$1" != "" ]; then
   OUTFOLDER=${OUTFOLDER}-${LABEL}
 fi
 
-readarray EXPERIMENTS < data/experiments-first.txt
+readarray EXPERIMENTS < data/experiments.txt
 
 for e in ${EXPERIMENTS[@]}
 do
