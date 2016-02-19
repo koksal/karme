@@ -56,7 +56,8 @@ object Transformations {
     println(s"Sampling ${nbToSample} cells per time step.")
 
     // inefficient but simple sampling by shuffling
-    val sampledCells = cellsPerStep flatMap { case (step, cells) =>
+    val orderedCellGroups = cellsPerStep.toList.sortBy(_._1)
+    val sampledCells = orderedCellGroups flatMap { case (step, cells) =>
       rand.shuffle(cells).take(nbToSample)
     }
 
