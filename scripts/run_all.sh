@@ -22,6 +22,5 @@ do
     --arcsinh 5 \
     --alpha 0.5 \
     --neighbors 5 \
-    --iterations 10 \
-    --split 5
+    --iterations 10
 done

@@ -26,12 +26,18 @@ object Transformations {
         (allValues.min, allValues.max)
     }
 
+    val (minTime, maxTime) = {
+      val ts = exp.measurements.map(_.time)
+      (ts.min, ts.max)
+    }
+
     val normMeasurements = exp.measurements map { cm =>
       val normValues = cm.values.zipWithIndex map { case (v, i) =>
         val (min, max) = minMaxPairs(i)
         (v - min) / (max - min)
       }
-      cm.copy(values = normValues)
+      val normTime = (cm.time - minTime) / (maxTime - minTime)
+      cm.copy(time = normTime, values = normValues)
     }
 
     exp.copy(measurements = normMeasurements)
