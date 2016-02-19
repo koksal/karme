@@ -1,15 +1,16 @@
 package karme
 
 object Transformations {
+  private def arcsinh(v: Double, factor: Double): Double = {
+    // arcsinh formula
+    val scaled = v / factor
+    math.log(scaled + math.sqrt(scaled * scaled + 1))
+  }
+
   def arcsinh(experiment: Experiment, factor: Double): Experiment = {
-    def transFun(v: Double): Double = {
-      // arcsinh formula
-      val scaled = v / factor
-      math.log(scaled + math.sqrt(scaled * scaled + 1))
-    }
     val mappedMeasurements = experiment.measurements map { m =>
-      val mappedValues = m.values map transFun
-      m.copy(values = mappedValues)
+      val mappedValues = m.values.map(v => arcsinh(v, factor))
+      m.copy(time = arcsinh(m.time, factor), values = mappedValues)
     }
     experiment.copy(measurements = mappedMeasurements)
   }

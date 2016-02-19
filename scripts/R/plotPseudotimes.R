@@ -56,7 +56,7 @@ plotProteinProgression <- function(d, prot) {
   sortedD <- d[with(d, order(Pseudotime)),]
   orderedProtValues = sortedD[,prot]
   orderedPseudotimes = sortedD[,"Pseudotime"]
-  movingAvg = SMA(orderedProtValues, n = 50)
+  movingAvg = SMA(orderedProtValues, n = 1000)
 
   # compute sample mean values
   minutes = uniqueMinutes(d)
