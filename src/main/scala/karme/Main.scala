@@ -34,6 +34,9 @@ object Main {
       opts.propagationSplitTime
     )
 
+    import sext._
+    reporter.output("options.txt", opts.valueTreeString)
+
     val pseudotimeFilename = "pseudotimes.csv"
     reporter.outputTuples(pseudotimeFilename, exp.toTuplesWithPseudotime(pseudotimes))
 

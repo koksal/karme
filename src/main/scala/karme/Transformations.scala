@@ -15,28 +15,31 @@ object Transformations {
     experiment.copy(measurements = mappedMeasurements)
   }
 
-  def normalize(exp: Experiment): Experiment = {
-    // for each protein
-    //   get all cell values
-    //   compute min, max
-    // scale all cells by looking up indexed min-max values
-    // z = (x - min) / (max - min)
-    val minMaxPairs = exp.measuredProteins.toIndexedSeq.zipWithIndex map { 
-      case (p, i) =>
-        val allValues = exp.measurements map { cm => cm.values(i) }
-        (allValues.min, allValues.max)
-    }
+  def mean(vs: Seq[Double]): Double = {
+    vs.sum / vs.size
+  }
 
+  def standardDev(vs: Seq[Double]): Double = {
+    val m = mean(vs)
+    val N = vs.size - 1
+    val variance = vs.map(v => math.pow(v - m, 2)).sum / N
+    math.pow(variance, 0.5)
+  }
+
+  def scale(vs: Seq[Double]): Seq[Double] = {
+    val m = mean(vs)
+    val sd = standardDev(vs)
+    vs map (v => (v - m) / sd)
+  }
+
+  def normalize(exp: Experiment): Experiment = {
     val (minTime, maxTime) = {
       val ts = exp.measurements.map(_.time)
       (ts.min, ts.max)
     }
 
     val normMeasurements = exp.measurements map { cm =>
-      val normValues = cm.values.zipWithIndex map { case (v, i) =>
-        val (min, max) = minMaxPairs(i)
-        (v - min) / (max - min)
-      }
+      val normValues = scale(cm.values).toIndexedSeq
       val normTime = (cm.time - minTime) / (maxTime - minTime)
       cm.copy(time = normTime, values = normValues)
     }

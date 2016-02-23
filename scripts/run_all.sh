@@ -15,13 +15,13 @@ do
   ./scripts/run.sh \
     --proteins data/proteins.txt \
     --experiment $expFile \
-    --outfolder ${OUTFOLDER} \
     --outlabel $e \
+    --outfolder ${OUTFOLDER} \
     --sample \
     --seed 0 \
     --arcsinh 5 \
     --alpha 0.5 \
     --neighbors 5 \
-    --iterations 10 \
-    --timeweight 0.5
+    --timeweight 0.5 \
+    --iterations 10
 done

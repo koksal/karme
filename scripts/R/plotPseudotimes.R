@@ -15,7 +15,7 @@ obsCols = c(
   "pSLP76.Gd156.Dd",
   "pErk1_2.Er167.Dd",
   "pS6.Yb172.Dd",
-  # "pCreb.Yb176.Dd",
+  "pCreb.Yb176.Dd",
   "pMAPKAPKII.Eu153.Dd",
   "Ikba.Er166.Dd",
   "pNFKb.Ho165.Dd",
@@ -56,7 +56,7 @@ plotProteinProgression <- function(d, prot) {
   sortedD <- d[with(d, order(Pseudotime)),]
   orderedProtValues = sortedD[,prot]
   orderedPseudotimes = sortedD[,"Pseudotime"]
-  movingAvg = SMA(orderedProtValues, n = 1000)
+  movingAvg = SMA(orderedProtValues, n = 500)
 
   # compute sample mean values
   minutes = uniqueMinutes(d)
