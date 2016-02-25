@@ -20,7 +20,7 @@ object Main {
       exp = Transformations.sampleTimePoints(exp, opts.seed)
     }
 
-    exp = Transformations.normalize(exp)
+    exp = Transformations.normalizeProteins(exp)
 
     // TODO add CLI argument with seed
     // exp = Transformations.shuffleTimeLabels(exp, seed)

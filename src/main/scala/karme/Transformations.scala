@@ -32,7 +32,31 @@ object Transformations {
     vs map (v => (v - m) / sd)
   }
 
-  def normalize(exp: Experiment): Experiment = {
+  def normalizeProteins(exp: Experiment): Experiment = {
+    val minMaxValues = exp.measuredProteins.toIndexedSeq.zipWithIndex map { 
+      case (p, i) =>
+        val allValues = exp.measurements map { cm => cm.values(i) }
+        (allValues.min, allValues.max)
+    }
+
+    val (minTime, maxTime) = {
+      val ts = exp.measurements.map(_.time)
+      (ts.min, ts.max)
+    }
+
+    val normMeasurements = exp.measurements map { cm =>
+      val normValues = cm.values.zipWithIndex map { case (v, i) =>
+        val (min, max) = minMaxValues(i)
+        (v - min) / (max - min)
+      }
+      val normTime = (cm.time - minTime) / (maxTime - minTime)
+      cm.copy(time = normTime, values = normValues)
+    }
+
+    exp.copy(measurements = normMeasurements)
+  }
+
+  def normalizeCells(exp: Experiment): Experiment = {
     val (minTime, maxTime) = {
       val ts = exp.measurements.map(_.time)
       (ts.min, ts.max)
