@@ -41,5 +41,6 @@ object Main {
     reporter.outputTuples(pseudotimeFilename, exp.toTuplesWithPseudotime(pseudotimes))
 
     RInterface.plotPseudotimes(reporter, pseudotimeFilename, opts.proteinNamesPath)
+    RInterface.grangerTest(reporter, pseudotimeFilename, opts.proteinNamesPath)
   }
 }

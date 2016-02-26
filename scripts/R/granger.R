@@ -46,9 +46,10 @@ testAllPairwise <- function() {
     }
   }
 
+  fname = paste(outputFolder, "/", "granger.tsv", sep = "")
   write.table(
               results,
-              file = "granger.tsv",
+              file = fname,
               sep = "\t",
               row.names = TRUE,
               col.names = TRUE
