@@ -4,25 +4,19 @@ library(TTR)
 library(scales)
 
 args = commandArgs(trailingOnly = TRUE)
-inputFile = args[[1]]
-outputFolder = args[[2]]
+inputDataFile     = args[[1]]
+inputProteinFile  = args[[2]]
+outputFolder      = args[[3]]
 
 # create subdir for cluster output
 dir.create(outputFolder)
 
-obsCols = c(
-  "pCD3z.Lu175.Dd",
-  "pSLP76.Gd156.Dd",
-  "pErk1_2.Er167.Dd",
-  "pS6.Yb172.Dd",
-  "pCreb.Yb176.Dd",
-  "pMAPKAPKII.Eu153.Dd",
-  "Ikba.Er166.Dd",
-  "pNFKb.Ho165.Dd",
-  "pRb.Gd158.Dd",
-  "pFAK.Nd148.Dd",
-  "pAkt_S473.Tb159.Dd"
-)
+proteins = readLines(inputProteinFile)
+
+readData <- function(fn) {
+  d = read.csv(fn, check.names = FALSE)
+  return(d)
+}
 
 uniqueSteps <- function(d) {
   stepCol = d[, "Step"]
@@ -44,7 +38,7 @@ plotPseudotimeHistogram <- function(d, step) {
 }
 
 plotHistograms <- function() {
-  d = read.csv(inputFile)
+  d = readData(inputDataFile)
 
   for (step in uniqueSteps(d)) {
     plotPseudotimeHistogram(d, step)
@@ -76,9 +70,9 @@ plotProteinProgression <- function(d, prot) {
 }
 
 plotProgressions <- function() {
-  d = read.csv(inputFile)
+  d = readData(inputDataFile)
 
-  for (prot in obsCols) {
+  for (prot in proteins) {
     plotProteinProgression(d, prot)
   }
 }

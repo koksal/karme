@@ -40,6 +40,6 @@ object Main {
     val pseudotimeFilename = "pseudotimes.csv"
     reporter.outputTuples(pseudotimeFilename, exp.toTuplesWithPseudotime(pseudotimes))
 
-    RInterface.plotPseudotimes(reporter, pseudotimeFilename)
+    RInterface.plotPseudotimes(reporter, pseudotimeFilename, opts.proteinNamesPath)
   }
 }

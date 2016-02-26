@@ -1,45 +1,41 @@
 options(warn = 1)
 library(polynom)
 
-# pick time bins
-nbTimeBins = 10
-minX = 0
-maxX = 100
-timeBinSize = (maxX - minX) / nbTimeBins
+# pick measurement times
+minT = 0
+maxT = 10
+stepT = 1
 
 # pick sensible parameters for instantiating polynomials
 generatePolynomial <- function(degree) {
-  minCoef = -10
-  maxCoef = 10
-  coefs = sample(minCoef:maxCoef, degree)
-  return(polynomial(coef = coefs))
+  zeros = sample(minT:maxT, degree)
+  a = sample(seq(from = -2, to = 2, by = 0.1), 1)
+  b = sample(seq(from = 0, to = 10, by = 0.1), 1)
+  return(polynomial(coef = c(b, a)))
 }
 
-nbPolynomials = 5
-degree = 3
+nbPolynomials = 11
+degree = 1
 generateValuesWithNoise <- function(ps) {
-  nbPoints = 10000
-  step = (maxX - minX) / nbPoints
-  xValues = seq(from = minX, to = maxX, by = step)
+  nbCellsPerMeasurement = 1000
+  measurementTimes = seq(from = minT, to = maxT, by = stepT)
 
   originalData = matrix(ncol = length(ps) + 1, nrow = 0)
   observedData = matrix(ncol = length(ps) + 1, nrow = 0)
 
-  for (x in xValues) {
-    f <- function(p) {
-      return(predict(p, x))
+  for (t in measurementTimes) {
+    for (c in 1:nbCellsPerMeasurement) {
+      # give this cell a stochastic time value
+      speedCoef = rnorm(1, mean = 1, sd = 1)
+      actualTime = max(speedCoef * t, 0)
+      actualValues = lapply(ps, function(p) predict(p, actualTime))
+
+      # add measurement noise
+      noisyValues  = lapply(actualValues, function(v) v + rnorm(1, mean = 0, sd = 1))
+
+      originalData = rbind(originalData, c(actualTime, actualValues))
+      observedData = rbind(observedData, c(t, noisyValues))
     }
-    actualValues = lapply(ps, f)
-    # add measurement noise
-    noisyValues  = lapply(actualValues, function(v) v + rnorm(1))
-
-    # add time noise and compute noisy bin
-    timeNoise = rnorm(1)
-    noisyTime = x + timeNoise
-    timeBin = noisyTime %/% timeBinSize
-
-    originalData = rbind(originalData, c(x, actualValues))
-    observedData = rbind(observedData, c(timeBin, noisyValues))
   }
 
   colNames = c("t", 1:length(ps))
