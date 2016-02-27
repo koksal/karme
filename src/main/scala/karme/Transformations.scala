@@ -80,12 +80,16 @@ object Transformations {
     experiment.copy(measurements = filteredMs)
   }
 
-  def sampleTimePoints(exp: Experiment, seed: Option[Int]): Experiment = {
+  def sampleTimePoints(
+    exp: Experiment, 
+    seed: Option[Int],
+    count: Int
+  ): Experiment = {
     val rand = Util.random(seed)
     val cellsPerStep = exp.measurements.groupBy(_.step)
     val minNbCells = cellsPerStep.values.map(_.size).min
 
-    val absoluteMax = 1000
+    val absoluteMax = count / cellsPerStep.size
     val nbToSample = math.min(minNbCells, absoluteMax)
     println(s"Sampling ${nbToSample} cells per time step.")
 

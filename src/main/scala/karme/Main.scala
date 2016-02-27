@@ -16,8 +16,9 @@ object Main {
       case Some(mt) => exp = Transformations.filterUntilTime(exp, mt)
       case None =>
     }
-    if (opts.sample) {
-      exp = Transformations.sampleTimePoints(exp, opts.seed)
+    opts.sampleCount match {
+      case Some(count) => exp = Transformations.sampleTimePoints(exp, opts.seed, count)
+      case None =>
     }
 
     exp = Transformations.normalizeProteins(exp)

@@ -6,7 +6,7 @@ case class Options(
   outLabel:               Option[String] = None,
   outFolder:              java.io.File = new java.io.File("."),
   filterPositive:         Boolean = false,
-  sample:                 Boolean = false,
+  sampleCount:            Option[Int] = None,
   seed:                   Option[Int] = None,
   maxTime:                Option[Double] = None,
   arcsinhFactor:          Double = 5.0,

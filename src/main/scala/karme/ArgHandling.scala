@@ -32,9 +32,9 @@ object ArgHandling {
         o.copy(filterPositive = true)
       } text("filter data to cells with all positive values")
 
-      opt[Unit]("sample")  action { (_, o) =>
-        o.copy(sample = true)
-      } text("sample each time point for the same # cells")
+      opt[Int]("sample")  action { (v, o) =>
+        o.copy(sampleCount = Some(v))
+      } text("sample each time point for the same # cells for the given total")
 
       opt[Int]("seed") action { (v, o) =>
         o.copy(seed = Some(v))
