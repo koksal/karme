@@ -86,16 +86,17 @@ object Transformations {
     count: Int
   ): Experiment = {
     val rand = Util.random(seed)
-    val cellsPerStep = exp.measurements.groupBy(_.step)
-    val minNbCells = cellsPerStep.values.map(_.size).min
+    val cellsPerTime = exp.measurements.groupBy(_.time)
+    val minNbCells = cellsPerTime.values.map(_.size).min
 
-    val absoluteMax = count / cellsPerStep.size
+    val absoluteMax = count / cellsPerTime.size
     val nbToSample = math.min(minNbCells, absoluteMax)
     println(s"Sampling ${nbToSample} cells per time step.")
 
     // inefficient but simple sampling by shuffling
-    val orderedCellGroups = cellsPerStep.toList.sortBy(_._1)
-    val sampledCells = orderedCellGroups flatMap { case (step, cells) =>
+    // re-sort unsorted map
+    val orderedCellGroups = cellsPerTime.toList.sortBy(_._1)
+    val sampledCells = orderedCellGroups flatMap { case (time, cells) =>
       rand.shuffle(cells).take(nbToSample)
     }
 
@@ -110,12 +111,12 @@ object Transformations {
   def shuffleTimeLabels(exp: Experiment, seed: Option[Int]): Experiment = {
     val rand = Util.random(seed)
 
-    val stepTimePairs = exp.measurements map { m => (m.step, m.time) }
-    val shuffledStepTimePairs = rand.shuffle(stepTimePairs)
+    val timeValues = exp.measurements map (_.time)
+    val shuffledTimeValues = rand.shuffle(timeValues)
 
-    val shuffledMeasurements = shuffledStepTimePairs.zip(exp.measurements) map {
-      case ((step, time), m) => {
-        m.copy(step = step, time = time)
+    val shuffledMeasurements = shuffledTimeValues.zip(exp.measurements) map {
+      case (time, m) => {
+        m.copy(time = time)
       }
     }
 

@@ -12,10 +12,9 @@ object Parsers {
     val reader = CSVReader.open(expFile)
     val tuples = reader.allWithHeaders()
     val cellMeasurements = tuples map { tuple =>
-      val step = tuple("Step").toInt
       val time = tuple("Minute").toDouble
       val protValues = prots.map{ prot => tuple(prot).toDouble }.toIndexedSeq
-      CellMeasurement(step, time, protValues)
+      CellMeasurement(time, protValues)
     }
     Experiment(prots, cellMeasurements.toIndexedSeq)
   }

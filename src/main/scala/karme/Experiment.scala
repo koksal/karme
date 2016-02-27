@@ -6,7 +6,7 @@ case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[Ce
       val ms = measuredProteins.zipWithIndex map { 
         case (mp, i) => mp -> m.values(i).toString 
       }
-      val metadata = Map("Step" -> m.step.toString, "Minute" -> m.time.toString)
+      val metadata = Map("Minute" -> m.time.toString)
       ms.toMap ++ metadata
     }
     maps
@@ -18,4 +18,5 @@ case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[Ce
     }
   }
 }
-case class CellMeasurement(step: Int, time: Double, values: IndexedSeq[Double])
+
+case class CellMeasurement(time: Double, values: IndexedSeq[Double])
