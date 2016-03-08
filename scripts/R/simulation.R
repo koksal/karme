@@ -2,10 +2,14 @@ options(warn = 1)
 library(polynom)
 
 args = commandArgs(trailingOnly = TRUE)
-outputFolder = args[[1]]
+inputProteinFile  = args[[1]]
+seed              = as.integer(args[[2]])
+outputFolder      = args[[3]]
 
 # create subdir for cluster output
 dir.create(outputFolder)
+
+proteins = readLines(inputProteinFile)
 
 # pick measurement times
 minT = 0
@@ -15,16 +19,6 @@ stepT = 1
 speedCoefStdDev = 0.5
 measurementNoiseStdDev = 5
 
-# pick sensible parameters for instantiating polynomials
-generatePolynomial <- function(degree) {
-  zeros = sample(minT:maxT, degree)
-  a = sample(seq(from = -10, to = 10, by = 0.1), 1)
-  b = sample(seq(from = -50, to = 50, by = 0.1), 1)
-  return(polynomial(coef = c(b, a)))
-}
-
-nbPolynomials = 11
-degree = 1
 generateValuesWithNoise <- function(ps) {
   nbCellsPerMeasurement = 100
   measurementTimes = seq(from = minT, to = maxT, by = stepT)
@@ -47,27 +41,41 @@ generateValuesWithNoise <- function(ps) {
     }
   }
 
-  colNames = c("t", 1:length(ps))
-  origDF = as.data.frame(originalData)
-  # names(origDF) = colNames
-  obsDF  = as.data.frame(observedData)
-  # names(obsDF) = colNames
+  colNames = c("Minute", proteins)
+  colnames(originalData) = colNames
+  colnames(observedData) = colNames
 
   write.table(
               originalData, 
-              file = paste(outputFolder, "/original.tsv", sep = ""),
-              sep = "\t", 
+              file = paste(outputFolder, "/original.csv", sep = ""),
+              sep = ",", 
               row.names = FALSE, 
-              col.names = FALSE
+              col.names = TRUE
               )
   write.table(
               observedData, 
-              file = paste(outputFolder, "/observed.tsv", sep = ""),
-              sep = "\t", 
+              file = paste(outputFolder, "/observed.csv", sep = ""),
+              sep = ",", 
               row.names = FALSE, 
-              col.names = FALSE
+              col.names = TRUE
               )
 }
 
-ps = lapply(1:nbPolynomials, function(i) generatePolynomial(degree))
+# ignore degree for now.
+generatePolynomial <- function(degree) {
+  # pick sensible parameters for instantiating polynomials
+  a = sample(seq(from = -10, to = 10, by = 0.1), 1)
+  b = sample(seq(from = -50, to = 50, by = 0.1), 1)
+  return(polynomial(coef = c(b, a)))
+}
+
+generateCurves <- function(nbCurves, degree) {
+  lapply(1:nbPolynomials, function(i) generatePolynomial(degree))
+}
+
+nbPolynomials = length(proteins)
+degree = 1
+
+set.seed(seed)
+ps = generateCurves(nbPolynomials, degree)
 generateValuesWithNoise(ps)

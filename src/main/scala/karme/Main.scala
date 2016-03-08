@@ -6,7 +6,12 @@ object Main {
     val opts = ArgHandling.parseOptions(args)
     val reporter = new FileReporter(opts.outFolder, opts.outLabel)
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
-    var exp = Parsers.readExperiment(proteins, opts.experimentPath)
+    var exp = if (opts.simulate) {
+      RInterface.generateSimulatedData(reporter, opts.proteinNamesPath, proteins, opts.seed)
+    } else {
+      assert(opts.experimentPath != null)
+      Parsers.readExperiment(proteins, opts.experimentPath)
+    }
 
     exp = Transformations.arcsinh(exp, opts.arcsinhFactor)
     if (opts.filterPositive) {
@@ -42,6 +47,13 @@ object Main {
     reporter.outputTuples(pseudotimeFilename, exp.toTuplesWithPseudotime(pseudotimes))
 
     RInterface.plotPseudotimes(reporter, pseudotimeFilename, opts.proteinNamesPath)
-    RInterface.grangerTest(reporter, pseudotimeFilename, opts.proteinNamesPath)
+
+    // if data was simulated, evaluate against original expressions
+    // time warping will likely be more appropriate than squared sum
+    if (opts.simulate) {
+      RInterface.evaluateReordering(
+        reporter, opts.proteinNamesPath, pseudotimeFilename, opts.seed
+      )
+    }
   }
 }

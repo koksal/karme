@@ -16,9 +16,13 @@ object ArgHandling {
         o.copy(proteinNamesPath = new java.io.File(v))
       } text("input protein name file")
 
-      opt[String]("experiment") required() action { (v, o) =>
+      opt[String]("experiment") action { (v, o) =>
         o.copy(experimentPath = new java.io.File(v))
       } text("input experiment file in CSV format")
+
+      opt[Unit]("simulate") action { (_, o) =>
+        o.copy(simulate = true)
+      } text("simulate input data")
 
       opt[String]("outlabel") action { (v, o) =>
         o.copy(outLabel = Some(v)) 
