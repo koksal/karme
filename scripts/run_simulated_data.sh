@@ -6,7 +6,7 @@ if [ "$1" != "" ]; then
   OUTFOLDER=${OUTFOLDER}-${LABEL}
 fi
 
-for iter in 10 50 100;
+for iter in 10 100;
 do
   for speedCoefSD in 1;
   do
@@ -14,11 +14,11 @@ do
     do
       for tw in 0;
       do
-        for nbs in 5 10 50 100;
+        for nbs in 5 10 100;
         do
           label="iter-$iter-speedSD-$speedCoefSD-noiseSD-$noiseSD-timeW-$tw-neighbors-$nbs"
           ./scripts/run.sh \
-            --proteins data/proteins.txt \
+            --proteins data/test/names.txt \
             --simulate \
             --speedCoefSD $speedCoefSD \
             --noiseSD $noiseSD \
