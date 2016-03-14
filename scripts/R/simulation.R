@@ -3,8 +3,10 @@ library(polynom)
 
 args = commandArgs(trailingOnly = TRUE)
 inputProteinFile  = args[[1]]
-seed              = as.integer(args[[2]])
-outputFolder      = args[[3]]
+speedCoefStdDev   = as.integer(args[[2]])
+noiseSD           = as.integer(args[[3]])
+seed              = as.integer(args[[4]])
+outputFolder      = args[[5]]
 
 # create subdir for cluster output
 dir.create(outputFolder)
@@ -12,16 +14,11 @@ dir.create(outputFolder)
 proteins = readLines(inputProteinFile)
 
 # pick measurement times
-minT = 0
-maxT = 10
-stepT = 1
-
-speedCoefStdDev = 0.5
-measurementNoiseStdDev = 5
+nbMeasurements = 10
 
 generateValuesWithNoise <- function(ps) {
-  nbCellsPerMeasurement = 100
-  measurementTimes = seq(from = minT, to = maxT, by = stepT)
+  nbCellsPerMeasurement = 500
+  measurementTimes = lapply(0:(nbMeasurements - 1), function(x) 2^x)
 
   originalData = matrix(ncol = length(ps) + 1, nrow = 0)
   observedData = matrix(ncol = length(ps) + 1, nrow = 0)
@@ -29,12 +26,12 @@ generateValuesWithNoise <- function(ps) {
   for (t in measurementTimes) {
     for (c in 1:nbCellsPerMeasurement) {
       # give this cell a stochastic time value
-      speedCoef = rnorm(1, mean = 0, sd = speedCoefStdDev)
+      speedCoef = rnorm(1, mean = 1, sd = speedCoefStdDev)
       actualTime = max(0, speedCoef * t)
       actualValues = lapply(ps, function(p) predict(p, actualTime))
 
       # add measurement noise
-      noisyValues  = lapply(actualValues, function(v) v + rnorm(1, mean = 0, sd = measurementNoiseStdDev))
+      noisyValues  = lapply(actualValues, function(v) v + rnorm(1, mean = 0, sd = noiseSD))
 
       originalData = rbind(originalData, c(actualTime, actualValues))
       observedData = rbind(observedData, c(t, noisyValues))

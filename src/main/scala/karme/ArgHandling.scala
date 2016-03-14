@@ -24,6 +24,13 @@ object ArgHandling {
         o.copy(simulate = true)
       } text("simulate input data")
 
+      opt[Int]("speedCoefSD") action { (v, o) =>
+        o.copy(speedCoefSD = v)
+      } text("speed coefficient standard deviation for simulated data")
+      opt[Int]("noiseSD") action { (v, o) =>
+        o.copy(noiseSD = v)
+      } text("measurement noise standard deviation for simulated data")
+
       opt[String]("outlabel") action { (v, o) =>
         o.copy(outLabel = Some(v)) 
       } text("prefix that will be added to output file names")

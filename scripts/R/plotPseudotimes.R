@@ -8,6 +8,8 @@ inputDataFile     = args[[1]]
 inputProteinFile  = args[[2]]
 outputFolder      = args[[3]]
 
+movingAvgWindowSize = 1
+
 # create subdir for cluster output
 dir.create(outputFolder)
 
@@ -50,7 +52,7 @@ plotProteinProgression <- function(d, prot) {
   sortedD <- d[with(d, order(Pseudotime)),]
   orderedProtValues = sortedD[,prot]
   orderedPseudotimes = sortedD[,"Pseudotime"]
-  movingAvg = SMA(orderedProtValues, n = 500)
+  movingAvg = SMA(orderedProtValues, n = movingAvgWindowSize)
 
   # compute sample mean values
   minutes = uniqueMinutes(d)
@@ -64,7 +66,22 @@ plotProteinProgression <- function(d, prot) {
   pseudoTimeDataFrame = data.frame(x = orderedPseudotimes, y = movingAvg)
   meanDataFrame = data.frame(x = minutes, y = means)
 
-  p <- ggplot() + geom_point(data = pseudoTimeDataFrame, aes(x = x, y = y), color = "grey60", shape=1) + geom_point(data = meanDataFrame, aes(x = x, y = y), color = "orangered3", fill = "orangered3", shape = 21) + scale_x_continuous(trans = log_trans(base = exp(1)))
+  p <- ggplot() + 
+    geom_point(
+               data = pseudoTimeDataFrame, 
+               aes(x = x, y = y), 
+               color = "grey60", 
+               shape=1
+               ) + 
+    geom_point(
+               data = meanDataFrame, 
+               aes(x = x, y = y), 
+               color = "orangered3", 
+               fill = "orangered3", 
+               shape = 21
+               ) + 
+    scale_x_continuous(trans = log_trans(base = exp(1)))
+
   fname = paste(outputFolder, "/progression-", prot, ".pdf", sep = "") 
   ggsave(file=fname)
 }

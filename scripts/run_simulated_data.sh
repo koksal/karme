@@ -6,14 +6,32 @@ if [ "$1" != "" ]; then
   OUTFOLDER=${OUTFOLDER}-${LABEL}
 fi
 
-./scripts/run.sh \
-  --proteins data/proteins.txt \
-  --simulate \
-  --outfolder ${OUTFOLDER} \
-  --sample 10000 \
-  --seed 0 \
-  --arcsinh 5 \
-  --alpha 0.5 \
-  --neighbors 5 \
-  --timeweight 0.5 \
-  --iterations 10
+for iter in 10 50 100;
+do
+  for speedCoefSD in 1;
+  do
+    for noiseSD in 0;
+    do
+      for tw in 0;
+      do
+        for nbs in 5 10 50 100;
+        do
+          label="iter-$iter-speedSD-$speedCoefSD-noiseSD-$noiseSD-timeW-$tw-neighbors-$nbs"
+          ./scripts/run.sh \
+            --proteins data/proteins.txt \
+            --simulate \
+            --speedCoefSD $speedCoefSD \
+            --noiseSD $noiseSD \
+            --outlabel $label \
+            --outfolder ${OUTFOLDER} \
+            --seed 0 \
+            --arcsinh 5 \
+            --alpha 0.5 \
+            --neighbors 5 \
+            --timeweight 0.$tw \
+            --iterations $iter
+        done
+      done
+    done
+  done
+done

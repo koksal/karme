@@ -7,7 +7,9 @@ object Main {
     val reporter = new FileReporter(opts.outFolder, opts.outLabel)
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
     var exp = if (opts.simulate) {
-      RInterface.generateSimulatedData(reporter, opts.proteinNamesPath, proteins, opts.seed)
+      RInterface.generateSimulatedData(
+        reporter, opts.proteinNamesPath, proteins, opts.speedCoefSD, opts.noiseSD, opts.seed
+      )
     } else {
       assert(opts.experimentPath != null)
       Parsers.readExperiment(proteins, opts.experimentPath)

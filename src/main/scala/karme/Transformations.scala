@@ -47,7 +47,11 @@ object Transformations {
     val normMeasurements = exp.measurements map { cm =>
       val normValues = cm.values.zipWithIndex map { case (v, i) =>
         val (min, max) = minMaxValues(i)
-        (v - min) / (max - min)
+        if (max == min) {
+          (v - min)
+        } else {
+          (v - min) / (max - min)
+        }
       }
       val normTime = (cm.time - minTime) / (maxTime - minTime)
       cm.copy(time = normTime, values = normValues)

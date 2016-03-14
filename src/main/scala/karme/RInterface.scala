@@ -50,6 +50,8 @@ object RInterface {
     reporter: FileReporter,
     proteinsFile: File,
     proteins: Seq[String],
+    speedCoefSD: Int,
+    noiseSD: Int,
     seed: Option[Int]
   ): Experiment = {
     val seedValue = seed match {
@@ -60,11 +62,12 @@ object RInterface {
     val outputFolder = reporter.outFile("simulation")
     val args = List(
       proteinsFile.getAbsolutePath(),
+      speedCoefSD.toString,
+      noiseSD.toString,
       seedValue.toString,
       outputFolder.getAbsolutePath()
     )
     runRProgram(prog, args)
-    val originalExpFile = new File(outputFolder, "original.csv")
     val observedExpFile = new File(outputFolder, "observed.csv")
     val observedExp = Parsers.readExperiment(proteins, observedExpFile)
     observedExp
