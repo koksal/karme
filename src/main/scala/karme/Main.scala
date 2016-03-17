@@ -50,12 +50,20 @@ object Main {
 
     RInterface.plotPseudotimes(reporter, pseudotimeFilename, opts.proteinNamesPath)
 
-    // if data was simulated, evaluate against original expressions
-    // time warping will likely be more appropriate than squared sum
-    if (opts.simulate) {
-      RInterface.evaluateReordering(
-        reporter, opts.proteinNamesPath, pseudotimeFilename, opts.seed
+    if (opts.evaluate) {
+      val score = Evaluation.evaluateReordering(
+        exp, pseudotimes
       )
+
+      val valuesToPrint = List(
+        opts.propagationNbIter.toString, 
+        opts.speedCoefSD.toString,
+        opts.noiseSD.toString,
+        opts.propagationTimeWeight.toString,
+        opts.propagationNbNeighbors.toString,
+        score.toString
+      )
+      println(s"SCORE: ${valuesToPrint.mkString("\t")}")
     }
   }
 }

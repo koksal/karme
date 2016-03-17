@@ -4,6 +4,7 @@ case class Options(
   proteinNamesPath:       java.io.File = null,
   experimentPath:         java.io.File = null,
   simulate:               Boolean = false,
+  evaluate:               Boolean = false,
   speedCoefSD:            Int = 1,
   noiseSD:                Int = 1,
   outLabel:               Option[String] = None,

@@ -13,8 +13,12 @@ object Parsers {
     val tuples = reader.allWithHeaders()
     val cellMeasurements = tuples map { tuple =>
       val time = tuple("Minute").toDouble
+      val actualTime = tuple.get("ActualTime") match {
+        case Some(v) => v.toDouble
+        case None => -1.0
+      }
       val protValues = prots.map{ prot => tuple(prot).toDouble }.toIndexedSeq
-      CellMeasurement(time, protValues)
+      CellMeasurement(time, actualTime, protValues)
     }
     Experiment(prots, cellMeasurements.toIndexedSeq)
   }

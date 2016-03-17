@@ -72,14 +72,4 @@ object RInterface {
     val observedExp = Parsers.readExperiment(proteins, observedExpFile)
     observedExp
   }
-
-  // needs to specify out files
-  def evaluateReordering(
-    reporter: FileReporter,
-    proteinsFile: File,
-    pseudotimeFilename: String,
-    seed: Option[Int]
-  ) = {
-    // read a file with score?
-  }
 }

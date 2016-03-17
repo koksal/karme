@@ -24,6 +24,10 @@ object ArgHandling {
         o.copy(simulate = true)
       } text("simulate input data")
 
+      opt[Unit]("evaluate") action { (_, o) =>
+        o.copy(evaluate = true)
+      } text("evaluate results")
+
       opt[Int]("speedCoefSD") action { (v, o) =>
         o.copy(speedCoefSD = v)
       } text("speed coefficient standard deviation for simulated data")

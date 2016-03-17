@@ -21,7 +21,7 @@ generateValuesWithNoise <- function(ps) {
   measurementTimes = lapply(0:(nbMeasurements - 1), function(x) 2^x)
 
   originalData = matrix(ncol = length(ps) + 1, nrow = 0)
-  observedData = matrix(ncol = length(ps) + 1, nrow = 0)
+  observedData = matrix(ncol = length(ps) + 2, nrow = 0)
 
   for (t in measurementTimes) {
     for (c in 1:nbCellsPerMeasurement) {
@@ -34,12 +34,11 @@ generateValuesWithNoise <- function(ps) {
       noisyValues  = lapply(actualValues, function(v) v + rnorm(1, mean = 0, sd = noiseSD))
 
       originalData = rbind(originalData, c(actualTime, actualValues))
-      observedData = rbind(observedData, c(t, noisyValues))
+      observedData = rbind(observedData, c(actualTime, t, noisyValues))
     }
   }
 
-  colNames = c("Minute", proteins)
-  colnames(originalData) = colNames
+  colNames = c("ActualTime", "Minute", proteins)
   colnames(observedData) = colNames
 
   write.table(
