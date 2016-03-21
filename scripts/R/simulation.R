@@ -31,7 +31,8 @@ generateValuesWithNoise <- function(ps) {
       actualValues = lapply(ps, function(p) predict(p, actualTime))
 
       # add measurement noise
-      noisyValues  = lapply(actualValues, function(v) v + rnorm(1, mean = 0, sd = noiseSD))
+      e = exp(1)
+      noisyValues  = lapply(actualValues, function(v) v * e ^ (rnorm(1, mean = 0, sd = noiseSD)))
 
       originalData = rbind(originalData, c(actualTime, actualValues))
       observedData = rbind(observedData, c(actualTime, t, noisyValues))
