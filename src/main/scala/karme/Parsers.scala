@@ -22,4 +22,8 @@ object Parsers {
     }
     Experiment(prots, cellMeasurements.toIndexedSeq)
   }
+
+  def readSpearman(f: File): Double = {
+    scala.io.Source.fromFile(f).getLines.toSeq.head.toDouble
+  }
 }

@@ -28,10 +28,10 @@ object ArgHandling {
         o.copy(evaluate = true)
       } text("evaluate results")
 
-      opt[Int]("speedCoefSD") action { (v, o) =>
+      opt[Double]("speedCoefSD") action { (v, o) =>
         o.copy(speedCoefSD = v)
       } text("speed coefficient standard deviation for simulated data")
-      opt[Int]("noiseSD") action { (v, o) =>
+      opt[Double]("noiseSD") action { (v, o) =>
         o.copy(noiseSD = v)
       } text("measurement noise standard deviation for simulated data")
 
@@ -78,6 +78,10 @@ object ArgHandling {
       opt[Int]("iterations") action { (v, o) =>
         o.copy(propagationNbIter = v)
       } text("# iterations for label propagation")
+
+      opt[Unit]("jaccard") action { (_, o) =>
+        o.copy(useJaccardSimilarity = true)
+      } text("use jaccard similarity in label propagation")
 
       opt[Double]("split") action { (v, o) =>
         o.copy(propagationSplitTime = Some(v))

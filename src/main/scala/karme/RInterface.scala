@@ -7,8 +7,9 @@ object RInterface {
     import scala.sys.process._
 
     val argString = args.mkString(" ")
-    println("Invoking R.")
-    s"Rscript $progPath $argString".!!
+    val cmd = s"Rscript $progPath $argString"
+    println("Invoking R: " + cmd)
+    cmd.!!
   }
 
   def plotPseudotimes(
@@ -50,8 +51,8 @@ object RInterface {
     reporter: FileReporter,
     proteinsFile: File,
     proteins: Seq[String],
-    speedCoefSD: Int,
-    noiseSD: Int,
+    speedCoefSD: Double,
+    noiseSD: Double,
     seed: Option[Int]
   ): Experiment = {
     val seedValue = seed match {
@@ -59,7 +60,7 @@ object RInterface {
       case None => println("Using default seed value."); 0
     }
     val prog = "./scripts/R/simulation.R"
-    val outputFolder = reporter.outFile("simulation")
+    val outputFolder = reporter.outFolder
     val args = List(
       proteinsFile.getAbsolutePath(),
       speedCoefSD.toString,
@@ -71,5 +72,53 @@ object RInterface {
     val observedExpFile = new File(outputFolder, "observed.csv")
     val observedExp = Parsers.readExperiment(proteins, observedExpFile)
     observedExp
+  }
+
+  // R will read pseudotime and actualtime cols, and output rho
+  def spearman(
+    reporter: FileReporter,
+    xName: String,
+    yName: String,
+    pseudotimeFilename: String
+  ): Double = {
+    val prog = "./scripts/R/correlation.R"
+    val pseudotimeFile = reporter.outFile(pseudotimeFilename)
+    val rOutputFile = reporter.outFile("spearman.txt")
+    val args = List(
+      pseudotimeFile.getAbsolutePath(),
+      xName,
+      yName,
+      rOutputFile.getAbsolutePath()
+    )
+    runRProgram(prog, args)
+    val result = Parsers.readSpearman(rOutputFile)
+    result
+  }
+
+  def plotNeighborGraph(
+    reporter: FileReporter,
+    ms: IndexedSeq[CellMeasurement],
+    neighbors: Map[Int, Seq[Int]],
+    name: String
+  ): Unit = {
+    val rows = neighbors.toSeq.flatMap{ case (i, js) => 
+      js.map{ j => 
+        val first = ms(i)
+        val second = ms(j)
+        Map("x" -> first.actualTime.toString, "y" -> second.time.toString)
+      }
+    }
+    val pairFilename = s"$name-neighbors.csv"
+    reporter.outputTuples(pairFilename, rows)
+
+    val prog = "./scripts/R/scatterPlot.R"
+    val outputFolder = reporter.outFile("plots")
+    val outFile = reporter.outFile(pairFilename)
+    val args = List(
+      outFile.getAbsolutePath(),
+      outputFolder.getAbsolutePath(),
+      name
+    )
+    runRProgram(prog, args)
   }
 }

@@ -5,8 +5,8 @@ case class Options(
   experimentPath:         java.io.File = null,
   simulate:               Boolean = false,
   evaluate:               Boolean = false,
-  speedCoefSD:            Int = 1,
-  noiseSD:                Int = 1,
+  speedCoefSD:            Double = 1,
+  noiseSD:                Double = 1,
   outLabel:               Option[String] = None,
   outFolder:              java.io.File = new java.io.File("."),
   filterPositive:         Boolean = false,
@@ -18,5 +18,6 @@ case class Options(
   propagationNbNeighbors: Int = 5,
   propagationNbIter:      Int = 10,
   propagationTimeWeight:  Double = 1.0,
+  useJaccardSimilarity:   Boolean = false,
   propagationSplitTime:   Option[Double] = None
 )

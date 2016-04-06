@@ -3,8 +3,8 @@ library(polynom)
 
 args = commandArgs(trailingOnly = TRUE)
 inputProteinFile  = args[[1]]
-speedCoefStdDev   = as.integer(args[[2]])
-noiseSD           = as.integer(args[[3]])
+speedCoefSD       = as.double(args[[2]])
+noiseSD           = as.double(args[[3]])
 seed              = as.integer(args[[4]])
 outputFolder      = args[[5]]
 
@@ -18,23 +18,23 @@ nbMeasurements = 10
 
 generateValuesWithNoise <- function(ps) {
   nbCellsPerMeasurement = 500
-  measurementTimes = lapply(0:(nbMeasurements - 1), function(x) 2^x)
+  measurementTimes = lapply(0:(nbMeasurements - 1), function(x) x)
 
-  originalData = matrix(ncol = length(ps) + 1, nrow = 0)
   observedData = matrix(ncol = length(ps) + 2, nrow = 0)
 
   for (t in measurementTimes) {
     for (c in 1:nbCellsPerMeasurement) {
+      e = exp(1)
       # give this cell a stochastic time value
-      speedCoef = rnorm(1, mean = 1, sd = speedCoefStdDev)
-      actualTime = max(0, speedCoef * t)
+      speedCoefMean = - (speedCoefSD * speedCoefSD) / 2
+      speedCoef = e ^ rnorm(1, mean = speedCoefMean, sd = speedCoefSD)
+      actualTime = speedCoef * t
       actualValues = lapply(ps, function(p) predict(p, actualTime))
 
       # add measurement noise
-      e = exp(1)
-      noisyValues  = lapply(actualValues, function(v) v * e ^ (rnorm(1, mean = 0, sd = noiseSD)))
+      noiseMean = - (noiseSD * noiseSD) / 2
+      noisyValues  = lapply(actualValues, function(v) v * e ^ (rnorm(1, mean = noiseMean, sd = noiseSD)))
 
-      originalData = rbind(originalData, c(actualTime, actualValues))
       observedData = rbind(observedData, c(actualTime, t, noisyValues))
     }
   }
@@ -42,13 +42,6 @@ generateValuesWithNoise <- function(ps) {
   colNames = c("ActualTime", "Minute", proteins)
   colnames(observedData) = colNames
 
-  write.table(
-              originalData, 
-              file = paste(outputFolder, "/original.csv", sep = ""),
-              sep = ",", 
-              row.names = FALSE, 
-              col.names = TRUE
-              )
   write.table(
               observedData, 
               file = paste(outputFolder, "/observed.csv", sep = ""),

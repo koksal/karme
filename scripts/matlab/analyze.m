@@ -31,11 +31,11 @@ dataOnly = data(:, transformIndices);
 
 [Reduced, mapping] = compute_mapping(dataOnly, 't-SNE', 2);
 
-a = 5;
+area = 5;
 
-plot2 = scatter(Reduced(:, 1), Reduced(:, 2), a, stepCol, 'filled');
+plot2 = scatter(Reduced(:, 1), Reduced(:, 2), area, stepCol, 'filled');
 waitfor(plot2);
-plot2 = scatter(Reduced(:, 1), Reduced(:, 2), a, labelCol, 'filled');
+plot2 = scatter(Reduced(:, 1), Reduced(:, 2), area, labelCol, 'filled');
 waitfor(plot2);
 
 end

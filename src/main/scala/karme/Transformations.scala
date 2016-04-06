@@ -7,10 +7,17 @@ object Transformations {
     math.log(scaled + math.sqrt(scaled * scaled + 1))
   }
 
-  def arcsinh(experiment: Experiment, factor: Double): Experiment = {
+  def arcsinhValues(experiment: Experiment, factor: Double): Experiment = {
     val mappedMeasurements = experiment.measurements map { m =>
       val mappedValues = m.values.map(v => arcsinh(v, factor))
-      m.copy(time = arcsinh(m.time, factor), values = mappedValues)
+      m.copy(values = mappedValues)
+    }
+    experiment.copy(measurements = mappedMeasurements)
+  }
+
+  def arcsinhTime(experiment: Experiment, factor: Double): Experiment = {
+    val mappedMeasurements = experiment.measurements map { m =>
+      m.copy(time = arcsinh(m.time, factor))
     }
     experiment.copy(measurements = mappedMeasurements)
   }
@@ -32,16 +39,11 @@ object Transformations {
     vs map (v => (v - m) / sd)
   }
 
-  def normalizeProteins(exp: Experiment): Experiment = {
+  def normalizeValues(exp: Experiment): Experiment = {
     val minMaxValues = exp.measuredProteins.toIndexedSeq.zipWithIndex map { 
       case (p, i) =>
         val allValues = exp.measurements map { cm => cm.values(i) }
         (allValues.min, allValues.max)
-    }
-
-    val (minTime, maxTime) = {
-      val ts = exp.measurements.map(_.time)
-      (ts.min, ts.max)
     }
 
     val normMeasurements = exp.measurements map { cm =>
@@ -53,13 +55,26 @@ object Transformations {
           (v - min) / (max - min)
         }
       }
-      val normTime = (cm.time - minTime) / (maxTime - minTime)
-      cm.copy(time = normTime, values = normValues)
+      cm.copy(values = normValues)
     }
 
     exp.copy(measurements = normMeasurements)
   }
 
+  def normalizeTime(exp: Experiment): Experiment = {
+    val (minTime, maxTime) = {
+      val ts = exp.measurements.map(_.time)
+      (ts.min, ts.max)
+    }
+
+    val normMeasurements = exp.measurements map { cm =>
+      val normTime = (cm.time - minTime) / (maxTime - minTime)
+      cm.copy(time = normTime)
+    }
+
+    exp.copy(measurements = normMeasurements)
+  }
+  
   def normalizeCells(exp: Experiment): Experiment = {
     val (minTime, maxTime) = {
       val ts = exp.measurements.map(_.time)

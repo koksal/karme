@@ -47,11 +47,34 @@ plotHistograms <- function() {
   }
 }
 
+plotPCA <- function(d, proteins) {
+  protData = d[,proteins]
+  actualTime = d[,"ActualTime"]
+  dataPCA = prcomp(protData, center = TRUE, scale. = TRUE)$x
+  df = data.frame(
+                  x = dataPCA[,1],
+                  y = dataPCA[,2],
+                  t = actualTime
+  )
+
+  p <- ggplot() +
+    geom_point(
+               data = df,
+               aes(x = x, y = y, colour = t),
+               )
+
+  fname = paste(outputFolder, "/pca.pdf", sep = "")
+  ggsave(file = fname)
+}
+
 plotProteinProgression <- function(d, prot) {
   # order by pseudotime and compute moving average
   sortedD <- d[with(d, order(Pseudotime)),]
   orderedProtValues = sortedD[,prot]
   orderedPseudotimes = sortedD[,"Pseudotime"]
+  orderedActualTimes = sortedD[,"ActualTime"]
+  orderedLogPseudotimes = log(sapply(orderedPseudotimes, function(v) v + exp(1)), base = exp(1))
+  orderedLogActualTimes = log(sapply(orderedActualTimes, function(v) v + exp(1)), base = exp(1))
   movingAvg = SMA(orderedProtValues, n = movingAvgWindowSize)
 
   # compute sample mean values
@@ -63,31 +86,48 @@ plotProteinProgression <- function(d, prot) {
     means = append(means, mean(stepV))
   }
 
-  pseudoTimeDataFrame = data.frame(x = orderedPseudotimes, y = movingAvg)
+  timeDF = data.frame(
+    pseudotime = orderedPseudotimes, 
+    logPseudotime = orderedLogPseudotimes,
+    value = movingAvg, 
+    actualTime = orderedActualTimes,
+    logActualTime = orderedLogActualTimes
+  )
   meanDataFrame = data.frame(x = minutes, y = means)
 
+  # plot values vs. pseudotime, colored by actual time
   p <- ggplot() + 
     geom_point(
-               data = pseudoTimeDataFrame, 
-               aes(x = x, y = y), 
-               color = "grey60", 
-               shape=1
+               data = timeDF, 
+               aes(x = pseudotime, y = value, colour = logActualTime)
                ) + 
+    scale_colour_gradient(low = "green", high = "red") + 
     geom_point(
                data = meanDataFrame, 
                aes(x = x, y = y), 
-               color = "orangered3", 
-               fill = "orangered3", 
-               shape = 21
-               ) + 
-    scale_x_continuous(trans = log_trans(base = exp(1)))
+               color = "blue"
+               ) # + 
+    # scale_x_continuous(trans = log_trans(base = exp(1)))
 
   fname = paste(outputFolder, "/progression-", prot, ".pdf", sep = "") 
+  ggsave(file=fname)
+
+  # this is being computed redundantly right now:
+  # plot pseudotime vs. actual time
+  p <- ggplot() +
+    geom_point(
+               data = timeDF,
+               aes(x = logActualTime, y = logPseudotime)
+               )
+
+  fname = paste(outputFolder, "/pseudotime-vs-actualtime.pdf", sep = "")
   ggsave(file=fname)
 }
 
 plotProgressions <- function() {
   d = readData(inputDataFile)
+
+  plotPCA(d, proteins)
 
   for (prot in proteins) {
     plotProteinProgression(d, prot)

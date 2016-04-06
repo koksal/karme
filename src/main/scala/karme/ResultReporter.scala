@@ -7,7 +7,7 @@ trait ResultReporter {
 }
 
 class FileReporter(
-  outFolder: File, outLabel: Option[String]
+  var outFolder: File, outLabel: Option[String]
 ) extends ResultReporter {
   outFolder.mkdirs
 
