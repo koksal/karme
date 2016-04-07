@@ -83,10 +83,6 @@ object ArgHandling {
         o.copy(useJaccardSimilarity = true)
       } text("use jaccard similarity in label propagation")
 
-      opt[Double]("split") action { (v, o) =>
-        o.copy(propagationSplitTime = Some(v))
-      } text("time value to split propagation analysis")
-
       help("help") text("print this help message")
     }
   }

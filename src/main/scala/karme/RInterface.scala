@@ -14,11 +14,10 @@ object RInterface {
 
   def plotPseudotimes(
     reporter: FileReporter, 
-    pseudotimeFileName: String,
+    pseudotimeFile: File,
     proteinsFile: File
   ): Unit = {
     val prog = "./scripts/R/plotPseudotimes.R"
-    val pseudotimeFile = reporter.outFile(pseudotimeFileName)
     val outputFolder = reporter.outFile("plots")
     val args = List(
       pseudotimeFile.getAbsolutePath(), 
@@ -31,11 +30,10 @@ object RInterface {
 
   def grangerTest(
     reporter: FileReporter, 
-    pseudotimeFileName: String,
+    pseudotimeFile: File,
     proteinsFile: File
   ): Unit = {
     val prog = "./scripts/R/granger.R"
-    val pseudotimeFile = reporter.outFile(pseudotimeFileName)
     val outputFolder = reporter.outFile("granger")
     val args = List(
       pseudotimeFile.getAbsolutePath(), 
@@ -60,17 +58,16 @@ object RInterface {
       case None => println("Using default seed value."); 0
     }
     val prog = "./scripts/R/simulation.R"
-    val outputFolder = reporter.outFolder
+    val outputFile = reporter.outFile("observed.csv")
     val args = List(
       proteinsFile.getAbsolutePath(),
       speedCoefSD.toString,
       noiseSD.toString,
       seedValue.toString,
-      outputFolder.getAbsolutePath()
+      outputFile.getAbsolutePath()
     )
     runRProgram(prog, args)
-    val observedExpFile = new File(outputFolder, "observed.csv")
-    val observedExp = Parsers.readExperiment(proteins, observedExpFile)
+    val observedExp = Parsers.readExperiment(proteins, outputFile)
     observedExp
   }
 
@@ -79,10 +76,9 @@ object RInterface {
     reporter: FileReporter,
     xName: String,
     yName: String,
-    pseudotimeFilename: String
+    pseudotimeFile: File
   ): Double = {
     val prog = "./scripts/R/correlation.R"
-    val pseudotimeFile = reporter.outFile(pseudotimeFilename)
     val rOutputFile = reporter.outFile("spearman.txt")
     val args = List(
       pseudotimeFile.getAbsolutePath(),
@@ -109,7 +105,8 @@ object RInterface {
       }
     }
     val pairFilename = s"$name-neighbors.csv"
-    reporter.outputTuples(pairFilename, rows)
+    val pairFile = reporter.outFile(pairFilename)
+    reporter.outputTuples(pairFile, rows)
 
     val prog = "./scripts/R/scatterPlot.R"
     val outputFolder = reporter.outFile("plots")

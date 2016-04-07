@@ -1,44 +1,30 @@
 package karme
 
+import java.io.File
+
 object Main {
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
     val reporter = new FileReporter(opts.outFolder, opts.outLabel)
 
+    logOptions(opts, reporter)
+
+    val pseudotimeFile = generatePseudotimes(opts, reporter)
+
+    if (opts.evaluate) {
+      evaluate(reporter, pseudotimeFile)
+    }
+  }
+
+  def logOptions(opts: Options, reporter: FileReporter): Unit = {
     import sext._
     reporter.output("options.txt", opts.valueTreeString)
+  }
 
+  def generatePseudotimes(opts: Options, reporter: FileReporter): File = {
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
-    var exp = if (opts.simulate) {
-      RInterface.generateSimulatedData(
-        reporter, opts.proteinNamesPath, proteins, opts.speedCoefSD, opts.noiseSD, opts.seed
-      )
-    } else {
-      assert(opts.experimentPath != null)
-      Parsers.readExperiment(proteins, opts.experimentPath)
-    }
-
-    // transformations that filter measurements
-    opts.sampleCount match {
-      case Some(count) => exp = Transformations.sampleTimePoints(exp, opts.seed, count)
-      case None =>
-    }
-
-    if (opts.filterPositive) {
-      exp = Transformations.allPositive(exp)
-    }
-
-    opts.maxTime match {
-      case Some(mt) => exp = Transformations.filterUntilTime(exp, mt)
-      case None =>
-    }
-
-    // transform values for all further processing
-    exp = Transformations.arcsinhValues(exp, opts.arcsinhFactor)
-    exp = Transformations.normalizeValues(exp)
-    exp = Transformations.arcsinhTime(exp, opts.arcsinhFactor)
-    exp = Transformations.normalizeTime(exp)
+    val exp = processedExperiment(proteins, opts, reporter)
 
     val pseudotimes = PseudotimePropagation.propagateLabels(
       reporter,
@@ -47,32 +33,59 @@ object Main {
       opts.propagationNbNeighbors, 
       opts.propagationNbIter, 
       opts.propagationTimeWeight,
-      opts.useJaccardSimilarity,
-      opts.propagationSplitTime
-    )
-
-    val scaledPseudotimes = RangeScaling.scalePseudotimes(
-      pseudotimes,
-      exp.measurements.map(_.time).toArray
+      opts.useJaccardSimilarity
     )
 
     val pseudotimeFilename = "pseudotimes.csv"
-    reporter.outputTuples(pseudotimeFilename, exp.toTuplesWithPseudotime(scaledPseudotimes))
+    val pseudotimeFile = reporter.outFile(pseudotimeFilename)
 
-    RInterface.plotPseudotimes(reporter, pseudotimeFilename, opts.proteinNamesPath)
+    reporter.outputTuples(pseudotimeFile, exp.toTuplesWithPseudotime(pseudotimes))
+    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
-    if (opts.evaluate) {
-      val spearmanRho = RInterface.spearman(reporter, "Pseudotime", "ActualTime", pseudotimeFilename)
-
-      val valuesToPrint = List(
-        opts.propagationNbIter.toString, 
-        opts.speedCoefSD.toString,
-        opts.noiseSD.toString,
-        opts.propagationTimeWeight.toString,
-        opts.propagationNbNeighbors.toString,
-        spearmanRho.toString
-      )
-      println(s"EVALUATION: ${valuesToPrint.mkString("\t")}")
-    }
+    pseudotimeFile
   }
+
+  def evaluate(reporter: FileReporter, pseudotimeFile: File): Double = {
+    RInterface.spearman(reporter, "Pseudotime", "ActualTime", pseudotimeFile)
+  }
+
+  def processedExperiment(proteins: Seq[String], opts: Options, reporter: FileReporter): Experiment = {
+    val exp = if (opts.simulate) {
+      RInterface.generateSimulatedData(
+        reporter, opts.proteinNamesPath, proteins, opts.speedCoefSD, opts.noiseSD, opts.seed
+      )
+    } else {
+      assert(opts.experimentPath != null)
+      Parsers.readExperiment(proteins, opts.experimentPath)
+    }
+
+    transformedExperiment(exp, opts)
+  }
+
+  def transformedExperiment(inputExp: Experiment, opts: Options): Experiment = {
+    var res = inputExp
+
+    // transformations that filter measurements
+    opts.sampleCount match {
+      case Some(count) => res = Transformations.sampleTimePoints(res, opts.seed, count)
+      case None =>
+    }
+
+    if (opts.filterPositive) {
+      res = Transformations.allPositive(res)
+    }
+
+    opts.maxTime match {
+      case Some(mt) => res = Transformations.filterUntilTime(res, mt)
+      case None =>
+    }
+
+    res = Transformations.arcsinhValues(res, opts.arcsinhFactor)
+    res = Transformations.normalizeValues(res)
+    res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
+    res = Transformations.normalizeTime(res)
+
+    res
+  }
+
 }

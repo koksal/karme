@@ -10,61 +10,54 @@ object PseudotimePropagation {
     nbNeighbors: Int, 
     nbIter: Int, 
     timeWeight: Double,
-    useJaccardSimilarity: Boolean,
-    timeSplitValue: Option[Double]
-  ): Array[Double] = {
-    timeSplitValue match {
-      case Some(v) => {
-        val (beforeSplit, afterSplit) = exp.measurements.partition(_.time <= v)
-        val pseudotimes1 = propagateAux(reporter, beforeSplit, alpha, nbNeighbors, nbIter, timeWeight, useJaccardSimilarity)
-        val pseudotimes2 = propagateAux(reporter, afterSplit,  alpha, nbNeighbors, nbIter, timeWeight, useJaccardSimilarity)
-        pseudotimes1 ++ pseudotimes2
-      }
-      case None => {
-        propagateAux(reporter, exp.measurements, alpha, nbNeighbors, nbIter, timeWeight, useJaccardSimilarity)
-      }
-    }
-  }
-
-  private def propagateAux(
-    reporter: FileReporter,
-    ms: IndexedSeq[CellMeasurement],
-    alpha: Double,
-    nbNeighbors: Int,
-    nbIter: Int,
-    timeWeight: Double,
     useJaccardSimilarity: Boolean
   ): Array[Double] = {
-    println("Computing neighbor graph.")
-    var directedNeighborGraph = findNeighbors(ms, nbNeighbors, timeWeight)
-    RInterface.plotNeighborGraph(reporter, ms, directedNeighborGraph, "euclidean")
-    if (useJaccardSimilarity) {
-      directedNeighborGraph = jaccardNeighbors(ms, directedNeighborGraph, nbNeighbors)
-      RInterface.plotNeighborGraph(reporter, ms, directedNeighborGraph, "jaccard")
-    }
+    val ms = exp.measurements
+    val neighGraph = neighborGraph(reporter, ms, nbNeighbors, timeWeight, useJaccardSimilarity)
 
-    var pseudotimes = Array.ofDim[Double](ms.size)
+    var prevPseudotimes = Array.ofDim[Double](ms.size)
     for ((m, i) <- ms.zipWithIndex) {
-      pseudotimes(i) = m.time
+      prevPseudotimes(i) = m.time
     }
-    var newPseudotimes = pseudotimes.clone
+    var currPseudotimes = prevPseudotimes.clone
 
     println("Propagating labels.")
     var iter = 0
     do {
       iter += 1
-      pseudotimes = newPseudotimes.clone
+      prevPseudotimes = currPseudotimes.clone
       for ((m, i) <- ms.zipWithIndex) {
-        val neighborPT = directedNeighborGraph(i).map(pseudotimes(_))
-        val newPT = update(pseudotimes(i), neighborPT, alpha)
-        newPseudotimes(i) = newPT
+        val neighborPT = neighGraph(i).map(prevPseudotimes(_))
+        val newPT = update(prevPseudotimes(i), neighborPT, alpha)
+        currPseudotimes(i) = newPT
       }
-    } while(iter < nbIter)
+    } while (iter < nbIter)
 
-    newPseudotimes
+    RangeScaling.scalePseudotimes(
+      currPseudotimes,
+      exp.measurements.map(_.time).toArray
+    )
   }
 
-  private def findNeighbors(
+  private def neighborGraph(
+    reporter: FileReporter,
+    ms: IndexedSeq[CellMeasurement],
+    nbNeighbors: Int,
+    timeWeight: Double,
+    useJaccardSimilarity: Boolean
+  ): Map[Int, Seq[Int]] = {
+    println("Computing neighbor graph.")
+    var graph = closestNeighbors(ms, nbNeighbors, timeWeight)
+    RInterface.plotNeighborGraph(reporter, ms, graph, "euclidean")
+    if (useJaccardSimilarity) {
+      graph = jaccardNeighbors(ms, graph, nbNeighbors)
+      RInterface.plotNeighborGraph(reporter, ms, graph, "jaccard")
+    }
+
+    graph
+  }
+
+  private def closestNeighbors(
     ms: IndexedSeq[CellMeasurement], 
     nbNeighbors: Int, 
     timeWeight: Double

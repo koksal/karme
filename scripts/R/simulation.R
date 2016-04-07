@@ -6,10 +6,7 @@ inputProteinFile  = args[[1]]
 speedCoefSD       = as.double(args[[2]])
 noiseSD           = as.double(args[[3]])
 seed              = as.integer(args[[4]])
-outputFolder      = args[[5]]
-
-# create subdir for cluster output
-dir.create(outputFolder)
+outputFile        = args[[5]]
 
 proteins = readLines(inputProteinFile)
 
@@ -44,7 +41,7 @@ generateValuesWithNoise <- function(ps) {
 
   write.table(
               observedData, 
-              file = paste(outputFolder, "/observed.csv", sep = ""),
+              file = outputFile,
               sep = ",", 
               row.names = FALSE, 
               col.names = TRUE

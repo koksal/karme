@@ -18,6 +18,5 @@ case class Options(
   propagationNbNeighbors: Int = 5,
   propagationNbIter:      Int = 10,
   propagationTimeWeight:  Double = 1.0,
-  useJaccardSimilarity:   Boolean = false,
-  propagationSplitTime:   Option[Double] = None
+  useJaccardSimilarity:   Boolean = false
 )
