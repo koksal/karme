@@ -4,7 +4,8 @@ object Transformations {
   private def arcsinh(v: Double, factor: Double): Double = {
     // arcsinh formula
     val scaled = v / factor
-    math.log(scaled + math.sqrt(scaled * scaled + 1))
+    val interior = scaled + math.sqrt(scaled * scaled + 1)
+    math.log(interior)
   }
 
   def arcsinhValues(experiment: Experiment, factor: Double): Experiment = {
@@ -97,6 +98,13 @@ object Transformations {
     if (filteredMs.size < experiment.measurements.size)
       println("Filtered out some cells.")
     experiment.copy(measurements = filteredMs)
+  }
+
+  def allFinite(experiment: Experiment): Experiment = {
+    val fms = experiment.measurements.filter{ m =>
+      m.values.forall(v => !v.isInfinite)
+    }
+    experiment.copy(measurements = fms)
   }
 
   def sampleTimePoints(

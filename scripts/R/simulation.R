@@ -15,7 +15,7 @@ nbMeasurements = 10
 
 generateValuesWithNoise <- function(ps) {
   nbCellsPerMeasurement = 500
-  measurementTimes = lapply(0:(nbMeasurements - 1), function(x) x)
+  measurementTimes = lapply(0:(nbMeasurements - 1), function(x) 2^x)
 
   observedData = matrix(ncol = length(ps) + 2, nrow = 0)
 
@@ -48,12 +48,13 @@ generateValuesWithNoise <- function(ps) {
               )
 }
 
-# ignore degree for now.
 generatePolynomial <- function(degree) {
-  # pick sensible parameters for instantiating polynomials
-  a = sample(seq(from = -10, to = 10, by = 0.1), 1)
-  b = sample(seq(from = -50, to = 50, by = 0.1), 1)
-  return(polynomial(coef = c(b, a)))
+  zeros = sample(seq(from = 0, to = 10, by = 0.1), degree)
+  sign = sample(c(-1, 1), 1)
+  absPoly = poly.calc(zeros)
+  amplitude = sample(seq(from = 1, to = 10, by = 0.1), 1)
+  p = absPoly * sign * amplitude
+  return(p)
 }
 
 generateCurves <- function(nbCurves, degree) {
@@ -61,7 +62,7 @@ generateCurves <- function(nbCurves, degree) {
 }
 
 nbPolynomials = length(proteins)
-degree = 1
+degree = 2
 
 set.seed(seed)
 ps = generateCurves(nbPolynomials, degree)
