@@ -8,7 +8,7 @@ inputDataFile     = args[[1]]
 inputProteinFile  = args[[2]]
 outputFolder      = args[[3]]
 
-movingAvgWindowSize = 1
+movingAvgWindowSize = 100
 
 # create subdir for cluster output
 dir.create(outputFolder)
@@ -54,28 +54,31 @@ plotPCA <- function(d, proteins) {
   df = data.frame(
                   x = dataPCA[,1],
                   y = dataPCA[,2],
-                  t = actualTime
+                  actualTime = d[,"ActualTime"],
+                  wallClockTime = d[,"Minute"]
   )
 
   p <- ggplot() +
     geom_point(
                data = df,
-               aes(x = x, y = y, colour = t),
+               aes(x = x, y = y, colour = wallClockTime),
                )
 
   fname = paste(outputFolder, "/pca.pdf", sep = "")
   ggsave(file = fname)
 }
 
-plotProteinProgression <- function(d, prot) {
+plotProteinProgression <- function(d, prot, movAvgN) {
   # order by pseudotime and compute moving average
   sortedD <- d[with(d, order(Pseudotime)),]
   orderedProtValues = sortedD[,prot]
   orderedPseudotimes = sortedD[,"Pseudotime"]
   orderedActualTimes = sortedD[,"ActualTime"]
-  orderedLogPseudotimes = log(sapply(orderedPseudotimes, function(v) v + exp(1)), base = exp(1))
-  orderedLogActualTimes = log(sapply(orderedActualTimes, function(v) v + exp(1)), base = exp(1))
-  movingAvg = SMA(orderedProtValues, n = movingAvgWindowSize)
+  orderedWallClockTimes = sortedD[,"Minute"]
+  orderedLogPseudotimes     = log(sapply(orderedPseudotimes, function(v) v + exp(1)), base = exp(1))
+  orderedLogActualTimes     = log(sapply(orderedActualTimes, function(v) v + exp(1)), base = exp(1))
+  orderedLogWallClockTimes  = log(sapply(orderedWallClockTimes, function(v) v + exp(1)), base = exp(1))
+  protValuesMovingAvg = SMA(orderedProtValues, n = movAvgN)
 
   # compute sample mean values
   minutes = uniqueMinutes(d)
@@ -89,9 +92,12 @@ plotProteinProgression <- function(d, prot) {
   timeDF = data.frame(
     pseudotime = orderedPseudotimes, 
     logPseudotime = orderedLogPseudotimes,
-    value = movingAvg, 
+    value = orderedProtValues, 
+    movingAvg = protValuesMovingAvg, 
     actualTime = orderedActualTimes,
-    logActualTime = orderedLogActualTimes
+    logActualTime = orderedLogActualTimes,
+    wallClock = orderedWallClockTimes,
+    logWallClock = orderedLogWallClockTimes
   )
   meanDataFrame = data.frame(x = minutes, y = means)
 
@@ -99,17 +105,41 @@ plotProteinProgression <- function(d, prot) {
   p <- ggplot() + 
     geom_point(
                data = timeDF, 
-               aes(x = pseudotime, y = value, colour = logActualTime)
+               aes(x = pseudotime, y = movingAvg, colour = logWallClock)
                ) + 
     scale_colour_gradient(low = "green", high = "red") + 
     geom_point(
                data = meanDataFrame, 
                aes(x = x, y = y), 
                color = "blue"
-               ) # + 
-    # scale_x_continuous(trans = log_trans(base = exp(1)))
+               )
 
-  fname = paste(outputFolder, "/progression-", prot, ".pdf", sep = "") 
+  fname = paste(outputFolder, "/pseudotime-", prot, "-ma-", movAvgN, ".pdf", sep = "") 
+  ggsave(file=fname)
+
+  # plot values vs actual time, colored by time bin
+  p <- ggplot() +
+    geom_point(
+               data = timeDF,
+               aes(x = logActualTime, y = value, colour = wallClock)
+               ) +
+    scale_colour_gradient(low = "green", high = "red")
+
+  fname = paste(outputFolder, "/actualtime-", prot, ".pdf", sep = "") 
+  ggsave(file=fname)
+
+  # box plots for value vs wallclock
+  p <- ggplot() +
+    geom_boxplot(
+                 data = timeDF,
+                 aes(
+                     x = wallClock, 
+                     y = value, 
+                     group = wallClock
+                     )
+                 )
+
+  fname = paste(outputFolder, "/wallclock-", prot, ".pdf", sep = "") 
   ggsave(file=fname)
 
   # this is being computed redundantly right now:
@@ -130,7 +160,9 @@ plotProgressions <- function() {
   plotPCA(d, proteins)
 
   for (prot in proteins) {
-    plotProteinProgression(d, prot)
+    for (movAvgN in c(1, 10, 50, 100)) {
+      plotProteinProgression(d, prot, movAvgN)
+    }
   }
 }
 

@@ -11,7 +11,7 @@ object PseudotimePropagation {
     nbIter: Int, 
     timeWeight: Double,
     useJaccardSimilarity: Boolean
-  ): Array[Double] = {
+  ): Experiment = {
     val ms = exp.measurements
     val neighGraph = neighborGraph(reporter, ms, nbNeighbors, timeWeight, useJaccardSimilarity)
 
@@ -33,10 +33,13 @@ object PseudotimePropagation {
       }
     } while (iter < nbIter)
 
-    RangeScaling.scalePseudotimes(
+    val scaledPseudotimes = RangeScaling.scalePseudotimes(
       currPseudotimes,
       exp.measurements.map(_.time).toArray
     )
+
+    val msWithPseutotimes = ms.zip(scaledPseudotimes).map{ case (m, pt) => m.copy(pseudotime = pt )}
+    exp.copy(measurements = msWithPseutotimes)
   }
 
   private def neighborGraph(
@@ -48,7 +51,7 @@ object PseudotimePropagation {
   ): Map[Int, Seq[Int]] = {
     println("Computing neighbor graph.")
     var graph = closestNeighbors(ms, nbNeighbors, timeWeight)
-    RInterface.plotNeighborGraph(reporter, ms, graph, "euclidean")
+    // RInterface.plotNeighborGraph(reporter, ms, graph, "euclidean")
     if (useJaccardSimilarity) {
       graph = jaccardNeighbors(ms, graph, nbNeighbors)
       RInterface.plotNeighborGraph(reporter, ms, graph, "jaccard")

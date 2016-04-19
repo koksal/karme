@@ -15,7 +15,7 @@ object Evaluation {
     val nbNeigh     = 10
     val seed        = 1
 
-    val r = List(0.25, 1, 2, 5, 10)
+    val r: List[Double] = List(0.25, 2, 5)
     val speedSDRange = r 
     val noiseSDRange = r
     val rhoValues: Map[(Double, Double), Double] = (for {

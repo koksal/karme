@@ -24,9 +24,9 @@ object Main {
 
   def generatePseudotimes(opts: Options, reporter: FileReporter): File = {
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
-    val exp = processedExperiment(proteins, opts, reporter)
+    var exp = processedExperiment(proteins, opts, reporter)
 
-    val pseudotimes = PseudotimePropagation.propagateLabels(
+    exp = PseudotimePropagation.propagateLabels(
       reporter,
       exp, 
       opts.propagationAlpha, 
@@ -39,8 +39,15 @@ object Main {
     val pseudotimeFilename = "pseudotimes.csv"
     val pseudotimeFile = reporter.outFile(pseudotimeFilename)
 
-    reporter.outputTuples(pseudotimeFile, exp.toTuplesWithPseudotime(pseudotimes))
-    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+    reporter.outputTuples(pseudotimeFile, exp.toTuples())
+    // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+
+    val windowSize = 500
+    val movAvgExp = Transformations.movingAverage(exp, windowSize)
+    val maPseudotimeFn = s"vis-data.csv"
+    val maPseudotimeFile = reporter.outFile(maPseudotimeFn)
+
+    reporter.outputTuples(maPseudotimeFile, movAvgExp.toFlattenedTuples())
 
     pseudotimeFile
   }

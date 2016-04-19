@@ -18,7 +18,8 @@ object Parsers {
         case None => -1.0
       }
       val protValues = prots.map{ prot => tuple(prot).toDouble }.toIndexedSeq
-      CellMeasurement(time, actualTime, protValues)
+      val pseudotime = -1.0
+      CellMeasurement(time, actualTime, pseudotime, protValues)
     }
     Experiment(prots, cellMeasurements.toIndexedSeq)
   }

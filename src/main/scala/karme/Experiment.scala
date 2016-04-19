@@ -8,18 +8,25 @@ case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[Ce
       }
       val metadata = Map( 
         "Minute" -> m.time.toString,
-        "ActualTime" -> m.actualTime.toString
+        "ActualTime" -> m.actualTime.toString,
+        "Pseudotime" -> m.pseudotime.toString
       )
       ms.toMap ++ metadata
     }
     maps
   }
 
-  def toTuplesWithPseudotime(ps: Array[Double]): Seq[Map[String, String]] = {
-    this.toTuples().zipWithIndex map {
-      case (t, i) => t + ("Pseudotime" -> ps(i).toString)
+  def toFlattenedTuples(): Seq[Map[String, String]] = {
+    measurements.flatMap{ m =>
+      measuredProteins.zipWithIndex.map{ case(p, i) =>
+        Map(
+          "Pseudotime" -> m.pseudotime.toString,
+          "Value" -> m.values(i).toString,
+          "Group" -> p
+        )
+      }
     }
   }
 }
 
-case class CellMeasurement(time: Double, actualTime: Double, values: IndexedSeq[Double])
+case class CellMeasurement(time: Double, actualTime: Double, pseudotime: Double, values: IndexedSeq[Double])

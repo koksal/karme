@@ -53,7 +53,7 @@ generatePolynomial <- function(degree) {
   sign = sample(c(-1, 1), 1)
   absPoly = poly.calc(zeros)
   amplitude = sample(seq(from = 1, to = 10, by = 0.1), 1)
-  p = absPoly * sign * amplitude
+  p = absPoly * sign * amplitude + 1000
   return(p)
 }
 

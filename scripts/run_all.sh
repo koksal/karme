@@ -22,6 +22,6 @@ do
     --arcsinh 5 \
     --alpha 0.5 \
     --neighbors 5 \
-    --timeweight 0.5 \
-    --iterations 10
+    --timeweight 0 \
+    --iterations 100
 done

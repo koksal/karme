@@ -149,4 +149,21 @@ object Transformations {
 
     exp.copy(measurements = shuffledMeasurements)
   }
+
+  def movingAverage(exp: Experiment, n: Int): Experiment = {
+    val msOrderedByPseudotime = exp.measurements.sortBy(_.pseudotime)
+    val smoothedMs = msOrderedByPseudotime.zipWithIndex.map{ case (m, i) =>
+      // if there are at least n elements so far, take average of last n
+      // otherwise, take average of what's before
+      val windowStart = math.max(0, i - n + 1)
+      val windowEnd = i
+      val window = msOrderedByPseudotime.slice(windowStart, windowEnd + 1)
+      val smoothedValues = for (j <- 0 until exp.measuredProteins.size) yield {
+        val vs = window.map{m => m.values(j) }
+        vs.sum / vs.size
+      }
+      m.copy(values = smoothedValues)
+    }
+    exp.copy(measurements = smoothedMs)
+  }
 }
