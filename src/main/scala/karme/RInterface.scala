@@ -12,6 +12,12 @@ object RInterface {
     cmd.!!
   }
 
+  private def tempFile(): File = {
+    val f = File.createTempFile("temp", ".tmp")
+    f.deleteOnExit()
+    f
+  }
+
   def plotPseudotimes(
     reporter: FileReporter, 
     pseudotimeFile: File,
@@ -28,6 +34,7 @@ object RInterface {
     runRProgram(prog, args)
   }
 
+  // TODO pass a a temp file to R to get back results
   def grangerTest(
     reporter: FileReporter, 
     pseudotimeFile: File,
@@ -44,7 +51,7 @@ object RInterface {
     runRProgram(prog, args)
   }
 
-  // needs to specify out files
+  // TODO use temp files for R output
   def generateSimulatedData(
     reporter: FileReporter,
     proteinsFile: File,
@@ -88,6 +95,35 @@ object RInterface {
     )
     runRProgram(prog, args)
     val result = Parsers.readSpearman(rOutputFile)
+    result
+  }
+
+  private def writeVector(xs: Seq[Double], f: File): Unit = {
+    Util.writeToFile(f, xs.mkString("\n"))
+  }
+
+  def emd(
+    xs: Seq[Double],
+    ts: Seq[Double]
+  ): (Seq[Seq[Double]], Seq[Double]) = {
+    val prog = "./scripts/R/emd.R"
+    val inValueF = tempFile()
+    val inTimeF = tempFile()
+    val imfF = tempFile()
+    val residueF = tempFile()
+
+    // TODO write input files
+    writeVector(xs, inValueF)
+    writeVector(ts, inTimeF)
+
+    val args = List(
+      inValueF.getAbsolutePath(),
+      inTimeF.getAbsolutePath(),
+      imfF.getAbsolutePath(),
+      residueF.getAbsolutePath()
+    )
+    runRProgram(prog, args)
+    val result = Parsers.readEMD(imfF, residueF)
     result
   }
 

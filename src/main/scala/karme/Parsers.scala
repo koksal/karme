@@ -27,4 +27,18 @@ object Parsers {
   def readSpearman(f: File): Double = {
     scala.io.Source.fromFile(f).getLines.toSeq.head.toDouble
   }
+
+  def lines(f: File): Seq[String] = {
+    scala.io.Source.fromFile(f).getLines.toSeq
+  }
+
+  def readEMD(imfF: File, residueF: File): (Seq[Seq[Double]], Seq[Double]) = {
+    val imfLines = lines(imfF)
+    val imfTuples = imfLines.map{ l => l.split(",").toSeq.map(_.toDouble) }
+    val imfs = imfTuples.transpose
+    val residueLines = lines(residueF)
+    val residue = residueLines.map(_.toDouble)
+
+    (imfs, residue)
+  }
 }

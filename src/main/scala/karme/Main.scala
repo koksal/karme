@@ -42,12 +42,20 @@ object Main {
     reporter.outputTuples(pseudotimeFile, exp.toTuples())
     // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
-    val windowSize = 500
-    val movAvgExp = Transformations.movingAverage(exp, windowSize)
-    val maPseudotimeFn = s"vis-data.csv"
-    val maPseudotimeFile = reporter.outFile(maPseudotimeFn)
+    // val windowSize = 500
+    // val movAvgExp = Transformations.movingAverage(exp, windowSize)
+    // val maPseudotimeFn = s"vis-data.csv"
+    // val maPseudotimeFile = reporter.outFile(maPseudotimeFn)
 
-    reporter.outputTuples(maPseudotimeFile, movAvgExp.toFlattenedTuples())
+    // reporter.outputTuples(maPseudotimeFile, movAvgExp.toFlattenedTuples())
+
+    for ((p, i) <- exp.measuredProteins.zipWithIndex) {
+      val xs = exp.measurements.map(_.values(i))
+      val ts = exp.measurements.map(_.pseudotime)
+      val res = RInterface.emd(xs, ts)
+      println("EMD: ")
+      println(s"IMFs: ${res._1.size}")
+    }
 
     pseudotimeFile
   }
