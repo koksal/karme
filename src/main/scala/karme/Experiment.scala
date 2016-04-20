@@ -16,13 +16,15 @@ case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[Ce
     maps
   }
 
-  def toFlattenedTuples(): Seq[Map[String, String]] = {
+  def toFlattenedTuples(expName: String, processName: String): Seq[Map[String, String]] = {
     measurements.flatMap{ m =>
       measuredProteins.zipWithIndex.map{ case(p, i) =>
         Map(
-          "Pseudotime" -> m.pseudotime.toString,
-          "Value" -> m.values(i).toString,
-          "Group" -> p
+          "pseudotime" -> m.pseudotime.toString,
+          "value" -> m.values(i).toString,
+          "protein" -> p,
+          "experiment" -> expName,
+          "process" -> processName
         )
       }
     }

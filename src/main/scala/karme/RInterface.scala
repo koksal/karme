@@ -133,24 +133,57 @@ object RInterface {
     neighbors: Map[Int, Seq[Int]],
     name: String
   ): Unit = {
-    val rows = neighbors.toSeq.flatMap{ case (i, js) => 
+    val pairs = neighbors.toSeq.flatMap{ case (i, js) => 
       js.map{ j => 
         val first = ms(i)
         val second = ms(j)
-        Map("x" -> first.actualTime.toString, "y" -> second.time.toString)
+        (first.actualTime.toString, second.time.toString)
       }
     }
-    val pairFilename = s"$name-neighbors.csv"
-    val pairFile = reporter.outFile(pairFilename)
-    reporter.outputTuples(pairFile, rows)
+    val outF = reporter.outFile(s"$name-neighbors-scatter-plot.pdf")
+    val (xs, ys) = pairs.unzip
+    scatterPlot(outF, xs, ys)
+  }
+
+  def plotEMD(
+    reporter: FileReporter,
+    exp: Experiment
+  ): Unit = {
+    val orderedMeasurements = exp.measurements.sortBy(_.pseudotime)
+    val ts = orderedMeasurements.map(_.pseudotime)
+
+    for ((p, i) <- exp.measuredProteins.zipWithIndex.par) {
+      val xs = orderedMeasurements.map(_.values(i))
+      val (imfs, residue) = RInterface.emd(xs, ts)
+
+      // plot each imf with its index, and residue, against ts
+      for ((imf, imfIndex) <- imfs.zipWithIndex) {
+        val n = s"$p-imf-$imfIndex.pdf"
+        val f = reporter.outFile(n)
+        scatterPlot(f, ts, imf)
+      }
+
+      val resN = s"$p-residue.pdf"
+      val resF = reporter.outFile(resN)
+      scatterPlot(resF, ts, residue)
+    }
+  }
+
+  def scatterPlot(
+    f: File,
+    xs: Seq[Any],
+    ys: Seq[Any]
+  ): Unit = {
+    val rows = xs.zip(ys).map {
+      case (x, y) => Map("x" -> x.toString, "y" -> y.toString)
+    }
+    val dataF = tempFile()
+    FileReporter.outputTuples(dataF, rows)
 
     val prog = "./scripts/R/scatterPlot.R"
-    val outputFolder = reporter.outFile("plots")
-    val outFile = reporter.outFile(pairFilename)
     val args = List(
-      outFile.getAbsolutePath(),
-      outputFolder.getAbsolutePath(),
-      name
+      dataF.getAbsolutePath(),
+      f.getAbsolutePath()
     )
     runRProgram(prog, args)
   }

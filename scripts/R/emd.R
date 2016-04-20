@@ -11,7 +11,7 @@ residueFile = args[[4]]
 xs = sapply(readLines(inValueFile), function (l) as.double(l))
 ts = sapply(readLines(inTimeFile),  function (l) as.double(l))
 
-result = emd(xs, ts, boundary="wave")
+result = emd(xs, boundary="wave")
 
 write.table(
             result$imf,

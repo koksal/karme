@@ -17,7 +17,7 @@ do
     --experiment $expFile \
     --outlabel $e \
     --outfolder ${OUTFOLDER} \
-    --sample 1000 \
+    --sample 10000 \
     --seed 0 \
     --arcsinh 5 \
     --alpha 0.5 \
