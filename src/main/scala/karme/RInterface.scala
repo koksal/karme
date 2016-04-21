@@ -12,9 +12,9 @@ object RInterface {
     cmd.!!
   }
 
-  private def tempFile(): File = {
+  def tempFile(): File = {
     val f = File.createTempFile("temp", ".tmp")
-    f.deleteOnExit()
+    // f.deleteOnExit()
     f
   }
 

@@ -42,23 +42,40 @@ object Main {
     FileReporter.outputTuples(pseudotimeFile, exp.toTuples())
     // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
-    val windowSize = 500
-    val movAvgExp = Transformations.movingAverage(exp, windowSize)
+    // val windowSize = 500
+    // val movAvgExp = Transformations.movingAverage(exp, windowSize)
 
-    val visFn = s"vis-data.csv"
-    val visF = reporter.outFile(visFn)
+    // val visFn = s"vis-data.csv"
+    // val visF = reporter.outFile(visFn)
 
-    val origTuples = exp.toFlattenedTuples(opts.experimentPath.getName(), "Original")
-    val movAvgTuples = movAvgExp.toFlattenedTuples(opts.experimentPath.getName(), "Moving average")
+    // val origTuples = exp.toFlattenedTuples(opts.experimentPath.getName(), "Original")
+    // val movAvgTuples = movAvgExp.toFlattenedTuples(opts.experimentPath.getName(), "Moving average")
 
-    FileReporter.outputTuples(
-      visF, 
-      origTuples ++ movAvgTuples
-    )
+    // FileReporter.outputTuples(
+    //   visF, 
+    //   origTuples ++ movAvgTuples
+    // )
 
-    RInterface.plotEMD(reporter, exp)
+    // RInterface.plotEMD(reporter, exp)
+
+    val memdResult = MatlabInterface.memd(exp)
+    println(s"MEMD result: " + memdResult)
+    plotMEMD(reporter, exp, memdResult)
 
     pseudotimeFile
+  }
+
+  def plotMEMD(reporter: FileReporter, exp: Experiment, memd: Seq[Seq[Seq[Double]]]): Unit = {
+    val xs = exp.measurements.map(_.pseudotime)
+    for ((p, i) <- exp.measuredProteins.zipWithIndex) {
+      val emd = memd(i)
+      println(s"Components for $p: ${emd.size}")
+      for ((vs, j) <- emd.zipWithIndex) {
+        val n = s"$p-mode-$j.pdf"
+        val f = reporter.outFile(n)
+        RInterface.scatterPlot(f, xs, vs)
+      }
+    }
   }
 
   def evaluate(reporter: FileReporter, pseudotimeFile: File): Double = {

@@ -6,7 +6,11 @@ if [ "$1" != "" ]; then
   OUTFOLDER=${OUTFOLDER}-${LABEL}
 fi
 
-readarray EXPERIMENTS < data/experiments.txt
+EXPERIMENTS=()
+while read -r line
+do
+  EXPERIMENTS+=($line)
+done < data/experiments.txt
 
 for e in ${EXPERIMENTS[@]}
 do
