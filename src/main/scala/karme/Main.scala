@@ -56,17 +56,14 @@ object Main {
     //   origTuples ++ movAvgTuples
     // )
 
-    // RInterface.plotEMD(reporter, exp)
-
-    val memdResult = MatlabInterface.memd(exp)
-    println(s"MEMD result: " + memdResult)
-    plotMEMD(reporter, exp, memdResult)
+    bemd(reporter, exp)
 
     pseudotimeFile
   }
 
   def plotMEMD(reporter: FileReporter, exp: Experiment, memd: Seq[Seq[Seq[Double]]]): Unit = {
-    val xs = exp.measurements.map(_.pseudotime)
+    val orderedMs = exp.measurements.sortBy(_.pseudotime)
+    val xs = orderedMs.map(_.pseudotime)
     for ((p, i) <- exp.measuredProteins.zipWithIndex) {
       val emd = memd(i)
       println(s"Components for $p: ${emd.size}")
@@ -74,6 +71,41 @@ object Main {
         val n = s"$p-mode-$j.pdf"
         val f = reporter.outFile(n)
         RInterface.scatterPlot(f, xs, vs)
+      }
+    }
+  }
+
+  def bemd(reporter: FileReporter, exp: Experiment) = {
+    val orderedMs = exp.measurements.sortBy(_.pseudotime)
+    val orderedTs = orderedMs.map(_.pseudotime)
+    val n = exp.measuredProteins.size
+    for {
+      i <- 0 until n
+      j <- i + 1 until n
+      if i != j
+    } {
+      val p1 = exp.measuredProteins(i)
+      val p2 = exp.measuredProteins(j)
+      println(s"Running BEMD for $p1 and $p2")
+
+      val xs = orderedMs.map(_.values(i))
+      val ys = orderedMs.map(_.values(j))
+      
+      val (xIMFs, yIMFs) = MatlabInterface.bemd(xs, ys)
+
+      val folder = reporter.outFile(s"BEMD-$p1-$p2")
+      folder.mkdirs
+
+      for ((xIMF, imfIndex) <- xIMFs.zipWithIndex) {
+        val n = s"$p1-bemd-$imfIndex.pdf"
+        val f = new File(folder, n)
+        RInterface.scatterPlot(f, orderedTs, xIMF)
+      }
+
+      for ((yIMF, imfIndex) <- yIMFs.zipWithIndex) {
+        val n = s"$p2-bemd-$imfIndex.pdf"
+        val f = new File(folder, n)
+        RInterface.scatterPlot(f, orderedTs, yIMF)
       }
     }
   }

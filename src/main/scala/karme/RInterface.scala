@@ -13,8 +13,8 @@ object RInterface {
   }
 
   def tempFile(): File = {
-    val f = File.createTempFile("temp", ".tmp")
-    // f.deleteOnExit()
+    val f = File.createTempFile("karme", ".tmp")
+    f.deleteOnExit()
     f
   }
 
