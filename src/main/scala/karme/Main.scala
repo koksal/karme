@@ -76,14 +76,19 @@ object Main {
   }
 
   def bemd(reporter: FileReporter, exp: Experiment) = {
+    def pairs(n: Int) = {
+      val res = for (i <- 0 until n) yield {
+        for (j <- i + 1 until n; if i != j) yield {
+          (i, j)
+        }
+      }
+      res.flatten
+    }
+
     val orderedMs = exp.measurements.sortBy(_.pseudotime)
     val orderedTs = orderedMs.map(_.pseudotime)
     val n = exp.measuredProteins.size
-    for {
-      i <- 0 until n
-      j <- i + 1 until n
-      if i != j
-    } {
+    for ((i, j) <- pairs(n).par) {
       val p1 = exp.measuredProteins(i)
       val p2 = exp.measuredProteins(j)
       println(s"Running BEMD for $p1 and $p2")
