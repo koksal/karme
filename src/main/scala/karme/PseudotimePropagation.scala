@@ -50,13 +50,16 @@ object PseudotimePropagation {
     useJaccardSimilarity: Boolean
   ): Map[Int, Seq[Int]] = {
     println("Computing neighbor graph.")
-    var graph = closestNeighbors(ms, nbNeighbors, timeWeight)
+    var graph: Map[Int,Seq[Int]] = Map.empty
+    val nbComp = 1
+    for (i <- 1 to nbComp) {
+      graph = Util.time { closestNeighbors(ms, nbNeighbors, timeWeight) }
+    }
     // RInterface.plotNeighborGraph(reporter, ms, graph, "euclidean")
     if (useJaccardSimilarity) {
       graph = jaccardNeighbors(ms, graph, nbNeighbors)
       RInterface.plotNeighborGraph(reporter, ms, graph, "jaccard")
     }
-
     graph
   }
 
@@ -65,45 +68,19 @@ object PseudotimePropagation {
     k: Int, 
     timeWeight: Double
   ): Map[Int, Seq[Int]] = {
-    val ds = Util.time { distances(ms, timeWeight) }
-    println("Computed pairwise distances.")
-    val n = ms.size
-    val closestPairs = Util.time {
-        for (i <- (0 until n).par) yield {
-        val iDs = for (j <- 0 until n; if j != i) yield (j -> distance(i, j, ds))
-        val closest = selectClosest(iDs, k)
-        i -> closest
+    val pairs = for ((m1, i1) <- ms.par.zipWithIndex) yield {
+      val indexDistances = ms.zipWithIndex collect { 
+        case (m2, i2) if i2 != i1 => (i2, distance(m1.values, m2.values, m1.time, m2.time, timeWeight)) 
       }
+      i1 -> selectClosest(indexDistances, k)
     }
-    println("Computed nearest neighbors.")
-    closestPairs.seq.toMap
+
+    pairs.seq.toMap
   }
 
-  private def distance(i: Int, j: Int, ds: Array[Array[Double]]): Double = {
-    if (i < j) ds(i)(j) else ds(j)(i)
-  }
-
-  private def selectClosest(ds: Seq[(Int, Double)], k: Int): Seq[Int] = {
-    ds.sortBy(_._2).take(k).map(_._1)
-  }
-
-  private def distances(
-    ms: IndexedSeq[CellMeasurement],
-    timeWeight: Double
-  ): Array[Array[Double]] = {
-    val n = ms.size
-    val matrix = Array.ofDim[Double](n, n)
-    for {
-      i <- (0 until n).par
-      j <- ((i + 1) until n).par
-      if i != j
-    } {
-      val m1 = ms(i)
-      val m2 = ms(j)
-      val d = distance(m1.values, m2.values, m1.time, m2.time, timeWeight)
-      matrix(i)(j) = d
-    }
-    matrix
+  private def selectClosest(ds: IndexedSeq[(Int, Double)], k: Int) = {
+    val orderedIndexDistances = ds.sortBy(_._2)
+    orderedIndexDistances.take(k).map(_._1)
   }
 
   private def jaccardNeighbors(
