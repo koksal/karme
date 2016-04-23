@@ -10,7 +10,7 @@ EXPERIMENTS=()
 while read -r line
 do
   EXPERIMENTS+=($line)
-done < data/experiments.txt
+done < data/experiments-first.txt
 
 for e in ${EXPERIMENTS[@]}
 do
@@ -21,7 +21,7 @@ do
     --experiment $expFile \
     --outlabel $e \
     --outfolder ${OUTFOLDER} \
-    --sample 10000 \
+    --sample 5000 \
     --seed 0 \
     --arcsinh 5 \
     --alpha 0.5 \

@@ -13,8 +13,8 @@ function run_bemd(inFile, xOutFile, yOutFile)
   maxIMFs = [];
   nbDirs = 32;
 
-  [imf, nb] = cemdc2_fix(T, input, nbIter, maxIMFs, nbDirs);
-  % [imf, nb] = emd(input);
+  % [imf, nb] = cemdc2_fix(T, input, nbIter, maxIMFs, nbDirs);
+  [imf, nb] = emd(input);
 
   xIMFs = real(imf);
   yIMFs = imag(imf);

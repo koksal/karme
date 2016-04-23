@@ -117,7 +117,7 @@ object Transformations {
     val minNbCells = cellsPerTime.values.map(_.size).min
 
     val absoluteMax = count / cellsPerTime.size
-    val nbToSample = math.min(minNbCells, absoluteMax)
+    val nbToSample = count // math.min(minNbCells, absoluteMax)
     println(s"Sampling ${nbToSample} cells per time step.")
 
     // inefficient but simple sampling by shuffling
