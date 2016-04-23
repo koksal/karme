@@ -65,20 +65,22 @@ object PseudotimePropagation {
     k: Int, 
     timeWeight: Double
   ): Map[Int, Seq[Int]] = {
-    val ds = distances(ms, timeWeight)
+    val ds = Util.time { distances(ms, timeWeight) }
     println("Computed pairwise distances.")
     val n = ms.size
-    val closestPairs = for (i <- (0 until n).par) yield {
-      val iDs = for (j <- 0 until n; if j != i) yield (j -> distance(i, j, ds))
-      val closest = selectClosest(iDs, k)
-      i -> closest
+    val closestPairs = Util.time {
+        for (i <- (0 until n).par) yield {
+        val iDs = for (j <- 0 until n; if j != i) yield (j -> distance(i, j, ds))
+        val closest = selectClosest(iDs, k)
+        i -> closest
+      }
     }
-    println("Computed neearest neighbors.")
+    println("Computed nearest neighbors.")
     closestPairs.seq.toMap
   }
 
-  private def distance(i: Int, j: Int, ds: Map[Int, Map[Int, Double]]): Double = {
-    if (i <= j) (ds(i))(j) else (ds(j))(i)
+  private def distance(i: Int, j: Int, ds: Array[Array[Double]]): Double = {
+    if (i < j) ds(i)(j) else ds(j)(i)
   }
 
   private def selectClosest(ds: Seq[(Int, Double)], k: Int): Seq[Int] = {
@@ -88,18 +90,20 @@ object PseudotimePropagation {
   private def distances(
     ms: IndexedSeq[CellMeasurement],
     timeWeight: Double
-  ): Map[Int, Map[Int, Double]] = {
+  ): Array[Array[Double]] = {
     val n = ms.size
-    val distMapsPerIndex = for (i <- (0 until n).par) yield {
-      val iDistances = for (j <- i + 1 until n) yield {
-        val m1 = ms(i)
-        val m2 = ms(j)
-        val d = distance(m1.values, m2.values, m1.time, m2.time, timeWeight)
-        j -> d
-      }
-      i -> iDistances.toMap
+    val matrix = Array.ofDim[Double](n, n)
+    for {
+      i <- (0 until n).par
+      j <- ((i + 1) until n).par
+      if i != j
+    } {
+      val m1 = ms(i)
+      val m2 = ms(j)
+      val d = distance(m1.values, m2.values, m1.time, m2.time, timeWeight)
+      matrix(i)(j) = d
     }
-    distMapsPerIndex.seq.toMap
+    matrix
   }
 
   private def jaccardNeighbors(

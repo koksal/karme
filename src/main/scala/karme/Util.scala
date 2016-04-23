@@ -34,4 +34,13 @@ object Util {
     case Some(v) => new scala.util.Random(v)
     case None => new scala.util.Random()
   }
+
+  def time[R](block: => R): R = {
+      val t0 = System.nanoTime()
+      val result = block    // call-by-name
+      val t1 = System.nanoTime()
+      val s = (t1 - t0) / 1000000000.0
+      println("Elapsed time: " + s + "s")
+      result
+  }
 }
