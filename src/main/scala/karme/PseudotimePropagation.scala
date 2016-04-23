@@ -62,19 +62,44 @@ object PseudotimePropagation {
 
   private def closestNeighbors(
     ms: IndexedSeq[CellMeasurement], 
-    nbNeighbors: Int, 
+    k: Int, 
     timeWeight: Double
   ): Map[Int, Seq[Int]] = {
-    val pairs = for ((m1, i1) <- ms.par.zipWithIndex) yield {
-      val indexDistances = ms.zipWithIndex collect { 
-        case (m2, i2) if i2 != i1 => (i2, distance(m1.values, m2.values, m1.time, m2.time, timeWeight)) 
-      }
-      val orderedIndexDistances = indexDistances.sortBy(_._2)
-      val nearestIndices = orderedIndexDistances.take(nbNeighbors).map(_._1)
-      i1 -> nearestIndices
+    val ds = distances(ms, timeWeight)
+    println("Computed pairwise distances.")
+    val n = ms.size
+    val closestPairs = for (i <- (0 until n).par) yield {
+      val iDs = for (j <- 0 until n; if j != i) yield (j -> distance(i, j, ds))
+      val closest = selectClosest(iDs, k)
+      i -> closest
     }
+    println("Computed neearest neighbors.")
+    closestPairs.seq.toMap
+  }
 
-    pairs.seq.toMap
+  private def distance(i: Int, j: Int, ds: Map[Int, Map[Int, Double]]): Double = {
+    if (i <= j) (ds(i))(j) else (ds(j))(i)
+  }
+
+  private def selectClosest(ds: Seq[(Int, Double)], k: Int): Seq[Int] = {
+    ds.sortBy(_._2).take(k).map(_._1)
+  }
+
+  private def distances(
+    ms: IndexedSeq[CellMeasurement],
+    timeWeight: Double
+  ): Map[Int, Map[Int, Double]] = {
+    val n = ms.size
+    val distMapsPerIndex = for (i <- (0 until n).par) yield {
+      val iDistances = for (j <- i + 1 until n) yield {
+        val m1 = ms(i)
+        val m2 = ms(j)
+        val d = distance(m1.values, m2.values, m1.time, m2.time, timeWeight)
+        j -> d
+      }
+      i -> iDistances.toMap
+    }
+    distMapsPerIndex.seq.toMap
   }
 
   private def jaccardNeighbors(
