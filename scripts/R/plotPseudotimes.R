@@ -8,8 +8,6 @@ inputDataFile     = args[[1]]
 inputProteinFile  = args[[2]]
 outputFolder      = args[[3]]
 
-movingAvgWindowSize = 100
-
 # create subdir for cluster output
 dir.create(outputFolder)
 
@@ -160,7 +158,7 @@ plotProgressions <- function() {
   plotPCA(d, proteins)
 
   for (prot in proteins) {
-    for (movAvgN in c(1, 10, 50, 100)) {
+    for (movAvgN in c(1, 10, 50, 100, 500)) {
       plotProteinProgression(d, prot, movAvgN)
     }
   }

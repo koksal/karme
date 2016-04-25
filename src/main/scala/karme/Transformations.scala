@@ -124,6 +124,7 @@ object Transformations {
     // re-sort unsorted map
     val orderedCellGroups = cellsPerTime.toList.sortBy(_._1)
     val sampledCells = orderedCellGroups flatMap { case (time, cells) =>
+      println(s"Time step $time: Sampling from ${cells.size} cells.")
       rand.shuffle(cells).take(nbToSample)
     }
 
