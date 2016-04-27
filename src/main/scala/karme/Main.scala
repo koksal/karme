@@ -61,20 +61,6 @@ object Main {
     pseudotimeFile
   }
 
-  def plotMEMD(reporter: FileReporter, exp: Experiment, memd: Seq[Seq[Seq[Double]]]): Unit = {
-    val orderedMs = exp.measurements.sortBy(_.pseudotime)
-    val xs = orderedMs.map(_.pseudotime)
-    for ((p, i) <- exp.measuredProteins.zipWithIndex) {
-      val emd = memd(i)
-      println(s"Components for $p: ${emd.size}")
-      for ((vs, j) <- emd.zipWithIndex) {
-        val n = s"$p-mode-$j.pdf"
-        val f = reporter.outFile(n)
-        RInterface.scatterPlot(f, Transformations.sampleSequence(xs zip vs))
-      }
-    }
-  }
-
   def bemd(reporter: FileReporter, exp: Experiment) = {
     def pairs(n: Int) = {
       val res = for (i <- 0 until n) yield {
@@ -88,7 +74,7 @@ object Main {
     val orderedMs = exp.measurements.sortBy(_.pseudotime)
     val orderedTs = orderedMs.map(_.pseudotime)
     val n = exp.measuredProteins.size
-    for ((i, j) <- pairs(n)) {
+    for ((i, j) <- Util.parallelize(pairs(n), 32)) {
       val p1 = exp.measuredProteins(i)
       val p2 = exp.measuredProteins(j)
       println(s"Running BEMD for $p1 and $p2")
@@ -101,16 +87,31 @@ object Main {
       val folder = reporter.outFile(s"BEMD-$p1-$p2")
       folder.mkdirs
 
-      for ((xIMF, imfIndex) <- xIMFs.zipWithIndex) {
+      val nbIMFtoPlot = 2
+      for ((xIMF, imfIndex) <- xIMFs.zipWithIndex.drop(xIMFs.size - nbIMFtoPlot)) {
         val n = s"$p1-bemd-$imfIndex.pdf"
         val f = new File(folder, n)
         RInterface.scatterPlot(f, Transformations.sampleSequence(orderedTs zip xIMF))
       }
 
-      for ((yIMF, imfIndex) <- yIMFs.zipWithIndex) {
+      for ((yIMF, imfIndex) <- yIMFs.zipWithIndex.drop(yIMFs.size - nbIMFtoPlot)) {
         val n = s"$p2-bemd-$imfIndex.pdf"
         val f = new File(folder, n)
         RInterface.scatterPlot(f, Transformations.sampleSequence(orderedTs zip yIMF))
+      }
+    }
+  }
+
+  def plotMEMD(reporter: FileReporter, exp: Experiment, memd: Seq[Seq[Seq[Double]]]): Unit = {
+    val orderedMs = exp.measurements.sortBy(_.pseudotime)
+    val xs = orderedMs.map(_.pseudotime)
+    for ((p, i) <- exp.measuredProteins.zipWithIndex) {
+      val emd = memd(i)
+      println(s"Components for $p: ${emd.size}")
+      for ((vs, j) <- emd.zipWithIndex) {
+        val n = s"$p-mode-$j.pdf"
+        val f = reporter.outFile(n)
+        RInterface.scatterPlot(f, Transformations.sampleSequence(xs zip vs))
       }
     }
   }
@@ -135,12 +136,6 @@ object Main {
   def transformedExperiment(inputExp: Experiment, opts: Options): Experiment = {
     var res = inputExp
 
-    // transformations that filter measurements
-    opts.sampleCount match {
-      case Some(count) => res = Transformations.sampleTimePoints(res, opts.seed, count)
-      case None =>
-    }
-
     if (opts.filterPositive) {
       res = Transformations.allPositive(res)
     }
@@ -157,6 +152,12 @@ object Main {
     res = Transformations.normalizeValues(res)
     res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
     res = Transformations.normalizeTime(res)
+
+    // transformations that filter measurements
+    opts.sampleCount match {
+      case Some(count) => res = Transformations.sampleValueRange(res, opts.seed, count, 100)
+      case None =>
+    }
 
     res
   }

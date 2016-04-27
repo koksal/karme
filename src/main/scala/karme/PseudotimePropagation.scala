@@ -70,7 +70,7 @@ object PseudotimePropagation {
   ): Map[Int, Seq[Int]] = {
     val n = ms.size
     println("N: " + n)
-    val nbParTasks = 8
+    val nbParTasks = 32
 
     (for (i1 <- Util.parallelize(0 until n, nbParTasks)) yield {
       val m1 = ms(i1)
@@ -105,7 +105,8 @@ object PseudotimePropagation {
     nbNeighbors: Int
   ): Map[Int, Seq[Int]] = {
     val range = ms.size
-    val jacNeighbors = for (i <- (0 until range).par) yield {
+    val nbParTasks = 32
+    val jacNeighbors = for (i <- Util.parallelize(0 until range, nbParTasks)) yield {
       val jaccardSimilarities = (0 until range) collect {
         case j if j != i => {
           (j, jaccardSimilarity(neighborGraph, i, j))

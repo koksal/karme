@@ -151,6 +151,43 @@ object Transformations {
     exp.copy(measurements = shuffledMeasurements)
   }
 
+  // at each time point, sample cells such that each value range of each protein is represented.
+  def sampleValueRange(
+    exp: Experiment,
+    seed: Option[Int],
+    count: Int,
+    nbGridCells: Int
+  ): Experiment = {
+    val rand = Util.random(seed)
+    var sampledMeasurements = Set[CellMeasurement]()
+
+    val cellsPerTimeStep = exp.measurements.groupBy(_.time).toList.sortBy(_._1)
+
+    val countPerProtein = count / exp.measuredProteins.size
+    val countPerSample = math.max(1, countPerProtein / (cellsPerTimeStep.size * nbGridCells))
+    println(s"Count per protein: $countPerProtein")
+    println(s"Count per sample: $countPerSample")
+
+    for ((p, i) <- exp.measuredProteins.zipWithIndex) {
+      for ((_, stepCells) <- cellsPerTimeStep) {
+        val pValues = stepCells.map(_.values(i))
+        val (pMin, pMax) = (pValues.min, pValues.max)
+        val groupedByValue = stepCells.groupBy { c =>
+          val v = c.values(i)
+          val normalizedV = (v - pMin) / (pMax - pMin)
+          (normalizedV * nbGridCells).toInt
+        }
+        val selected = groupedByValue flatMap { case (_, groupCells) =>
+          rand.shuffle(groupCells).take(countPerSample)
+        }
+        sampledMeasurements ++= selected
+      }
+    }
+
+    println(s"Selected a total of ${sampledMeasurements.size} cells.")
+    exp.copy(measurements = sampledMeasurements.toIndexedSeq)
+  }
+
   def movingAverage(exp: Experiment, n: Int): Experiment = {
     val msOrderedByPseudotime = exp.measurements.sortBy(_.pseudotime)
     val smoothedMs = msOrderedByPseudotime.zipWithIndex.map{ case (m, i) =>
