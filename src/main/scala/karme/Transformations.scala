@@ -167,4 +167,11 @@ object Transformations {
     }
     exp.copy(measurements = smoothedMs)
   }
+
+  def sampleSequence[T](xs: Seq[T]): Seq[T] = {
+    val sampleSize = 1000
+    val intervalSize = xs.size / sampleSize
+    for ((x, i) <- xs.zipWithIndex; if i % intervalSize == 0) yield x
+  }
+
 }

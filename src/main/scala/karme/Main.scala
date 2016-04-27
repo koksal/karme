@@ -40,7 +40,7 @@ object Main {
     val pseudotimeFile = reporter.outFile(pseudotimeFilename)
 
     FileReporter.outputTuples(pseudotimeFile, exp.toTuples())
-    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+    // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
     // val windowSize = 500
     // val movAvgExp = Transformations.movingAverage(exp, windowSize)
@@ -70,7 +70,7 @@ object Main {
       for ((vs, j) <- emd.zipWithIndex) {
         val n = s"$p-mode-$j.pdf"
         val f = reporter.outFile(n)
-        RInterface.scatterPlot(f, xs, vs)
+        RInterface.scatterPlot(f, Transformations.sampleSequence(xs zip vs))
       }
     }
   }
@@ -88,7 +88,7 @@ object Main {
     val orderedMs = exp.measurements.sortBy(_.pseudotime)
     val orderedTs = orderedMs.map(_.pseudotime)
     val n = exp.measuredProteins.size
-    for ((i, j) <- pairs(n).par) {
+    for ((i, j) <- pairs(n)) {
       val p1 = exp.measuredProteins(i)
       val p2 = exp.measuredProteins(j)
       println(s"Running BEMD for $p1 and $p2")
@@ -104,13 +104,13 @@ object Main {
       for ((xIMF, imfIndex) <- xIMFs.zipWithIndex) {
         val n = s"$p1-bemd-$imfIndex.pdf"
         val f = new File(folder, n)
-        RInterface.scatterPlot(f, orderedTs, xIMF)
+        RInterface.scatterPlot(f, Transformations.sampleSequence(orderedTs zip xIMF))
       }
 
       for ((yIMF, imfIndex) <- yIMFs.zipWithIndex) {
         val n = s"$p2-bemd-$imfIndex.pdf"
         val f = new File(folder, n)
-        RInterface.scatterPlot(f, orderedTs, yIMF)
+        RInterface.scatterPlot(f, Transformations.sampleSequence(orderedTs zip yIMF))
       }
     }
   }

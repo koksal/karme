@@ -68,19 +68,35 @@ object PseudotimePropagation {
     k: Int, 
     timeWeight: Double
   ): Map[Int, Seq[Int]] = {
-    val pairs = for ((m1, i1) <- ms.par.zipWithIndex) yield {
-      val indexDistances = ms.zipWithIndex collect { 
-        case (m2, i2) if i2 != i1 => (i2, distance(m1.values, m2.values, m1.time, m2.time, timeWeight)) 
-      }
-      i1 -> selectClosest(indexDistances, k)
-    }
+    val n = ms.size
+    println("N: " + n)
+    val nbParTasks = 8
 
-    pairs.seq.toMap
+    (for (i1 <- Util.parallelize(0 until n, nbParTasks)) yield {
+      val m1 = ms(i1)
+      var indexDistances = Set[(Int, Double)]()
+      for (i2 <- 0 until n) {
+        if (i2 != i1) {
+          val m2 = ms(i2)
+          val dist = distance(m1.values, m2.values, m1.time, m2.time, timeWeight)
+          indexDistances += (i2 -> dist)
+        }
+      }
+      (i1 -> selectClosest(indexDistances.toSeq, k))
+    }).seq.toMap
   }
 
-  private def selectClosest(ds: IndexedSeq[(Int, Double)], k: Int) = {
-    val orderedIndexDistances = ds.sortBy(_._2)
-    orderedIndexDistances.take(k).map(_._1)
+  private def selectClosest(ds: Seq[(Int, Double)], k: Int) = {
+    var kClosest = Set[(Int, Double)]()
+    kClosest ++= (ds take k)
+    for (d @ (i, v) <- ds drop k) {
+      val max @ (maxI, maxV) = kClosest.maxBy(_._2)
+      if (v < maxV) {
+        kClosest -= max
+        kClosest += d
+      }
+    }
+    kClosest.map(_._1).toSeq
   }
 
   private def jaccardNeighbors(
@@ -117,9 +133,19 @@ object PseudotimePropagation {
     t2: Double, 
     timeWeight: Double
   ): Double = {
-    val valueSum = (vs1 zip vs2).map{ case (v1, v2) => math.pow(v1 - v2, 2) }.sum
-    val sumWithTime = valueSum + timeWeight * math.pow(t1 - t2, 2)
-    math.pow(sumWithTime, 0.5)
+    var sum = 0.0
+    val n = vs1.size
+    for (i <- 0 until n) {
+      val v1 = vs1(i)
+      val v2 = vs2(i)
+      val diff = v1 - v2
+      sum += diff * diff
+    }
+    if (timeWeight > 0) {
+      val tDiff = t1 - t2
+      sum += timeWeight * tDiff * tDiff
+    }
+    math.sqrt(sum)
   }
 
   private def update(pseudotime: Double, neighborPseudotimes: Seq[Double], alpha: Double): Double = {

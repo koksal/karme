@@ -43,4 +43,11 @@ object Util {
       println("Elapsed time: " + s + "s")
       result
   }
+
+  import scala.collection.parallel._
+  def parallelize[A](xs: Iterable[A], n: Int): ParIterable[A] = {
+    val ps = xs.par
+    ps.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(n))
+    ps
+  }
 }

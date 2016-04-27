@@ -142,7 +142,7 @@ object RInterface {
     }
     val outF = reporter.outFile(s"$name-neighbors-scatter-plot.pdf")
     val (xs, ys) = pairs.unzip
-    scatterPlot(outF, xs, ys)
+    scatterPlot(outF, Transformations.sampleSequence(xs zip ys))
   }
 
   def plotEMD(
@@ -160,21 +160,20 @@ object RInterface {
       for ((imf, imfIndex) <- imfs.zipWithIndex) {
         val n = s"$p-imf-$imfIndex.pdf"
         val f = reporter.outFile(n)
-        scatterPlot(f, ts, imf)
+        scatterPlot(f, Transformations.sampleSequence(ts zip imf))
       }
 
       val resN = s"$p-residue.pdf"
       val resF = reporter.outFile(resN)
-      scatterPlot(resF, ts, residue)
+      scatterPlot(resF, Transformations.sampleSequence(ts zip residue))
     }
   }
 
-  def scatterPlot(
+  def scatterPlot[A, B](
     f: File,
-    xs: Seq[Any],
-    ys: Seq[Any]
+    points: Seq[(A, B)]
   ): Unit = {
-    val rows = xs.zip(ys).map {
+    val rows = points.map {
       case (x, y) => Map("x" -> x.toString, "y" -> y.toString)
     }
     val dataF = tempFile()
