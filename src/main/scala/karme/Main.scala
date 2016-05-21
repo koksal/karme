@@ -40,7 +40,7 @@ object Main {
     val pseudotimeFile = reporter.outFile(pseudotimeFilename)
 
     FileReporter.outputTuples(pseudotimeFile, exp.toTuples())
-    // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
     // val windowSize = 500
     // val movAvgExp = Transformations.movingAverage(exp, windowSize)
@@ -56,7 +56,7 @@ object Main {
     //   origTuples ++ movAvgTuples
     // )
 
-    bemd(reporter, exp)
+    // bemd(reporter, exp)
 
     pseudotimeFile
   }

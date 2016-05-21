@@ -27,8 +27,11 @@ object PseudotimePropagation {
       iter += 1
       prevPseudotimes = currPseudotimes.clone
       for ((m, i) <- ms.zipWithIndex) {
-        val neighborPT = neighGraph(i).map(prevPseudotimes(_))
-        val newPT = update(prevPseudotimes(i), neighborPT, alpha)
+        val samplingT  = m.time
+        val neighborMsIndices = neighGraph(i)
+        val neighborST = neighborMsIndices.map(ms(_).time)
+        val neighborPT = neighborMsIndices.map(prevPseudotimes(_))
+        val newPT = update(samplingT, prevPseudotimes(i), neighborST, neighborPT, alpha)
         currPseudotimes(i) = newPT
       }
     } while (iter < nbIter)
@@ -149,10 +152,22 @@ object PseudotimePropagation {
     math.sqrt(sum)
   }
 
-  private def update(pseudotime: Double, neighborPseudotimes: Seq[Double], alpha: Double): Double = {
+  private def update(
+    samplingTime: Double,
+    pseudotime: Double, 
+    neighborSamplingTimes: Seq[Double], 
+    neighborPseudotimes: Seq[Double], 
+    alpha: Double
+  ): Double = {
     assert(neighborPseudotimes.size > 0)
-    val neighborAvg = neighborPseudotimes.sum / neighborPseudotimes.size
-    val newValue = alpha * pseudotime + (1.0 - alpha) * neighborAvg
+    val neighborWs = neighborSamplingTimes.map(t => math.pow(math.E, - math.abs(samplingTime - t))
+    val weightSum = neighborWs.sum
+    val weightedNeighborSum = neighborWs.zip(neighborPseudotimes).map{
+      case (w, pt) => w * pt
+    }.sum
+      
+    val normalizedWeightedNeighborSum = weightedNeighborSum / weightSum
+    val newValue = alpha * pseudotime + (1.0 - alpha) * normalizedWeightedNeighborSum
     newValue
   }
 
