@@ -36,7 +36,10 @@ object Evaluation {
 
       val runReporter = new FileReporter(runOpts.outFolder, runOpts.outLabel)
 
-      val ptFile = Main.generatePseudotimes(runOpts, runReporter)
+      val proteins = Parsers.readProteins(runOpts.proteinNamesPath)
+      var experiment = Main.processedExperiment(proteins, runOpts, runReporter)
+      experiment = Main.computePseudotimes(runOpts, runReporter, experiment)
+      val ptFile = Main.writePseudotimes(runReporter, experiment)
       val rho = Main.evaluate(runReporter, ptFile)
 
       (speedSD, noiseSD) -> rho

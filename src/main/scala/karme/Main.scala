@@ -10,10 +10,16 @@ object Main {
 
     logOptions(opts, reporter)
 
-    val pseudotimeFile = generatePseudotimes(opts, reporter)
+    val proteins = Parsers.readProteins(opts.proteinNamesPath)
+    var experiment = processedExperiment(proteins, opts, reporter)
+    
+    experiment = computePseudotimes(opts, reporter, experiment)
+    val pseudotimeFile = writePseudotimes(reporter, experiment)
+    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
     if (opts.evaluate) {
       evaluate(reporter, pseudotimeFile)
+
     }
   }
 
@@ -22,11 +28,8 @@ object Main {
     reporter.output("options.txt", opts.valueTreeString)
   }
 
-  def generatePseudotimes(opts: Options, reporter: FileReporter): File = {
-    val proteins = Parsers.readProteins(opts.proteinNamesPath)
-    var exp = processedExperiment(proteins, opts, reporter)
-
-    exp = PseudotimePropagation.propagateLabels(
+  def computePseudotimes(opts: Options, reporter: FileReporter, exp: Experiment): Experiment = {
+    PseudotimePropagation.propagateLabels(
       reporter,
       exp, 
       opts.propagationAlpha, 
@@ -35,85 +38,14 @@ object Main {
       opts.propagationTimeWeight,
       opts.useJaccardSimilarity
     )
+  }
 
+  def writePseudotimes(reporter: FileReporter, exp: Experiment): File = {
     val pseudotimeFilename = "pseudotimes.csv"
     val pseudotimeFile = reporter.outFile(pseudotimeFilename)
 
     FileReporter.outputTuples(pseudotimeFile, exp.toTuples())
-    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
-
-    // val windowSize = 500
-    // val movAvgExp = Transformations.movingAverage(exp, windowSize)
-
-    // val visFn = s"vis-data.csv"
-    // val visF = reporter.outFile(visFn)
-
-    // val origTuples = exp.toFlattenedTuples(opts.experimentPath.getName(), "Original")
-    // val movAvgTuples = movAvgExp.toFlattenedTuples(opts.experimentPath.getName(), "Moving average")
-
-    // FileReporter.outputTuples(
-    //   visF, 
-    //   origTuples ++ movAvgTuples
-    // )
-
-    // bemd(reporter, exp)
-
     pseudotimeFile
-  }
-
-  def bemd(reporter: FileReporter, exp: Experiment) = {
-    def pairs(n: Int) = {
-      val res = for (i <- 0 until n) yield {
-        for (j <- i + 1 until n; if i != j) yield {
-          (i, j)
-        }
-      }
-      res.flatten
-    }
-
-    val orderedMs = exp.measurements.sortBy(_.pseudotime)
-    val orderedTs = orderedMs.map(_.pseudotime)
-    val n = exp.measuredProteins.size
-    for ((i, j) <- Util.parallelize(pairs(n), 32)) {
-      val p1 = exp.measuredProteins(i)
-      val p2 = exp.measuredProteins(j)
-      println(s"Running BEMD for $p1 and $p2")
-
-      val xs = orderedMs.map(_.values(i))
-      val ys = orderedMs.map(_.values(j))
-      
-      val (xIMFs, yIMFs) = MatlabInterface.bemd(xs, ys)
-
-      val folder = reporter.outFile(s"BEMD-$p1-$p2")
-      folder.mkdirs
-
-      val nbIMFtoPlot = 2
-      for ((xIMF, imfIndex) <- xIMFs.zipWithIndex.drop(xIMFs.size - nbIMFtoPlot)) {
-        val n = s"$p1-bemd-$imfIndex.pdf"
-        val f = new File(folder, n)
-        RInterface.scatterPlot(f, Transformations.sampleSequence(orderedTs zip xIMF))
-      }
-
-      for ((yIMF, imfIndex) <- yIMFs.zipWithIndex.drop(yIMFs.size - nbIMFtoPlot)) {
-        val n = s"$p2-bemd-$imfIndex.pdf"
-        val f = new File(folder, n)
-        RInterface.scatterPlot(f, Transformations.sampleSequence(orderedTs zip yIMF))
-      }
-    }
-  }
-
-  def plotMEMD(reporter: FileReporter, exp: Experiment, memd: Seq[Seq[Seq[Double]]]): Unit = {
-    val orderedMs = exp.measurements.sortBy(_.pseudotime)
-    val xs = orderedMs.map(_.pseudotime)
-    for ((p, i) <- exp.measuredProteins.zipWithIndex) {
-      val emd = memd(i)
-      println(s"Components for $p: ${emd.size}")
-      for ((vs, j) <- emd.zipWithIndex) {
-        val n = s"$p-mode-$j.pdf"
-        val f = reporter.outFile(n)
-        RInterface.scatterPlot(f, Transformations.sampleSequence(xs zip vs))
-      }
-    }
   }
 
   def evaluate(reporter: FileReporter, pseudotimeFile: File): Double = {
