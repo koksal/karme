@@ -31,4 +31,9 @@ case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[Ce
   }
 }
 
-case class CellMeasurement(time: Double, actualTime: Double, pseudotime: Double, values: IndexedSeq[Double])
+case class CellMeasurement(
+  time: Double, 
+  actualTime: Double, 
+  pseudotime: Double, 
+  values: IndexedSeq[Double]
+)

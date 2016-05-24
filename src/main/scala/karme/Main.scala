@@ -19,7 +19,6 @@ object Main {
 
     if (opts.evaluate) {
       evaluate(reporter, pseudotimeFile)
-
     }
   }
 

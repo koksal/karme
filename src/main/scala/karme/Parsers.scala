@@ -8,6 +8,12 @@ object Parsers {
     scala.io.Source.fromFile(f).getLines.toSeq
   }
 
+  def readGNWTimeSeries(f: File): List[Map[String, String]] = {
+    val format = new TSVFormat {}
+    val reader = CSVReader.open(f)(format)
+    reader.allWithHeaders()
+  }
+
   def readExperiment(prots: Seq[String], expFile: File): Experiment = {
     val reader = CSVReader.open(expFile)
     val tuples = reader.allWithHeaders()
