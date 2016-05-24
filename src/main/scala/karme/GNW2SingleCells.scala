@@ -9,7 +9,7 @@ object GNW2SingleCells {
     val inF = new File(inFn)
     val outFn = args(1)
     val outF = new File(outFn)
-    val nbSample = 3
+    val nbSample = 10
     val maxT = 1000.0
     val sts = (0 until nbSample).map(i => i * maxT / (nbSample - 1))
     val exp = readAsSingleCells(inF, sts)
