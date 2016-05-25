@@ -13,7 +13,8 @@ object Main {
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
     var experiment = processedExperiment(proteins, opts, reporter)
     
-    experiment = computePseudotimes(opts, reporter, experiment)
+    // experiment = CellReordering.computePseudotimes(experiment)
+    experiment = computePseudotimesByPropagation(opts, reporter, experiment)
     val pseudotimeFile = writePseudotimes(reporter, experiment)
     RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
@@ -27,7 +28,7 @@ object Main {
     reporter.output("options.txt", opts.valueTreeString)
   }
 
-  def computePseudotimes(opts: Options, reporter: FileReporter, exp: Experiment): Experiment = {
+  def computePseudotimesByPropagation(opts: Options, reporter: FileReporter, exp: Experiment): Experiment = {
     PseudotimePropagation.propagateLabels(
       reporter,
       exp, 
@@ -76,13 +77,13 @@ object Main {
       case None =>
     }
 
-    res = Transformations.arcsinhValues(res, opts.arcsinhFactor)
+    // res = Transformations.arcsinhValues(res, opts.arcsinhFactor)
     // after arcsinh, check for infinite terms
-    res = Transformations.allFinite(res)
+    // res = Transformations.allFinite(res)
 
     res = Transformations.normalizeValues(res)
-    res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
-    res = Transformations.normalizeTime(res)
+    // res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
+    // res = Transformations.normalizeTime(res)
 
     // transformations that filter measurements
     opts.sampleCount match {

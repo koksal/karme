@@ -142,7 +142,7 @@ object RInterface {
     }
     val outF = reporter.outFile(s"$name-neighbors-scatter-plot.pdf")
     val (xs, ys) = pairs.unzip
-    scatterPlot(outF, Transformations.sampleSequence(xs zip ys))
+    scatterPlot(outF, xs zip ys)
   }
 
   def plotEMD(

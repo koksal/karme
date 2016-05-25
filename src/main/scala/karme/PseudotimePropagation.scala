@@ -58,7 +58,7 @@ object PseudotimePropagation {
     for (i <- 1 to nbComp) {
       graph = Util.time { closestNeighbors(ms, nbNeighbors, timeWeight) }
     }
-    // RInterface.plotNeighborGraph(reporter, ms, graph, "euclidean")
+    RInterface.plotNeighborGraph(reporter, ms, graph, "euclidean")
     if (useJaccardSimilarity) {
       graph = jaccardNeighbors(ms, graph, nbNeighbors)
       RInterface.plotNeighborGraph(reporter, ms, graph, "jaccard")
@@ -160,7 +160,8 @@ object PseudotimePropagation {
     alpha: Double
   ): Double = {
     assert(neighborPseudotimes.size > 0)
-    val neighborWs = neighborSamplingTimes.map(t => math.pow(math.E, - math.abs(samplingTime - t)))
+    // val neighborWs = neighborSamplingTimes.map(t => math.pow(math.E, - math.abs(samplingTime - t)))
+    val neighborWs = neighborSamplingTimes.map(t => 1)
     val weightSum = neighborWs.sum
     val weightedNeighborSum = neighborWs.zip(neighborPseudotimes).map{
       case (w, pt) => w * pt

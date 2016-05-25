@@ -38,7 +38,7 @@ object Evaluation {
 
       val proteins = Parsers.readProteins(runOpts.proteinNamesPath)
       var experiment = Main.processedExperiment(proteins, runOpts, runReporter)
-      experiment = Main.computePseudotimes(runOpts, runReporter, experiment)
+      experiment = Main.computePseudotimesByPropagation(runOpts, runReporter, experiment)
       val ptFile = Main.writePseudotimes(runReporter, experiment)
       val rho = Main.evaluate(runReporter, ptFile)
 

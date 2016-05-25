@@ -23,8 +23,6 @@ RUNLABEL="default-args"
   --experiment $EXPFILE \
   --outlabel $RUNLABEL \
   --outfolder $OUTFOLDER \
-  # --sample $SAMPLE \
-  # --seed $SEED \
   --arcsinh 5 \
   --alpha 0.5 \
   --neighbors 5 \
