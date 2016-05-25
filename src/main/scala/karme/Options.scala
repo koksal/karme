@@ -14,9 +14,13 @@ case class Options(
   seed:                   Option[Int] = None,
   maxTime:                Option[Double] = None,
   arcsinhFactor:          Double = 5.0,
-  propagationAlpha:       Double = 0.5,
-  propagationNbNeighbors: Int = 5,
-  propagationNbIter:      Int = 10,
-  propagationTimeWeight:  Double = 1.0,
-  useJaccardSimilarity:   Boolean = false
+  labelPropagationOpts:   LabelPropagationOptions = LabelPropagationOptions()
+)
+
+case class LabelPropagationOptions(
+  alpha:                Double = 0.5,
+  nbNeighbors:          Int = 5,
+  nbIter:               Int = 10,
+  timeWeight:           Double = 1.0,
+  useJaccardSimilarity: Boolean = false
 )

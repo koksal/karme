@@ -64,23 +64,23 @@ object ArgHandling {
       } text("arcsinh transformation scaling factor")
 
       opt[Double]("alpha") action { (v, o) =>
-        o.copy(propagationAlpha = v)
+        o.copy(labelPropagationOpts = o.labelPropagationOpts.copy(alpha = v))
       } text("alpha value for label propagation")
 
       opt[Int]("neighbors") action { (v, o) =>
-        o.copy(propagationNbNeighbors = v)
+        o.copy(labelPropagationOpts = o.labelPropagationOpts.copy(nbNeighbors = v))
       } text("# neighbors for label propagation")
 
       opt[Double]("timeweight") action { (v, o) =>
-        o.copy(propagationTimeWeight = v)
+        o.copy(labelPropagationOpts = o.labelPropagationOpts.copy(timeWeight = v))
       } text("relative weight of time difference in label propagation")
 
       opt[Int]("iterations") action { (v, o) =>
-        o.copy(propagationNbIter = v)
+        o.copy(labelPropagationOpts = o.labelPropagationOpts.copy(nbIter = v))
       } text("# iterations for label propagation")
 
       opt[Unit]("jaccard") action { (_, o) =>
-        o.copy(useJaccardSimilarity = true)
+        o.copy(labelPropagationOpts = o.labelPropagationOpts.copy(useJaccardSimilarity = true))
       } text("use jaccard similarity in label propagation")
 
       help("help") text("print this help message")

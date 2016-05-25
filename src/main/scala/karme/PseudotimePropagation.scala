@@ -6,14 +6,10 @@ object PseudotimePropagation {
   def propagateLabels(
     reporter: FileReporter,
     exp: Experiment, 
-    alpha: Double, 
-    nbNeighbors: Int, 
-    nbIter: Int, 
-    timeWeight: Double,
-    useJaccardSimilarity: Boolean
+    lpOpts: LabelPropagationOptions
   ): Experiment = {
     val ms = exp.measurements
-    val neighGraph = neighborGraph(reporter, ms, nbNeighbors, timeWeight, useJaccardSimilarity)
+    val neighGraph = neighborGraph(reporter, ms, lpOpts.nbNeighbors, lpOpts.timeWeight, lpOpts.useJaccardSimilarity)
 
     var prevPseudotimes = Array.ofDim[Double](ms.size)
     for ((m, i) <- ms.zipWithIndex) {
@@ -31,10 +27,10 @@ object PseudotimePropagation {
         val neighborMsIndices = neighGraph(i)
         val neighborST = neighborMsIndices.map(ms(_).time)
         val neighborPT = neighborMsIndices.map(prevPseudotimes(_))
-        val newPT = update(samplingT, prevPseudotimes(i), neighborST, neighborPT, alpha)
+        val newPT = update(samplingT, prevPseudotimes(i), neighborST, neighborPT, lpOpts.alpha)
         currPseudotimes(i) = newPT
       }
-    } while (iter < nbIter)
+    } while (iter < lpOpts.nbIter)
 
     val scaledPseudotimes = RangeScaling.scalePseudotimes(
       currPseudotimes,

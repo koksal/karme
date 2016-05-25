@@ -32,11 +32,7 @@ object Main {
     PseudotimePropagation.propagateLabels(
       reporter,
       exp, 
-      opts.propagationAlpha, 
-      opts.propagationNbNeighbors, 
-      opts.propagationNbIter, 
-      opts.propagationTimeWeight,
-      opts.useJaccardSimilarity
+      opts.labelPropagationOpts
     )
   }
 
