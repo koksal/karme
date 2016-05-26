@@ -156,8 +156,12 @@ object PseudotimePropagation {
     alpha: Double
   ): Double = {
     assert(neighborPseudotimes.size > 0)
-    // val neighborWs = neighborSamplingTimes.map(t => math.pow(math.E, - math.abs(samplingTime - t)))
-    val neighborWs = neighborSamplingTimes.map(t => 1)
+    val useUniformWeights = true
+    val neighborWs = if (useUniformWeights) {
+      neighborSamplingTimes.map(t => 1.0)
+    } else {
+      neighborSamplingTimes.map(t => math.pow(math.E, - math.abs(samplingTime - t)))
+    }
     val weightSum = neighborWs.sum
     val weightedNeighborSum = neighborWs.zip(neighborPseudotimes).map{
       case (w, pt) => w * pt
