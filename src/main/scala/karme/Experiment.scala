@@ -1,6 +1,8 @@
 package karme
 
 case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[CellMeasurement]) {
+  lazy val samplingTimes: Seq[Double] = measurements.map(_.time).distinct.sorted
+
   def toTuples(): Seq[Map[String, String]] = {
     val maps = measurements map { m =>
       val ms = measuredProteins.zipWithIndex map { 

@@ -13,8 +13,11 @@ object Main {
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
     var experiment = processedExperiment(proteins, opts, reporter)
     
+    // Visualization.plotAdjacentTimePoints(experiment, reporter)
+
     experiment = CellReordering.computePseudotimes(experiment)
     // experiment = computePseudotimesByPropagation(opts, reporter, experiment)
+
     val pseudotimeFile = writePseudotimes(reporter, experiment)
     RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 

@@ -28,5 +28,4 @@ RUNLABEL="default-args"
   --neighbors 5 \
   --timeweight 0 \
   --iterations 100 \
-  --sample $SAMPLE \
   | tee -a log/${LOGLABEL}.log

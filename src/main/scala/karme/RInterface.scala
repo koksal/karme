@@ -176,6 +176,20 @@ object RInterface {
     val rows = points.map {
       case (x, y) => Map("x" -> x.toString, "y" -> y.toString)
     }
+    scatterPlotRows(f, rows)
+  }
+
+  def groupedScatterPlot[A, B, C](
+    f: File,
+    points: Seq[(A, B, C)]
+  ): Unit = {
+    val rows = points map {
+      case (x, y, g) => Map("x" -> x.toString, "y" -> y.toString, "group" -> g.toString)
+    }
+    scatterPlotRows(f, rows)
+  }
+
+  private def scatterPlotRows(f: File, rows: Seq[Map[String, String]]): Unit = {
     val dataF = tempFile()
     FileReporter.outputTuples(dataF, rows)
 
