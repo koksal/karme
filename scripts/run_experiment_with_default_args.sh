@@ -14,7 +14,7 @@ if [ "$3" != "" ]; then
 fi
 
 
-SAMPLE=50000
+SAMPLE=20000
 SEED=0
 RUNLABEL="default-args"
 
@@ -28,4 +28,5 @@ RUNLABEL="default-args"
   --neighbors 5 \
   --timeweight 0 \
   --iterations 100 \
+  --sample $SAMPLE \
   | tee -a log/${LOGLABEL}.log
