@@ -15,8 +15,8 @@ object Main {
     
     // Visualization.plotAdjacentTimePoints(experiment, reporter)
 
-    experiment = CellReordering.computePseudotimes(experiment)
-    // experiment = computePseudotimesByPropagation(opts, reporter, experiment)
+    // experiment = CellReordering.computePseudotimes(experiment)
+    experiment = computePseudotimesByPropagation(opts, reporter, experiment)
 
     val pseudotimeFile = writePseudotimes(reporter, experiment)
     RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)

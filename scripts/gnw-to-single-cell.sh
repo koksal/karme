@@ -1,11 +1,10 @@
 #!/bin/bash
 
-GNWFILE=$1
-OUTFILE=$GNWFILE-sc.csv
-TMP=$(mktemp)
+INPUTPREFIX=$1
+OUTFILE=single-cell.csv
 
-grep -v -e "^$" $1 > $TMP
+INITHEAP="50G"
+MAXHEAP="50G"
+STACK="1G"
 
-sbt "run-main karme.GNW2SingleCells $TMP $OUTFILE"
-
-rm $TMP
+sbt -J-Xmx${INITHEAP} -J-Xms${MAXHEAP} -J-Xss${STACK} "run-main karme.GNW2SingleCells $INPUTPREFIX $OUTFILE"
