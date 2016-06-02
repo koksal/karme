@@ -42,7 +42,8 @@ case class Experiment(
 
 case class DiscreteExperiment(
   measuredProteins: Seq[String], 
-  measurements: IndexedSeq[DiscreteCellMeasurement]
+  measurements: IndexedSeq[DiscreteCellMeasurement],
+  discretizationLevels: IndexedSeq[Int]
 ) extends AbsExperiment[Int]
 
 trait AbsCellMeasurement[T] {
