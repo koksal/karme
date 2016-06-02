@@ -26,8 +26,8 @@ object Main {
 
     // Inference from average values
     val avgExp = Transformations.averageBySamplingTime(experiment)
-    writeExp(reporter, avgExp, "average-experiment.csv")
     val avgDiscrExp = discretization.Discretization.discretizeExperiment(avgExp)
+    writeExp(reporter, avgExp, "average-experiment.csv")
     writeExp(reporter, avgDiscrExp, "discrete-average-experiment.csv")
 
     // Inference by sampling time
