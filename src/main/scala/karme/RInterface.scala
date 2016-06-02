@@ -94,12 +94,7 @@ object RInterface {
       rOutputFile.getAbsolutePath()
     )
     runRProgram(prog, args)
-    val result = Parsers.readSpearman(rOutputFile)
-    result
-  }
-
-  private def writeVector(xs: Seq[Double], f: File): Unit = {
-    Util.writeToFile(f, xs.mkString("\n"))
+    Parsers.readDouble(rOutputFile)
   }
 
   def emd(
@@ -112,8 +107,8 @@ object RInterface {
     val imfF = tempFile()
     val residueF = tempFile()
 
-    writeVector(xs, inValueF)
-    writeVector(ts, inTimeF)
+    FileReporter.writeVector(xs, inValueF)
+    FileReporter.writeVector(ts, inTimeF)
 
     val args = List(
       inValueF.getAbsolutePath(),
@@ -206,7 +201,7 @@ object RInterface {
     val inVectorF = tempFile()
     val outVectorF = tempFile()
 
-    writeVector(xs, inVectorF)
+    FileReporter.writeVector(xs, inVectorF)
     val args = List(
       inVectorF.getAbsolutePath(),
       outVectorF.getAbsolutePath()
@@ -216,5 +211,21 @@ object RInterface {
     val discreteValues = karme.Parsers.readIntVector(outVectorF)
     val nbLevels = discreteValues.max - discreteValues.min + 1
     DiscretizationResult(nbLevels, discreteValues)
+  }
+
+  import karme.inference.ContingencyTable
+  def funChisq(ct: ContingencyTable): Double = {
+    val prog = "./scripts/R/funChisq.R"
+    val inF = tempFile()
+    val outF = tempFile()
+
+    FileReporter.writeMatrix(inF, ct.table)
+    val args = List(
+      inF.getAbsolutePath(),
+      outF.getAbsolutePath()
+    )
+
+    runRProgram(prog, args)
+    Parsers.readDouble(outF)
   }
 } 

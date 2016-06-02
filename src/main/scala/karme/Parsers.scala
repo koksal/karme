@@ -30,7 +30,7 @@ object Parsers {
     Experiment(prots, cellMeasurements.toIndexedSeq)
   }
 
-  def readSpearman(f: File): Double = {
+  def readDouble(f: File): Double = {
     lines(f).head.toDouble
   }
 

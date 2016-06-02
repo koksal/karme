@@ -30,6 +30,7 @@ object Main {
     writeExp(reporter, avgExp, "average-experiment.csv")
     writeExp(reporter, avgDiscrExp, "discrete-average-experiment.csv")
 
+    println(inference.FunChisq.scores(avgDiscrExp).toList.sortBy(_._2).mkString("\n"))
     // Inference by sampling time
 
     // Inference by reordered values

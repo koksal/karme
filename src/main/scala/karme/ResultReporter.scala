@@ -24,6 +24,19 @@ class FileReporter(
     Util.writeToFile(f, content)
     println(s"Wrote file: ${f.getAbsolutePath}")
   }
+}
+
+object FileReporter {
+  def outputTuples(
+    f: File,
+    ts: Seq[Map[String, String]]
+  ): Unit = {
+    val cols = ts.head.keySet.toList
+    val rows = for (t <- ts) yield {
+      cols map (col => t(col))
+    }
+    writeMatrix(f, cols +: rows)
+  }
 
   def writeTable[A,B,C](
     f: File,
@@ -38,24 +51,17 @@ class FileReporter(
     val remainingRows = rowHeaders.zip(values).map{ case (rh, rvs) =>
       rh +: rvs
     }
+    writeMatrix(f, firstRow +: remainingRows)
+  }
+
+  def writeMatrix[T](f: File, m: Seq[Seq[T]]): Unit = {
     val writer = com.github.tototoshi.csv.CSVWriter.open(f)
-    writer.writeAll(firstRow +: remainingRows)
+    writer.writeAll(m)
     writer.close()
   }
-}
 
-object FileReporter {
-  def outputTuples(
-    f: File,
-    ts: Seq[Map[String, String]]
-  ): Unit = {
-    val cols = ts.head.keySet.toList
-    val rows = for (t <- ts) yield {
-      cols map (col => t(col))
-    }
-    val writer = com.github.tototoshi.csv.CSVWriter.open(f)
-    writer.writeAll(cols +: rows)
-    writer.close()
+  def writeVector(xs: Seq[Double], f: File): Unit = {
+    Util.writeToFile(f, xs.mkString("\n"))
   }
 }
 

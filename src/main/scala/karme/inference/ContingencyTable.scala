@@ -1,4 +1,6 @@
-package karme
+package karme.inference
+
+import karme.DiscreteExperiment
 
 case class ContingencyTable(x: String, y: String, table: Seq[Seq[Int]])
 object ContingencyTable {
