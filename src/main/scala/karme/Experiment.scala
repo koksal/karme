@@ -1,6 +1,8 @@
 package karme
 
-case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[CellMeasurement]) {
+trait AbsExperiment[T] {
+  val measuredProteins: Seq[String]
+  val measurements: IndexedSeq[AbsCellMeasurement[T]]
   lazy val samplingTimes: Seq[Double] = measurements.map(_.time).distinct.sorted
 
   def toTuples(): Seq[Map[String, String]] = {
@@ -33,9 +35,33 @@ case class Experiment(measuredProteins: Seq[String], measurements: IndexedSeq[Ce
   }
 }
 
+case class Experiment(
+  measuredProteins: Seq[String], 
+  measurements: IndexedSeq[CellMeasurement]
+) extends AbsExperiment[Double]
+
+case class DiscreteExperiment(
+  measuredProteins: Seq[String], 
+  measurements: IndexedSeq[DiscreteCellMeasurement]
+) extends AbsExperiment[Int]
+
+trait AbsCellMeasurement[T] {
+  val time: Double
+  val actualTime: Double
+  val pseudotime: Double
+  val values: IndexedSeq[T]
+}
+
 case class CellMeasurement(
   time: Double, 
   actualTime: Double, 
   pseudotime: Double, 
   values: IndexedSeq[Double]
-)
+) extends AbsCellMeasurement[Double]
+
+case class DiscreteCellMeasurement(
+  time: Double, 
+  actualTime: Double, 
+  pseudotime: Double, 
+  values: IndexedSeq[Int]
+) extends AbsCellMeasurement[Int]
