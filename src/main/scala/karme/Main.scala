@@ -13,16 +13,29 @@ object Main {
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
     var experiment = processedExperiment(proteins, opts, reporter)
     
-    // Visualization.plotAdjacentTimePoints(experiment, reporter)
+    // Discretization
+    val discrExp = discretization.Discretization.discretizeExperiment(experiment)
+    writeExp(reporter, discrExp, "discrete-experiment.csv")
 
-    // experiment = CellReordering.computePseudotimes(experiment)
-    experiment = computePseudotimesByPropagation(opts, reporter, experiment)
+    // Reordering
+    // experiment = PseudotimePropagation.propagateLabels(
+    //   reporter, experiment, opts.labelPropagationOpts
+    // )
+    // val pseudotimeFile = writeExp(reporter, experiment, "pseudotimes.csv")
+    // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
-    val pseudotimeFile = writePseudotimes(reporter, experiment)
-    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+    // Inference from average values
+    val avgExp = Transformations.averageBySamplingTime(experiment)
+    writeExp(reporter, avgExp, "average-experiment.csv")
+    val avgDiscrExp = discretization.Discretization.discretizeExperiment(avgExp)
+    writeExp(reporter, avgDiscrExp, "discrete-average-experiment.csv")
+
+    // Inference by sampling time
+
+    // Inference by reordered values
 
     if (opts.evaluate) {
-      evaluate(reporter, pseudotimeFile)
+      // evaluate(reporter, pseudotimeFile)
     }
   }
 
@@ -39,12 +52,10 @@ object Main {
     )
   }
 
-  def writePseudotimes(reporter: FileReporter, exp: Experiment): File = {
-    val pseudotimeFilename = "pseudotimes.csv"
-    val pseudotimeFile = reporter.outFile(pseudotimeFilename)
-
-    FileReporter.outputTuples(pseudotimeFile, exp.toTuples())
-    pseudotimeFile
+  def writeExp(reporter: FileReporter, exp: AbsExperiment[_], fn: String): File = {
+    val f = reporter.outFile(fn)
+    FileReporter.outputTuples(f, exp.toTuples())
+    f
   }
 
   def evaluate(reporter: FileReporter, pseudotimeFile: File): Double = {

@@ -21,19 +21,9 @@ object CellReordering {
   private def computeMeanCells(exp: Experiment): Map[Double, IndexedSeq[Double]] = {
     val cellsBySamplingTime = exp.measurements.groupBy(_.time)
     val means = cellsBySamplingTime.map{ case (t, ms) =>
-      t -> meanValues(ms)
+      t -> Transformations.meanValues(ms)
     }
     means
-  }
-
-  private def meanValues(ms: Seq[CellMeasurement]): IndexedSeq[Double] = {
-    assert(!ms.isEmpty)
-    val n = ms.head.values.size
-    val meanValues = (0 until n) map { i =>
-      val ivs = ms.map(_.values(i))
-      Util.mean(ivs)
-    }
-    meanValues
   }
 
   private def computeCellPseudotime(

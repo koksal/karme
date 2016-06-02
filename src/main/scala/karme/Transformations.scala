@@ -205,6 +205,25 @@ object Transformations {
     exp.copy(measurements = smoothedMs)
   }
 
+  def meanValues(ms: Seq[CellMeasurement]): IndexedSeq[Double] = {
+    assert(!ms.isEmpty)
+    val allValues = ms.map(_.values)
+    val valuesPerProt = allValues.transpose
+    val meanProtValues = valuesPerProt map Util.mean
+    meanProtValues.toIndexedSeq
+  }
+
+  def averageBySamplingTime(exp: Experiment): Experiment = {
+    val cellsBySamplingTime = exp.measurements.groupBy(_.time)
+    val meanMeasurements = cellsBySamplingTime.map{ case (t, ms) =>
+      val meanValues = Transformations.meanValues(ms)
+      val meanActualTime = Util.mean(ms.map(_.actualTime))
+      val meanPseudotime = Util.mean(ms.map(_.pseudotime))
+      CellMeasurement(t, meanActualTime, meanPseudotime, meanValues)
+    }
+    exp.copy(measurements = meanMeasurements.toIndexedSeq)
+  }
+
   def sampleSequence[T](xs: Seq[T]): Seq[T] = {
     val sampleSize = 1000
     val intervalSize = xs.size / sampleSize
