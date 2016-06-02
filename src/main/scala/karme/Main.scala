@@ -30,8 +30,16 @@ object Main {
     writeExp(reporter, avgExp, "average-experiment.csv")
     writeExp(reporter, avgDiscrExp, "discrete-average-experiment.csv")
 
-    println(inference.FunChisq.scores(avgDiscrExp).toList.sortBy(_._2).mkString("\n"))
+    println(inference.FunChisq.scores(avgDiscrExp).toList.sortBy(_._2.statistic).reverse.mkString("\n"))
+
     // Inference by sampling time
+    discrExp.measurements.groupBy(_.time).toList.sortBy(_._1) map { case (t, ms) =>
+      println("Inference at sampling time " + t)
+      val tExp = discrExp.copy(measurements = ms)
+      val scores = inference.FunChisq.scores(tExp)
+      val scoresStr = scores.toList.sortBy(_._2.statistic).reverse.mkString("\n")
+      println(scoresStr)
+    }
 
     // Inference by reordered values
 

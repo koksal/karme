@@ -8,7 +8,6 @@ object RInterface {
 
     val argString = args.mkString(" ")
     val cmd = s"Rscript $progPath $argString"
-    println("Invoking R: " + cmd)
     cmd.!!
   }
 
@@ -213,19 +212,29 @@ object RInterface {
     DiscretizationResult(nbLevels, discreteValues)
   }
 
-  import karme.inference.ContingencyTable
-  def funChisq(ct: ContingencyTable): Double = {
+  import inference.ContingencyTable
+  import inference.FunChisqResult
+
+  def funChisq(ct: ContingencyTable): FunChisqResult = {
     val prog = "./scripts/R/funChisq.R"
-    val inF = tempFile()
-    val outF = tempFile()
+    val inF         = tempFile()
+    val statisticF  = tempFile()
+    val pValueF     = tempFile()
+    val estimateF   = tempFile()
 
     FileReporter.writeMatrix(inF, ct.table)
     val args = List(
       inF.getAbsolutePath(),
-      outF.getAbsolutePath()
+      statisticF.getAbsolutePath(),
+      pValueF.getAbsolutePath(),
+      estimateF.getAbsolutePath()
     )
 
     runRProgram(prog, args)
-    Parsers.readDouble(outF)
+    FunChisqResult(
+      Parsers.readDouble(statisticF),
+      Parsers.readDouble(pValueF),
+      Parsers.readDouble(estimateF)
+    )
   }
 } 
