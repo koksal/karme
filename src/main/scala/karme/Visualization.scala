@@ -1,10 +1,8 @@
 package karme
 
 object Visualization {
+  /** Scatter plot of adjacent time point for pairs of proteins. */
   def plotAdjacentTimePoints(exp: Experiment, reporter: FileReporter): Unit = {
-    // for all adjacent pairs of time points
-    //   plot protein pair values
-
     val sts = exp.samplingTimes
     val stsPairs = sts.zip(sts.tail)
     val cellsBySamplingTime = exp.measurements.groupBy(_.time)
@@ -16,7 +14,11 @@ object Visualization {
       val t1Cells = cellsBySamplingTime(t1)
       val t2Cells = cellsBySamplingTime(t2)
 
-      for (((p1, i1), (p2, i2)) <- protPairs) {
+      for {
+        (p1, i1) <- protsWithIndex
+        (p2, i2) <- protsWithIndex
+        if i2 > i1
+      } {
         val t1Rows = t1Cells map {c => 
           val x = c.values(i1)
           val y = c.values(i2)
