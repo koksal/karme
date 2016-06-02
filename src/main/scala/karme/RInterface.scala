@@ -112,7 +112,6 @@ object RInterface {
     val imfF = tempFile()
     val residueF = tempFile()
 
-    // TODO write input files
     writeVector(xs, inValueF)
     writeVector(ts, inTimeF)
 
@@ -200,4 +199,22 @@ object RInterface {
     )
     runRProgram(prog, args)
   }
-}
+
+  import karme.discretization.DiscretizationResult
+  def ckmeans(xs: Seq[Double]): DiscretizationResult = {
+    val prog = ".scripts/R/ckmeans.R"
+    val inVectorF = tempFile()
+    val outVectorF = tempFile()
+
+    writeVector(xs, inVectorF)
+    val args = List(
+      inVectorF.getAbsolutePath(),
+      outVectorF.getAbsolutePath()
+    )
+
+    runRProgram(prog, args)
+    val discreteValues = karme.Parsers.readIntVector(outVectorF)
+    val nbLevels = discreteValues.max - discreteValues.min + 1
+    DiscretizationResult(nbLevels, discreteValues)
+  }
+} 

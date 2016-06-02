@@ -5,7 +5,7 @@ import com.github.tototoshi.csv._
 
 object Parsers {
   def readProteins(f: File): Seq[String] = {
-    scala.io.Source.fromFile(f).getLines.toSeq
+    lines(f)
   }
 
   def readGNWTimeSeries(f: File): List[Map[String, String]] = {
@@ -31,7 +31,7 @@ object Parsers {
   }
 
   def readSpearman(f: File): Double = {
-    scala.io.Source.fromFile(f).getLines.toSeq.head.toDouble
+    lines(f).head.toDouble
   }
 
   def lines(f: File): Seq[String] = {
@@ -46,5 +46,9 @@ object Parsers {
     val residue = residueLines.map(_.toDouble)
 
     (imfs, residue)
+  }
+
+  def readIntVector(f: File): Seq[Int] = {
+    lines(f).map(_.toInt)
   }
 }

@@ -76,12 +76,12 @@ object Main {
       case None =>
     }
 
-    res = Transformations.arcsinhValues(res, opts.arcsinhFactor)
+    // res = Transformations.arcsinhValues(res, opts.arcsinhFactor)
     // after arcsinh, check for infinite terms
     res = Transformations.allFinite(res)
 
     res = Transformations.normalizeValues(res)
-    res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
+    // res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
     res = Transformations.normalizeTime(res)
 
     // transformations that filter measurements
