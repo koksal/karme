@@ -31,7 +31,16 @@ object Parsers {
   }
 
   def readDouble(f: File): Double = {
-    lines(f).head.toDouble
+    val v = lines(f).head
+    try {
+      v.toDouble
+    } catch {
+      case e: java.lang.NumberFormatException => v match {
+        case "-Inf" => Double.NegativeInfinity
+        case "Inf" => Double.PositiveInfinity
+        case _ => Double.NaN
+      }
+    }
   }
 
   def lines(f: File): Seq[String] = {
