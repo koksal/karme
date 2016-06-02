@@ -7,8 +7,6 @@ import karme.DiscreteCellMeasurement
 case class DiscretizationResult(nbLevels: Int, values: Seq[Int])
 
 object Discretization {
-  // send each protein to ckmeans
-  // read back number of clusters and discretized data
   def discretizeExperiment(e: Experiment): DiscreteExperiment = {
   
     val allValues = e.measurements.map(_.values)

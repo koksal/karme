@@ -202,7 +202,7 @@ object RInterface {
 
   import karme.discretization.DiscretizationResult
   def ckmeans(xs: Seq[Double]): DiscretizationResult = {
-    val prog = ".scripts/R/ckmeans.R"
+    val prog = "./scripts/R/ckmeans.R"
     val inVectorF = tempFile()
     val outVectorF = tempFile()
 
