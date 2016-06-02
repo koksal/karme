@@ -29,7 +29,7 @@ class FileReporter(
 object FileReporter {
   def outputTuples(
     f: File,
-    ts: Seq[Map[String, String]]
+    ts: Seq[scala.collection.Map[String, _]]
   ): Unit = {
     val cols = ts.head.keySet.toList
     val rows = for (t <- ts) yield {

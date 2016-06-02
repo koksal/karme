@@ -13,38 +13,77 @@ object Main {
     val proteins = Parsers.readProteins(opts.proteinNamesPath)
     var experiment = processedExperiment(proteins, opts, reporter)
     
+    // Reordering
+    experiment = PseudotimePropagation.propagateLabels(
+      reporter, experiment, opts.labelPropagationOpts
+    )
+    val pseudotimeFile = writeExp(reporter, experiment, "pseudotimes.csv")
+    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+
     // Discretization
     val discrExp = discretization.Discretization.discretizeExperiment(experiment)
     writeExp(reporter, discrExp, "discrete-experiment.csv")
 
-    // Reordering
-    // experiment = PseudotimePropagation.propagateLabels(
-    //   reporter, experiment, opts.labelPropagationOpts
-    // )
-    // val pseudotimeFile = writeExp(reporter, experiment, "pseudotimes.csv")
-    // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+    // Inference
+    runInferenceOnAverages(experiment, reporter)
+    runInferenceBySamplingTime(discrExp, reporter)
+    runInferenceByReordering(discrExp, reporter)
 
-    // Inference from average values
-    val avgExp = Transformations.averageBySamplingTime(experiment)
+    if (opts.evaluate) {
+      // evaluate(reporter, pseudotimeFile)
+    }
+  }
+
+  def runInferenceOnAverages(exp: Experiment, reporter: FileReporter) = {
+    val avgExp = Transformations.averageBySamplingTime(exp)
     val avgDiscrExp = discretization.Discretization.discretizeExperiment(avgExp)
     writeExp(reporter, avgExp, "average-experiment.csv")
     writeExp(reporter, avgDiscrExp, "discrete-average-experiment.csv")
 
-    println(inference.FunChisq.scores(avgDiscrExp).toList.sortBy(_._2.statistic).reverse.mkString("\n"))
+    val avgScore = inference.FunChisq.scores(avgDiscrExp)
+    writeFunChisqResults(reporter.outFile("average-scores.csv"), avgScore)
+  }
 
-    // Inference by sampling time
-    discrExp.measurements.groupBy(_.time).toList.sortBy(_._1) map { case (t, ms) =>
-      println("Inference at sampling time " + t)
-      val tExp = discrExp.copy(measurements = ms)
-      val scores = inference.FunChisq.scores(tExp)
-      val scoresStr = scores.toList.sortBy(_._2.statistic).reverse.mkString("\n")
-      println(scoresStr)
+  def runInferenceBySamplingTime(exp: DiscreteExperiment, reporter: FileReporter) = {
+    for (t <- exp.samplingTimes) {
+      val msAtT = exp.measurements.filter(_.time == t)
+      val expAtT = exp.copy(measurements = msAtT)
+      val score = inference.FunChisq.scores(expAtT)
+      writeFunChisqResults(reporter.outFile(s"sampling-time-$t-scores.csv"), score)
     }
+  }
 
-    // Inference by reordered values
+  def runInferenceByReordering(exp: DiscreteExperiment, reporter: FileReporter) = {
+    val nbWindows = 50
+    val orderedMs = exp.measurements.sortBy(_.pseudotime)
+    val windowSize = orderedMs.size / nbWindows
+    val windows = orderedMs.grouped(windowSize)
 
-    if (opts.evaluate) {
-      // evaluate(reporter, pseudotimeFile)
+    for ((window, i) <- windows.zipWithIndex) {
+      val windowExp = exp.copy(measurements = window)
+      val score = inference.FunChisq.scores(windowExp)
+      writeFunChisqResults(reporter.outFile(s"window-$i-scores.csv"), score)
+    }
+  }
+
+  import inference.FunChisqResult
+  def writeFunChisqResults(f: File, res: Map[(String, String), FunChisqResult]) = {
+    val pValueThreshold = 0.05
+    val significantRes = res.filter(_._2.pValue <= pValueThreshold)
+
+    if (!significantRes.isEmpty) {
+      val ordered = significantRes.toSeq.sortBy(_._2.statistic).reverse
+      val tuples = ordered.map{
+        case ((x, y), fcr) =>
+          scala.collection.mutable.LinkedHashMap(
+            "x" -> x,
+            "y" -> y,
+            "statistic" -> fcr.statistic,
+            "p-value" -> fcr.pValue,
+            "estimate" -> fcr.estimate
+          )
+      }
+      FileReporter.outputTuples(f, tuples)
     }
   }
 

@@ -17,6 +17,8 @@ object Discretization {
     val discrValues = discrProtVectors.transpose
 
     assert(e.measurements.size == discrValues.size)
+    assert(discrLevels.forall(_ > 1))
+
     val discrMeasurements = e.measurements.zip(discrValues).map { case (cm, discrVs) =>
       DiscreteCellMeasurement(cm.time, cm.actualTime, cm.pseudotime, discrVs)
     }
