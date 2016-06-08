@@ -16,10 +16,9 @@ object GNW2SingleCells {
     val outFn = args(1)
     val outF = new File(outFn)
 
-    val nbSample = 11
-    val maxT = 1000.0
-    val sts = (0 until nbSample).map(i => i * maxT / (nbSample - 1))
-    val exp = readAsSingleCells(inFs, sts)
+    // replace time 0 with 1 due to GNW peculiarities
+    val sampleTimes = 1.0 :: ((1 until 10).toList.map(i => i * 100.0))
+    val exp = readAsSingleCells(inFs, sampleTimes)
 
     FileReporter.outputTuples(outF, exp.toTuples())
   }

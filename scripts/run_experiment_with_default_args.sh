@@ -14,7 +14,7 @@ if [ "$3" != "" ]; then
 fi
 
 SAMPLE=20000
-NBSEEDS=5
+NBSEEDS=1
 
 function run_with_seed() {
   SEED=$1
@@ -25,7 +25,6 @@ function run_with_seed() {
     --experiment $EXPFILE \
     --outlabel $RUNLABEL \
     --outfolder $OUTFOLDER \
-    --arcsinh 5 \
     --alpha 0.5 \
     --neighbors 5 \
     --timeweight 0 \
