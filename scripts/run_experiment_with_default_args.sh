@@ -13,19 +13,28 @@ if [ "$3" != "" ]; then
   LOGLABEL=${LOGLABEL}-${LABEL}
 fi
 
-
 SAMPLE=20000
-SEED=0
-RUNLABEL="default-args"
+NBSEEDS=5
 
-./scripts/run_jvm_opts.sh \
-  --proteins $PROTFILE \
-  --experiment $EXPFILE \
-  --outlabel $RUNLABEL \
-  --outfolder $OUTFOLDER \
-  --arcsinh 5 \
-  --alpha 0.5 \
-  --neighbors 5 \
-  --timeweight 0 \
-  --iterations 100 \
-  | tee -a log/${LOGLABEL}.log
+function run_with_seed() {
+  SEED=$1
+  RUNLABEL="seed-${SEED}"
+
+  ./scripts/run_jvm_opts.sh \
+    --proteins $PROTFILE \
+    --experiment $EXPFILE \
+    --outlabel $RUNLABEL \
+    --outfolder $OUTFOLDER \
+    --arcsinh 5 \
+    --alpha 0.5 \
+    --neighbors 5 \
+    --timeweight 0 \
+    --iterations 100 \
+    --seed $SEED \
+    | tee -a log/${LOGLABEL}.log
+}
+
+for seed in `seq 1 $NBSEEDS`
+do
+  run_with_seed $seed
+done

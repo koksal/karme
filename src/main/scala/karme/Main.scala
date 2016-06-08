@@ -135,15 +135,19 @@ object Main {
       case None =>
     }
 
-    // res = Transformations.arcsinhValues(res, opts.arcsinhFactor)
-    // after arcsinh, check for infinite terms
-    res = Transformations.allFinite(res)
+    opts.arcsinhFactor match {
+      case Some(factor) => {
+        res = Transformations.arcsinhValues(res, factor)
+        // after arcsinh, check for infinite terms
+        res = Transformations.allFinite(res)
+        res = Transformations.arcsinhTime(res, factor)
+      }
+      case None =>
+    }
 
     res = Transformations.normalizeValues(res)
-    // res = Transformations.arcsinhTime(res, opts.arcsinhFactor)
     res = Transformations.normalizeTime(res)
 
-    // transformations that filter measurements
     opts.sampleCount match {
       case Some(count) => res = Transformations.sampleValueRange(res, opts.seed, count, 100)
       case None =>

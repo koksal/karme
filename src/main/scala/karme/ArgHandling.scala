@@ -60,8 +60,8 @@ object ArgHandling {
       } text("maximum time value to filter data")
 
       opt[Double]("arcsinh") action { (v, o) =>
-        o.copy(arcsinhFactor = v)
-      } text("arcsinh transformation scaling factor")
+        o.copy(arcsinhFactor = Some(v))
+      } text("arcsinh transformation with given scaling factor")
 
       opt[Double]("alpha") action { (v, o) =>
         o.copy(labelPropagationOpts = o.labelPropagationOpts.copy(alpha = v))

@@ -13,7 +13,7 @@ case class Options(
   sampleCount:            Option[Int] = None,
   seed:                   Option[Int] = None,
   maxTime:                Option[Double] = None,
-  arcsinhFactor:          Double = 5.0,
+  arcsinhFactor:          Option[Double] = None,
   labelPropagationOpts:   LabelPropagationOptions = LabelPropagationOptions()
 )
 
