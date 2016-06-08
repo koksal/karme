@@ -8,7 +8,7 @@ outputFile  = args[[2]]
 
 xs = sapply(readLines(inputFile), function (l) as.double(l))
 
-clusterLimits = c(1, 9)
+clusterLimits = c(2, 9)
 result = Ckmeans.1d.dp(xs, clusterLimits)
 
 write.table(
