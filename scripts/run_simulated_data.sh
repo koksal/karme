@@ -1,7 +1,7 @@
 #!/bin/bash
 
-LABEL="simulated-data
-"
+LABEL="simulated-data"
+
 if [ "$1" != "" ]; then
   LABEL=$1
 fi
