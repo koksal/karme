@@ -12,6 +12,12 @@ object FunChisq {
     val contTables = ContingencyTable.fromExp(exp)
 
     val ss = for (ct <- contTables) yield {
+      // temporarily write out contingency tables
+      val x = ct.x
+      val y = ct.y
+      val f = new java.io.File(s"$x-$y-contingency.csv")
+      karme.FileReporter.writeMatrix(f, ct.table)
+
       val res = RInterface.funChisq(ct)
       (ct.x, ct.y) -> res
     }
