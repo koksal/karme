@@ -3,12 +3,20 @@ package karme.inference
 import karme._
 
 object InferenceByReordering {
-  def infer(exp: DiscreteExperiment, reporter: FileReporter): Seq[Seq[FunChisqResult]] = {
-    val groupSize = 500
+  def infer(exp: DiscreteExperiment, reporter: FileReporter): Unit = {
     val orderedMs = exp.measurements.sortBy(_.pseudotime)
     val orderedExp = exp.copy(measurements = orderedMs)
-    val scoresByGroup = LaggedGroupedInference.infer(orderedExp, lag = 0, groupSize = Some(groupSize))
-    FunChisq.writeFunChisqResults(reporter.outFile("inference-by-reordering-scores.csv"), scoresByGroup)
-    scoresByGroup
+
+    val groupSizeRange = List(100, 200, 400, 800)
+    val lagRange = List(-500, -250, -100, 0, 100, 250, 500)
+
+    for {
+      groupSize <- groupSizeRange
+      lag <- lagRange
+    } {
+      val scoresByGroup = LaggedGroupedInference.infer(orderedExp, lag, groupSize = Some(groupSize))
+      val fn = s"inference-by-reordering-groupsize-${groupSize}-lag-${lag}.csv"
+      FunChisq.writeFunChisqResults(reporter.outFile(fn), scoresByGroup)
+    }
   }
 }
