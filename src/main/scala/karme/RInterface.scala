@@ -212,17 +212,17 @@ object RInterface {
     DiscretizationResult(nbLevels, discreteValues)
   }
 
-  import inference.ContingencyTable
-  import inference.FunChisqResult
+  import inference.ContingencyTable.ContingencyTable
+  import inference.FunChisqScore
 
-  def funChisq(ct: ContingencyTable): FunChisqResult = {
+  def funChisq(ct: ContingencyTable): FunChisqScore = {
     val prog = "./scripts/R/funChisq.R"
     val inF         = tempFile()
     val statisticF  = tempFile()
     val pValueF     = tempFile()
     val estimateF   = tempFile()
 
-    FileReporter.writeMatrix(inF, ct.table)
+    FileReporter.writeMatrix(inF, ct)
     val args = List(
       inF.getAbsolutePath(),
       statisticF.getAbsolutePath(),
@@ -231,7 +231,7 @@ object RInterface {
     )
 
     runRProgram(prog, args)
-    FunChisqResult(
+    FunChisqScore(
       Parsers.readDouble(statisticF),
       Parsers.readDouble(pValueF),
       Parsers.readDouble(estimateF)

@@ -15,6 +15,12 @@ object Util {
     finally{ out.close }
   }
 
+  def writeExp(reporter: FileReporter, exp: AbsExperiment[_], fn: String): File = {
+    val f = reporter.outFile(fn)
+    FileReporter.outputTuples(f, exp.toTuples())
+    f
+  }
+
   def mean(vs: Iterable[Double]): Double = vs.sum / vs.size
 
   def roundTo(n: Double, digits: Int): Double = {
