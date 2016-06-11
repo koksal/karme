@@ -38,7 +38,7 @@ object GNW2SingleCells {
       val actualT = samplingT
       val pseudoT = -1.0
       // TODO pick a time delay shift (optimally, following a normal dist.)
-      val cellAtSamplingTime = tuples.find(t => math.abs(t("Time").toDouble - samplingT) <= 1).getOrElse {
+      val cellAtSamplingTime = tuples.find(t => t("Time").toDouble == samplingT).getOrElse {
         throw new Exception("Tried to get cell at time " + samplingT)
       }
       val values = names.map(n => cellAtSamplingTime(n).toDouble).toIndexedSeq

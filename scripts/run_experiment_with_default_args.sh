@@ -27,7 +27,7 @@ function run_with_seed() {
     --outfolder $OUTFOLDER \
     --alpha 0.5 \
     --neighbors 5 \
-    --timeweight 0 \
+    --timeweight 0.2 \
     --iterations 100 \
     --seed $SEED \
     | tee -a log/${LOGLABEL}.log

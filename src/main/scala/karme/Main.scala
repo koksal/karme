@@ -18,7 +18,7 @@ object Main {
       reporter, experiment, opts.labelPropagationOpts
     )
     val pseudotimeFile = Util.writeExp(reporter, experiment, "pseudotimes.csv")
-    // RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
+    RInterface.plotPseudotimes(reporter, pseudotimeFile, opts.proteinNamesPath)
 
     // Discretization
     val discrExp = discretization.Discretization.discretizeExperiment(experiment)

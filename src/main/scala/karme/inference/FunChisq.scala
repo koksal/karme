@@ -61,6 +61,8 @@ object FunChisq {
         tuple
       }
       FileReporter.outputTuples(f, tuples)
+    } else {
+      Util.writeToFile(f, "No significant results.")
     }
   }
 }

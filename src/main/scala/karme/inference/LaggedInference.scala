@@ -22,8 +22,8 @@ object LaggedGroupedInference {
       val xValues = 1 to exp.discretizationLevels(i1)
       val yValues = 1 to exp.discretizationLevels(i2)
 
-      if (lag > 0) ps1 = ps1 drop lag
-      if (lag < 0) ps2 = ps2 drop lag
+      if (lag > 0) ps2 = ps2 drop lag
+      if (lag < 0) ps1 = ps1 drop math.abs(lag)
       val ps = ps1 zip ps2
       val groups = groupSize match {
         case None => List(ps)
