@@ -130,7 +130,7 @@ object RInterface {
       js.map{ j => 
         val first = ms(i)
         val second = ms(j)
-        (first.actualTime.toString, second.time.toString)
+        (first.time.toString, second.time.toString)
       }
     }
     val outF = reporter.outFile(s"$name-neighbors-scatter-plot.pdf")
