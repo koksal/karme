@@ -34,7 +34,7 @@ object LaggedGroupedInference {
         FunChisqResult(p1, p2, lag, score)
       }
 
-      results.toList
+      results
     }
 
     res.transpose
