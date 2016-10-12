@@ -11,10 +11,7 @@ cat(paste("gene", "ckmeans # clusters", "dip test statistic", "dip test p-value"
 cat("\n")
 
 for (n in names) {
-  vs = data[[n]]
-
-  # plot = qplot(vs, data = NULL, geom = "histogram")
-  # ggsave(plot, file = paste("histograms/", n, "-log.pdf", sep = ""))
+  vs = asinh(data[[n]]/2) / log(10)
 
   ckmeansResult = suppressWarnings(Ckmeans.1d.dp(vs, k = c(1, 2)))
   min = min(ckmeansResult$cluster)
@@ -27,4 +24,14 @@ for (n in names) {
 
   cat(paste(n, nbLevels, dipTestResult$statistic, dipTestResult$p.value, mclustResult$G, sep = ","))
   cat("\n")
+
+  plot = qplot(vs, data = NULL, geom = "histogram")
+
+  if (nbLevels == 1) {
+    plotFname = paste("histograms/unimodal/", n, ".pdf", sep = "")
+  } else {
+    plotFname = paste("histograms/bimodal/", n, ".pdf", sep = "")
+  }
+
+  ggsave(plot, file = plotFname)
 }
