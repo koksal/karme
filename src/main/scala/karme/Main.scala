@@ -2,6 +2,7 @@ package karme
 
 import java.io.File
 
+import karme.discretization.Discretization
 import karme.parsing.ContinuousExperimentParser
 
 object Main {
@@ -17,5 +18,6 @@ object Main {
     experiment = Transformations.pseudoLog(experiment, ARCSINH_FACTOR)
 
     // discretize
+    val discreteExperiment = Discretization.discretize(experiment)
   }
 }
