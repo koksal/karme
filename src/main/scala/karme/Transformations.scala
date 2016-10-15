@@ -2,6 +2,8 @@ package karme
 
 object Transformations {
 
+  val ARCSINH_FACTOR = 2.0
+
   def arcsinh(v: Double, factor: Double): Double = {
     // arcsinh formula
     val scaled = v / factor
@@ -14,11 +16,10 @@ object Transformations {
   }
 
   def pseudoLog(
-    experiment: ContinuousExperiment,
-    factor: Double
+    experiment: ContinuousExperiment
   ): ContinuousExperiment = {
     val transformedMeasurements = experiment.measurements map { m =>
-      m.copy(values = m.values.map(pseudoLog(_, factor)))
+      m.copy(values = m.values.map(pseudoLog(_, ARCSINH_FACTOR)))
     }
     experiment.copy(measurements = transformedMeasurements)
   }

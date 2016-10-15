@@ -10,7 +10,7 @@ object CkmeansInterface {
     R.eval("library(Ckmeans.1d.dp)")
 
     R.set("xs", xs.toArray)
-    R.eval("result <- Ckmeans.1d.dp(xs)")
+    R.eval("result <- Ckmeans.1d.dp(xs, k = c(1, 2))")
     R.evalI1("result$cluster")
   }
 }
