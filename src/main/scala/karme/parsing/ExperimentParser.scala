@@ -8,13 +8,17 @@ import karme.ContinuousExperiment
 import karme.DiscreteCellMeasurement
 import karme.DiscreteExperiment
 
+object ExperimentParser {
+
+  val ID_LABEL = "id"
+
+}
+
 abstract class ExperimentParser[ET, MT, VT](
   makeValue: String => VT,
   makeMeasurement: (String, Seq[VT]) => MT,
   makeExperiment: (Seq[String], Seq[MT]) => ET
 ) {
-
-  private val ID_LABEL = "id"
 
   def parse(f: File): ET = {
     val reader = CSVReader.open(f)
@@ -23,7 +27,7 @@ abstract class ExperimentParser[ET, MT, VT](
     val cellRows = allRows.tail
 
     assert(headers.size > 1)
-    assert(headers.head == ID_LABEL)
+    assert(headers.head == ExperimentParser.ID_LABEL)
 
     val names = headers.tail
 
