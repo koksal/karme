@@ -12,16 +12,19 @@ object ContinuousExperimentParser {
 
   def parse(f: File): ContinuousExperiment = {
     val reader = CSVReader.open(f)
-    val (headers, rows) = reader.allWithOrderedHeaders()
+    val allRows = reader.all()
+    val headers = allRows.head
+    val cellRows = allRows.tail
+    // val (headers, rows) = reader.allWithOrderedHeaders()
 
     assert(headers.size > 1)
     assert(headers.head == ID_LABEL)
 
     val names = headers.tail
 
-    val measurements = rows map { row =>
-      val id = row(ID_LABEL)
-      val values = names map { n => row(n).toDouble }
+    val measurements = cellRows map { row =>
+      val id = row.head
+      val values = row.tail.map(_.toDouble)
       ContinuousCellMeasurement(id, values)
     }
 
