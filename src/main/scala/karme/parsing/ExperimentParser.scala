@@ -39,12 +39,14 @@ abstract class ExperimentParser[ET, MT, VT](
 
 object ContinuousExperimentParser extends ExperimentParser(
   x => x.toDouble,
-  (id, values) => ContinuousCellMeasurement(id, values),
-  (names, measurements) => ContinuousExperiment(names, measurements)
+  (id: String, values: Seq[Double]) => ContinuousCellMeasurement(id, values),
+  (names: Seq[String], measurements: Seq[ContinuousCellMeasurement]) =>
+    ContinuousExperiment(names, measurements)
 )
 
 object DiscreteExperimentParser extends ExperimentParser(
   x => x.toInt,
-  (id, values) => DiscreteCellMeasurement(id, values),
-  (names, measurements) => DiscreteExperiment(names, measurements)
+  (id: String, values: Seq[Int]) => DiscreteCellMeasurement(id, values),
+  (names: Seq[String], measurements: Seq[DiscreteCellMeasurement]) =>
+    DiscreteExperiment(names, measurements)
 )
