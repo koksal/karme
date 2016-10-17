@@ -20,12 +20,20 @@ object ArgHandling {
       head("karme", "1.0")
 
       opt[String]("contexp") action { (v, o) =>
-        o.copy(continuousExperimentFile = new File(v))
+        o.copy(continuousExperimentFile = Some(new File(v)))
       } text "continuous experiment file in CSV format"
 
       opt[String]("discrexp") action { (v, o) =>
-        o.copy(discreteExperimentFile = new File(v))
+        o.copy(discreteExperimentFile = Some(new File(v)))
       } text "discrete experiment file in CSV format"
+
+      opt[String]("clusters") action { (v, o) =>
+        o.copy(clusterFile = Some(new File(v)))
+      } text "cluster file in CSV format"
+
+      opt[String]("outfolder") action { (v, o) =>
+        o.copy(outFolder = Some(new File(v)))
+      } text "output folder"
 
       help("help") text "print this help message"
     }

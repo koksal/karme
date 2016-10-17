@@ -3,7 +3,8 @@ package karme
 import java.io.File
 
 case class Options(
-  continuousExperimentFile: File = null,
-  discreteExperimentFile: File = null,
-  clusterFile: File = null
+  continuousExperimentFile: Option[File] = None,
+  discreteExperimentFile: Option[File] = None,
+  clusterFile: Option[File] = None,
+  outFolder: Option[File] = None
 )

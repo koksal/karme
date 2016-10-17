@@ -6,12 +6,12 @@ sealed abstract class Experiment[VT, MT <: Measurement[VT]](
 case class ContinuousExperiment(
   override val names: Seq[String],
   override val measurements: Seq[ContinuousCellMeasurement]
-) extends Experiment(names, measurements)
+) extends Experiment[Double, ContinuousCellMeasurement](names, measurements)
 
 case class DiscreteExperiment(
   override val names: Seq[String],
   override val measurements: Seq[DiscreteCellMeasurement]
-) extends Experiment(names, measurements)
+) extends Experiment[Int, DiscreteCellMeasurement](names, measurements)
 
 sealed abstract class Measurement[T](val id: String, val values: Seq[T])
 case class ContinuousCellMeasurement(

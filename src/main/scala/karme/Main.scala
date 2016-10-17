@@ -4,32 +4,54 @@ import java.io.File
 
 import karme.discretization.Discretization
 import karme.parsing.ContinuousExperimentParser
+import karme.parsing.DiscreteExperimentParser
+import karme.printing.ExperimentPrinter
 import karme.visualization.ExperimentVisualization
 
 object Main {
 
   def main(args: Array[String]): Unit = {
-    // read data
+    val opts = ArgHandling.parseOptions(args)
+
     println("Reading data.")
-    val inputFile = new File(args(0))
-    var experiment = ContinuousExperimentParser.parse(inputFile)
+    var experiment: Option[ContinuousExperiment] =
+      opts.continuousExperimentFile map { ContinuousExperimentParser.parse }
 
-    // TODO
-    // read / write discretization info
-    // analyze discretized data with:
-    //   optional clustering info
-
-    // transform data
     println("Transforming data.")
-    experiment = Transformations.pseudoLog(experiment)
+    experiment = experiment map Transformations.pseudoLog
 
-    // discretize
-    println("Discretizing data.")
-    val discreteExperiment = Discretization.discretize(experiment)
+    val discreteExperiment = opts.discreteExperimentFile match {
+      case Some(f) =>
+        println("Reading discretized experiment from file.")
+        DiscreteExperimentParser.parse(f)
+      case None =>
+        println("Discretizing experiment.")
+        experiment match {
+          case Some(e) =>
+            val de = Discretization.discretize(e)
+            println("Saving to file.")
+            saveExperiment(de, opts.outFolder)
+            de
+          case None => sys.error("No discrete or continuous experiment given.")
+        }
+    }
 
-    println("Visualizing discretization.")
-    ExperimentVisualization.visualizeDiscretization(experiment,
-      discreteExperiment)
+    experiment match {
+      case Some(e) =>
+        println("Visualizing discretization.")
+        ExperimentVisualization.visualizeDiscretization(e, discreteExperiment)
+      case None =>
+    }
   }
 
+  private def saveExperiment[MT <: Measurement[_]](
+    e: Experiment[_,MT], outFolder: Option[File]
+  ): Unit = {
+    val fname = "discrete-experiment.csv"
+    val f = outFolder match {
+      case Some(of) => new File(of, fname)
+      case None => new File(fname)
+    }
+    ExperimentPrinter.print(e, f)
+  }
 }
