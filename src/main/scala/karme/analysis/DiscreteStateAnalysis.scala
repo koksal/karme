@@ -24,10 +24,13 @@ object DiscreteStateAnalysis {
     }
   }
 
-  def printUniqueStates(ms: Set[DiscreteCellMeasurement]): Unit = {
+  private def printUniqueStates(ms: Set[DiscreteCellMeasurement]): Unit = {
     // Discard cell IDs so we collapse unique cell states
-    val uniqueStates = ms.map(_.values)
     println(s"# All measurements: ${ms.size}")
-    println(s"# Unique states: ${uniqueStates.size}")
+    println(s"# Unique states: ${nbUniqueStates(ms)}")
+  }
+
+  def nbUniqueStates(ms: Set[DiscreteCellMeasurement]): Int = {
+    ms.map(_.values).size
   }
 }
