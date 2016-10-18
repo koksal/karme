@@ -3,10 +3,14 @@ package karme
 import java.io.File
 
 import karme.discretization.Discretization
+import karme.parsing.ClusteringParser
 import karme.parsing.ContinuousExperimentParser
 import karme.parsing.DiscreteExperimentParser
 import karme.printing.ExperimentPrinter
 import karme.visualization.ExperimentVisualization
+
+import scala.collection.mutable
+import scala.collection.mutable
 
 object Main {
 
@@ -40,6 +44,12 @@ object Main {
         }
     }
 
+    val clustering: mutable.MultiMap[String, String] = opts.clusterFile match {
+      case Some(f) => ClusteringParser.parse(f)
+      case None => new mutable.HashMap[String, Set[String]]
+        with mutable.MultiMap[String, String]
+    }
+
     experiment match {
       case Some(e) =>
         println("Visualizing discretization.")
@@ -47,6 +57,8 @@ object Main {
           discreteExperiment, opts.outFolder)
       case None =>
     }
+
+
   }
 
   private def saveExperiment[MT <: Measurement[_]](

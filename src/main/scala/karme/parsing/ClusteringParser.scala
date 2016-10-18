@@ -4,13 +4,12 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
 
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.MultiMap
+import scala.collection.mutable
 
 object ClusteringParser {
-  def parse(f: File): MultiMap[String, String] = {
-    val clustering =
-      new HashMap[String, Set[String]]() with MultiMap[String, String]
+  def parse(f: File): mutable.MultiMap[String, String] = {
+    val clustering = new mutable.HashMap[String, Set[String]]()
+      with mutable.MultiMap[String, String]
 
     val reader = CSVReader.open(f)
     val allRows = reader.all()
