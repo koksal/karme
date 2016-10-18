@@ -15,4 +15,11 @@ class DiscreteStateAnalysisTest extends FunSuite {
 
     assertResult(2)(DiscreteStateAnalysis.nbUniqueStates(ms))
   }
+
+  test("Discrete cell state distances") {
+    val m1 = DiscreteCellMeasurement("A", List(0, 0, 0))
+    val m2 = DiscreteCellMeasurement("B", List(1, 2, 3))
+
+    assertResult(6)(DiscreteStateAnalysis.distance(m1, m2))
+  }
 }
