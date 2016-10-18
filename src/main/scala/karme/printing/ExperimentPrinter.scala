@@ -12,7 +12,7 @@ object ExperimentPrinter {
     val writer = CSVWriter.open(f)
 
     val headerRow = ExperimentParser.ID_LABEL +: e.names
-    val cellRows = e.measurements.map(_.values)
+    val cellRows = e.measurements.map(m => m.id +: m.values)
 
     writer.writeAll(headerRow +: cellRows)
   }
