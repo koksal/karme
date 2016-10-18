@@ -43,7 +43,8 @@ object Main {
     experiment match {
       case Some(e) =>
         println("Visualizing discretization.")
-        ExperimentVisualization.visualizeDiscretization(e, discreteExperiment)
+        ExperimentVisualization.visualizeDiscretization(e,
+          discreteExperiment, opts.outFolder)
       case None =>
     }
   }
