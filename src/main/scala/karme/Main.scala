@@ -2,6 +2,7 @@ package karme
 
 import java.io.File
 
+import karme.analysis.DiscreteStateAnalysis
 import karme.discretization.Discretization
 import karme.parsing.ClusteringParser
 import karme.parsing.ContinuousExperimentParser
@@ -46,7 +47,7 @@ object Main {
 
     val clustering: mutable.MultiMap[String, String] = opts.clusterFile match {
       case Some(f) => ClusteringParser.parse(f)
-      case None => new mutable.HashMap[String, Set[String]]
+      case None => new mutable.HashMap[String, mutable.Set[String]]
         with mutable.MultiMap[String, String]
     }
 
@@ -58,7 +59,7 @@ object Main {
       case None =>
     }
 
-
+    DiscreteStateAnalysis.analyze(discreteExperiment, clustering)
   }
 
   private def saveExperiment[MT <: Measurement[_]](

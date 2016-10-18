@@ -8,7 +8,7 @@ import scala.collection.mutable
 
 object ClusteringParser {
   def parse(f: File): mutable.MultiMap[String, String] = {
-    val clustering = new mutable.HashMap[String, Set[String]]()
+    val clustering = new mutable.HashMap[String, mutable.Set[String]]()
       with mutable.MultiMap[String, String]
 
     val reader = CSVReader.open(f)
