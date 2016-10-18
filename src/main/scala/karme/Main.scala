@@ -13,12 +13,16 @@ object Main {
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
 
-    println("Reading data.")
     var experiment: Option[ContinuousExperiment] =
-      opts.continuousExperimentFile map { ContinuousExperimentParser.parse }
+      opts.continuousExperimentFile map { f =>
+        println("Reading data.")
+        ContinuousExperimentParser.parse(f)
+      }
 
-    println("Transforming data.")
-    experiment = experiment map Transformations.pseudoLog
+    experiment = experiment map { e =>
+      println("Transforming data.")
+      Transformations.pseudoLog(e)
+    }
 
     val discreteExperiment = opts.discreteExperimentFile match {
       case Some(f) =>
@@ -49,7 +53,7 @@ object Main {
   ): Unit = {
     val fname = "discrete-experiment.csv"
     val f = outFolder match {
-      case Some(of) => new File(of, fname)
+      case Some(of) => of.mkdirs(); new File(of, fname)
       case None => new File(fname)
     }
     ExperimentPrinter.print(e, f)
