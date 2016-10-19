@@ -3,10 +3,8 @@ package karme.parsing
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
-import karme.ContinuousCellMeasurement
-import karme.ContinuousExperiment
-import karme.DiscreteCellMeasurement
-import karme.DiscreteExperiment
+import karme.Experiments.Experiment
+import karme.Experiments.Measurement
 
 object ExperimentParser {
 
@@ -14,13 +12,11 @@ object ExperimentParser {
 
 }
 
-abstract class ExperimentParser[ET, MT, VT](
-  makeValue: String => VT,
-  makeMeasurement: (String, Seq[VT]) => MT,
-  makeExperiment: (Seq[String], Seq[MT]) => ET
-) {
+abstract class ExperimentParser[T] {
 
-  def parse(f: File): ET = {
+  def makeValue(s: String): T
+
+  def parse(f: File): Experiment[T] = {
     val reader = CSVReader.open(f)
     val allRows = reader.all()
     val headers = allRows.head
@@ -34,23 +30,18 @@ abstract class ExperimentParser[ET, MT, VT](
     val measurements = cellRows map { row =>
       val id = row.head
       val values = row.tail.map(makeValue)
-      makeMeasurement(id, values)
+      Measurement(id, values)
     }
 
-    makeExperiment(names, measurements)
+    Experiment(names, measurements)
   }
 }
 
-object ContinuousExperimentParser extends ExperimentParser(
-  x => x.toDouble,
-  (id: String, values: Seq[Double]) => ContinuousCellMeasurement(id, values),
-  (names: Seq[String], measurements: Seq[ContinuousCellMeasurement]) =>
-    ContinuousExperiment(names, measurements)
-)
+object ContinuousExperimentParser extends ExperimentParser[Double] {
+  override def makeValue(s: String): Double = s.toDouble
+}
 
-object DiscreteExperimentParser extends ExperimentParser(
-  x => x.toInt,
-  (id: String, values: Seq[Int]) => DiscreteCellMeasurement(id, values),
-  (names: Seq[String], measurements: Seq[DiscreteCellMeasurement]) =>
-    DiscreteExperiment(names, measurements)
-)
+object DiscreteExperimentParser extends ExperimentParser[Int] {
+  override def makeValue(s: String): Int = s.toInt
+}
+

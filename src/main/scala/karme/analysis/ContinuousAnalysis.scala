@@ -1,6 +1,6 @@
 package karme.analysis
 
-import karme.ContinuousExperiment
+import karme.Experiments.ContinuousExperiment
 
 import scala.collection.mutable
 import scala.io.Source
@@ -14,6 +14,10 @@ object ContinuousAnalysis {
 
     // TODO variance for each marker within each cluster and globally
     // TODO box plots for lists of lists
+    for (marker <- markers) {
+
+
+    }
   }
 
 }

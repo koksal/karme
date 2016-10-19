@@ -1,8 +1,9 @@
 package karme.discretization
 
-import karme.ContinuousExperiment
-import karme.DiscreteCellMeasurement
-import karme.DiscreteExperiment
+import karme.Experiments.ContinuousExperiment
+import karme.Experiments.DiscreteExperiment
+import karme.Experiments.Experiment
+import karme.Experiments.Measurement
 
 object Discretization {
   def discretize(experiment: ContinuousExperiment): DiscreteExperiment = {
@@ -18,11 +19,10 @@ object Discretization {
     val discreteMeasurements =
       experiment.measurements.map(_.id).zip(discreteCellValues) map {
       case (id, vs) => {
-        DiscreteCellMeasurement(id, vs)
+        Measurement(id, vs)
       }
     }
 
-    DiscreteExperiment(experiment.names, discreteMeasurements)
+    Experiment(experiment.names, discreteMeasurements)
   }
-
 }

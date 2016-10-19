@@ -2,6 +2,8 @@ package karme
 
 import java.io.File
 
+import karme.Experiments.ContinuousExperiment
+import karme.Experiments.Experiment
 import karme.analysis.DiscreteStateAnalysis
 import karme.discretization.Discretization
 import karme.parsing.ClusteringParser
@@ -67,8 +69,8 @@ object Main {
 
   }
 
-  private def saveExperiment[MT <: Measurement[_]](
-    e: Experiment[_,MT], outFolder: Option[File]
+  private def saveExperiment[T](
+    e: Experiment[T], outFolder: Option[File]
   ): Unit = {
     val fname = "discrete-experiment.csv"
     val f = outFolder match {

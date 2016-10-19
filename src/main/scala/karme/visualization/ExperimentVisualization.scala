@@ -2,7 +2,8 @@ package karme.visualization
 
 import java.io.File
 
-import karme.{ContinuousExperiment, DiscreteExperiment}
+import karme.Experiments.ContinuousExperiment
+import karme.Experiments.DiscreteExperiment
 import org.ddahl.rscala.RClient
 
 object ExperimentVisualization {

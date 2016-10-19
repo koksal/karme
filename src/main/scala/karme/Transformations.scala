@@ -1,5 +1,7 @@
 package karme
 
+import karme.Experiments.ContinuousExperiment
+
 object Transformations {
 
   val ARCSINH_FACTOR = 2.0
