@@ -4,6 +4,7 @@ import java.io.File
 
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.Experiment
+import karme.analysis.ContinuousAnalysis
 import karme.analysis.DiscreteStateAnalysis
 import karme.discretization.Discretization
 import karme.parsing.ClusteringParser
@@ -35,14 +36,18 @@ object Main {
         println("Reading discretized experiment from file.")
         DiscreteExperimentParser.parse(f)
       case None =>
-        println("Discretizing experiment.")
-        experiment match {
-          case Some(e) =>
-            val de = Discretization.discretize(e)
-            println("Saving to file.")
-            saveExperiment(de, opts.outFolder)
-            de
-          case None => sys.error("No discrete or continuous experiment given.")
+        if (opts.discretize) {
+          println("Discretizing experiment.")
+          experiment match {
+            case Some(e) =>
+              val de = Discretization.discretize(e)
+              println("Saving to file.")
+              saveExperiment(de, opts.outFolder)
+              de
+            case None => sys.error("No continuous experiment given.")
+          }
+        } else {
+          null
         }
     }
 
@@ -66,7 +71,9 @@ object Main {
       DiscreteStateAnalysis.analyze(discreteExperiment, clustering)
     }
 
-
+    if (opts.analyzeContinuousStates) {
+      ContinuousAnalysis.analyze(experiment.get, clustering)
+    }
   }
 
   private def saveExperiment[T](

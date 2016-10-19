@@ -7,6 +7,8 @@ case class Options(
   discreteExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
   outFolder: Option[File] = None,
+  discretize: Boolean = false,
   visualize: Boolean = false,
-  analyzeDiscreteStates: Boolean = false
+  analyzeDiscreteStates: Boolean = false,
+  analyzeContinuousStates: Boolean = true
 )

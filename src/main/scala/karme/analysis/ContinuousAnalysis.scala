@@ -1,6 +1,7 @@
 package karme.analysis
 
 import karme.Experiments.ContinuousExperiment
+import karme.visualization.BoxPlot
 
 import scala.collection.mutable
 import scala.io.Source
@@ -12,11 +13,15 @@ object ContinuousAnalysis {
   ): Unit = {
     val markers = Source.fromFile("data/markers.txt").getLines()
 
-    // TODO variance for each marker within each cluster and globally
-    // TODO box plots for lists of lists
+    val clusterToExperiment = exp.partitionClusters(clustering)
     for (marker <- markers) {
-
-
+      val labelToValues = for (
+        (cluster, clusterExp) <- clusterToExperiment) yield {
+        val markerClusterValues = clusterExp.valuesForName(marker)
+        cluster -> markerClusterValues
+      }
+      println(s"Plotting for $marker")
+      BoxPlot.plot(labelToValues, None)
     }
   }
 
