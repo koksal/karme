@@ -11,7 +11,6 @@ import karme.printing.ExperimentPrinter
 import karme.visualization.ExperimentVisualization
 
 import scala.collection.mutable
-import scala.collection.mutable
 
 object Main {
 
@@ -51,15 +50,21 @@ object Main {
         with mutable.MultiMap[String, String]
     }
 
-    experiment match {
-      case Some(e) =>
-        println("Visualizing discretization.")
-        ExperimentVisualization.visualizeDiscretization(e,
-          discreteExperiment, opts.outFolder)
-      case None =>
+    if (opts.visualize) {
+      experiment match {
+        case Some(e) =>
+          println("Visualizing discretization.")
+          ExperimentVisualization.visualizeDiscretization(e,
+            discreteExperiment, opts.outFolder)
+        case None =>
+      }
     }
 
-    DiscreteStateAnalysis.analyze(discreteExperiment, clustering)
+    if (opts.analyzeDiscreteStates) {
+      DiscreteStateAnalysis.analyze(discreteExperiment, clustering)
+    }
+
+
   }
 
   private def saveExperiment[MT <: Measurement[_]](

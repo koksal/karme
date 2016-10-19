@@ -6,5 +6,7 @@ case class Options(
   continuousExperimentFile: Option[File] = None,
   discreteExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
-  outFolder: Option[File] = None
+  outFolder: Option[File] = None,
+  visualize: Boolean = false,
+  analyzeDiscreteStates: Boolean = false
 )
