@@ -4,7 +4,10 @@ import java.io.File
 
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.DiscreteExperiment
+import karme.util.FileUtil
 import org.ddahl.rscala.RClient
+
+import scala.collection.mutable
 
 object ExperimentVisualization {
 
@@ -14,7 +17,31 @@ object ExperimentVisualization {
   def visualizeDiscretization(
     contExp: ContinuousExperiment,
     discExp: DiscreteExperiment,
+    clustering: mutable.MultiMap[String, String],
     outFolder: Option[File]
+  ): Unit = {
+    val clusterToContExp = contExp.partitionClusters(clustering)
+    val clusterToDiscExp = discExp.partitionClusters(clustering)
+
+    val clusters = clustering.keySet
+    for (cluster <- clusters) {
+      val clusterContExp = clusterToContExp(cluster)
+      val clusterDiscExp = clusterToDiscExp(cluster)
+      assert(clusterContExp.measurements.map(_.id) ==
+        clusterDiscExp.measurements.map(_.id))
+
+      visualizeDiscretization(clusterContExp, clusterDiscExp,
+        FileUtil.folder(s"cluster-$cluster", outFolder))
+    }
+
+    // visualize across clusters
+    visualizeDiscretization(contExp, discExp, FileUtil.folder("all", outFolder))
+  }
+
+  private def visualizeDiscretization(
+    contExp: ContinuousExperiment,
+    discExp: DiscreteExperiment,
+    outFolder: File
   ): Unit = {
     assert(contExp.names == discExp.names)
 
@@ -39,10 +66,7 @@ object ExperimentVisualization {
         "geom_histogram(alpha=.5, position=\"identity\")")
 
       val folderName = "discretization-vis"
-      val folder = outFolder match {
-        case Some(of) => new File(of, folderName)
-        case None => new File(folderName)
-      }
+      val folder = new File(outFolder, folderName)
       folder.mkdirs()
       val f = new File(folder, s"$name.pdf")
 

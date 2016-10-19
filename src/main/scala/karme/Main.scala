@@ -62,7 +62,7 @@ object Main {
         case Some(e) =>
           println("Visualizing discretization.")
           ExperimentVisualization.visualizeDiscretization(e,
-            discreteExperiment, opts.outFolder)
+            discreteExperiment, clustering, opts.outFolder)
         case None =>
       }
     }

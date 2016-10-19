@@ -8,7 +8,7 @@ case class Options(
   clusterFile: Option[File] = None,
   outFolder: Option[File] = None,
   discretize: Boolean = false,
-  visualize: Boolean = false,
+  visualize: Boolean = true,
   analyzeDiscreteStates: Boolean = false,
-  analyzeContinuousStates: Boolean = true
+  analyzeContinuousStates: Boolean = false
 )

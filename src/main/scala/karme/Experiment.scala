@@ -20,8 +20,9 @@ object Experiments {
       val idToMeasurement = measurements.map(m => m.id -> m).toMap
 
       val pairs = for ((cluster, ids) <- clustering) yield {
-        val clusterMs = ids map (id => idToMeasurement(id))
-        cluster -> new Experiment(names, clusterMs.toSeq)
+        val sortedIds = ids.toList.sorted
+        val clusterMs = sortedIds map (id => idToMeasurement(id))
+        cluster -> new Experiment(names, clusterMs)
       }
       pairs.toMap
     }
