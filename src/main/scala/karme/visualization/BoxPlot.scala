@@ -8,6 +8,7 @@ object BoxPlot {
 
   def plot(
     labelToValues: Map[String, Iterable[Double]],
+    outPrefix: String,
     outFolder: Option[File]
   ): Unit = {
     val R = RClient()
@@ -27,7 +28,15 @@ object BoxPlot {
 
     R.eval("plot = ggplot(data, aes(label, value)) + geom_boxplot()")
 
-    R.set("fname", "boxplot.pdf")
+    val folderName = "boxplot-vis"
+    val folder = outFolder match {
+      case Some(of) => new File(of, folderName)
+      case None => new File(folderName)
+    }
+    folder.mkdirs()
+    val f = new File(folder, s"$outPrefix.pdf")
+
+    R.set("fname", f.getAbsolutePath())
     R.eval("ggsave(plot, file = fname)")
   }
 

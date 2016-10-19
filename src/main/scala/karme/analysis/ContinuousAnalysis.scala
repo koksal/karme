@@ -21,7 +21,7 @@ object ContinuousAnalysis {
         cluster -> markerClusterValues
       }
       println(s"Plotting for $marker")
-      BoxPlot.plot(labelToValues, None)
+      BoxPlot.plot(labelToValues, marker, None)
     }
   }
 
