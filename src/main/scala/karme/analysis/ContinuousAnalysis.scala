@@ -1,5 +1,7 @@
 package karme.analysis
 
+import java.io.File
+
 import karme.Experiments.ContinuousExperiment
 import karme.visualization.BoxPlot
 
@@ -9,7 +11,8 @@ import scala.io.Source
 object ContinuousAnalysis {
   def analyze(
     exp: ContinuousExperiment,
-    clustering: mutable.MultiMap[String, String]
+    clustering: mutable.MultiMap[String, String],
+    outFolder: Option[File]
   ): Unit = {
     val markers = Source.fromFile("data/markers.txt").getLines()
 
@@ -21,7 +24,7 @@ object ContinuousAnalysis {
         cluster -> markerClusterValues
       }
       println(s"Plotting for $marker")
-      BoxPlot.plot(labelToValues, marker, None)
+      BoxPlot.plot(labelToValues, marker, outFolder)
     }
   }
 

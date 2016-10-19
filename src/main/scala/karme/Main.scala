@@ -72,7 +72,7 @@ object Main {
     }
 
     if (opts.analyzeContinuousStates) {
-      ContinuousAnalysis.analyze(experiment.get, clustering)
+      ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
   }
 
