@@ -17,32 +17,29 @@ object DiscreteStateAnalysis {
     printUniqueStates(exp.measurements.toSet)
     printDistances(exp.measurements.toSet)
 
-    val idToMeasurement = exp.measurements.map(m => m.id -> m).toMap
-    for ((cluster, ids) <- clustering) {
+    for ((cluster, clusterExp) <- exp.partitionClusters(clustering)) {
       println(s"Cluster $cluster")
-      val cells = ids map (id => idToMeasurement(id))
-      printUniqueStates(cells.toSet)
-      printDistances(cells.toSet)
+      printUniqueStates(clusterExp.measurements)
+      printDistances(clusterExp.measurements)
     }
   }
 
-  private def printUniqueStates(ms: Set[Measurement[Int]]): Unit = {
-    // Discard cell IDs so we collapse unique cell states
+  private def printUniqueStates(ms: Iterable[Measurement[Int]]): Unit = {
     println(s"# All measurements: ${ms.size}")
     println(s"# Unique states: ${nbUniqueStates(ms)}")
   }
 
-  def nbUniqueStates(ms: Set[DiscreteMeasurement]): Int = {
-    ms.map(_.values).size
+  def nbUniqueStates(ms: Iterable[DiscreteMeasurement]): Int = {
+    ms.map(_.values).toSet.size
   }
 
-  def printDistances(ms: Set[DiscreteMeasurement]): Unit = {
+  def printDistances(ms: Iterable[DiscreteMeasurement]): Unit = {
+    val indexableMs = ms.toIndexedSeq
     val distances = for {
-      m1 <- ms
-      m2 <- ms
-      if m1 != m2
+      i <- 0 until ms.size
+      j <- (i + 1) until ms.size
     } yield {
-      distance(m1, m2)
+      distance(indexableMs(i), indexableMs(j))
     }
 
     println(s"Median distance: ${MathUtil.median(distances)}")
