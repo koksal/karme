@@ -14,6 +14,7 @@ import karme.printing.ExperimentPrinter
 import karme.visualization.ExperimentVisualization
 
 import scala.collection.mutable
+import scala.io.Source
 
 object Main {
 
@@ -31,11 +32,28 @@ object Main {
       Transformations.pseudoLog(e)
     }
 
-    val discreteExperiment = opts.discreteExperimentFile match {
-      case Some(f) =>
-        println("Reading discretized experiment from file.")
-        DiscreteExperimentParser.parse(f)
+    opts.namesFile match {
+      case Some(nf) => {
+        val names = Source.fromFile(nf).getLines().toSeq
+        experiment = experiment.map(_.project(names))
+      }
       case None =>
+    }
+
+    val discreteExperiment = opts.discreteExperimentFile match {
+      case Some(f) => {
+        println("Reading discretized experiment from file.")
+        var de = DiscreteExperimentParser.parse(f)
+        opts.namesFile match {
+          case Some(nf) => {
+            val names = Source.fromFile(nf).getLines().toSeq
+            de = de.project(names)
+          }
+          case None =>
+        }
+        de
+      }
+      case None => {
         if (opts.discretize) {
           println("Discretizing experiment.")
           experiment match {
@@ -49,6 +67,7 @@ object Main {
         } else {
           null
         }
+      }
     }
 
     val clustering: mutable.MultiMap[String, String] = opts.clusterFile match {

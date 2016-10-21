@@ -31,6 +31,10 @@ object ArgHandling {
         o.copy(clusterFile = Some(new File(v)))
       } text "cluster file in CSV format"
 
+      opt[String]("names") action { (v, o) =>
+        o.copy(namesFile = Some(new File(v)))
+      } text "file with names to project experiment to"
+
       opt[String]("outfolder") action { (v, o) =>
         o.copy(outFolder = Some(new File(v)))
       } text "output folder"
