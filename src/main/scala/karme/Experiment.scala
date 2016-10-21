@@ -26,6 +26,19 @@ object Experiments {
       }
       pairs.toMap
     }
+
+    def project(ns: Seq[String]): Experiment[T] = {
+      val indices = ns map names.indexOf
+      val valuesByName = measurements.map(_.values).transpose
+      val projectedValuesByName = indices map { i =>
+        valuesByName(i)
+      }
+      val projMs = measurements.zip(projectedValuesByName.transpose) map {
+        case (measurement, projectedValues) =>
+          measurement.copy(values = projectedValues)
+      }
+      Experiment(ns, projMs)
+    }
   }
 
   type ContinuousExperiment = Experiment[Double]
