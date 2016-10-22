@@ -86,11 +86,11 @@ object Main {
       }
     }
 
-    if (opts.analyzeDiscreteStates) {
+    if (opts.discreteAnalysis) {
       DiscreteStateAnalysis.analyze(discreteExperiment, clustering)
     }
 
-    if (opts.analyzeContinuousStates) {
+    if (opts.continuousAnalysis) {
       ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
   }

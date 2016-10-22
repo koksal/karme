@@ -27,6 +27,10 @@ object DiscreteStateAnalysis {
   private def printUniqueStates(ms: Iterable[Measurement[Int]]): Unit = {
     println(s"# All measurements: ${ms.size}")
     println(s"# Unique states: ${nbUniqueStates(ms)}")
+    val grouped = ms.groupBy(_.values)
+    val cardinalitySeq = grouped.toSeq.map(_._2.size).sorted.reverse
+    println("Cardinality of discrete states: ")
+    println(cardinalitySeq.mkString("\n"))
   }
 
   def nbUniqueStates(ms: Iterable[DiscreteMeasurement]): Int = {

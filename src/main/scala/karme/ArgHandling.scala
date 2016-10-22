@@ -39,6 +39,22 @@ object ArgHandling {
         o.copy(outFolder = Some(new File(v)))
       } text "output folder"
 
+      opt[Unit]("discretize") action { (_, o) =>
+        o.copy(discretize = true)
+      } text "discretize data"
+
+      opt[Unit]("visualize") action { (_, o) =>
+        o.copy(visualize = true)
+      } text "visualize discretization data"
+
+      opt[Unit]("discrete-analysis") action { (_, o) =>
+        o.copy(discreteAnalysis = true)
+      } text "run discrete data analysis"
+
+      opt[Unit]("continuous-analysis") action { (_, o) =>
+        o.copy(continuousAnalysis = true)
+      } text "run continuous data analysis"
+
       help("help") text "print this help message"
     }
 

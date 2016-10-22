@@ -9,7 +9,7 @@ case class Options(
   namesFile: Option[File] = None,
   outFolder: Option[File] = None,
   discretize: Boolean = false,
-  visualize: Boolean = true,
-  analyzeDiscreteStates: Boolean = false,
-  analyzeContinuousStates: Boolean = false
+  visualize: Boolean = false,
+  discreteAnalysis: Boolean = false,
+  continuousAnalysis: Boolean = false
 )
