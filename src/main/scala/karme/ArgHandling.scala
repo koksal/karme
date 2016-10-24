@@ -36,7 +36,7 @@ object ArgHandling {
       } text "file with names to project experiment to"
 
       opt[String]("outfolder") action { (v, o) =>
-        o.copy(outFolder = Some(new File(v)))
+        o.copy(outFolder = new File(v))
       } text "output folder"
 
       opt[Unit]("discretize") action { (_, o) =>

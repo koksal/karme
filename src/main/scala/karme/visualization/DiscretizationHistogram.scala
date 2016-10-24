@@ -9,7 +9,7 @@ import org.ddahl.rscala.RClient
 
 import scala.collection.mutable
 
-object ExperimentVisualization {
+object DiscretizationHistogram {
 
   /** Plots histograms of different colors for every group of cells in which
     * a gene is discretized to the same value.
@@ -18,7 +18,7 @@ object ExperimentVisualization {
     contExp: ContinuousExperiment,
     discExp: DiscreteExperiment,
     clustering: mutable.MultiMap[String, String],
-    outFolder: Option[File]
+    outFolder: File
   ): Unit = {
     val clusterToContExp = contExp.partitionClusters(clustering)
     val clusterToDiscExp = discExp.partitionClusters(clustering)
@@ -31,11 +31,11 @@ object ExperimentVisualization {
         clusterDiscExp.measurements.map(_.id))
 
       visualizeDiscretization(clusterContExp, clusterDiscExp,
-        FileUtil.folder(s"cluster-$cluster", outFolder))
+        new File(outFolder, s"cluster-$cluster"))
     }
 
     // visualize across clusters
-    visualizeDiscretization(contExp, discExp, FileUtil.folder("all", outFolder))
+    visualizeDiscretization(contExp, discExp, new File(outFolder, "all"))
   }
 
   private def visualizeDiscretization(

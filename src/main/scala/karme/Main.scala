@@ -11,7 +11,7 @@ import karme.parsing.ClusteringParser
 import karme.parsing.ContinuousExperimentParser
 import karme.parsing.DiscreteExperimentParser
 import karme.printing.ExperimentPrinter
-import karme.visualization.ExperimentVisualization
+import karme.visualization.DiscretizationHistogram
 
 import scala.collection.mutable
 import scala.io.Source
@@ -20,6 +20,7 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
+    opts.outFolder.mkdirs()
 
     var experiment: Option[ContinuousExperiment] =
       opts.continuousExperimentFile map { f =>
@@ -80,7 +81,7 @@ object Main {
       experiment match {
         case Some(e) =>
           println("Visualizing discretization.")
-          ExperimentVisualization.visualizeDiscretization(e,
+          DiscretizationHistogram.visualizeDiscretization(e,
             discreteExperiment, clustering, opts.outFolder)
         case None =>
       }
@@ -96,13 +97,10 @@ object Main {
   }
 
   private def saveExperiment[T](
-    e: Experiment[T], outFolder: Option[File]
+    e: Experiment[T], outFolder: File
   ): Unit = {
     val fname = "discrete-experiment.csv"
-    val f = outFolder match {
-      case Some(of) => of.mkdirs(); new File(of, fname)
-      case None => new File(fname)
-    }
+    val f = new File(outFolder, fname)
     ExperimentPrinter.print(e, f)
   }
 }

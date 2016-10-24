@@ -7,7 +7,7 @@ case class Options(
   discreteExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
   namesFile: Option[File] = None,
-  outFolder: Option[File] = None,
+  outFolder: File = new File("."),
   discretize: Boolean = false,
   visualize: Boolean = false,
   discreteAnalysis: Boolean = false,
