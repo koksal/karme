@@ -11,6 +11,7 @@ import karme.parsing.ClusteringParser
 import karme.parsing.ContinuousExperimentParser
 import karme.parsing.DiscreteExperimentParser
 import karme.printing.ExperimentPrinter
+import karme.visualization.DiscreteStateGraph
 import karme.visualization.DiscretizationHistogram
 
 import scala.collection.mutable
@@ -94,6 +95,8 @@ object Main {
     if (opts.continuousAnalysis) {
       ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
+
+    DiscreteStateGraph.plot(discreteExperiment, clustering, opts.outFolder)
   }
 
   private def saveExperiment[T](

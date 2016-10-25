@@ -54,10 +54,13 @@ object DiscreteStateAnalysis {
     m1: DiscreteMeasurement,
     m2: DiscreteMeasurement
   ): Int = {
-    val diffs = m1.values.zip(m2.values).map {
+    distance(m1.values, m2.values)
+  }
+
+  def distance(vs1: Seq[Int], vs2: Seq[Int]): Int = {
+    val diffs = vs1.zip(vs2) map {
       case (v1, v2) => math.abs(v1 - v2)
     }
-
     diffs.sum
   }
 }
