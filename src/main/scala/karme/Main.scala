@@ -23,51 +23,37 @@ object Main {
     val opts = ArgHandling.parseOptions(args)
     opts.outFolder.mkdirs()
 
-    var experiment: Option[ContinuousExperiment] =
+    val experiment: Option[ContinuousExperiment] =
       opts.continuousExperimentFile map { f =>
-        println("Reading data.")
-        ContinuousExperimentParser.parse(f)
-      }
+        println("Reading continuous experiment.")
+        val e = ContinuousExperimentParser.parse(f)
 
-    experiment = experiment map { e =>
-      println("Transforming data.")
-      Transformations.pseudoLog(e)
-    }
+        println("Filtering by names.")
+        filterByNames(e, opts.namesFile)
 
-    opts.namesFile match {
-      case Some(nf) => {
-        val names = Source.fromFile(nf).getLines().toSeq
-        experiment = experiment.map(_.project(names))
+        println("Transforming data.")
+        Transformations.pseudoLog(e)
       }
-      case None =>
-    }
 
     val discreteExperiment = opts.discreteExperimentFile match {
       case Some(f) => {
-        println("Reading discretized experiment from file.")
-        var de = DiscreteExperimentParser.parse(f)
-        opts.namesFile match {
-          case Some(nf) => {
-            val names = Source.fromFile(nf).getLines().toSeq
-            de = de.project(names)
-          }
-          case None =>
-        }
-        de
+        println("Reading discretized experiment.")
+        val de = DiscreteExperimentParser.parse(f)
+
+        println("Filtering by names.")
+        filterByNames(de, opts.namesFile)
       }
       case None => {
-        if (opts.discretize) {
-          println("Discretizing experiment.")
-          experiment match {
-            case Some(e) =>
-              val de = Discretization.discretize(e)
-              println("Saving to file.")
-              saveExperiment(de, opts.outFolder)
-              de
-            case None => sys.error("No continuous experiment given.")
+        println("Discretizing experiment.")
+        experiment match {
+          case Some(e) => {
+            val de = Discretization.discretize(e)
+
+            println("Saving discrete experiment to file.")
+            saveExperiment(de, opts.outFolder)
+            de
           }
-        } else {
-          null
+          case None => sys.error("No continuous experiment given.")
         }
       }
     }
@@ -80,11 +66,14 @@ object Main {
 
     if (opts.visualize) {
       experiment match {
-        case Some(e) =>
+        case Some(e) => {
           println("Visualizing discretization.")
           DiscretizationHistogram.visualizeDiscretization(e,
             discreteExperiment, clustering, opts.outFolder)
-        case None =>
+        }
+        case None => {
+          println("No experiment to visualize.")
+        }
       }
     }
 
@@ -105,5 +94,15 @@ object Main {
     val fname = "discrete-experiment.csv"
     val f = new File(outFolder, fname)
     ExperimentPrinter.print(e, f)
+  }
+
+  private def filterByNames[T](
+    experiment: Experiment[T], optNamesFile: Option[File]
+  ): Experiment[T] = optNamesFile match {
+    case Some(nf) => {
+      val names = Source.fromFile(nf).getLines().toSeq
+      experiment.project(names)
+    }
+    case None => experiment
   }
 }

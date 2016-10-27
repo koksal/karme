@@ -39,10 +39,6 @@ object ArgHandling {
         o.copy(outFolder = new File(v))
       } text "output folder"
 
-      opt[Unit]("discretize") action { (_, o) =>
-        o.copy(discretize = true)
-      } text "discretize data"
-
       opt[Unit]("visualize") action { (_, o) =>
         o.copy(visualize = true)
       } text "visualize discretization data"
