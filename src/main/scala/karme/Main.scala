@@ -96,8 +96,6 @@ object Main {
     }
 
     DiscreteStateGraph.plot(discreteMLEExperiment, clustering, opts.outFolder)
-
-
   }
 
   private def saveExperiment[T](
@@ -113,7 +111,13 @@ object Main {
   ): Experiment[T] = optNamesFile match {
     case Some(nf) => {
       val names = Source.fromFile(nf).getLines().toSeq
-      experiment.project(names)
+      println(s"Filtering down to ${names.size} names.")
+      val commonNames = experiment.names filter { n1 =>
+        names.exists((n2: String) => n2.toUpperCase().equals(n1.toUpperCase()))
+      }
+
+      println(s"Names in common with experiment: ${commonNames.size}")
+      experiment.project(commonNames.toSeq.sorted)
     }
     case None => experiment
   }
