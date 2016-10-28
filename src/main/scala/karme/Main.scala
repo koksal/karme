@@ -23,10 +23,10 @@ object Main {
     val experiment: Option[ContinuousExperiment] =
       opts.continuousExperimentFile map { f =>
         println("Reading continuous experiment.")
-        val e = ContinuousExperimentParser.parse(f)
+        var e = ContinuousExperimentParser.parse(f)
 
         println("Filtering by names.")
-        filterByNames(e, opts.namesFile)
+        e = filterByNames(e, opts.namesFile)
 
         println("Transforming data.")
         Transformations.pseudoLog(e)
@@ -48,6 +48,7 @@ object Main {
 
             println("Saving discrete experiment to file.")
             saveExperiment(de, opts.outFolder)
+
             de
           }
           case None => sys.error("No continuous experiment given.")

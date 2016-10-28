@@ -4,6 +4,7 @@ import org.ddahl.rscala.RClient
 
 object CkmeansInterface {
   def ckmeans(xs: Seq[Double]): Seq[Int] = {
+    println(s"Running ckmeans for ${xs.size} values.")
     // TODO consider moving to preprocess
     // TODO consider lifting imports to an RInterface parent class
     val R = RClient()
