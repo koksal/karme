@@ -13,7 +13,7 @@ object BinomialMLE {
 
   def run(
     exp: DiscreteExperiment,
-    trajectories: Set[CellTrajectory]
+    trajectories: Seq[CellTrajectory]
   ): ProbabilisticExperiment = {
     // order each curve
     val cellOrders = trajectories map CellTrajectories.cellOrder

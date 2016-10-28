@@ -7,7 +7,7 @@ case class Options(
   discreteExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
   namesFile: Option[File] = None,
-  trajectoryFiles: Set[File] = Set(),
+  trajectoryFiles: Seq[File] = Seq(),
   outFolder: File = new File("."),
   visualize: Boolean = false,
   discreteAnalysis: Boolean = false,

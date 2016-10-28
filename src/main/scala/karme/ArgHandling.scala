@@ -19,25 +19,25 @@ object ArgHandling {
     new OptionParser[Options]("karme") {
       head("karme", "1.0")
 
-      opt[String]("contexp") action { (v, o) =>
-        o.copy(continuousExperimentFile = Some(new File(v)))
+      opt[File]("contexp") action { (v, o) =>
+        o.copy(continuousExperimentFile = Some(v))
       } text "continuous experiment file in CSV format"
 
-      opt[String]("discrexp") action { (v, o) =>
-        o.copy(discreteExperimentFile = Some(new File(v)))
+      opt[File]("discrexp") action { (v, o) =>
+        o.copy(discreteExperimentFile = Some(v))
       } text "discrete experiment file in CSV format"
 
-      opt[String]("clusters") action { (v, o) =>
-        o.copy(clusterFile = Some(new File(v)))
+      opt[File]("clusters") action { (v, o) =>
+        o.copy(clusterFile = Some(v))
       } text "cluster file in CSV format"
 
-      opt[String]("names") action { (v, o) =>
-        o.copy(namesFile = Some(new File(v)))
+      opt[File]("names") action { (v, o) =>
+        o.copy(namesFile = Some(v))
       } text "file with names to project experiment to"
 
-      opt[String]("trajectory") action { (v, o) =>
-        o.copy(trajectoryFiles = o.trajectoryFiles + new File(v))
-      } text "trajectory file in CSV format"
+      opt[Seq[File]]("trajectory") action { (vs, o) =>
+        o.copy(trajectoryFiles = vs)
+      } text "trajectory files in CSV format"
 
       opt[String]("outfolder") action { (v, o) =>
         o.copy(outFolder = new File(v))

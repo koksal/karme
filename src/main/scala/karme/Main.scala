@@ -61,6 +61,7 @@ object Main {
     println(s"Remaining number of dimensions: ${discreteExperiment.names.size}")
 
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
+    println(s"Read ${trajectories.size} trajectories.")
 
     val probExperiment = BinomialMLE.run(discreteExperiment, trajectories)
     val discreteMLEExperiment =
