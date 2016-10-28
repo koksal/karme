@@ -97,6 +97,8 @@ object Main {
     }
 
     DiscreteStateGraph.plot(discreteExperiment, clustering, opts.outFolder)
+
+
   }
 
   private def saveExperiment[T](

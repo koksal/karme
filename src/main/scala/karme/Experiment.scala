@@ -8,9 +8,15 @@ object Experiments {
     names: Seq[String],
     measurements: Seq[Measurement[T]]
   ) {
+
+    private lazy val valuesByName = measurements.map(_.values).transpose
+    private lazy val idToMeasurement: Map[String, Measurement[T]] =
+      measurements.map{ m =>
+        m.id -> m
+      }.toMap
+
     def valuesForName(name: String): Seq[T] = {
       val i = names.indexOf(name)
-      val valuesByName = measurements.map(_.values).transpose
       valuesByName(i)
     }
 
@@ -39,13 +45,17 @@ object Experiments {
       }
       Experiment(ns, projMs)
     }
+
+    def measurementFromId(id: String): Measurement[T] = idToMeasurement(id)
   }
 
   type ContinuousExperiment = Experiment[Double]
   type DiscreteExperiment = Experiment[Int]
+  type ProbabilisticExperiment = Experiment[Double]
 
   case class Measurement[T](id: String, values: Seq[T])
 
   type ContinuousMeasurement = Measurement[Double]
   type DiscreteMeasurement = Measurement[Int]
+  type ProbabilisticMeasurement = Measurement[Double]
 }
