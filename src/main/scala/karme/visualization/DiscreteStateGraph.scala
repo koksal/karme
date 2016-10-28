@@ -7,6 +7,7 @@ import karme.analysis.DiscreteStateAnalysis
 import karme.util.FileUtil
 
 import scala.collection.mutable
+import scala.sys.process._
 
 object DiscreteStateGraph {
 
@@ -15,12 +16,10 @@ object DiscreteStateGraph {
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
-    // create dot string
-    val f = new File(outFolder, "state-graph.dot")
-    FileUtil.writeToFile(f, dotString(exp, clustering))
-    // write it to temp file
-    // invoke dot with it
-    // delete temp file
+    val dotFile = new File(outFolder, "state-graph.dot")
+    val pngFile = new File(outFolder, "state-graph.png")
+    FileUtil.writeToFile(dotFile, dotString(exp, clustering))
+    s"dot -Tpng ${dotFile.getAbsolutePath} > ${pngFile.getAbsolutePath}".!!
   }
 
   private def dotString(
@@ -84,14 +83,12 @@ object DiscreteStateGraph {
 
       // compute distance and print if it's 1
       val dist = DiscreteStateAnalysis.distance(s1, s2)
-      if (dist <= 1) {
-        val style = if (dist == 1) {
-          "solid"
-        } else if (dist == 2) {
-          "dashed"
-        } else {
-          sys.error("Should not happen.")
-        }
+      val edgeStyles = Map(
+        1 -> "solid",
+        2 -> "dashed"
+      )
+      if (dist <= 2) {
+        val style = edgeStyles(dist)
         sb append s"${stateToID(s1)} -- ${stateToID(s2)} [style=$style];\n"
       }
     }
