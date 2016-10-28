@@ -1,8 +1,5 @@
 package karme
 
-/**
-  * Created by ask on 10/27/16.
-  */
 object CellTrajectories {
 
   type CellTrajectory = Map[String, Double]

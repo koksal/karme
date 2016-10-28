@@ -1,6 +1,7 @@
 package karme
 
 import karme.Experiments.ContinuousExperiment
+import karme.Experiments.DiscreteExperiment
 
 object Transformations {
 
@@ -24,5 +25,14 @@ object Transformations {
       m.copy(values = m.values.map(pseudoLog(_, ARCSINH_FACTOR)))
     }
     experiment.copy(measurements = transformedMeasurements)
+  }
+
+  def removeNamesWithOneLevel(exp: DiscreteExperiment): DiscreteExperiment = {
+    val namesWithMultipleLevels = exp.names filter { n =>
+      val nvs = exp.valuesForName(n)
+      nvs.min < nvs.max
+    }
+
+    exp.project(namesWithMultipleLevels)
   }
 }

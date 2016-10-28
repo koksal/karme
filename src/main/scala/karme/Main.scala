@@ -32,7 +32,7 @@ object Main {
         Transformations.pseudoLog(e)
       }
 
-    val discreteExperiment = opts.discreteExperimentFile match {
+    var discreteExperiment = opts.discreteExperimentFile match {
       case Some(f) => {
         println("Reading discretized experiment.")
         val de = DiscreteExperimentParser.parse(f)
@@ -54,6 +54,11 @@ object Main {
         }
       }
     }
+
+    println("Removing dimensions with a single discrete value.")
+    discreteExperiment =
+      Transformations.removeNamesWithOneLevel(discreteExperiment)
+    println(s"Remaining number of dimensions: ${discreteExperiment.names.size}")
 
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
 
