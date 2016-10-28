@@ -19,7 +19,7 @@ object DiscreteStateGraph {
     val dotFile = new File(outFolder, "state-graph.dot")
     val pngFile = new File(outFolder, "state-graph.png")
     FileUtil.writeToFile(dotFile, dotString(exp, clustering))
-    s"dot -Tpng ${dotFile.getAbsolutePath} > ${pngFile.getAbsolutePath}".!!
+    s"dot -Tpng ${dotFile.getAbsolutePath}" #> pngFile !
   }
 
   private def dotString(
