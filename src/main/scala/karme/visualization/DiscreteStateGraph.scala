@@ -7,6 +7,7 @@ import karme.analysis.DiscreteStateAnalysis
 import karme.util.FileUtil
 
 import scala.collection.mutable
+import scala.language.postfixOps
 import scala.sys.process._
 
 object DiscreteStateGraph {
@@ -87,7 +88,7 @@ object DiscreteStateGraph {
         1 -> "solid",
         2 -> "dashed"
       )
-      if (dist <= 2) {
+      if (dist <= 1) {
         val style = edgeStyles(dist)
         sb append s"${stateToID(s1)} -- ${stateToID(s2)} [style=$style];\n"
       }
