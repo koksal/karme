@@ -35,6 +35,10 @@ object ArgHandling {
         o.copy(namesFile = Some(new File(v)))
       } text "file with names to project experiment to"
 
+      opt[String]("trajectory") action { (v, o) =>
+        o.copy(trajectoryFiles = o.trajectoryFiles + new File(v))
+      } text "trajectory file in CSV format"
+
       opt[String]("outfolder") action { (v, o) =>
         o.copy(outFolder = new File(v))
       } text "output folder"

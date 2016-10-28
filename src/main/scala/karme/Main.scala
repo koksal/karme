@@ -4,12 +4,9 @@ import java.io.File
 
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.Experiment
-import karme.analysis.ContinuousAnalysis
-import karme.analysis.DiscreteStateAnalysis
+import karme.analysis.{BinomialMLE, ContinuousAnalysis, DiscreteStateAnalysis}
 import karme.discretization.Discretization
-import karme.parsing.ClusteringParser
-import karme.parsing.ContinuousExperimentParser
-import karme.parsing.DiscreteExperimentParser
+import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
 import karme.visualization.DiscreteStateGraph
 import karme.visualization.DiscretizationHistogram
@@ -58,6 +55,12 @@ object Main {
       }
     }
 
+    val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
+
+    val probExperiment = BinomialMLE.run(discreteExperiment, trajectories)
+    val discreteMLEExperiment =
+      Experiments.discretizeProbabilisticExperiment(probExperiment)
+
     val clustering: mutable.MultiMap[String, String] = opts.clusterFile match {
       case Some(f) => ClusteringParser.parse(f)
       case None => new mutable.HashMap[String, mutable.Set[String]]
@@ -85,7 +88,7 @@ object Main {
       ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
 
-    DiscreteStateGraph.plot(discreteExperiment, clustering, opts.outFolder)
+    DiscreteStateGraph.plot(discreteMLEExperiment, clustering, opts.outFolder)
 
 
   }

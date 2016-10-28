@@ -49,6 +49,19 @@ object Experiments {
     def measurementFromId(id: String): Measurement[T] = idToMeasurement(id)
   }
 
+  def discretizeProbabilisticExperiment(
+    exp: ProbabilisticExperiment
+  ): DiscreteExperiment = {
+    val discreteMs = exp.measurements map { m =>
+      val discreteVs = m.values.map { v =>
+        assert(v >= 0 && v <= 1)
+        if (v >= 0.5) 1 else 0
+      }
+      m.copy(values = discreteVs)
+    }
+    exp.copy(measurements = discreteMs)
+  }
+
   type ContinuousExperiment = Experiment[Double]
   type DiscreteExperiment = Experiment[Int]
   type ProbabilisticExperiment = Experiment[Double]
