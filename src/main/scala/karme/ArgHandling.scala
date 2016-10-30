@@ -55,6 +55,10 @@ object ArgHandling {
         o.copy(continuousAnalysis = true)
       } text "run continuous data analysis"
 
+      opt[Int]("window-radius") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))
+      } text "Window radius for binomial MLE pass"
+
       help("help") text "print this help message"
     }
 

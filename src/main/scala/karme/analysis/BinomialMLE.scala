@@ -9,11 +9,10 @@ import karme.Experiments.ProbabilisticExperiment
 
 object BinomialMLE {
 
-  private val WINDOW_RADIUS = 20
-
   def run(
     exp: DiscreteExperiment,
-    trajectories: Seq[CellTrajectory]
+    trajectories: Seq[CellTrajectory],
+    windowRadius: Int
   ): ProbabilisticExperiment = {
     // order each curve
     val cellOrders = trajectories map CellTrajectories.cellOrder
@@ -21,7 +20,8 @@ object BinomialMLE {
     // for each cell
     //   get all vicinities (cells within radius)
     val probMeasurements = for (measurement <- exp.measurements) yield {
-      val vicinityCellIDs = cellIDsInVicinity(measurement.id, cellOrders)
+      val vicinityCellIDs = cellIDsInVicinity(measurement.id, cellOrders,
+        windowRadius)
       val vicinityMeasurements = vicinityCellIDs map { id =>
         exp.measurementFromId(id)
       }
@@ -42,7 +42,8 @@ object BinomialMLE {
   // may return duplicate cells if the cell is on multiple curves
   private def cellIDsInVicinity(
     cellId: String,
-    cellOrders: Iterable[Seq[String]]
+    cellOrders: Iterable[Seq[String]],
+    windowRadius: Int
   ): Seq[String] = {
     var result = Seq[String]()
 
@@ -50,8 +51,8 @@ object BinomialMLE {
       val i = order.indexOf(cellId)
       if (i >= 0) {
         // cell is in this curve, get all cells within radius
-        val minI = math.max(0, i - WINDOW_RADIUS)
-        val maxI = math.min(order.size - 1, i + WINDOW_RADIUS)
+        val minI = math.max(0, i - windowRadius)
+        val maxI = math.min(order.size - 1, i + windowRadius)
 
         // upper bound is exclusive
         result = result ++ order.slice(minI, maxI + 1)

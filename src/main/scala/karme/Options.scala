@@ -11,5 +11,10 @@ case class Options(
   outFolder: File = new File("."),
   visualize: Boolean = false,
   discreteAnalysis: Boolean = false,
-  continuousAnalysis: Boolean = false
+  continuousAnalysis: Boolean = false,
+  analysisOptions: AnalysisOptions = AnalysisOptions()
+)
+
+case class AnalysisOptions(
+  windowRadius: Int = 20
 )

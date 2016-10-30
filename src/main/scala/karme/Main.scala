@@ -64,7 +64,8 @@ object Main {
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
     println(s"Read ${trajectories.size} trajectories.")
 
-    val probExperiment = BinomialMLE.run(discreteExperiment, trajectories)
+    val probExperiment = BinomialMLE.run(discreteExperiment, trajectories,
+      opts.analysisOptions.windowRadius)
     val discreteMLEExperiment =
       Experiments.discretizeProbabilisticExperiment(probExperiment)
 
