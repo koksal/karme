@@ -55,7 +55,7 @@ object DiscreteStateGraph {
     "graph G {\n" +
       "graph [layout=\"sfdp\", overlap=\"prism\"];\n" +
       dotNodes(stateToID, stateToNbCells, stateToClusters) + "\n" +
-      dotEdges(stateToID) + "\n" +
+      dotEdges(exp, stateToID) + "\n" +
     "}"
   }
 
@@ -72,7 +72,9 @@ object DiscreteStateGraph {
     sb.toString()
   }
 
-  private def dotEdges(stateToID: Map[Seq[Int], String]): String = {
+  private def dotEdges(
+    exp: DiscreteExperiment, stateToID: Map[Seq[Int], String]): String = {
+
     val sb = new StringBuilder()
     val stateSeq = stateToID.keySet.toIndexedSeq
     for {
@@ -90,7 +92,10 @@ object DiscreteStateGraph {
       )
       if (dist <= 1) {
         val style = edgeStyles(dist)
-        sb append s"${stateToID(s1)} -- ${stateToID(s2)} [style=$style];\n"
+        val label =
+          DiscreteStateAnalysis.nonIdenticalNames(exp, s1, s2).mkString(",")
+        sb append s"${stateToID(s1)} -- ${stateToID(s2)} [style=$style," +
+          "label=\"" + label + "\"];\n"
       }
     }
     sb.toString()

@@ -49,7 +49,6 @@ object DiscreteStateAnalysis {
     println(s"Median distance: ${MathUtil.median(distances)}")
   }
 
-
   def distance(
     m1: DiscreteMeasurement,
     m2: DiscreteMeasurement
@@ -62,5 +61,20 @@ object DiscreteStateAnalysis {
       case (v1, v2) => math.abs(v1 - v2)
     }
     diffs.sum
+  }
+
+  def nonIdenticalNames(
+    exp: DiscreteExperiment,
+    vs1: Seq[Int],
+    vs2: Seq[Int]
+  ): Seq[String] = {
+    nonIdenticalIndices(vs1, vs2) map { i => exp.names(i) }
+  }
+
+  def nonIdenticalIndices(vs1: Seq[Int], vs2: Seq[Int]): Seq[Int] = {
+    assert(vs1.size == vs2.size)
+    vs1.indices filter { i =>
+      vs1(i) != vs2(i)
+    }
   }
 }
