@@ -8,7 +8,7 @@ import karme.analysis.{BinomialMLE, ContinuousAnalysis, DiscreteStateAnalysis}
 import karme.discretization.Discretization
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
-import karme.visualization.DiscreteStateGraph
+import karme.visualization.DiscreteStateGraphVisualization
 import karme.visualization.DiscretizationHistogram
 
 import scala.collection.mutable
@@ -96,7 +96,7 @@ object Main {
       ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
 
-    DiscreteStateGraph.plot(discreteMLEExperiment, clustering, opts.outFolder)
+    DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering, opts.outFolder)
   }
 
   private def saveExperiment[T](

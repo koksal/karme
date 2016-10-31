@@ -10,7 +10,7 @@ import scala.collection.mutable
 import scala.language.postfixOps
 import scala.sys.process._
 
-object DiscreteStateGraph {
+object DiscreteStateGraphVisualization {
 
   def plot(
     exp: DiscreteExperiment,
