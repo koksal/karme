@@ -15,12 +15,12 @@ case class DiscreteStateGraph(
   }
 
   def addEdge(
-    v1: DiscreteStateGraphNode, v2: DiscreteStateGraphNode
+    v1: DiscreteStateGraphNode, v2: DiscreteStateGraphNode, label: String
   ): DiscreteStateGraph = {
     if (v1 < v2) {
-      this.copy(E = E + DiscreteStateGraphEdge(v1, v2, ???))
+      this.copy(E = E + DiscreteStateGraphEdge(v1, v2, label))
     } else {
-      this.copy(E = E + DiscreteStateGraphEdge(v2, v1, ???))
+      this.copy(E = E + DiscreteStateGraphEdge(v2, v1, label))
     }
   }
 }
