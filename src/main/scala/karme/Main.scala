@@ -8,6 +8,7 @@ import karme.analysis.{BinomialMLE, ContinuousAnalysis, DiscreteStateAnalysis}
 import karme.discretization.Discretization
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
+import karme.visualization.CurvePlot
 import karme.visualization.DiscreteStateGraphVisualization
 import karme.visualization.DiscretizationHistogram
 
@@ -96,7 +97,15 @@ object Main {
       ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
 
-    DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering, opts.outFolder)
+    /*
+    DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering,
+      opts.outFolder)
+      */
+
+    for ((t, i) <- trajectories.zipWithIndex) {
+      val folder = new File(opts.outFolder, s"curve-$i")
+      CurvePlot.plot(probExperiment, t, folder)
+    }
   }
 
   private def saveExperiment[T](

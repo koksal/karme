@@ -12,6 +12,7 @@ object CkmeansInterface {
 
     R.set("xs", xs.toArray)
     R.eval("result <- Ckmeans.1d.dp(xs, k = c(1, 2))")
+    println("Done running ckmeans.")
     R.evalI1("result$cluster")
   }
 }
