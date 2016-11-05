@@ -34,7 +34,7 @@ object CurvePlot {
 
       R.eval("data <- data.frame(index = indices, value = values)")
 
-      R.eval("plot = ggplot(data, aes(x = index, y = value)) + geom_line()")
+      R.eval("plot = ggplot(data, aes(x = index, y = value)) + geom_point()")
 
       val f = new File(folder, s"$name.pdf")
 
