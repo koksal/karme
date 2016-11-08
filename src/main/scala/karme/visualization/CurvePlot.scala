@@ -21,8 +21,7 @@ object CurvePlot {
     val orderedMs = orderedIDs map exp.measurementFromId
     val trajectoryExp = exp.copy(measurements = orderedMs)
 
-    val folder = new File(outFolder, "curves")
-    folder.mkdirs()
+    outFolder.mkdirs()
 
     // plot one chart per name
     for (name <- exp.names) {
@@ -34,9 +33,12 @@ object CurvePlot {
 
       R.eval("data <- data.frame(index = indices, value = values)")
 
-      R.eval("plot = ggplot(data, aes(x = index, y = value)) + geom_point()")
+      R.eval("plot = ggplot(data, aes(x = index, y = value)) + geom_point() + " +
+        "  theme(" +
+        "     axis.text.y=element_blank(), " +
+        "     axis.ticks.y=element_blank())")
 
-      val f = new File(folder, s"$name.pdf")
+      val f = new File(outFolder, s"$name.pdf")
 
       R.set("fname", f.getAbsolutePath())
       R.eval("ggsave(plot, file = fname)")

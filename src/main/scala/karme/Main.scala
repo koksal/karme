@@ -97,14 +97,18 @@ object Main {
       ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
     }
 
-    /*
     DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering,
       opts.outFolder)
-      */
 
     for ((t, i) <- trajectories.zipWithIndex) {
-      val folder = new File(opts.outFolder, s"curve-$i")
-      CurvePlot.plot(probExperiment, t, folder)
+      CurvePlot.plot(experiment.get, t, new File(opts.outFolder,
+        s"curve-$i-raw"))
+      CurvePlot.plot(discreteExperiment, t, new File(opts.outFolder,
+        s"curve-$i-raw-discrete"))
+      CurvePlot.plot(probExperiment, t, new File(opts.outFolder,
+        s"curve-$i-mle"))
+      CurvePlot.plot(discreteMLEExperiment, t, new File(opts.outFolder,
+        s"curve-$i-mle-discrete"))
     }
   }
 

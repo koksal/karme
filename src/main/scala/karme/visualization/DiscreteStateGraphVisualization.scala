@@ -52,7 +52,7 @@ object DiscreteStateGraphVisualization {
       s -> clusters
     }.toMap
 
-    "graph G {\n" +
+    "digraph G {\n" +
       "graph [layout=\"sfdp\", overlap=\"prism\"];\n" +
       dotNodes(stateToID, stateToNbCells, stateToClusters) + "\n" +
       dotEdges(exp, stateToID) + "\n" +
@@ -92,10 +92,16 @@ object DiscreteStateGraphVisualization {
       )
       if (dist <= 1) {
         val style = edgeStyles(dist)
-        val label =
-          DiscreteStateAnalysis.nonIdenticalNames(exp, s1, s2).mkString(",")
-        sb append s"${stateToID(s1)} -- ${stateToID(s2)} [style=$style," +
-          "label=\"" + label + "\"];\n"
+
+        val diffNames = DiscreteStateAnalysis.nonIdenticalNames(exp, s1, s2)
+        assert(diffNames.size == 1)
+        val diffName = diffNames.head
+        val s1Low = s1(exp.names.indexOf(diffName)) == 0
+        val lhs = if (s1Low) s1 else s2
+        val rhs = if (s1Low) s2 else s1
+
+        sb append s"${stateToID(lhs)} -> ${stateToID(rhs)} [style=$style," +
+          "label=\"" + diffName + "\"];\n"
       }
     }
     sb.toString()

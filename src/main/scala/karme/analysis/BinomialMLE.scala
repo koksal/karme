@@ -30,7 +30,7 @@ object BinomialMLE {
       // MLE is the proportion of 1 values across cells
       val mleValues = for (name <- exp.names) yield {
         val values = expInVicinity.valuesForName(name)
-        values.count(_ == 1).toDouble / values.size
+        values.count(_ == 2).toDouble / values.size
       }
 
       Measurement(measurement.id, mleValues)
