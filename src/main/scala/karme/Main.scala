@@ -100,14 +100,15 @@ object Main {
     DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering,
       opts.outFolder)
 
+    val curveFolder = new File(opts.outFolder, "curves")
     for ((t, i) <- trajectories.zipWithIndex) {
-      CurvePlot.plot(experiment.get, t, new File(opts.outFolder,
+      CurvePlot.plot(experiment.get, t, new File(curveFolder,
         s"curve-$i-raw"))
-      CurvePlot.plot(discreteExperiment, t, new File(opts.outFolder,
+      CurvePlot.plot(discreteExperiment, t, new File(curveFolder,
         s"curve-$i-raw-discrete"))
-      CurvePlot.plot(probExperiment, t, new File(opts.outFolder,
+      CurvePlot.plot(probExperiment, t, new File(curveFolder,
         s"curve-$i-mle"))
-      CurvePlot.plot(discreteMLEExperiment, t, new File(opts.outFolder,
+      CurvePlot.plot(discreteMLEExperiment, t, new File(curveFolder,
         s"curve-$i-mle-discrete"))
     }
   }

@@ -28,7 +28,7 @@ object BoxPlot {
 
     R.eval("plot = ggplot(data, aes(label, value)) + geom_boxplot()")
 
-    val folder = new File(outFolder, "boxplot-vis")
+    val folder = new File(outFolder, "box-plots")
     folder.mkdirs()
     val f = new File(folder, s"$outPrefix.pdf")
 

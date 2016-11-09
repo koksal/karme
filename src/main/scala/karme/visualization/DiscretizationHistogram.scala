@@ -20,6 +20,8 @@ object DiscretizationHistogram {
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
+    val folder = new File(outFolder, "histograms")
+
     val clusterToContExp = contExp.partitionClusters(clustering)
     val clusterToDiscExp = discExp.partitionClusters(clustering)
 
@@ -31,11 +33,11 @@ object DiscretizationHistogram {
         clusterDiscExp.measurements.map(_.id))
 
       visualizeDiscretization(clusterContExp, clusterDiscExp,
-        new File(outFolder, s"cluster-$cluster"))
+        new File(folder, s"cluster-$cluster"))
     }
 
     // visualize across clusters
-    visualizeDiscretization(contExp, discExp, new File(outFolder, "all"))
+    visualizeDiscretization(contExp, discExp, new File(folder, "all"))
   }
 
   private def visualizeDiscretization(

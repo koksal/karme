@@ -44,17 +44,20 @@ object DiscreteStateGraphVisualization {
     val stateToNbCells = uniqueStates.map{ s =>
       s -> stateToMeasurements(s).size
     }.toMap
-    val stateToClusters = uniqueStates.map{ s =>
+    val stateToCellsPerCluster = uniqueStates.map{ s =>
       val cellIDs = stateToMeasurements(s).map(_.id)
       val clusters = clusterNames filter { n =>
         clustering(n).intersect(cellIDs.toSet).nonEmpty
       }
-      s -> clusters
+      val cellsPerCluster = clusterNames map { n =>
+        n -> clustering(n).intersect(cellIDs.toSet).size
+      }
+      s -> (cellsPerCluster.filter(_._2 > 0).toMap)
     }.toMap
 
     "digraph G {\n" +
       "graph [layout=\"sfdp\", overlap=\"prism\"];\n" +
-      dotNodes(stateToID, stateToNbCells, stateToClusters) + "\n" +
+      dotNodes(stateToID, stateToNbCells, stateToCellsPerCluster) + "\n" +
       dotEdges(exp, stateToID) + "\n" +
     "}"
   }
@@ -62,11 +65,13 @@ object DiscreteStateGraphVisualization {
   private def dotNodes(
     stateToID: Map[Seq[Int], String],
     stateToNbCells: Map[Seq[Int], Int],
-    stateToClusters: Map[Seq[Int], Set[String]]
+    stateToCellsPerCluster: Map[Seq[Int], Map[String, Int]]
   ): String = {
     val sb = new StringBuilder()
     for ((s, id) <- stateToID) {
-      val clustersStr = stateToClusters(s).mkString("{", ",", "}")
+      val clustersStr = stateToCellsPerCluster(s).map{
+        case (cname, nbCells) => s"$cname (${nbCells})"
+      }.mkString("{", ",", "}")
       sb.append(id + " [label=\"" + clustersStr + "\"];\n")
     }
     sb.toString()
