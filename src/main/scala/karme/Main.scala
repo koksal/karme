@@ -2,8 +2,7 @@ package karme
 
 import java.io.File
 
-import karme.Experiments.ContinuousExperiment
-import karme.Experiments.Experiment
+import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.analysis.{BinomialMLE, ContinuousAnalysis, DiscreteStateAnalysis}
 import karme.discretization.Discretization
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
@@ -21,63 +20,31 @@ object Main {
     val opts = ArgHandling.parseOptions(args)
     opts.outFolder.mkdirs()
 
-    val experiment: Option[ContinuousExperiment] =
-      opts.continuousExperimentFile map { f =>
-        println("Reading continuous experiment.")
-        var e = ContinuousExperimentParser.parse(f)
+    val continuousExperimentOpt = readContinuousExperiment(
+      opts.continuousExperimentFile, opts.namesFile)
 
-        println("Filtering by names.")
-        e = filterByNames(e, opts.namesFile)
+    var discreteExperiment = readDiscreteExperiment(
+      opts.discreteExperimentFile, opts.namesFile).getOrElse(
+        Discretization.discretize(continuousExperimentOpt.getOrElse(
+          sys.error("No continuous or discrete experiment given."))))
 
-        println("Transforming data.")
-        Transformations.pseudoLog(e)
-      }
+    saveExperiment(discreteExperiment, opts.outFolder)
 
-    var discreteExperiment = opts.discreteExperimentFile match {
-      case Some(f) => {
-        println("Reading discretized experiment.")
-        val de = DiscreteExperimentParser.parse(f)
-
-        println("Filtering by names.")
-        filterByNames(de, opts.namesFile)
-      }
-      case None => {
-        println("Discretizing experiment.")
-        experiment match {
-          case Some(e) => {
-            val de = Discretization.discretize(e)
-
-            println("Saving discrete experiment to file.")
-            saveExperiment(de, opts.outFolder)
-
-            de
-          }
-          case None => sys.error("No continuous experiment given.")
-        }
-      }
-    }
-
-    println("Removing dimensions with a single discrete value.")
-    discreteExperiment =
-      Transformations.removeNamesWithOneLevel(discreteExperiment)
-    println(s"Remaining number of dimensions: ${discreteExperiment.names.size}")
+    discreteExperiment = Transformations.removeNamesWithOneLevel(
+      discreteExperiment)
 
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
     println(s"Read ${trajectories.size} trajectories.")
 
     val probExperiment = BinomialMLE.run(discreteExperiment, trajectories,
       opts.analysisOptions.windowRadius)
-    val discreteMLEExperiment =
-      Experiments.discretizeProbabilisticExperiment(probExperiment)
+    val discreteMLEExperiment = Experiments.discretizeProbabilisticExperiment(
+      probExperiment)
 
-    val clustering: mutable.MultiMap[String, String] = opts.clusterFile match {
-      case Some(f) => ClusteringParser.parse(f)
-      case None => new mutable.HashMap[String, mutable.Set[String]]
-        with mutable.MultiMap[String, String]
-    }
+    val clustering = readClustering(opts.clusterFile)
 
     if (opts.visualize) {
-      experiment match {
+      continuousExperimentOpt match {
         case Some(e) => {
           println("Visualizing discretization.")
           DiscretizationHistogram.visualizeDiscretization(e,
@@ -89,12 +56,8 @@ object Main {
       }
     }
 
-    if (opts.discreteAnalysis) {
-      DiscreteStateAnalysis.analyze(discreteExperiment, clustering)
-    }
-
     if (opts.continuousAnalysis) {
-      ContinuousAnalysis.analyze(experiment.get, clustering, opts.outFolder)
+      ContinuousAnalysis.analyze(continuousExperimentOpt.get, clustering, opts.outFolder)
     }
 
     DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering,
@@ -102,7 +65,7 @@ object Main {
 
     val curveFolder = new File(opts.outFolder, "curves")
     for ((t, i) <- trajectories.zipWithIndex) {
-      CurvePlot.plot(experiment.get, t, new File(curveFolder,
+      CurvePlot.plot(continuousExperimentOpt.get, t, new File(curveFolder,
         s"curve-$i-raw"))
       CurvePlot.plot(discreteExperiment, t, new File(curveFolder,
         s"curve-$i-raw-discrete"))
@@ -111,6 +74,50 @@ object Main {
       CurvePlot.plot(discreteMLEExperiment, t, new File(curveFolder,
         s"curve-$i-mle-discrete"))
     }
+  }
+
+  private def readContinuousExperiment(
+    experimentFile: Option[File],
+    namesFile: Option[File]
+  ): Option[ContinuousExperiment] = {
+    experimentFile map { f =>
+      println("Reading continuous experiment.")
+      var e = ContinuousExperimentParser.parse(f)
+
+      println("Filtering by names.")
+      e = filterByNames(e, namesFile)
+
+      println("Transforming data.")
+      Transformations.pseudoLog(e)
+    }
+  }
+
+  private def readDiscreteExperiment(
+    experimentFile: Option[File],
+    namesFile: Option[File]
+  ): Option[DiscreteExperiment] = {
+    experimentFile map { f =>
+      println("Reading discretized experiment.")
+      val de = DiscreteExperimentParser.parse(f)
+
+      println("Filtering by names.")
+      filterByNames(de, namesFile)
+    }
+  }
+
+  private def readClustering(
+    fileOpt: Option[File]
+  ): mutable.MultiMap[String, String] = fileOpt match {
+    case Some(f) => ClusteringParser.parse(f)
+    case None => new mutable.HashMap[String, mutable.Set[String]]
+      with mutable.MultiMap[String, String]
+  }
+
+  private def visualize(
+    options: VisualizationOptions,
+    outFolder: File
+  ): Unit = {
+    
   }
 
   private def saveExperiment[T](

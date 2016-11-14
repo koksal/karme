@@ -33,6 +33,8 @@ object Transformations {
       nvs.min < nvs.max
     }
 
+    val nbRemovedDimensions = exp.names.size - namesWithMultipleLevels.size
+    println(s"Removed ${nbRemovedDimensions} dimensions")
     exp.project(namesWithMultipleLevels)
   }
 }

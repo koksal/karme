@@ -18,3 +18,10 @@ case class Options(
 case class AnalysisOptions(
   windowRadius: Int = 20
 )
+
+case class VisualizationOptions(
+  histograms: Boolean = false,
+  boxPlots: Boolean = false,
+  curves: Boolean = false,
+  stateGraph: Boolean = false
+)
