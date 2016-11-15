@@ -9,10 +9,10 @@ case class Options(
   namesFile: Option[File] = None,
   trajectoryFiles: Seq[File] = Seq(),
   outFolder: File = new File("."),
-  visualize: Boolean = false,
   discreteAnalysis: Boolean = false,
   continuousAnalysis: Boolean = false,
-  analysisOptions: AnalysisOptions = AnalysisOptions()
+  analysisOptions: AnalysisOptions = AnalysisOptions(),
+  visualizationOptions: VisualizationOptions = VisualizationOptions()
 )
 
 case class AnalysisOptions(

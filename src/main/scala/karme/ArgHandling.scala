@@ -44,8 +44,9 @@ object ArgHandling {
       } text "output folder"
 
       opt[Unit]("visualize") action { (_, o) =>
-        o.copy(visualize = true)
-      } text "visualize discretization data"
+        o.copy(visualizationOptions = VisualizationOptions(true, true, true,
+          true))
+      } text "run all visualizations"
 
       opt[Unit]("discrete-analysis") action { (_, o) =>
         o.copy(discreteAnalysis = true)

@@ -2,14 +2,13 @@ package karme
 
 import java.io.File
 
+import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
-import karme.analysis.{BinomialMLE, ContinuousAnalysis, DiscreteStateAnalysis}
+import karme.analysis.BinomialMLE
 import karme.discretization.Discretization
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
-import karme.visualization.CurvePlot
-import karme.visualization.DiscreteStateGraphVisualization
-import karme.visualization.DiscretizationHistogram
+import karme.visualization.{CurvePlot, DiscreteStateGraphVisualization, DiscretizationHistogram, ExperimentBoxPlots}
 
 import scala.collection.mutable
 import scala.io.Source
@@ -38,42 +37,15 @@ object Main {
 
     val probExperiment = BinomialMLE.run(discreteExperiment, trajectories,
       opts.analysisOptions.windowRadius)
+
     val discreteMLEExperiment = Experiments.discretizeProbabilisticExperiment(
       probExperiment)
 
     val clustering = readClustering(opts.clusterFile)
 
-    if (opts.visualize) {
-      continuousExperimentOpt match {
-        case Some(e) => {
-          println("Visualizing discretization.")
-          DiscretizationHistogram.visualizeDiscretization(e,
-            discreteExperiment, clustering, opts.outFolder)
-        }
-        case None => {
-          println("No experiment to visualize.")
-        }
-      }
-    }
+    visualize(continuousExperimentOpt.get, discreteMLEExperiment, clustering,
+      trajectories, opts.visualizationOptions, opts.outFolder)
 
-    if (opts.continuousAnalysis) {
-      ContinuousAnalysis.analyze(continuousExperimentOpt.get, clustering, opts.outFolder)
-    }
-
-    DiscreteStateGraphVisualization.plot(discreteMLEExperiment, clustering,
-      opts.outFolder)
-
-    val curveFolder = new File(opts.outFolder, "curves")
-    for ((t, i) <- trajectories.zipWithIndex) {
-      CurvePlot.plot(continuousExperimentOpt.get, t, new File(curveFolder,
-        s"curve-$i-raw"))
-      CurvePlot.plot(discreteExperiment, t, new File(curveFolder,
-        s"curve-$i-raw-discrete"))
-      CurvePlot.plot(probExperiment, t, new File(curveFolder,
-        s"curve-$i-mle"))
-      CurvePlot.plot(discreteMLEExperiment, t, new File(curveFolder,
-        s"curve-$i-mle-discrete"))
-    }
   }
 
   private def readContinuousExperiment(
@@ -114,10 +86,36 @@ object Main {
   }
 
   private def visualize(
+    continuousExperiment: ContinuousExperiment,
+    discreteExperiment: DiscreteExperiment,
+    clustering: mutable.MultiMap[String, String],
+    trajectories: Seq[CellTrajectory],
     options: VisualizationOptions,
     outFolder: File
   ): Unit = {
-    
+    if (options.histograms) {
+      DiscretizationHistogram.visualizeDiscretization(continuousExperiment,
+        discreteExperiment, clustering, outFolder)
+    }
+
+    if (options.boxPlots) {
+      ExperimentBoxPlots.plot(continuousExperiment, clustering, outFolder)
+    }
+
+    if (options.stateGraph) {
+      DiscreteStateGraphVisualization.plot(discreteExperiment, clustering,
+        outFolder)
+    }
+
+    if (options.curves) {
+      val curveFolder = new File(outFolder, "curves")
+      for ((t, i) <- trajectories.zipWithIndex) {
+        CurvePlot.plot(continuousExperiment, t, new File(curveFolder,
+          s"curve-$i-continuous"))
+        CurvePlot.plot(discreteExperiment, t, new File(curveFolder,
+          s"curve-$i-discrete"))
+      }
+    }
   }
 
   private def saveExperiment[T](

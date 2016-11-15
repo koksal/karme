@@ -1,15 +1,15 @@
-package karme.analysis
+package karme.visualization
 
 import java.io.File
 
 import karme.Experiments.ContinuousExperiment
-import karme.visualization.BoxPlot
 
 import scala.collection.mutable
 import scala.io.Source
 
-object ContinuousAnalysis {
-  def analyze(
+object ExperimentBoxPlots {
+
+  def plot(
     contExp: ContinuousExperiment,
     clustering: mutable.MultiMap[String, String],
     outFolder: File
