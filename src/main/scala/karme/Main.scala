@@ -6,9 +6,10 @@ import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.analysis.BinomialMLE
 import karme.discretization.Discretization
+import karme.graphs.StateGraphs
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
-import karme.visualization.{CurvePlot, DiscreteStateGraphVisualization, DiscretizationHistogram, ExperimentBoxPlots}
+import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
 
 import scala.collection.mutable
 import scala.io.Source
@@ -45,7 +46,6 @@ object Main {
 
     visualize(continuousExperimentOpt.get, discreteMLEExperiment, clustering,
       trajectories, opts.visualizationOptions, opts.outFolder)
-
   }
 
   private def readContinuousExperiment(
@@ -103,8 +103,8 @@ object Main {
     }
 
     if (options.stateGraph) {
-      DiscreteStateGraphVisualization.plot(discreteExperiment, clustering,
-        outFolder)
+      val g = StateGraphs.fromDiscreteExperiment(discreteExperiment, 2)
+      StateGraphVisualization.plotUndirectedGraph(g, clustering, outFolder)
     }
 
     if (options.curves) {

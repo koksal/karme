@@ -68,7 +68,15 @@ object DiscreteStateAnalysis {
     vs1: Seq[Int],
     vs2: Seq[Int]
   ): Seq[String] = {
-    nonIdenticalIndices(vs1, vs2) map { i => exp.names(i) }
+    nonIdenticalNames(exp.names, vs1, vs2)
+  }
+
+  def nonIdenticalNames(
+    names: Seq[String],
+    vs1: Seq[Int],
+    vs2: Seq[Int]
+  ): Seq[String] = {
+    nonIdenticalIndices(vs1, vs2) map { i => names(i) }
   }
 
   def nonIdenticalIndices(vs1: Seq[Int], vs2: Seq[Int]): Seq[Int] = {
