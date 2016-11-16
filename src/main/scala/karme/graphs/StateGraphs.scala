@@ -67,21 +67,6 @@ object StateGraphs {
       DiscreteStateAnalysis.nonIdenticalNames(names, e.n1.state, e.n2.state)
     }
 
-    def nodeMeasurementsPerCluster(
-      n: DiscreteStateGraphNode, clustering: mutable.MultiMap[String, String]
-    ): mutable.MultiMap[String, String] = {
-      val result = new mutable.HashMap[String, mutable.Set[String]]()
-        with mutable.MultiMap[String, String]
-      val nodeMeasurementIDs = n.measurements.map(_.id)
-      for ((clusterName, cellIDs) <- clustering) {
-        val commonIDs = nodeMeasurementIDs.toSet.intersect(cellIDs)
-        for (id <- commonIDs) {
-          result.addBinding(clusterName, id)
-        }
-      }
-      result
-    }
-
     def orientByTrajectories(
       trajectories: Seq[CellTrajectory]
     ): DirectedStateGraph = {
@@ -194,4 +179,20 @@ object StateGraphs {
     n1: DiscreteStateGraphNode,
     n2: DiscreteStateGraphNode
   )
+
+  def nodeMeasurementsPerCluster(
+    n: DiscreteStateGraphNode, clustering: mutable.MultiMap[String, String]
+  ): mutable.MultiMap[String, String] = {
+    val result = new mutable.HashMap[String, mutable.Set[String]]()
+      with mutable.MultiMap[String, String]
+    val nodeMeasurementIDs = n.measurements.map(_.id)
+    for ((clusterName, cellIDs) <- clustering) {
+      val commonIDs = nodeMeasurementIDs.toSet.intersect(cellIDs)
+      for (id <- commonIDs) {
+        result.addBinding(clusterName, id)
+      }
+    }
+    result
+  }
+
 }
