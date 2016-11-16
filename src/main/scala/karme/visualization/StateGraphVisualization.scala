@@ -20,11 +20,11 @@ object StateGraphVisualization {
   ): Unit = {
     val dotFile = new File(outFolder, "state-graph.dot")
     val pngFile = new File(outFolder, "state-graph.png")
-    FileUtil.writeToFile(dotFile, dotString(g, clustering))
+    FileUtil.writeToFile(dotFile, undirectedDotString(g, clustering))
     s"dot -Tpng ${dotFile.getAbsolutePath}" #> pngFile !
   }
 
-  private def dotString(
+  private def undirectedDotString(
     g: UndirectedStateGraph, clustering: mutable.MultiMap[String, String]
   ): String = {
     // assign node IDs
