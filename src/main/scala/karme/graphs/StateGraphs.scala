@@ -1,8 +1,10 @@
 package karme.graphs
 
+import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, Measurement}
 import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UndirectedGraph}
+import karme.util.MathUtil
 
 import scala.collection.mutable
 
@@ -79,6 +81,58 @@ object StateGraphs {
       }
       result
     }
+
+    def orientByTrajectories(
+      trajectories: Seq[CellTrajectory]
+    ): DirectedStateGraph = {
+      // compute all directions that can be assigned with trajectories
+      // check that inferred directions are not contradictory
+      // merge directions
+      ???
+    }
+
+    private def trajectoryDirections(
+      trajectory: CellTrajectory
+    ): Map[DiscreteStateGraphEdge, EdgeDirection] = {
+      var res = Map[DiscreteStateGraphEdge, EdgeDirection]()
+
+      // for each state, compute average pseudotime for given trajectory
+      var nodeToPseudotime = Map[DiscreteStateGraphNode, Double]()
+      for (node <- V) {
+        avgNodePseudotime(node, trajectory) match {
+          case Some(pt) => nodeToPseudotime += node -> pt
+          case None =>
+        }
+      }
+
+      // for each edge, assign a direction if possible.
+      for (edge @ DiscreteStateGraphEdge(n1, n2) <- E) {
+        (nodeToPseudotime.get(n1), nodeToPseudotime.get(n2)) match {
+          case (Some(pt1), Some(pt2)) => {
+            val dir = if (pt1 < pt2) Forward else Backward
+            res += edge -> dir
+          }
+          case _ =>
+        }
+      }
+
+      res
+    }
+
+    private def avgNodePseudotime(
+      node: DiscreteStateGraphNode, trajectory: CellTrajectory
+    ): Option[Double] = {
+      val nodeCellIDs = node.measurements.map(_.id)
+      val pseudotimes = nodeCellIDs collect {
+        case id if trajectory.isDefinedAt(id) => trajectory(id)
+      }
+      if (pseudotimes.isEmpty) {
+        None
+      } else {
+        Some(MathUtil.mean(pseudotimes))
+      }
+    }
+
   }
 
   class DirectedStateGraph(

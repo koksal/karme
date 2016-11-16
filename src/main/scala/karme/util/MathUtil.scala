@@ -12,4 +12,8 @@ object MathUtil {
     }
   }
 
+  def mean(vs: Iterable[Double]): Double = {
+    vs.sum / vs.size
+  }
+
 }
