@@ -48,6 +48,11 @@ object ArgHandling {
           true))
       } text "run all visualizations"
 
+      opt[Unit]("graphs") action { (_, o) =>
+        o.copy(visualizationOptions =
+          o.visualizationOptions.copy(stateGraph = true))
+      } text "visualize state graphs"
+
       opt[Unit]("discrete-analysis") action { (_, o) =>
         o.copy(discreteAnalysis = true)
       } text "run discrete data analysis"
@@ -58,7 +63,7 @@ object ArgHandling {
 
       opt[Int]("window-radius") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))
-      } text "Window radius for binomial MLE pass"
+      } text "window radius for binomial MLE pass"
 
       help("help") text "print this help message"
     }

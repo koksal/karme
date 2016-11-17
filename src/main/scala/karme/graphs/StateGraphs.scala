@@ -70,9 +70,9 @@ object StateGraphs {
     def orientByTrajectories(
       trajectories: Seq[CellTrajectory]
     ): DirectedStateGraph = {
-      val directions =
-        new mutable.HashMap[DiscreteStateGraphEdge, Set[EdgeDirection]]()
-          with mutable.MultiMap[DiscreteStateGraphEdge, EdgeDirection]
+      val directions = new mutable.HashMap[DiscreteStateGraphEdge,
+        mutable.Set[EdgeDirection]]() with
+        mutable.MultiMap[DiscreteStateGraphEdge, EdgeDirection]
 
       // compute all directions that can be assigned with trajectories
       val directionMaps = trajectories map trajectoryDirections
@@ -83,8 +83,11 @@ object StateGraphs {
           case dm if dm.isDefinedAt(edge) => dm(edge)
         }
         assert(ds.nonEmpty)
-        assert(ds.distinct.size == 1)
-        directions.addBinding(edge, ds.head)
+        // this assertion does not hold
+        // assert(ds.distinct.size == 1)
+        for (d <- ds) {
+          directions.addBinding(edge, d)
+        }
       }
 
       new DirectedStateGraph(V, E, directions, names)

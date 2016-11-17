@@ -2,8 +2,8 @@ package karme.visualization
 
 import java.io.File
 
-import karme.Experiments.DiscreteExperiment
-import karme.analysis.DiscreteStateAnalysis
+import karme.graphs.Graphs.Backward
+import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedStateGraph, DiscreteStateGraphEdge, DiscreteStateGraphNode, UndirectedStateGraph}
 import karme.util.FileUtil
@@ -28,7 +28,7 @@ object StateGraphVisualization {
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
-    val dotString = ???
+    val dotString = directedDotString(g, clustering)
     plotGraph(dotString, "directed-state-graph.png", outFolder)
   }
 
@@ -46,26 +46,44 @@ object StateGraphVisualization {
   private def undirectedDotString(
     g: UndirectedStateGraph, clustering: mutable.MultiMap[String, String]
   ): String = {
-    // assign node IDs
-    val nodeToID = g.V.zipWithIndex.map{
-      case (v, i) => {
-        v -> s"V$i"
-      }
-    }.toMap
-
-    "graph G {\n" +
-      "graph [layout=\"sfdp\", overlap=\"prism\"];\n" +
-      dotNodes(g.V, clustering, nodeToID) + "\n" +
-      dotEdges(g, nodeToID) + "\n" +
-    "}"
+    val nodeToID = makeNodeIDs(g.V)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID)
+    val edgeStr = undirectedDotEdges(g, nodeToID)
+    dotGraph(nodeStr, edgeStr, isDirected = false)
   }
 
   private def directedDotString(
     g: DirectedStateGraph,
-    clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[DiscreteStateGraphNode, String]
+    clustering: mutable.MultiMap[String, String]
   ): String = {
-    ???
+    val nodeToID = makeNodeIDs(g.V)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID)
+    val edgeStr = directedDotEdges(g, nodeToID)
+    dotGraph(nodeStr, edgeStr, isDirected = true)
+  }
+
+  private def dotGraph(
+    nodeStr: String,
+    edgeStr: String,
+    isDirected: Boolean
+  ): String = {
+    val graphDeclaration = if (isDirected) "digraph" else "graph"
+    s"""${graphDeclaration} G {
+       |graph [layout="sfdp", overlap="prism"];
+       |${nodeStr}
+       |${edgeStr}
+       |}
+       |""".stripMargin
+
+  }
+  private def makeNodeIDs(
+    vs: Iterable[DiscreteStateGraphNode]
+  ): Map[DiscreteStateGraphNode, String] = {
+    vs.zipWithIndex.map{
+      case (v, i) => {
+        v -> s"V$i"
+      }
+    }.toMap
   }
 
   private def dotNodes(
@@ -85,7 +103,7 @@ object StateGraphVisualization {
     sb.toString()
   }
 
-  private def dotEdges(
+  private def undirectedDotEdges(
     g: UndirectedStateGraph,
     nodeToId: Map[DiscreteStateGraphNode, String]
   ): String = {
@@ -101,6 +119,34 @@ object StateGraphVisualization {
     }
 
     sb.toString()
+  }
+
+  private def directedDotEdges(
+    g: DirectedStateGraph,
+    nodeToID: Map[DiscreteStateGraphNode, String]
+  ): String = {
+    val sb = new StringBuilder()
+    for (e @ DiscreteStateGraphEdge(n1, n2) <- g.E) {
+      val labels = g.edgeLabels(e)
+      val lhsID = nodeToID(n1)
+      val rhsID = nodeToID(n2)
+      val edgeDirections = g.edgeDirections(e).toSet
+      if (edgeDirections contains Forward) {
+        sb append directedDotEdge(lhsID, rhsID, labels)
+      }
+      if (edgeDirections contains Backward) {
+        sb append directedDotEdge(rhsID, lhsID, labels)
+      }
+    }
+
+    sb.toString()
+  }
+
+  private def directedDotEdge(
+    lhsID: String, rhsID: String, labels: Iterable[String]
+  ): String = {
+    s"""${lhsID} -> ${rhsID} [label="${labels.mkString(",")}"]
+       |""".stripMargin
   }
 
 }

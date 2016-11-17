@@ -103,8 +103,14 @@ object Main {
     }
 
     if (options.stateGraph) {
-      val g = StateGraphs.fromDiscreteExperiment(discreteExperiment, 2)
-      StateGraphVisualization.plotUndirectedGraph(g, clustering, outFolder)
+      val undirectedG = StateGraphs.fromDiscreteExperiment(
+        discreteExperiment, 1)
+      val directedG = undirectedG.orientByTrajectories(trajectories)
+
+      StateGraphVisualization.plotUndirectedGraph(undirectedG, clustering,
+        outFolder)
+      StateGraphVisualization.plotDirectedGraph(directedG, clustering,
+        outFolder)
     }
 
     if (options.curves) {
