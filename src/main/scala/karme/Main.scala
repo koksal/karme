@@ -7,6 +7,7 @@ import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.analysis.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
+import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
 import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
@@ -44,8 +45,14 @@ object Main {
 
     val clustering = readClustering(opts.clusterFile)
 
+    val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
+      discreteExperiment, opts.analysisOptions.maxHammingDistance)
+    val directedStateGraph = undirectedStateGraph.orientByTrajectories(
+      trajectories)
+
     visualize(continuousExperimentOpt.get, discreteMLEExperiment, clustering,
-      trajectories, opts.visualizationOptions, opts.outFolder)
+      trajectories, undirectedStateGraph, directedStateGraph,
+      opts.visualizationOptions, opts.outFolder)
   }
 
   private def readContinuousExperiment(
@@ -90,6 +97,8 @@ object Main {
     discreteExperiment: DiscreteExperiment,
     clustering: mutable.MultiMap[String, String],
     trajectories: Seq[CellTrajectory],
+    undirectedStateGraph: UndirectedStateGraph,
+    directedStateGraph: DirectedStateGraph,
     options: VisualizationOptions,
     outFolder: File
   ): Unit = {
@@ -103,13 +112,9 @@ object Main {
     }
 
     if (options.stateGraph) {
-      val undirectedG = StateGraphs.fromDiscreteExperiment(
-        discreteExperiment, 1)
-      val directedG = undirectedG.orientByTrajectories(trajectories)
-
-      StateGraphVisualization.plotUndirectedGraph(undirectedG, clustering,
-        outFolder)
-      StateGraphVisualization.plotDirectedGraph(directedG, clustering,
+      StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
+        clustering, outFolder)
+      StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
         outFolder)
     }
 

@@ -1,7 +1,7 @@
 package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, Measurement}
+import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement}
 import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UndirectedGraph}
 import karme.util.MathUtil
