@@ -1,5 +1,6 @@
 package karme.synthesis
 
+import karme.synthesis.Trees._
 import karme.util.MathUtil
 
 object Transitions {
@@ -70,5 +71,15 @@ object Transitions {
     }
   }
 
+  case class SymBooleanState(mapping: Map[String, Variable]) extends AbsBooleanState(mapping) {
+    def hasValue(concreteState: ConcreteBooleanState): Expr = {
+      val conj = orderedKeys map { key =>
+        val symValue = this(key)
+        val concValue = concreteState(key)
+        Equals(symValue, BooleanLiteral(concValue))
+      }
+      And(conj: _*)
+    }
+  }
 
 }
