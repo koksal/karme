@@ -5,7 +5,8 @@ import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 
 object Synthesis {
-  private def synthesize(
+
+  def synthesize(
     transitions: Iterable[Transition],
     possibleVars: Set[String],
     depth: Int
@@ -31,7 +32,8 @@ object Synthesis {
     Enumeration.enumerate(extract, symEq, constraints, limit)
   }
 
-  def mkFreshSymFunExpr(depth: Int, possibleVars: Set[String]): SymFunExpr = {
+  private def mkFreshSymFunExpr(depth: Int, possibleVars: Set[String]):
+    SymFunExpr = {
     if (depth == 0) {
       new SymFunLeaf(Trees.mkFreshIntVar("leaf"), possibleVars)
     } else {
@@ -41,7 +43,7 @@ object Synthesis {
     }
   }
 
-  def evaluate(
+  private def evaluate(
     sf: SymFunExpr,
     input: AbsBooleanState[_]
   ): (Variable, Expr) = {
@@ -86,7 +88,7 @@ object Synthesis {
 
   }
 
-  def validTransition(sf: SymFunExpr, transition: Transition): Expr = {
+  private def validTransition(sf: SymFunExpr, transition: Transition): Expr = {
     val (res, evaluationConstraint) = evaluate(sf, transition.s1)
     And(
       Equals(res, BooleanLiteral(transition.output)),
@@ -94,7 +96,7 @@ object Synthesis {
     )
   }
 
-  def funExprValue(e: SymFunExpr, m: Map[Identifier, Expr]): FunExpr = {
+  private def funExprValue(e: SymFunExpr, m: Map[Identifier, Expr]): FunExpr = {
     e match {
       case SymFunTree(l, v, r) => {
         m(v.id) match {
@@ -121,8 +123,8 @@ object Synthesis {
     }
   }
 
-  /** Returns a formula stating that sfe equals the concrete fe */
-  def funExprEquals(sfe: SymFunExpr, fe: FunExpr): Expr = {
+  // Returns a formula stating that sfe equals the concrete fe
+  private def funExprEquals(sfe: SymFunExpr, fe: FunExpr): Expr = {
     fe match {
       case FunVar(id) => {
         Equals(sfe.nodeValue, sfe.encodingMapping.VAR_NODE(id))
