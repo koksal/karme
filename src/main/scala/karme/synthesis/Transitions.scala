@@ -41,14 +41,19 @@ object Transitions {
     }
   }
 
-  case class Transition(s1: ConcreteProbabilisticBooleanState, s2: ConcreteProbabilisticBooleanState) {
+  case class Transition(
+    s1: ConcreteProbabilisticBooleanState,
+    s2: ConcreteProbabilisticBooleanState
+  ) {
     private val allLabels = {
       assert(s1.orderedKeys == s2.orderedKeys)
       s1.orderedKeys
     }
 
     val diffIndex: Int = {
-      def differ(pair: (ProbabilisticBoolean, ProbabilisticBoolean)): Boolean = {
+      def differ(
+        pair: (ProbabilisticBoolean, ProbabilisticBoolean)
+      ): Boolean = {
         pair._1.value != pair._2.value
       }
       (s1.orderedValues zip s2.orderedValues).indexWhere(differ)
@@ -71,7 +76,9 @@ object Transitions {
     }
   }
 
-  case class SymBooleanState(mapping: Map[String, Variable]) extends AbsBooleanState(mapping) {
+  case class SymBooleanState(
+    mapping: Map[String, Variable]
+  ) extends AbsBooleanState(mapping) {
     def hasValue(concreteState: ConcreteBooleanState): Expr = {
       val conj = orderedKeys map { key =>
         val symValue = this(key)

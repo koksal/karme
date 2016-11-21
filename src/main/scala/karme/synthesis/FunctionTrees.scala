@@ -56,7 +56,9 @@ object FunctionTrees {
     def consistency(): Expr = {
       val allNodes = this :: this.descendants
       // all variables are distinct
-      val distinctVars = for (n1 <- allNodes; n2 <- allNodes; if n1 != n2) yield {
+      val distinctVars = for (
+        n1 <- allNodes; n2 <- allNodes; if n1 != n2
+      ) yield {
         Implies(
           And(n1.isVAR, n2.isVAR),
           Not(Equals(n1.nodeValue, n2.nodeValue))
@@ -80,11 +82,12 @@ object FunctionTrees {
 
     def nodeConsistency(): Expr
 
-    def isAND: Expr           = Equals(this.nodeValue, encodingMapping.AND_NODE)
-    def isOR: Expr            = Equals(this.nodeValue, encodingMapping.OR_NODE)
-    def isNOT: Expr           = Equals(this.nodeValue, encodingMapping.NOT_NODE)
-    def isIGNORE: Expr        = Equals(this.nodeValue, encodingMapping.IGNORE_NODE)
-    def isPROT(name: String)  = Equals(this.nodeValue, encodingMapping.VAR_NODE(name))
+    def isAND: Expr = Equals(this.nodeValue, encodingMapping.AND_NODE)
+    def isOR: Expr = Equals(this.nodeValue, encodingMapping.OR_NODE)
+    def isNOT: Expr = Equals(this.nodeValue, encodingMapping.NOT_NODE)
+    def isIGNORE: Expr = Equals(this.nodeValue, encodingMapping.IGNORE_NODE)
+    def isPROT(name: String) =
+      Equals(this.nodeValue, encodingMapping.VAR_NODE(name))
 
     def isVAR: Expr = {
       val v = this.nodeValue
@@ -106,7 +109,10 @@ object FunctionTrees {
   }
 
   class SymFunTree(
-    val l: SymFunExpr, val v: Variable, val r: SymFunExpr, val possibleVars: Set[String]
+    val l: SymFunExpr,
+    val v: Variable,
+    val r: SymFunExpr,
+    val possibleVars: Set[String]
   ) extends SymFunExpr {
     def nodeValue: Variable = v
     def children = List(l, r)
@@ -156,7 +162,10 @@ object FunctionTrees {
     }
   }
 
-  class SymFunLeaf(val v: Variable, val possibleVars: Set[String]) extends SymFunExpr {
+  class SymFunLeaf(
+    val v: Variable,
+    val possibleVars: Set[String]
+  ) extends SymFunExpr {
     def nodeValue: Variable = v
     def children = List()
     def descendants = List()

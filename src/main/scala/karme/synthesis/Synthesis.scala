@@ -16,10 +16,12 @@ object Synthesis {
     val treeConsistent = symTree.consistency()
 
     // applying symbolic tree to all transitions should yield output
-    val transitionsValid = And(transitions.toList map (t => validTransition(symTree, t)): _*)
+    val transitionsValid = And(
+      transitions.toList map (t => validTransition(symTree, t)): _*)
 
     val modelNbLimit = 10
-    enumerateFunExpr(symTree, And(treeConsistent, transitionsValid), Some(modelNbLimit))
+    enumerateFunExpr(symTree,
+      And(treeConsistent, transitionsValid), Some(modelNbLimit))
   }
 
   private def enumerateFunExpr(
@@ -27,7 +29,8 @@ object Synthesis {
     constraints: Expr,
     limit: Option[Int]
   ): List[FunExpr] = {
-    def extract(model: Map[Identifier, Expr]): FunExpr = funExprValue(sfe, model)
+    def extract(model: Map[Identifier, Expr]): FunExpr =
+      funExprValue(sfe, model)
     def symEq(fe: FunExpr): Expr = funExprEquals(sfe, fe)
     Enumeration.enumerate(extract, symEq, constraints, limit)
   }
@@ -53,7 +56,8 @@ object Synthesis {
     val varCases = sf.prots map { prot =>
       val varValue = input match {
         case cbs: ConcreteBooleanState => BooleanLiteral(cbs(prot))
-        case cpbs: ConcreteProbabilisticBooleanState => BooleanLiteral(cpbs(prot).value)
+        case cpbs: ConcreteProbabilisticBooleanState =>
+          BooleanLiteral(cpbs(prot).value)
         case sbs: SymBooleanState => sbs(prot)
       }
       Implies(
