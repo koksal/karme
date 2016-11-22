@@ -1,4 +1,4 @@
-package karme.analysis
+package karme.transformations
 
 import karme.Experiments.DiscreteExperiment
 import karme.Experiments.DiscreteMeasurement

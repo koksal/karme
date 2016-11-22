@@ -11,7 +11,8 @@ object CkmeansInterface {
     R.eval("library(Ckmeans.1d.dp)")
 
     R.set("xs", xs.toArray)
-    R.eval("result <- Ckmeans.1d.dp(xs, k = c(1, 2))")
+    R.eval(s"result <- Ckmeans.1d.dp(xs, k = c(${Discretization.LOW_VALUE}, " +
+      s"${Discretization.HIGH_VALUE}))")
     R.evalI1("result$cluster")
   }
 }

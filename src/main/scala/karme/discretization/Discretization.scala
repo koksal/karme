@@ -6,6 +6,10 @@ import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 
 object Discretization {
+
+  val LOW_VALUE = 1
+  val HIGH_VALUE = 2
+
   def discretize(experiment: ContinuousExperiment): DiscreteExperiment = {
     // transpose values to get values per name
     val transposedValues = experiment.measurements.map(_.values).transpose

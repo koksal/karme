@@ -4,12 +4,15 @@ import java.io.File
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
-import karme.analysis.BinomialMLE
+import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentPrinter
+import karme.synthesis.Transitions.Transition
+import karme.transformations.ContinuousTransformations
+import karme.transformations.TransitionProducer
 import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
 
 import scala.collection.mutable
@@ -31,7 +34,7 @@ object Main {
 
     saveExperiment(discreteExperiment, opts.outFolder)
 
-    discreteExperiment = Transformations.removeNamesWithOneLevel(
+    discreteExperiment = ContinuousTransformations.removeNamesWithOneLevel(
       discreteExperiment)
 
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
@@ -50,6 +53,11 @@ object Main {
     val directedStateGraph = undirectedStateGraph.orientByTrajectories(
       trajectories)
 
+    val transitions = TransitionProducer.fromDirectedStateGraph(
+      directedStateGraph)
+
+    saveTransitions(transitions, opts.outFolder)
+
     visualize(continuousExperimentOpt.get, discreteMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
       opts.visualizationOptions, opts.outFolder)
@@ -67,7 +75,7 @@ object Main {
       e = filterByNames(e, namesFile)
 
       println("Transforming data.")
-      Transformations.pseudoLog(e)
+      ContinuousTransformations.pseudoLog(e)
     }
   }
 
@@ -151,5 +159,14 @@ object Main {
       experiment.project(commonNames.toSeq.sorted)
     }
     case None => experiment
+  }
+
+  private def saveTransitions(
+    transitions: Set[Transition],
+    outFolder: File
+  ): Unit = {
+    for (transition <- transitions.toList.sortBy(_.weight).reverse) {
+      println(transition)
+    }
   }
 }

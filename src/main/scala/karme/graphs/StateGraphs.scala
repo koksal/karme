@@ -2,7 +2,7 @@ package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement}
-import karme.analysis.DiscreteStateAnalysis
+import karme.transformations.DiscreteStateAnalysis
 import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UndirectedGraph}
 import karme.util.MathUtil
 
@@ -143,6 +143,7 @@ object StateGraphs {
     val edgeDirections: mutable.MultiMap[DiscreteStateGraphEdge, EdgeDirection],
     override val names: Seq[String]
   ) extends UndirectedStateGraph(V, E, names) {
+
     override def addEdge(
       v1: DiscreteStateGraphNode, v2: DiscreteStateGraphNode
     ): DirectedStateGraph = {
@@ -157,6 +158,7 @@ object StateGraphs {
       new DirectedStateGraph(V + v1 + v2, E + newEdge,
         edgeDirections.addBinding(newEdge, newDir), names)
     }
+
   }
 
   case class DiscreteStateGraphNode(
@@ -181,7 +183,17 @@ object StateGraphs {
   case class DiscreteStateGraphEdge(
     n1: DiscreteStateGraphNode,
     n2: DiscreteStateGraphNode
-  )
+  ) {
+    def source(d: EdgeDirection): DiscreteStateGraphNode = d match {
+      case Forward => n1
+      case Backward => n2
+    }
+
+    def target(d: EdgeDirection): DiscreteStateGraphNode = d match {
+      case Forward => n2
+      case Backward => n1
+    }
+  }
 
   def nodeMeasurementsPerCluster(
     n: DiscreteStateGraphNode, clustering: mutable.MultiMap[String, String]

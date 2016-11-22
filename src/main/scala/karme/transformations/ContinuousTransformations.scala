@@ -1,9 +1,9 @@
-package karme
+package karme.transformations
 
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.DiscreteExperiment
 
-object Transformations {
+object ContinuousTransformations {
 
   val ARCSINH_FACTOR = 2.0
 

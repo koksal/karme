@@ -42,8 +42,9 @@ object Transitions {
   }
 
   case class Transition(
-    s1: ConcreteProbabilisticBooleanState,
-    s2: ConcreteProbabilisticBooleanState
+    s1: ConcreteBooleanState,
+    s2: ConcreteBooleanState,
+    weight: Double
   ) {
     private val allLabels = {
       assert(s1.orderedKeys == s2.orderedKeys)
@@ -51,23 +52,20 @@ object Transitions {
     }
 
     val diffIndex: Int = {
-      def differ(
-        pair: (ProbabilisticBoolean, ProbabilisticBoolean)
-      ): Boolean = {
-        pair._1.value != pair._2.value
+      (s1.orderedValues zip s2.orderedValues) indexWhere {
+        case (b1, b2) => b1 != b2
       }
-      (s1.orderedValues zip s2.orderedValues).indexWhere(differ)
     }
 
     val label: String = this.allLabels(this.diffIndex)
 
-    val output: Boolean = s2(this.label).value
+    val output: Boolean = s2(this.label)
 
     override def toString: String = {
       val sb = new StringBuffer()
       sb.append("Input:\n")
       for (l <- this.allLabels) {
-        sb.append(s"$l\t= ${if (s1(l).value) "1" else "0"}\n")
+        sb.append(s"$l\t= ${if (s1(l)) "1" else "0"}\n")
       }
       val outputStr = if (this.output) "1" else "0"
       sb.append("Output:\n")
