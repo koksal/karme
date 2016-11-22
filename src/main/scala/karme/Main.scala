@@ -49,7 +49,7 @@ object Main {
     val clustering = readClustering(opts.clusterFile)
 
     val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
-      discreteExperiment, opts.analysisOptions.maxHammingDistance)
+      discreteMLEExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = undirectedStateGraph.orientByTrajectories(
       trajectories)
 
@@ -166,7 +166,10 @@ object Main {
     outFolder: File
   ): Unit = {
     for (transition <- transitions.toList.sortBy(_.weight).reverse) {
-      println(transition)
+      println(
+        s"${transition.label}\t${transition.outputString}\t${
+          transition.weight}\t${transition.inputString}"
+      )
     }
   }
 }

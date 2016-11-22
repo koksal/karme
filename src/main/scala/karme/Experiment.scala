@@ -1,5 +1,7 @@
 package karme
 
+import karme.discretization.Discretization
+
 import scala.collection.mutable
 
 object Experiments {
@@ -55,7 +57,7 @@ object Experiments {
     val discreteMs = exp.measurements map { m =>
       val discreteVs = m.values.map { v =>
         assert(v >= 0 && v <= 1)
-        if (v >= 0.5) 1 else 0
+        if (v >= 0.5) Discretization.HIGH_VALUE else Discretization.LOW_VALUE
       }
       m.copy(values = discreteVs)
     }

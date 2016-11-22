@@ -61,6 +61,16 @@ object Transitions {
 
     val output: Boolean = s2(this.label)
 
+    private def booleanValueString(b: Boolean): String = if (b) "1" else "0"
+
+    val outputString: String = booleanValueString(output)
+
+    val inputString: String = {
+      allLabels.map{ l =>
+        s"$l = ${booleanValueString(s1.mapping(l))}"
+      }.mkString("(", ",", ")")
+    }
+
     override def toString: String = {
       val sb = new StringBuffer()
       sb.append("Input:\n")

@@ -82,7 +82,6 @@ object StateGraphs {
         val ds = directionMaps collect {
           case dm if dm.isDefinedAt(edge) => dm(edge)
         }
-        assert(ds.nonEmpty)
         // this assertion does not hold
         // assert(ds.distinct.size == 1)
         for (d <- ds) {
@@ -90,7 +89,8 @@ object StateGraphs {
         }
       }
 
-      new DirectedStateGraph(V, E, directions, names)
+      // we filter the graph down to edges that could be oriented
+      new DirectedStateGraph(V, directions.keySet.toSet, directions, names)
     }
 
     private def trajectoryDirections(
