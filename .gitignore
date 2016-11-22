@@ -4,6 +4,7 @@ log
 target
 .idea
 .DS_Store
+libz3.dylib
 .RData
 .Rhistory
 *.m~
