@@ -69,7 +69,7 @@ object StateGraphVisualization {
   ): String = {
     val graphDeclaration = if (isDirected) "digraph" else "graph"
     s"""${graphDeclaration} G {
-       |graph [layout="sfdp", overlap="prism"];
+       |graph [layout="neato", overlap="scale"];
        |${nodeStr}
        |${edgeStr}
        |}
