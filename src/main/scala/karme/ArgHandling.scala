@@ -65,6 +65,10 @@ object ArgHandling {
         o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))
       } text "window radius for binomial MLE pass"
 
+      opt[Int]("hamming") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(maxHammingDistance = i))
+      } text "maximum hamming distance in state graph"
+
       help("help") text "print this help message"
     }
 
