@@ -93,7 +93,7 @@ object Synthesis {
   }
 
   private def validTransition(sf: SymFunExpr, transition: Transition): Expr = {
-    val (res, evaluationConstraint) = evaluate(sf, transition.s1)
+    val (res, evaluationConstraint) = evaluate(sf, transition.input)
     And(
       Equals(res, BooleanLiteral(transition.output)),
       evaluationConstraint

@@ -42,24 +42,14 @@ object Transitions {
   }
 
   case class Transition(
-    s1: ConcreteBooleanState,
-    s2: ConcreteBooleanState,
+    input: ConcreteBooleanState,
+    output: Boolean,
+    label: String,
     weight: Double
   ) {
     private val allLabels = {
-      assert(s1.orderedKeys == s2.orderedKeys)
-      s1.orderedKeys
+      input.orderedKeys
     }
-
-    val diffIndex: Int = {
-      (s1.orderedValues zip s2.orderedValues) indexWhere {
-        case (b1, b2) => b1 != b2
-      }
-    }
-
-    val label: String = this.allLabels(this.diffIndex)
-
-    val output: Boolean = s2(this.label)
 
     private def booleanValueString(b: Boolean): String = if (b) "1" else "0"
 
@@ -67,7 +57,7 @@ object Transitions {
 
     val inputString: String = {
       allLabels.map{ l =>
-        s"$l = ${booleanValueString(s1.mapping(l))}"
+        s"$l = ${booleanValueString(input.mapping(l))}"
       }.mkString("(", ",", ")")
     }
 
@@ -75,7 +65,7 @@ object Transitions {
       val sb = new StringBuffer()
       sb.append("Input:\n")
       for (l <- this.allLabels) {
-        sb.append(s"$l\t= ${if (s1(l)) "1" else "0"}\n")
+        sb.append(s"$l\t= ${if (input(l)) "1" else "0"}\n")
       }
       val outputStr = if (this.output) "1" else "0"
       sb.append("Output:\n")

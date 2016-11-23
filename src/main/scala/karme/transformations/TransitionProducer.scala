@@ -24,12 +24,9 @@ object TransitionProducer {
           val sourceState = makeConcreteBooleanState(graph, source)
           val targetState = makeConcreteBooleanState(graph, target)
 
-          // the edge may be changing more than one value, only keep the change
-          // for the current label
-          val labelTargetState = ConcreteBooleanState(
-            sourceState.mapping + (label -> targetState.mapping(label)))
-
-          transitions += Transition(sourceState, labelTargetState, weight)
+          // add a transition for the current label
+          transitions += Transition(sourceState, targetState.mapping(label),
+            label, weight)
         }
       }
     }

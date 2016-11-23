@@ -30,6 +30,8 @@ object StateGraphs {
       val v1 = vSeq(i)
       val v2 = vSeq(j)
 
+      // TODO check whether the changing variables are "in transition" in
+      // either state.
       val dist = DiscreteStateAnalysis.distance(v1.state, v2.state)
       if (dist <= maxHammingDistance) {
         g = g.addEdge(v1, v2)
