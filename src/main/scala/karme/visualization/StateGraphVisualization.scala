@@ -98,7 +98,9 @@ object StateGraphVisualization {
         StateGraphs.nodeMeasurementsPerCluster(node, clustering).map{
         case (cname, ms) => s"$cname (${ms.size})"
       }.mkString("{", ",", "}")
-      sb.append(id + " [label=\"" + clustersStr + "\"];\n")
+      val nodeStr = s"${id} ${clustersStr}"
+      sb append (s"""${id} [label="${nodeStr}"];""")
+      sb append "\n"
     }
     sb.toString()
   }
