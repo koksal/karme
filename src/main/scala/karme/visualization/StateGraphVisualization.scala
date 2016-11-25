@@ -76,6 +76,7 @@ object StateGraphVisualization {
        |""".stripMargin
 
   }
+
   private def makeNodeIDs(
     vs: Iterable[DiscreteStateGraphNode]
   ): Map[DiscreteStateGraphNode, String] = {
@@ -151,4 +152,9 @@ object StateGraphVisualization {
        |""".stripMargin
   }
 
+  private def printCellsPerNode(
+    nodeToID: Map[DiscreteStateGraphNode, String]
+  ): Unit = {
+    // TODO print into a file the list of cells for each node ID
+  }
 }
