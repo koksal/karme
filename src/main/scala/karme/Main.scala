@@ -32,24 +32,29 @@ object Main {
         Discretization.discretize(continuousExperimentOpt.getOrElse(
           sys.error("No continuous or discrete experiment given."))))
 
-    saveExperiment(discreteExperiment, opts.outFolder)
-
     discreteExperiment = ContinuousTransformations.removeNamesWithOneLevel(
       discreteExperiment)
 
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
     println(s"Read ${trajectories.size} trajectories.")
 
-    val probExperiment = BinomialMLE.run(discreteExperiment, trajectories,
+    val mleExperiment = BinomialMLE.run(discreteExperiment, trajectories,
       opts.analysisOptions.windowRadius)
 
-    val discreteMLEExperiment = Experiments.discretizeProbabilisticExperiment(
-      probExperiment)
+    val thresholdedMLEExperiment =
+      Experiments.discretizeProbabilisticExperiment( mleExperiment)
+
+    ExperimentPrinter.print(discreteExperiment, new File(opts.outFolder,
+      "experiment-first-discretization.csv"))
+    ExperimentPrinter.print(mleExperiment, new File(opts.outFolder,
+      "experiment-mle.csv"))
+    ExperimentPrinter.print(thresholdedMLEExperiment, new File(opts.outFolder,
+      "experiment-mle-thresholded.csv"))
 
     val clustering = readClustering(opts.clusterFile)
 
     val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
-      discreteMLEExperiment, opts.analysisOptions.maxHammingDistance)
+      thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = undirectedStateGraph.orientByTrajectories(
       trajectories)
 
@@ -58,7 +63,7 @@ object Main {
 
     saveTransitions(transitions, opts.outFolder)
 
-    visualize(continuousExperimentOpt.get, discreteMLEExperiment, clustering,
+    visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
       opts.visualizationOptions, opts.outFolder)
   }
@@ -135,14 +140,6 @@ object Main {
           s"curve-$i-discrete"))
       }
     }
-  }
-
-  private def saveExperiment[T](
-    e: Experiment[T], outFolder: File
-  ): Unit = {
-    val fname = "discrete-experiment.csv"
-    val f = new File(outFolder, fname)
-    ExperimentPrinter.print(e, f)
   }
 
   private def filterByNames[T](
