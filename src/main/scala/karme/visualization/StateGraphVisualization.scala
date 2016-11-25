@@ -2,6 +2,7 @@ package karme.visualization
 
 import java.io.File
 
+import com.github.tototoshi.csv.CSVWriter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs
@@ -19,8 +20,10 @@ object StateGraphVisualization {
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
-    val dotString = undirectedDotString(g, clustering)
+    val nodeToID = makeNodeIDs(g.V)
+    val dotString = undirectedDotString(g, clustering, nodeToID)
     plotGraph(dotString, "undirected-state-graph.png", outFolder)
+    printCellsPerNodeID(nodeToID, outFolder)
   }
 
   def plotDirectedGraph(
@@ -28,8 +31,10 @@ object StateGraphVisualization {
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
-    val dotString = directedDotString(g, clustering)
+    val nodeToID = makeNodeIDs(g.V)
+    val dotString = directedDotString(g, clustering, nodeToID)
     plotGraph(dotString, "directed-state-graph.png", outFolder)
+    printCellsPerNodeID(nodeToID, outFolder)
   }
 
   private def plotGraph(
@@ -44,9 +49,10 @@ object StateGraphVisualization {
   }
 
   private def undirectedDotString(
-    g: UndirectedStateGraph, clustering: mutable.MultiMap[String, String]
+    g: UndirectedStateGraph,
+    clustering: mutable.MultiMap[String, String],
+    nodeToID: Map[DiscreteStateGraphNode, String]
   ): String = {
-    val nodeToID = makeNodeIDs(g.V)
     val nodeStr = dotNodes(g.V, clustering, nodeToID)
     val edgeStr = undirectedDotEdges(g, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = false)
@@ -54,9 +60,9 @@ object StateGraphVisualization {
 
   private def directedDotString(
     g: DirectedStateGraph,
-    clustering: mutable.MultiMap[String, String]
+    clustering: mutable.MultiMap[String, String],
+    nodeToID: Map[DiscreteStateGraphNode, String]
   ): String = {
-    val nodeToID = makeNodeIDs(g.V)
     val nodeStr = dotNodes(g.V, clustering, nodeToID)
     val edgeStr = directedDotEdges(g, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = true)
@@ -80,7 +86,7 @@ object StateGraphVisualization {
   private def makeNodeIDs(
     vs: Iterable[DiscreteStateGraphNode]
   ): Map[DiscreteStateGraphNode, String] = {
-    vs.zipWithIndex.map{
+    vs.toSeq.sorted.zipWithIndex.map{
       case (v, i) => {
         v -> s"V$i"
       }
@@ -152,9 +158,18 @@ object StateGraphVisualization {
        |""".stripMargin
   }
 
-  private def printCellsPerNode(
-    nodeToID: Map[DiscreteStateGraphNode, String]
+  private def printCellsPerNodeID(
+    nodeToID: Map[DiscreteStateGraphNode, String],
+    outFolder: File
   ): Unit = {
-    // TODO print into a file the list of cells for each node ID
+    val rows = nodeToID map {
+      case (node, id) => {
+        id +: node.measurements.map(_.id)
+      }
+    }
+
+    val f = new File(outFolder, "node-id-to-cell.csv")
+    val writer = CSVWriter.open(f)
+    writer.writeAll(rows.toSeq)
   }
 }
