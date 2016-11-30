@@ -11,7 +11,6 @@ import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.TransitionLogger
-import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
 import karme.transformations.TransitionProducer
 import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
