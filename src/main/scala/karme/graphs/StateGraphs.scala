@@ -1,6 +1,7 @@
 package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
+import karme.Experiments.ProbabilisticExperiment
 import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement}
 import karme.transformations.DiscreteStateAnalysis
 import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UndirectedGraph}
@@ -11,15 +12,16 @@ import scala.collection.mutable
 object StateGraphs {
 
   def fromDiscreteExperiment(
-    e: DiscreteExperiment, maxHammingDistance: Int
+    discreteExperiment: DiscreteExperiment,
+    maxHammingDistance: Int
   ): UndirectedStateGraph = {
-    val stateToMeasurements = e.measurements.groupBy(_.values)
+    val stateToMeasurements = discreteExperiment.measurements.groupBy(_.values)
 
     val V = stateToMeasurements map {
       case (state, ms) => DiscreteStateGraphNode(state, ms)
     }
 
-    var g = new UndirectedStateGraph(V.toSet, Set.empty, e.names)
+    var g = new UndirectedStateGraph(V.toSet, Set.empty, discreteExperiment.names)
 
     // Add edges with Hamming distance <= max
     val vSeq = V.toIndexedSeq
@@ -30,8 +32,6 @@ object StateGraphs {
       val v1 = vSeq(i)
       val v2 = vSeq(j)
 
-      // TODO check whether the changing variables are "in transition" in
-      // either state.
       val dist = DiscreteStateAnalysis.distance(v1.state, v2.state)
       if (dist <= maxHammingDistance) {
         g = g.addEdge(v1, v2)
@@ -39,6 +39,14 @@ object StateGraphs {
     }
 
     g
+  }
+
+  private def avgMLE(
+    e: ProbabilisticExperiment, ids: Seq[String], label: String
+  ): Double = {
+    val i = e.names.indexOf(label)
+    val ms = e.measurements.filter(ids contains _.id)
+    MathUtil.mean(ms.map(_.values(i)))
   }
 
   class UndirectedStateGraph(

@@ -6,8 +6,9 @@ import com.github.tototoshi.csv.CSVWriter
 import karme.Experiments.Experiment
 import karme.parsing.ExperimentParser
 
-object ExperimentPrinter {
-  def print[T](e: Experiment[T], f: File): Unit = {
+object ExperimentLogger {
+
+  def saveToFile[T](e: Experiment[T], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
     val headerRow = ExperimentParser.ID_LABEL +: e.names
@@ -15,4 +16,5 @@ object ExperimentPrinter {
 
     writer.writeAll(headerRow +: cellRows)
   }
+
 }

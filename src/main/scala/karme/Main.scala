@@ -9,7 +9,8 @@ import karme.discretization.Discretization
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
-import karme.printing.ExperimentPrinter
+import karme.printing.ExperimentLogger
+import karme.printing.TransitionLogger
 import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
 import karme.transformations.TransitionProducer
@@ -44,11 +45,11 @@ object Main {
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment( mleExperiment)
 
-    ExperimentPrinter.print(discreteExperiment, new File(opts.outFolder,
+    ExperimentLogger.saveToFile(discreteExperiment, new File(opts.outFolder,
       "experiment-first-discretization.csv"))
-    ExperimentPrinter.print(mleExperiment, new File(opts.outFolder,
+    ExperimentLogger.saveToFile(mleExperiment, new File(opts.outFolder,
       "experiment-mle.csv"))
-    ExperimentPrinter.print(thresholdedMLEExperiment, new File(opts.outFolder,
+    ExperimentLogger.saveToFile(thresholdedMLEExperiment, new File(opts.outFolder,
       "experiment-mle-thresholded.csv"))
 
     val clustering = readClustering(opts.clusterFile)
@@ -59,9 +60,9 @@ object Main {
       trajectories)
 
     val transitions = TransitionProducer.fromDirectedStateGraph(
-      directedStateGraph)
+      directedStateGraph, mleExperiment)
 
-    saveTransitions(transitions, opts.outFolder)
+    TransitionLogger.saveToFile(transitions, opts.outFolder)
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
@@ -153,20 +154,8 @@ object Main {
       }
 
       println(s"Names in common with experiment: ${commonNames.size}")
-      experiment.project(commonNames.toSeq.sorted)
+      experiment.project(commonNames.sorted)
     }
     case None => experiment
-  }
-
-  private def saveTransitions(
-    transitions: Set[Transition],
-    outFolder: File
-  ): Unit = {
-    for (transition <- transitions.toList.sortBy(_.weight).reverse) {
-      println(
-        s"${transition.label}\t${transition.outputString}\t${
-          transition.weight}\t${transition.inputString}"
-      )
-    }
   }
 }
