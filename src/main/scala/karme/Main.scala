@@ -58,7 +58,7 @@ object Main {
     val directedStateGraph = undirectedStateGraph.orientByTrajectories(
       trajectories)
 
-    val transitions = TransitionProducer.fromDirectedStateGraph(
+    val transitions = TransitionProducer.positiveTransitions(
       directedStateGraph, mleExperiment)
 
     TransitionLogger.saveToFile(transitions, opts.outFolder)

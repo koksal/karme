@@ -7,6 +7,7 @@ import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedStateGraph, DiscreteStateGraphEdge, DiscreteStateGraphNode, UndirectedStateGraph}
+import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
 
 import scala.collection.mutable
@@ -35,6 +36,15 @@ object StateGraphVisualization {
     val dotString = directedDotString(g, clustering, nodeToID)
     plotGraph(dotString, "directed-state-graph.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
+  }
+
+  def plotTransitions(
+    g: DirectedStateGraph,
+    clustering: mutable.MultiMap[String, String],
+    transitions: Iterable[Transition],
+    outFolder: File
+  ): Unit = {
+    // TODO augment directed plotting to superimpose transitions
   }
 
   private def plotGraph(

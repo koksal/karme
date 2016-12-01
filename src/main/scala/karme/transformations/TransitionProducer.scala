@@ -12,11 +12,7 @@ object TransitionProducer {
 
   private val STABLE_MLE_MARGIN = 0.1
 
-  /**
-    * Produces a set of state transitions weighted by the product of
-    * number of measurements for each endpoint.
-    */
-  def fromDirectedStateGraph(
+  def positiveTransitions(
     graph: DirectedStateGraph,
     mleExperiment: ProbabilisticExperiment
   ): Set[Transition] = {
@@ -45,6 +41,15 @@ object TransitionProducer {
     }
 
     transitions
+  }
+
+  def negativeTransitions(
+    graph: DirectedStateGraph,
+    mleExperiment: ProbabilisticExperiment
+  ): Set[Transition] = {
+    // for each state, for each stable gene, if there are no neighbors that
+    // switch values reliably, produce a "constant" transition.
+    ???
   }
 
   private def isStableForLabel(
