@@ -44,12 +44,12 @@ object Main {
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment( mleExperiment)
 
-    ExperimentLogger.saveToFile(discreteExperiment, new File(opts.outFolder,
-      "experiment-first-discretization.csv"))
-    ExperimentLogger.saveToFile(mleExperiment, new File(opts.outFolder,
-      "experiment-mle.csv"))
-    ExperimentLogger.saveToFile(thresholdedMLEExperiment, new File(opts.outFolder,
-      "experiment-mle-thresholded.csv"))
+    ExperimentLogger.saveToFile(discreteExperiment,
+      new File(opts.outFolder, "experiment-first-discretization.csv"))
+    ExperimentLogger.saveToFile(mleExperiment,
+      new File(opts.outFolder, "experiment-mle.csv"))
+    ExperimentLogger.saveToFile(thresholdedMLEExperiment,
+      new File(opts.outFolder, "experiment-mle-thresholded.csv"))
 
     val clustering = readClustering(opts.clusterFile)
 

@@ -10,7 +10,7 @@ import karme.util.MathUtil
 
 object TransitionProducer {
 
-  private val STABLE_MLE_MARGIN = 0.1
+  private val STABLE_MLE_MARGIN = 0.05
 
   def positiveTransitions(
     graph: DirectedStateGraph,
@@ -49,7 +49,17 @@ object TransitionProducer {
   ): Set[Transition] = {
     // for each state, for each stable gene, if there are no neighbors that
     // switch values reliably, produce a "constant" transition.
-    ???
+    var transitions = Set[Transition]()
+
+    for (node <- graph.V) {
+      for (label <- mleExperiment.names) {
+        if (isStableForLabel(node, label, mleExperiment)) {
+          // is the label stable in a neighbor?
+        }
+      }
+    }
+
+    transitions
   }
 
   private def isStableForLabel(
