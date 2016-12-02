@@ -8,6 +8,7 @@ object Transitions {
     val orderedKeys: Seq[String] = mapping.keys.toList.sorted
     val orderedValues: Seq[T] = orderedKeys map (k => mapping(k))
     def apply(name: String): T = mapping(name)
+    def size: Int = orderedKeys.size
   }
 
   case class ProbabilisticBoolean(value: Boolean, posterior: Double)

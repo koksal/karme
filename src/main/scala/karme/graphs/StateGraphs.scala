@@ -1,10 +1,12 @@
 package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.ProbabilisticExperiment
 import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement}
+import karme.graphs.Graphs.EdgeLike
+import karme.graphs.Graphs.GraphLike
 import karme.transformations.DiscreteStateAnalysis
-import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UndirectedGraph}
+import karme.graphs.Graphs.{Backward, EdgeDirection, Forward}
+import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
 
 import scala.collection.mutable
@@ -21,7 +23,7 @@ object StateGraphs {
       case (state, ms) => DiscreteStateGraphNode(state, ms)
     }
 
-    var g = new UndirectedStateGraph(V.toSet, Set.empty, discreteExperiment.names)
+    var g = new UndirectedStateGraph(discreteExperiment.names)
 
     // Add edges with Hamming distance <= max
     val vSeq = V.toIndexedSeq
@@ -41,24 +43,51 @@ object StateGraphs {
     g
   }
 
-  private def avgMLE(
-    e: ProbabilisticExperiment, ids: Seq[String], label: String
-  ): Double = {
-    val i = e.names.indexOf(label)
-    val ms = e.measurements.filter(ids contains _.id)
-    MathUtil.mean(ms.map(_.values(i)))
+  trait StateGraphLike[Vertex <: Ordered[Vertex], Edge <: EdgeLike[Vertex]] {
+    this: GraphLike[Vertex, Edge] =>
+
+    def names: Seq[String]
+
+    def edgeLabels
   }
 
-  class UndirectedStateGraph(
-    val V: Set[DiscreteStateGraphNode],
-    val E: Set[DiscreteStateGraphEdge],
-    val names: Seq[String]
-  ) extends UndirectedGraph {
+  case class StateGraphVertex(
+    state: ConcreteBooleanState,
+    measurements: Seq[DiscreteMeasurement]
+  ) extends Ordered[StateGraphVertex] {
+    override def compare(o: StateGraphVertex): Int = {
+      assert(this.state.size == o.state.size)
+
+      import scala.math.Ordering.Implicits._
+      if (this.state.orderedValues < o.state.orderedValues) {
+        -1
+      } else if (this.state == o.state) {
+        0
+      } else {
+        1
+      }
+    }
+  }
+
+  case class StateGraphEdge(v1: StateGraphVertex, v2: StateGraphVertex)
+    extends EdgeLike[StateGraphVertex] {
+
+    def labels: Seq[String] = {
+      val names = v1.state.orderedKeys
+      DiscreteStateAnalysis.nonIdenticalNames(names, v1.state.orderedValues,
+        v2.state.orderedValues)
+    }
+  }
+
+  class UndirectedStateGraph(val names: Seq[String]) extends UndirectedGraph {
     type Vertex = DiscreteStateGraphNode
     type Edge = DiscreteStateGraphEdge
 
     def addVertex(v: DiscreteStateGraphNode): UndirectedStateGraph = {
-      new UndirectedStateGraph(V + v, E, names)
+      new UndirectedStateGraph(names) {
+        val V: Set[DiscreteStateGraphNode] = this.V + v
+        val E: Set[DiscreteStateGraphEdge] = E
+      }
     }
 
     def addEdge(
@@ -71,10 +100,10 @@ object StateGraphs {
       }
 
       new UndirectedStateGraph(V + v1 + v2, E + newEdge, names)
-    }
+      new UndirectedStateGraph(names) {
 
-    def edgeLabels(e: DiscreteStateGraphEdge): Seq[String] = {
-      DiscreteStateAnalysis.nonIdenticalNames(names, e.n1.state, e.n2.state)
+      }
+      this.addVertex(v1).addVertex(v2)
     }
 
     def orientByTrajectories(
@@ -152,7 +181,7 @@ object StateGraphs {
     override val E: Set[DiscreteStateGraphEdge],
     val edgeDirections: mutable.MultiMap[DiscreteStateGraphEdge, EdgeDirection],
     override val names: Seq[String]
-  ) extends UndirectedStateGraph(V, E, names) {
+  ) extends UndirectedStateGraph(V, E, names) with DirectedGraph {
 
     override def addEdge(
       v1: DiscreteStateGraphNode, v2: DiscreteStateGraphNode
@@ -169,40 +198,6 @@ object StateGraphs {
         edgeDirections.addBinding(newEdge, newDir), names)
     }
 
-  }
-
-  case class DiscreteStateGraphNode(
-    state: Seq[Int],
-    measurements: Seq[DiscreteMeasurement]
-  )
-    extends Ordered[DiscreteStateGraphNode] {
-    override def compare(o: DiscreteStateGraphNode): Int = {
-      assert(this.state.size == o.state.size)
-
-      import scala.math.Ordering.Implicits._
-      if (this.state < o.state) {
-        -1
-      } else if (this.state == o.state) {
-        0
-      } else {
-        1
-      }
-    }
-  }
-
-  case class DiscreteStateGraphEdge(
-    n1: DiscreteStateGraphNode,
-    n2: DiscreteStateGraphNode
-  ) {
-    def source(d: EdgeDirection): DiscreteStateGraphNode = d match {
-      case Forward => n1
-      case Backward => n2
-    }
-
-    def target(d: EdgeDirection): DiscreteStateGraphNode = d match {
-      case Forward => n2
-      case Backward => n1
-    }
   }
 
   def nodeMeasurementsPerCluster(
