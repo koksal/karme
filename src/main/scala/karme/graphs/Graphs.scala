@@ -65,7 +65,7 @@ object Graphs {
 
   class UnlabeledGraph[Vertex <: Ordered[Vertex]](
     val V: Set[Vertex] = Set.empty,
-    val E: Set[UnlabeledEdge[Vertex]] = Set.empty
+    val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]]
   ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]] {
 
     def addVertex(v: Vertex) = new UnlabeledGraph(V + v, E)
@@ -82,11 +82,11 @@ object Graphs {
 
   class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
     V: Set[Vertex] = Set.empty,
-    E: Set[UnlabeledEdge[Vertex]] = Set.empty,
+    E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
     val edgeDirections: mutable.MultiMap[UnlabeledEdge[Vertex], EdgeDirection]
   ) extends UnlabeledGraph(V, E)
-    with GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]]
-    with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]] {
+    with GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]]
+    with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]] {
 
     override def addEdge(v1: Vertex, v2: Vertex) = {
       val (newEdge, dir) = if (v1 < v2) {
