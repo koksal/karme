@@ -59,10 +59,10 @@ object Main {
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
 
-    val transitions = TransitionProducer.positiveTransitions(
+    val positiveTransitions = TransitionProducer.positiveTransitions(
       directedStateGraph, mleExperiment)
 
-    TransitionLogger.saveToFile(transitions,
+    TransitionLogger.saveToFile(positiveTransitions,
       new File(opts.outFolder, "transitions.csv"))
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,

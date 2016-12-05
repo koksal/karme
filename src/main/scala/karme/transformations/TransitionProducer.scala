@@ -52,6 +52,15 @@ object TransitionProducer {
       for (label <- mleExperiment.names) {
         if (isStableForLabel(node, label, mleExperiment)) {
           // is the label stable in a neighbor?
+          if (!graph.neighbors(node).exists{ neighbor =>
+            isStableForLabel(neighbor, label, mleExperiment) &&
+              node.state(label) != neighbor.state(label)
+          }) {
+            // add a self-edge for label
+            val weight = node.measurements.size * node.measurements.size
+            transitions += Transition(node.state, node.state(label), label,
+              weight)
+          }
         }
       }
     }
