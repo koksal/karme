@@ -1,10 +1,9 @@
 package karme.transformations
 
 import karme.Experiments.ProbabilisticExperiment
-import karme.discretization.Discretization
 import karme.graphs.StateGraphs.DirectedStateGraph
-import karme.graphs.StateGraphs.DiscreteStateGraphNode
-import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.Transition
 import karme.util.MathUtil
 
@@ -19,21 +18,19 @@ object TransitionProducer {
     var transitions = Set[Transition]()
     for (edge <- graph.E) {
       for (direction <- graph.edgeDirections(edge)) {
-        val source = edge.source(direction)
-        val target = edge.target(direction)
+        val source = graph.source(edge, direction)
+        val target = graph.target(edge, direction)
 
-        for (label <- graph.edgeLabels(edge)) {
+        for (label <- UndirectedStateGraphOps.edgeLabels(edge)) {
 
           // check that neither state is "ambiguously discretized" for label
           if (isStableForLabel(source, label, mleExperiment) &&
             isStableForLabel(target, label, mleExperiment)) {
 
             val weight = source.measurements.size * target.measurements.size
-            val sourceState = makeConcreteBooleanState(graph, source)
-            val targetState = makeConcreteBooleanState(graph, target)
 
             // add a transition for the current label
-            transitions += Transition(sourceState, targetState.mapping(label),
+            transitions += Transition(source.state, target.state.mapping(label),
               label, weight)
           }
         }
@@ -63,7 +60,7 @@ object TransitionProducer {
   }
 
   private def isStableForLabel(
-    node: DiscreteStateGraphNode,
+    node: StateGraphVertex,
     label: String,
     mleExperiment: ProbabilisticExperiment
   ): Boolean = {
@@ -73,16 +70,6 @@ object TransitionProducer {
       .valuesForName(label)
     val meanMLE = MathUtil.mean(mleValues)
     math.abs(meanMLE - 0.5) >= STABLE_MLE_MARGIN
-  }
-
-  private def makeConcreteBooleanState(
-    graph: DirectedStateGraph,
-    node: DiscreteStateGraphNode
-  ): ConcreteBooleanState = {
-    val pairs = graph.names.zip(node.state) map {
-      case (name, value) => name -> (value == Discretization.HIGH_VALUE)
-    }
-    ConcreteBooleanState(pairs.toMap)
   }
 
 }

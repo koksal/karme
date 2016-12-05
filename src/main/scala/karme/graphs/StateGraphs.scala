@@ -67,9 +67,13 @@ object StateGraphs {
     }
   }
 
-  object UndirectedStateGraphOps {
-    def names(g: UndirectedStateGraph) = g.V.head.state.orderedKeys
+  object StateGraphOps {
+    def names(g: GraphLike[StateGraphVertex, _, _]): Seq[String] = {
+      g.V.head.state.orderedKeys
+    }
+  }
 
+  object UndirectedStateGraphOps {
     def edgeLabels(e: UnlabeledEdge[StateGraphVertex]): Seq[String] = {
       val names = e.v1.state.orderedKeys
       DiscreteStateAnalysis.nonIdenticalNames(names, e.v1.state.orderedValues,
