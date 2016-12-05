@@ -62,7 +62,8 @@ object Main {
     val transitions = TransitionProducer.positiveTransitions(
       directedStateGraph, mleExperiment)
 
-    TransitionLogger.saveToFile(transitions, opts.outFolder)
+    TransitionLogger.saveToFile(transitions,
+      new File(opts.outFolder, "transitions.csv"))
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
