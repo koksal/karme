@@ -35,8 +35,8 @@ object Graphs {
   }
 
   trait DigraphLike[Vertex <: Ordered[Vertex], Edge <: EdgeLike[Vertex],
-    G <: DigraphLike[Vertex, Edge, G]] {
-    this: GraphLike[Vertex, Edge, G] =>
+    G <: GraphLike[Vertex, Edge, G]] {
+    this: G =>
 
     def edgeDirections: mutable.MultiMap[Edge, EdgeDirection]
 
@@ -81,14 +81,17 @@ object Graphs {
   }
 
   class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
-    V: Set[Vertex] = Set.empty,
-    E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
+    val V: Set[Vertex] = Set.empty,
+    val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
     val edgeDirections: mutable.MultiMap[UnlabeledEdge[Vertex], EdgeDirection]
-  ) extends UnlabeledGraph(V, E)
-    with GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]]
-    with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]] {
+  ) extends DigraphLike[Vertex, UnlabeledEdge[Vertex],
+    UnlabeledDiGraph[Vertex]] {
 
-    override def addEdge(v1: Vertex, v2: Vertex) = {
+    def addVertex(v: Vertex) = {
+      new UnlabeledDiGraph[Vertex](V + v, E, edgeDirections)
+    }
+
+    def addEdge(v1: Vertex, v2: Vertex) = {
       val (newEdge, dir) = if (v1 < v2) {
         (UnlabeledEdge(v1, v2), Forward)
       } else {

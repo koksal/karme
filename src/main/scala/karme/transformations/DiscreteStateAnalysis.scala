@@ -3,6 +3,7 @@ package karme.transformations
 import karme.Experiments.DiscreteExperiment
 import karme.Experiments.DiscreteMeasurement
 import karme.Experiments.Measurement
+import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
 
 import scala.collection.mutable
@@ -61,6 +62,15 @@ object DiscreteStateAnalysis {
       case (v1, v2) => math.abs(v1 - v2)
     }
     diffs.sum
+  }
+
+  def hammingDistance(
+    s1: ConcreteBooleanState, s2: ConcreteBooleanState
+  ): Int = {
+    assert(s1.orderedKeys == s2.orderedKeys)
+    s1.orderedValues.zip(s2.orderedValues).count{
+      case (v1, v2) => v1 != v2
+    }
   }
 
   def nonIdenticalNames(
