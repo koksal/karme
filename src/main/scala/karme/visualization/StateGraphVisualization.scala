@@ -6,7 +6,10 @@ import com.github.tototoshi.csv.CSVWriter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.{DirectedStateGraph, DiscreteStateGraphEdge, DiscreteStateGraphNode, UndirectedStateGraph}
+import karme.graphs.StateGraphs.DirectedStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.StateGraphs.UndirectedStateGraph
+import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
 
@@ -61,7 +64,7 @@ object StateGraphVisualization {
   private def undirectedDotString(
     g: UndirectedStateGraph,
     clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[DiscreteStateGraphNode, String]
+    nodeToID: Map[StateGraphVertex, String]
   ): String = {
     val nodeStr = dotNodes(g.V, clustering, nodeToID)
     val edgeStr = undirectedDotEdges(g, nodeToID)
@@ -71,7 +74,7 @@ object StateGraphVisualization {
   private def directedDotString(
     g: DirectedStateGraph,
     clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[DiscreteStateGraphNode, String]
+    nodeToID: Map[StateGraphVertex, String]
   ): String = {
     val nodeStr = dotNodes(g.V, clustering, nodeToID)
     val edgeStr = directedDotEdges(g, nodeToID)
@@ -94,8 +97,8 @@ object StateGraphVisualization {
   }
 
   private def makeNodeIDs(
-    vs: Iterable[DiscreteStateGraphNode]
-  ): Map[DiscreteStateGraphNode, String] = {
+    vs: Iterable[StateGraphVertex]
+  ): Map[StateGraphVertex, String] = {
     vs.toSeq.sorted.zipWithIndex.map{
       case (v, i) => {
         v -> s"V$i"
@@ -104,9 +107,9 @@ object StateGraphVisualization {
   }
 
   private def dotNodes(
-    V: Iterable[DiscreteStateGraphNode],
+    V: Iterable[StateGraphVertex],
     clustering: mutable.MultiMap[String, String],
-    nodeToId: Map[DiscreteStateGraphNode, String]
+    nodeToId: Map[StateGraphVertex, String]
   ): String = {
     val sb = new StringBuilder()
     for (node <- V) {
@@ -124,13 +127,13 @@ object StateGraphVisualization {
 
   private def undirectedDotEdges(
     g: UndirectedStateGraph,
-    nodeToId: Map[DiscreteStateGraphNode, String]
+    nodeToId: Map[StateGraphVertex, String]
   ): String = {
     val sb = new StringBuilder()
-    for (e @ DiscreteStateGraphEdge(n1, n2) <- g.E) {
-      val labels = g.edgeLabels(e)
-      val lhsID = nodeToId(n1)
-      val rhsID = nodeToId(n2)
+    for (e <- g.E) {
+      val labels = UndirectedStateGraphOps.edgeLabels(e)
+      val lhsID = nodeToId(e.v1)
+      val rhsID = nodeToId(e.v2)
       sb append s"${lhsID} -- ${rhsID}"
       sb append " [label=\""
       sb append labels.mkString(",")
@@ -142,13 +145,13 @@ object StateGraphVisualization {
 
   private def directedDotEdges(
     g: DirectedStateGraph,
-    nodeToID: Map[DiscreteStateGraphNode, String]
+    nodeToID: Map[StateGraphVertex, String]
   ): String = {
     val sb = new StringBuilder()
-    for (e @ DiscreteStateGraphEdge(n1, n2) <- g.E) {
-      val labels = g.edgeLabels(e)
-      val lhsID = nodeToID(n1)
-      val rhsID = nodeToID(n2)
+    for (e <- g.E) {
+      val labels = UndirectedStateGraphOps.edgeLabels(e)
+      val lhsID = nodeToID(e.v1)
+      val rhsID = nodeToID(e.v2)
       val edgeDirections = g.edgeDirections(e).toSet
       if (edgeDirections contains Forward) {
         sb append directedDotEdge(lhsID, rhsID, labels)
@@ -169,7 +172,7 @@ object StateGraphVisualization {
   }
 
   private def printCellsPerNodeID(
-    nodeToID: Map[DiscreteStateGraphNode, String],
+    nodeToID: Map[StateGraphVertex, String],
     outFolder: File
   ): Unit = {
     val rows = nodeToID map {

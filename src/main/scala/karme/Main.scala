@@ -7,6 +7,7 @@ import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
+import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
@@ -55,8 +56,8 @@ object Main {
 
     val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
       thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
-    val directedStateGraph = undirectedStateGraph.orientByTrajectories(
-      trajectories)
+    val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
+      undirectedStateGraph, trajectories)
 
     val transitions = TransitionProducer.positiveTransitions(
       directedStateGraph, mleExperiment)
