@@ -89,7 +89,7 @@ object DiscreteStateAnalysis {
     nonIdenticalIndices(vs1, vs2) map { i => names(i) }
   }
 
-  def nonIdenticalIndices(vs1: Seq[Int], vs2: Seq[Int]): Seq[Int] = {
+  def nonIdenticalIndices[T](vs1: Seq[T], vs2: Seq[T]): Seq[Int] = {
     assert(vs1.size == vs2.size)
     vs1.indices filter { i =>
       vs1(i) != vs2(i)

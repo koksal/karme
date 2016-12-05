@@ -84,8 +84,8 @@ object Graphs {
     val V: Set[Vertex] = Set.empty,
     val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
     val edgeDirections: mutable.MultiMap[UnlabeledEdge[Vertex], EdgeDirection]
-  ) extends DigraphLike[Vertex, UnlabeledEdge[Vertex],
-    UnlabeledDiGraph[Vertex]] {
+  ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]]
+    with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]] {
 
     def addVertex(v: Vertex) = {
       new UnlabeledDiGraph[Vertex](V + v, E, edgeDirections)
