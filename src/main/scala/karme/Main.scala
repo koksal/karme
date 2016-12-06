@@ -12,6 +12,7 @@ import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.TransitionLogger
+import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
 import karme.transformations.TransitionProducer
 import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
@@ -67,7 +68,7 @@ object Main {
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
-      opts.visualizationOptions, opts.outFolder)
+      positiveTransitions, opts.visualizationOptions, opts.outFolder)
   }
 
   private def readContinuousExperiment(
@@ -114,6 +115,7 @@ object Main {
     trajectories: Seq[CellTrajectory],
     undirectedStateGraph: UndirectedStateGraph,
     directedStateGraph: DirectedStateGraph,
+    transitions: Iterable[Transition],
     options: VisualizationOptions,
     outFolder: File
   ): Unit = {
@@ -131,6 +133,8 @@ object Main {
         clustering, outFolder)
       StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
         outFolder)
+      StateGraphVisualization.plotTransitions(directedStateGraph, clustering,
+        transitions, outFolder)
     }
 
     if (options.curves) {

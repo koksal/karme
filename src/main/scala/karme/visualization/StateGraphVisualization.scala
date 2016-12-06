@@ -47,7 +47,9 @@ object StateGraphVisualization {
     transitions: Iterable[Transition],
     outFolder: File
   ): Unit = {
-    // TODO augment directed plotting to superimpose transitions
+    val nodeToID = makeNodeIDs(g.V)
+    val dotString = transitionDotString(g, clustering, transitions, nodeToID)
+    plotGraph(dotString, "transition-graph.png", outFolder)
   }
 
   private def plotGraph(
@@ -78,6 +80,17 @@ object StateGraphVisualization {
   ): String = {
     val nodeStr = dotNodes(g.V, clustering, nodeToID)
     val edgeStr = directedDotEdges(g, nodeToID)
+    dotGraph(nodeStr, edgeStr, isDirected = true)
+  }
+
+  private def transitionDotString(
+    g: DirectedStateGraph,
+    clustering: mutable.MultiMap[String, String],
+    transitions: Iterable[Transition],
+    nodeToID: Map[StateGraphVertex, String]
+  ): String = {
+    val nodeStr = dotNodes(g.V, clustering, nodeToID)
+    val edgeStr = transitionDotEdges(g, transitions, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
 
@@ -169,6 +182,29 @@ object StateGraphVisualization {
   ): String = {
     s"""${lhsID} -> ${rhsID} [label="${labels.mkString(",")}"]
        |""".stripMargin
+  }
+
+  private def transitionDotEdges(
+    graph: DirectedStateGraph,
+    transitions: Iterable[Transition],
+    nodeToID: Map[StateGraphVertex, String]
+  ): String = {
+    val sb = new StringBuilder()
+
+    for (transition <- transitions) {
+      val inputVertex = graph.V.find(_.state == transition.input).get
+      val neighbors = graph.neighbors(inputVertex)
+      for (neighbor <- neighbors) {
+        if (neighbor.state(transition.label) == transition.output) {
+          val lhs = nodeToID(inputVertex)
+          val rhs = nodeToID(neighbor)
+          val label = s"${transition.label} (${transition.weight})"
+          sb append directedDotEdge(lhs, rhs, List(label))
+        }
+      }
+    }
+
+    sb.toString()
   }
 
   private def printCellsPerNodeID(
