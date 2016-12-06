@@ -13,11 +13,11 @@ object Synthesis {
 
     for ((label, labelTrans) <- labelToTransitions) {
       println(s"Synthesizing for ${label}")
-      println(labelTrans)
       val labelFuns = synthesize(labelTrans, possibleVars.toSet, depth)
       for (labelFun <- labelFuns) {
-        FunctionTrees.pprint(labelFun)
+        println(FunctionTrees.prettyString(labelFun))
       }
+      println()
     }
   }
 

@@ -18,11 +18,11 @@ object FunctionTrees {
     case FunNot(e) => !eval(e, in)
   }
 
-  def pprint(fe: FunExpr): String = fe match {
+  def prettyString(fe: FunExpr): String = fe match {
     case FunVar(id)   => id
-    case FunAnd(l, r) => s"(${pprint(l)}) && (${pprint(r)})"
-    case FunOr(l, r)  => s"(${pprint(l)}) || (${pprint(r)})"
-    case FunNot(e)    => s"!(${pprint(e)})"
+    case FunAnd(l, r) => s"(${prettyString(l)}) && (${prettyString(r)})"
+    case FunOr(l, r)  => s"(${prettyString(l)}) || (${prettyString(r)})"
+    case FunNot(e)    => s"!(${prettyString(e)})"
   }
 
   class EncodingMapping(prots: Seq[String]) {
