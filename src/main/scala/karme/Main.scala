@@ -7,6 +7,7 @@ import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
@@ -46,13 +47,6 @@ object Main {
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment( mleExperiment)
 
-    ExperimentLogger.saveToFile(discreteExperiment,
-      new File(opts.outFolder, "experiment-first-discretization.csv"))
-    ExperimentLogger.saveToFile(mleExperiment,
-      new File(opts.outFolder, "experiment-mle.csv"))
-    ExperimentLogger.saveToFile(thresholdedMLEExperiment,
-      new File(opts.outFolder, "experiment-mle-thresholded.csv"))
-
     val clustering = readClustering(opts.clusterFile)
 
     val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
@@ -63,12 +57,22 @@ object Main {
     val positiveTransitions = TransitionProducer.positiveTransitions(
       directedStateGraph, mleExperiment)
 
+    val nodeToID = makeNodeIDs(directedStateGraph.V)
+    val cellToNodeID = makeCellIDs(nodeToID)
+
+    ExperimentLogger.saveToFile(discreteExperiment, cellToNodeID,
+      new File(opts.outFolder, "experiment-first-discretization.csv"))
+    ExperimentLogger.saveToFile(mleExperiment, cellToNodeID,
+      new File(opts.outFolder, "experiment-mle.csv"))
+    ExperimentLogger.saveToFile(thresholdedMLEExperiment, cellToNodeID,
+      new File(opts.outFolder, "experiment-mle-thresholded.csv"))
+
     TransitionLogger.saveToFile(positiveTransitions,
       new File(opts.outFolder, "transitions.csv"))
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
-      positiveTransitions, opts.visualizationOptions, opts.outFolder)
+      positiveTransitions, nodeToID, opts.visualizationOptions, opts.outFolder)
   }
 
   private def readContinuousExperiment(
@@ -116,6 +120,7 @@ object Main {
     undirectedStateGraph: UndirectedStateGraph,
     directedStateGraph: DirectedStateGraph,
     transitions: Iterable[Transition],
+    nodeToID: Map[StateGraphVertex, String],
     options: VisualizationOptions,
     outFolder: File
   ): Unit = {
@@ -130,11 +135,11 @@ object Main {
 
     if (options.stateGraph) {
       StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
-        clustering, outFolder)
+        clustering, nodeToID, outFolder)
       StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
-        outFolder)
+        nodeToID, outFolder)
       StateGraphVisualization.plotTransitions(directedStateGraph, clustering,
-        transitions, outFolder)
+        transitions, nodeToID, outFolder)
     }
 
     if (options.curves) {
@@ -163,4 +168,25 @@ object Main {
     }
     case None => experiment
   }
+
+  def makeNodeIDs(
+    vs: Iterable[StateGraphVertex]
+  ): Map[StateGraphVertex, String] = {
+    vs.toSeq.sorted.zipWithIndex.map{
+      case (v, i) => {
+        v -> s"V$i"
+      }
+    }.toMap
+  }
+
+  def makeCellIDs(
+    nodeToID: Map[StateGraphVertex, String]
+  ): Map[String, String] = {
+    val cellIDs = nodeToID flatMap {
+      case (node, id) => node.measurements.map(m => m.id -> id)
+    }
+
+    cellIDs.toMap
+  }
+
 }

@@ -22,9 +22,9 @@ object StateGraphVisualization {
   def plotUndirectedGraph(
     g: UndirectedStateGraph,
     clustering: mutable.MultiMap[String, String],
+    nodeToID: Map[StateGraphVertex, String],
     outFolder: File
   ): Unit = {
-    val nodeToID = makeNodeIDs(g.V)
     val dotString = undirectedDotString(g, clustering, nodeToID)
     plotGraph(dotString, "undirected-state-graph.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
@@ -33,9 +33,9 @@ object StateGraphVisualization {
   def plotDirectedGraph(
     g: DirectedStateGraph,
     clustering: mutable.MultiMap[String, String],
+    nodeToID: Map[StateGraphVertex, String],
     outFolder: File
   ): Unit = {
-    val nodeToID = makeNodeIDs(g.V)
     val dotString = directedDotString(g, clustering, nodeToID)
     plotGraph(dotString, "directed-state-graph.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
@@ -45,9 +45,9 @@ object StateGraphVisualization {
     g: DirectedStateGraph,
     clustering: mutable.MultiMap[String, String],
     transitions: Iterable[Transition],
+    nodeToID: Map[StateGraphVertex, String],
     outFolder: File
   ): Unit = {
-    val nodeToID = makeNodeIDs(g.V)
     val dotString = transitionDotString(g, clustering, transitions, nodeToID)
     plotGraph(dotString, "transition-graph.png", outFolder)
   }
@@ -107,16 +107,6 @@ object StateGraphVisualization {
        |}
        |""".stripMargin
 
-  }
-
-  private def makeNodeIDs(
-    vs: Iterable[StateGraphVertex]
-  ): Map[StateGraphVertex, String] = {
-    vs.toSeq.sorted.zipWithIndex.map{
-      case (v, i) => {
-        v -> s"V$i"
-      }
-    }.toMap
   }
 
   private def dotNodes(
