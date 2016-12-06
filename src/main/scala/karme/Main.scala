@@ -13,6 +13,7 @@ import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.TransitionLogger
+import karme.synthesis.Synthesis
 import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
 import karme.transformations.TransitionProducer
@@ -69,6 +70,8 @@ object Main {
 
     TransitionLogger.saveToFile(positiveTransitions,
       new File(opts.outFolder, "transitions.csv"))
+
+    Synthesis.synthesizePerLabel(positiveTransitions)
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,

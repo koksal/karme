@@ -6,6 +6,21 @@ import karme.synthesis.Trees._
 
 object Synthesis {
 
+  def synthesizePerLabel(transitions: Iterable[Transition]): Unit = {
+    val labelToTransitions = transitions.groupBy(_.label)
+    val possibleVars = transitions.head.input.orderedKeys
+    val depth = 2
+
+    for ((label, labelTrans) <- labelToTransitions) {
+      println(s"Synthesizing for ${label}")
+      println(labelTrans)
+      val labelFuns = synthesize(labelTrans, possibleVars.toSet, depth)
+      for (labelFun <- labelFuns) {
+        FunctionTrees.pprint(labelFun)
+      }
+    }
+  }
+
   def synthesize(
     transitions: Iterable[Transition],
     possibleVars: Set[String],
