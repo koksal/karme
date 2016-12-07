@@ -6,13 +6,21 @@ import karme.synthesis.Trees._
 
 object Synthesis {
 
-  def synthesizePerLabel(transitions: Iterable[Transition]): Unit = {
-    val labelToTransitions = transitions.groupBy(_.label)
-    val possibleVars = transitions.head.input.orderedKeys
+  def synthesizePerLabel(
+    positiveTransitions: Iterable[Transition],
+    negativeTransitions: Iterable[Transition]
+  ): Unit = {
+    val labelToPosTrans = positiveTransitions.groupBy(_.label)
+    val labelToNegTrans = negativeTransitions.groupBy(_.label)
+    val allLabels = positiveTransitions.head.input.orderedKeys
     val depth = 2
 
-    for ((label, labelTrans) <- labelToTransitions) {
+    for (label <- allLabels) {
+      val labelPosTrans = labelToPosTrans(label)
+      val labelNegTrans = labelToNegTrans(label)
       println(s"Synthesizing for ${label}")
+      println(s"# positive examples: ${labelPosTrans.size}")
+      println(s"# negative examples: ${labelNegTrans.size}")
       val labelFuns = synthesize(labelTrans, possibleVars.toSet, depth)
       for (labelFun <- labelFuns) {
         println(FunctionTrees.prettyString(labelFun))
