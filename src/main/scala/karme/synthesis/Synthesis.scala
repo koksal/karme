@@ -16,17 +16,39 @@ object Synthesis {
     val depth = 2
 
     for (label <- allLabels) {
-      val labelPosTrans = labelToPosTrans(label)
-      val labelNegTrans = labelToNegTrans(label)
       println(s"Synthesizing for ${label}")
-      println(s"# positive examples: ${labelPosTrans.size}")
-      println(s"# negative examples: ${labelNegTrans.size}")
-      val labelFuns = synthesize(labelTrans, possibleVars.toSet, depth)
-      for (labelFun <- labelFuns) {
-        println(FunctionTrees.prettyString(labelFun))
+      labelToPosTrans.get(label) match {
+        case Some(lpt) => {
+          val lnt = labelToNegTrans(label)
+          val allLabelTrans = lpt ++ lnt
+          println(s"# positive examples: ${lpt.size}")
+          println(s"# negative examples: ${lnt.size}")
+          val labelFuns = synthesizeForMinDepth(allLabelTrans, allLabels.toSet,
+            depth)
+          for (labelFun <- labelFuns) {
+            println(FunctionTrees.prettyString(labelFun))
+          }
+        }
+        case None => {
+          println("No positive examples for label.")
+        }
       }
       println()
     }
+  }
+
+  def synthesizeForMinDepth(
+    transitions: Iterable[Transition],
+    possibleVars: Set[String],
+    maxDepth: Int
+  ): List[FunExpr] = {
+    var res = List[FunExpr]()
+    var currDepth = 0
+    while (res.isEmpty && currDepth <= maxDepth) {
+      res = synthesize(transitions, possibleVars, currDepth)
+      currDepth += 1
+    }
+    res
   }
 
   def synthesize(

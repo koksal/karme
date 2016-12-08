@@ -58,6 +58,11 @@ object Main {
     val positiveTransitions = TransitionProducer.positiveTransitions(
       directedStateGraph, mleExperiment)
 
+    val negativeTransitions = TransitionProducer.negativeTransitions(
+      directedStateGraph, mleExperiment)
+
+    Synthesis.synthesizePerLabel(positiveTransitions, negativeTransitions)
+
     val nodeToID = makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = makeCellIDs(nodeToID)
 
@@ -70,8 +75,6 @@ object Main {
 
     TransitionLogger.saveToFile(positiveTransitions,
       new File(opts.outFolder, "transitions.csv"))
-
-    Synthesis.synthesizePerLabel(positiveTransitions)
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
