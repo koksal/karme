@@ -10,16 +10,17 @@ object Synthesis {
     positiveTransitions: Iterable[Transition],
     negativeTransitions: Iterable[Transition]
   ): Unit = {
-    val labelToPosTrans = positiveTransitions.groupBy(_.label)
-    val labelToNegTrans = negativeTransitions.groupBy(_.label)
     val allLabels = positiveTransitions.head.input.orderedKeys
     val depth = 2
+
+    val labelToPosTrans = positiveTransitions.groupBy(_.label)
+    val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
     for (label <- allLabels) {
       println(s"Synthesizing for ${label}")
       labelToPosTrans.get(label) match {
         case Some(lpt) => {
-          val lnt = labelToNegTrans(label)
+          val lnt = labelToNegTrans.getOrElse(label, Set.empty)
           val allLabelTrans = lpt ++ lnt
           println(s"# positive examples: ${lpt.size}")
           println(s"# negative examples: ${lnt.size}")
@@ -35,6 +36,17 @@ object Synthesis {
       }
       println()
     }
+  }
+
+  def synthesizeGreedyPartitions(
+    transitions: Iterable[Transition],
+    possibleVars: Set[String],
+    maxDepth: Int
+  ): Seq[(Seq[Transition], Seq[FunExpr])] = {
+    // TODO write a function that returns funs for a maximal set
+    // remove those from the set, and synthesize for the rest.
+    // the function should pick highest-weight edges greedily.
+    ???
   }
 
   def synthesizeForMinDepth(
