@@ -6,42 +6,65 @@ import karme.synthesis.Trees._
 
 object Synthesis {
 
-  def synthesizePerLabel(
+  val MAX_EXPRESSION_DEPTH = 2
+
+  def synthesizeForAllLabels(
     positiveTransitions: Iterable[Transition],
     negativeTransitions: Iterable[Transition]
   ): Unit = {
     val allLabels = positiveTransitions.head.input.orderedKeys
-    val depth = 2
 
+    // group both type of transitions by label
     val labelToPosTrans = positiveTransitions.groupBy(_.label)
     val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
     for (label <- allLabels) {
       println(s"Synthesizing for ${label}")
-      labelToPosTrans.get(label) match {
-        case Some(lpt) => {
-          val lnt = labelToNegTrans.getOrElse(label, Set.empty)
-          val allLabelTrans = lpt ++ lnt
-          println(s"# positive examples: ${lpt.size}")
-          println(s"# negative examples: ${lnt.size}")
-          val labelFuns = synthesizeForMinDepth(allLabelTrans, allLabels.toSet,
-            depth)
-          for (labelFun <- labelFuns) {
-            println(FunctionTrees.prettyString(labelFun))
-          }
-        }
-        case None => {
-          println("No positive examples for label.")
-        }
-      }
-      println()
+      synthesizeForSingleLabel(
+        labelToPosTrans.getOrElse(label, Set.empty),
+        labelToNegTrans.getOrElse(label, Set.empty),
+        allLabels.toSet
+      )
     }
+  }
+
+  def synthesizeForSingleLabel(
+    positiveTransitions: Iterable[Transition],
+    negativeTransitions: Iterable[Transition],
+    possibleVars: Set[String]
+  ): Unit = {
+    // STRATEGY 1
+    // find a greedy partition of positive transitions,
+    // aim to maximize use of negative transitions for each positive set
+
+    // STRATEGY 2
+    // do not distinguish between positive and negative transitions when
+    // partitioning
+  }
+
+  def findGreedyTransitionPartition(
+    transitions: Set[Transition],
+    possibleVars: Set[String]
+  ): Set[Set[Transition]] = {
+    // order by weight and group greedily
+    var remainingTransitions = transitions
+    var partition: Set[Set[Transition]] = Set.empty
+
+    while (remainingTransitions.nonEmpty) {
+      var currentTransitionSet: Set[Transition] = Set.empty
+      for (transition <- transitionsByDescendingWeight(remainingTransitions)) {
+        // if current set + t is SAT, add it to set
+      }
+    }
+  }
+
+  private def transitionsByDescendingWeight(ts: Iterable[Transition]) = {
+    ts.toList.sortBy(_.weight).reverse
   }
 
   def synthesizeGreedyPartitions(
     transitions: Iterable[Transition],
-    possibleVars: Set[String],
-    maxDepth: Int
+    possibleVars: Set[String]
   ): Seq[(Seq[Transition], Seq[FunExpr])] = {
     // TODO write a function that returns funs for a maximal set
     // remove those from the set, and synthesize for the rest.
@@ -51,12 +74,11 @@ object Synthesis {
 
   def synthesizeForMinDepth(
     transitions: Iterable[Transition],
-    possibleVars: Set[String],
-    maxDepth: Int
+    possibleVars: Set[String]
   ): List[FunExpr] = {
     var res = List[FunExpr]()
     var currDepth = 0
-    while (res.isEmpty && currDepth <= maxDepth) {
+    while (res.isEmpty && currDepth <= MAX_EXPRESSION_DEPTH) {
       res = synthesize(transitions, possibleVars, currDepth)
       currDepth += 1
     }

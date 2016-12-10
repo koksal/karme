@@ -61,7 +61,7 @@ object Main {
     val negativeTransitions = TransitionProducer.negativeTransitions(
       directedStateGraph, mleExperiment)
 
-    Synthesis.synthesizePerLabel(positiveTransitions, negativeTransitions)
+    Synthesis.synthesizeForAllLabels(positiveTransitions, negativeTransitions)
 
     val nodeToID = makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = makeCellIDs(nodeToID)
