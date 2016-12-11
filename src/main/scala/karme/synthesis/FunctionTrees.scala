@@ -18,11 +18,32 @@ object FunctionTrees {
     case FunNot(e) => !eval(e, in)
   }
 
-  def prettyString(fe: FunExpr): String = fe match {
-    case FunVar(id)   => id
-    case FunAnd(l, r) => s"(${prettyString(l)}) && (${prettyString(r)})"
-    case FunOr(l, r)  => s"(${prettyString(l)}) || (${prettyString(r)})"
-    case FunNot(e)    => s"!(${prettyString(e)})"
+  def prettyString(fe: FunExpr): String = {
+    prettyString(fe, precedence(fe))
+  }
+
+  private def prettyString(fe: FunExpr, outerPrecedence: Int): String = {
+    val currentPrecedence = precedence(fe)
+    val result = fe match {
+      case FunVar(id)   => id
+      case FunAnd(l, r) => s"${prettyString(l, currentPrecedence)} && " +
+        s"${prettyString(r, currentPrecedence)}"
+      case FunOr(l, r)  => s"${prettyString(l, currentPrecedence)} || " +
+        s"${prettyString(r, currentPrecedence)}"
+      case FunNot(e)    => s"!${prettyString(e, currentPrecedence)}"
+    }
+    if (currentPrecedence > outerPrecedence) {
+      s"(${result})"
+    } else {
+      result
+    }
+  }
+
+  private def precedence(fe: FunExpr): Int = fe match {
+    case FunVar(_) => 0
+    case FunAnd(_, _) => 1
+    case FunOr(_, _) => 2
+    case FunNot(_) => 0
   }
 
   class EncodingMapping(prots: Seq[String]) {

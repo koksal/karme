@@ -19,7 +19,9 @@ object Synthesis {
     val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
     for (label <- allLabels) {
+      println()
       println(s"Synthesizing for ${label}")
+      println("==========================")
       synthesizeForSingleLabel(
         labelToPosTrans.getOrElse(label, Set.empty),
         labelToNegTrans.getOrElse(label, Set.empty),
@@ -37,10 +39,11 @@ object Synthesis {
     // is "maximally" consistent
     val partition = findGreedyTransitionPartition(positiveTransitions,
       possibleVars)
+    println(s"Partitioned positive examples into ${partition.size} sets")
 
     // aim to maximize use of negative transitions for each positive set
     for (subset <- partition) {
-      extendTransitionSet(subset, negativeTransitions)
+      extendTransitionSet(subset, negativeTransitions, possibleVars)
     }
   }
 
@@ -68,18 +71,43 @@ object Synthesis {
     partition
   }
 
-  private def transitionsByDescendingWeight(ts: Iterable[Transition]) = {
-    ts.toList.sortBy(_.weight).reverse
+  def extendTransitionSet(
+    baseSet: Set[Transition],
+    extensionSet: Set[Transition],
+    possibleVars: Set[String]
+  ): Unit = {
+    println("Synthesizing with maximal soft constraints.")
+    var consistentExtensionSet: Set[Transition] = Set.empty
+    var currentExpressions: List[FunExpr] = Nil
+
+    for (transition <- transitionsByDescendingWeight(extensionSet)) {
+      val toTest = baseSet ++ consistentExtensionSet + transition
+      val expressions = synthesizeForMinDepth(toTest, possibleVars)
+      if (expressions.nonEmpty) {
+        consistentExtensionSet += transition
+        currentExpressions = expressions
+      }
+    }
+
+    // If no extension transition is consistent with base set, compute
+    // functions for the base set
+    if (currentExpressions.isEmpty) {
+      println("Base set could not be extended.")
+      currentExpressions = synthesizeForMinDepth(baseSet, possibleVars)
+    }
+
+    val inconsistentSet = extensionSet -- consistentExtensionSet
+    println(s"There are ${inconsistentSet.size} / ${extensionSet.size} " +
+      "inconsistent extensions")
+
+    println("Functions inferred with maximal extension set:")
+    for (expr <- currentExpressions) {
+      println(FunctionTrees.prettyString(expr))
+    }
   }
 
-  def synthesizeGreedyPartitions(
-    transitions: Iterable[Transition],
-    possibleVars: Set[String]
-  ): Seq[(Seq[Transition], Seq[FunExpr])] = {
-    // TODO write a function that returns funs for a maximal set
-    // remove those from the set, and synthesize for the rest.
-    // the function should pick highest-weight edges greedily.
-    ???
+  private def transitionsByDescendingWeight(ts: Iterable[Transition]) = {
+    ts.toList.sortBy(_.weight).reverse
   }
 
   def synthesizeForMinDepth(
