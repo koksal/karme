@@ -9,8 +9,8 @@ object Synthesis {
   val MAX_EXPRESSION_DEPTH = 2
 
   def synthesizeForAllLabels(
-    positiveTransitions: Iterable[Transition],
-    negativeTransitions: Iterable[Transition]
+    positiveTransitions: Set[Transition],
+    negativeTransitions: Set[Transition]
   ): Unit = {
     val allLabels = positiveTransitions.head.input.orderedKeys
 
@@ -29,33 +29,43 @@ object Synthesis {
   }
 
   def synthesizeForSingleLabel(
-    positiveTransitions: Iterable[Transition],
-    negativeTransitions: Iterable[Transition],
+    positiveTransitions: Set[Transition],
+    negativeTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Unit = {
-    // STRATEGY 1
-    // find a greedy partition of positive transitions,
-    // aim to maximize use of negative transitions for each positive set
+    // find a greedy partition of positive transitions such that each subset
+    // is "maximally" consistent
+    val partition = findGreedyTransitionPartition(positiveTransitions,
+      possibleVars)
 
-    // STRATEGY 2
-    // do not distinguish between positive and negative transitions when
-    // partitioning
+    // aim to maximize use of negative transitions for each positive set
+    for (subset <- partition) {
+      extendTransitionSet(subset, negativeTransitions)
+    }
   }
 
   def findGreedyTransitionPartition(
     transitions: Set[Transition],
     possibleVars: Set[String]
   ): Set[Set[Transition]] = {
-    // order by weight and group greedily
     var remainingTransitions = transitions
     var partition: Set[Set[Transition]] = Set.empty
 
     while (remainingTransitions.nonEmpty) {
       var currentTransitionSet: Set[Transition] = Set.empty
       for (transition <- transitionsByDescendingWeight(remainingTransitions)) {
-        // if current set + t is SAT, add it to set
+        val toTest = currentTransitionSet + transition
+        val expressions = synthesizeForMinDepth(toTest, possibleVars)
+        if (expressions.nonEmpty) {
+          currentTransitionSet = toTest
+        }
       }
+
+      remainingTransitions = remainingTransitions -- currentTransitionSet
+      partition += currentTransitionSet
     }
+
+    partition
   }
 
   private def transitionsByDescendingWeight(ts: Iterable[Transition]) = {
