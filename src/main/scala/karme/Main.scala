@@ -46,7 +46,7 @@ object Main {
       opts.analysisOptions.windowRadius)
 
     val thresholdedMLEExperiment =
-      Experiments.discretizeProbabilisticExperiment( mleExperiment)
+      Experiments.discretizeProbabilisticExperiment(mleExperiment)
 
     val clustering = readClustering(opts.clusterFile)
 

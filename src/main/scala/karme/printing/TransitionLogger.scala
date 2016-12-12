@@ -16,7 +16,7 @@ object TransitionLogger {
       transition <- transitions.toList.sortBy(_.weight).reverse
     ) yield {
       List(transition.label, transition.outputString, transition.weight,
-        transition.inputString)
+        transition.input)
     }
 
     writer.writeAll(header +: rows)

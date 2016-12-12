@@ -56,12 +56,6 @@ object Transitions {
 
     val outputString: String = booleanValueString(output)
 
-    val inputString: String = {
-      allLabels.map{ l =>
-        s"$l = ${booleanValueString(input.mapping(l))}"
-      }.mkString("(", ",", ")")
-    }
-
     override def toString: String = {
       val sb = new StringBuffer()
       sb.append("Input:\n")
