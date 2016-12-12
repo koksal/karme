@@ -7,6 +7,7 @@ import karme.synthesis.Trees._
 object Synthesis {
 
   val MAX_EXPRESSION_DEPTH = 2
+  val MAX_NB_MODELS = Some(100)
 
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
@@ -39,11 +40,13 @@ object Synthesis {
     // is "maximally" consistent
     val partition = findGreedyTransitionPartition(positiveTransitions,
       possibleVars)
-    println(s"Partitioned positive examples into ${partition.size} sets")
+    println(s"Partitioned positive examples into ${partition.size} set(s).")
+    println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
 
     // aim to maximize use of negative transitions for each positive set
     for (subset <- partition) {
-      extendTransitionSet(subset, negativeTransitions, possibleVars)
+      synthesizeWithHardAndSoftTransitions(subset, negativeTransitions,
+        possibleVars)
     }
   }
 
@@ -71,36 +74,40 @@ object Synthesis {
     partition
   }
 
-  def extendTransitionSet(
-    baseSet: Set[Transition],
-    extensionSet: Set[Transition],
+  def synthesizeWithHardAndSoftTransitions(
+    hardTransitions: Set[Transition],
+    softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Unit = {
     println("Synthesizing with maximal soft constraints.")
-    var consistentExtensionSet: Set[Transition] = Set.empty
+    var consistentSoftSet: Set[Transition] = Set.empty
     var currentExpressions: List[FunExpr] = Nil
 
-    for (transition <- transitionsByDescendingWeight(extensionSet)) {
-      val toTest = baseSet ++ consistentExtensionSet + transition
+    for (transition <- transitionsByDescendingWeight(softTransitions)) {
+      val toTest = hardTransitions ++ consistentSoftSet + transition
       val expressions = synthesizeForMinDepth(toTest, possibleVars)
       if (expressions.nonEmpty) {
-        consistentExtensionSet += transition
+        consistentSoftSet += transition
         currentExpressions = expressions
       }
     }
 
-    // If no extension transition is consistent with base set, compute
-    // functions for the base set
+    // If no soft transition is consistent with hard set, compute functions for
+    // the hard set
     if (currentExpressions.isEmpty) {
-      println("Base set could not be extended.")
-      currentExpressions = synthesizeForMinDepth(baseSet, possibleVars)
+      println("Hard constraints could not be extended with soft constraints.")
+      currentExpressions = synthesizeForMinDepth(hardTransitions, possibleVars)
     }
 
-    val inconsistentSet = extensionSet -- consistentExtensionSet
-    println(s"There are ${inconsistentSet.size} / ${extensionSet.size} " +
-      "inconsistent extensions")
+    val inconsistentSet = softTransitions -- consistentSoftSet
+    val totalSoftWeightSum = softTransitions.map(_.weight).sum
+    val inconsistentWeightSum = inconsistentSet.map(_.weight).sum
+    println(s"There are ${inconsistentSet.size} / ${softTransitions.size} " +
+      "inconsistent extensions (weights: " +
+        s"${inconsistentWeightSum} / ${totalSoftWeightSum})")
 
-    println("Functions inferred with maximal extension set:")
+    println(s"${currentExpressions.size} function(s) inferred with maximal " +
+      s"extension set:")
     for (expr <- currentExpressions) {
       println(FunctionTrees.prettyString(expr))
     }
@@ -136,20 +143,17 @@ object Synthesis {
     val transitionsValid = And(
       transitions.toList map (t => validTransition(symTree, t)): _*)
 
-    val modelNbLimit = 10
-    enumerateFunExpr(symTree,
-      And(treeConsistent, transitionsValid), Some(modelNbLimit))
+    enumerateFunExpr(symTree, And(treeConsistent, transitionsValid))
   }
 
   private def enumerateFunExpr(
     sfe: SymFunExpr,
-    constraints: Expr,
-    limit: Option[Int]
+    constraints: Expr
   ): List[FunExpr] = {
     def extract(model: Map[Identifier, Expr]): FunExpr =
       funExprValue(sfe, model)
     def symEq(fe: FunExpr): Expr = funExprEquals(sfe, fe)
-    Enumeration.enumerate(extract, symEq, constraints, limit)
+    Enumeration.enumerate(extract, symEq, constraints, MAX_NB_MODELS)
   }
 
   private def mkFreshSymFunExpr(depth: Int, possibleVars: Set[String]):
