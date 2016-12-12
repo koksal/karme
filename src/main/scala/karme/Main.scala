@@ -74,7 +74,9 @@ object Main {
       new File(opts.outFolder, "experiment-mle-thresholded.csv"))
 
     TransitionLogger.saveToFile(positiveTransitions,
-      new File(opts.outFolder, "transitions.csv"))
+      new File(opts.outFolder, "positive-transitions.csv"))
+    TransitionLogger.saveToFile(negativeTransitions,
+      new File(opts.outFolder, "negative-transitions.csv"))
 
     visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
       trajectories, undirectedStateGraph, directedStateGraph,
