@@ -24,9 +24,9 @@ object TransitionProducer {
         for (label <- UndirectedStateGraphOps.edgeLabels(edge)) {
 
           // check that neither state is "ambiguously discretized" for label
-          if (isStableForLabel(source, label, mleExperiment) &&
-            isStableForLabel(target, label, mleExperiment)) {
-
+          // if (isStableForLabel(source, label, mleExperiment) &&
+          //   isStableForLabel(target, label, mleExperiment)) {
+          if (true) {
             val weight = source.measurements.size * target.measurements.size
 
             // add a transition for the current label

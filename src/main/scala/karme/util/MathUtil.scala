@@ -20,4 +20,12 @@ object MathUtil {
     (n * (Math.pow(10.0, digits))).toInt / Math.pow(10.0, digits)
   }
 
+  def cartesianProduct[A](ss: List[Set[A]]): Set[List[A]] = ss match {
+    case s1 :: rest => {
+      s1 flatMap { e =>
+        cartesianProduct(rest) map { p => e :: p }
+      }
+    }
+    case Nil => Set(Nil)
+  }
 }

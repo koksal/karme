@@ -47,11 +47,14 @@ object Main {
 
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment(mleExperiment)
+    val triValuedExperiment = Experiments.probabilistic2triValued(mleExperiment)
 
     val clustering = readClustering(opts.clusterFile)
 
-    val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
-      thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
+    // val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
+    //   thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
+    val undirectedStateGraph = StateGraphs.fromTriValuedExperiment(
+      triValuedExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
 

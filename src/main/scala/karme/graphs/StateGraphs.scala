@@ -1,7 +1,8 @@
 package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement}
+import karme.Experiments
+import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, TriValuedExperiment}
 import karme.discretization.Discretization
 import karme.graphs.Graphs._
 import karme.transformations.DiscreteStateAnalysis
@@ -43,6 +44,62 @@ object StateGraphs {
       val dist = DiscreteStateAnalysis.hammingDistance(v1.state, v2.state)
       if (dist <= maxHammingDistance) {
         g = g.addEdge(v1, v2)
+      }
+    }
+
+    g
+  }
+
+  def fromTriValuedExperiment(
+    triValuedExperiment: TriValuedExperiment,
+    maxHammingDistance: Int
+  ): UndirectedStateGraph = {
+    val stateToMeasurements = triValuedExperiment.measurements.groupBy(_.values)
+
+    // compute vertex groups, each group corresponds to one tri-valued state
+    // measurements are duplicated across Boolean states mapping to the same
+    // tri-valued state.
+    val vertexGroups = stateToMeasurements map {
+      case (state, ms) =>
+        // compute Set of booleans for each
+        val booleanSets = state map Experiments.triValuedToBooleanSet
+        // take cartesian product of set
+        val cartesianProduct = MathUtil.cartesianProduct(booleanSets.toList)
+        // create Concrete boolean states, and then sets of vertices
+        val concreteBooleanStates = cartesianProduct map { prod =>
+        }
+        val vertexGroup = cartesianProduct map { prod =>
+          val concreteBooleanState = ConcreteBooleanState(
+            triValuedExperiment.names.zip(prod).toMap)
+          // TODO cleanup
+          val intValues = prod map (v =>
+            if (v) Discretization.HIGH_VALUE else Discretization.LOW_VALUE)
+          val newMs = ms.map(m => m.copy(values = intValues))
+          StateGraphVertex(concreteBooleanState, newMs)
+        }
+        vertexGroup
+    }
+
+    // create graph with all vertices
+    var g = new UndirectedStateGraph(V = vertexGroups.flatten.toSet)
+
+    // add edges between every pair of nodes except within the set
+    val vertexGroupSeq = vertexGroups.toIndexedSeq
+    for {
+      i <- 0 until vertexGroupSeq.size
+      j <- (i + 1) until vertexGroupSeq.size
+    } {
+      val vertexGroup1 = vertexGroupSeq(i)
+      val vertexGroup2 = vertexGroupSeq(j)
+
+      for {
+        v1 <- vertexGroup1
+        v2 <- vertexGroup2
+      } {
+        val dist = DiscreteStateAnalysis.hammingDistance(v1.state, v2.state)
+        if (dist <= maxHammingDistance) {
+          g = g.addEdge(v1, v2)
+        }
       }
     }
 
