@@ -1,12 +1,13 @@
 package karme.simulation
 
+import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
 
 object AsyncBooleanNetworkSimulation {
 
   def simulate(
-    functions: Set[FunExpr],
+    functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
     // for every reachable state, compute all new reachable states using any
@@ -20,11 +21,31 @@ object AsyncBooleanNetworkSimulation {
         processSet -= stateToProcess
 
         // add any new reachable states to process set
-        ???
+        // apply each function and see if it generates a new state
+        val statesViaFunctionApplication = functions map {
+          case (label, fun) => {
+            updatedState(label, fun, stateToProcess)
+          }
+        }
+
+        val unseenStates = reachableStates ++ processSet --
+          statesViaFunctionApplication
+
+        processSet ++= unseenStates
       }
     }
 
     reachableStates
+  }
+
+  private def updatedState(
+    label: String,
+    fun: FunExpr,
+    inputState: ConcreteBooleanState
+  ): ConcreteBooleanState = {
+    val funOutput = FunctionTrees.eval(fun, inputState)
+    val newMapping = inputState.mapping.updated(label, funOutput)
+    ConcreteBooleanState(newMapping)
   }
 
 }
