@@ -79,7 +79,8 @@ object Synthesis {
     softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Unit = {
-    println("Synthesizing with maximal soft constraints.")
+    println(
+      s"Synthesizing with maximal soft constraints (${softTransitions.size}).")
     var consistentSoftSet: Set[Transition] = Set.empty
     var currentExpressions: List[FunExpr] = Nil
 
@@ -90,7 +91,9 @@ object Synthesis {
         consistentSoftSet += transition
         currentExpressions = expressions
       }
+      print(".")
     }
+    println()
 
     // If no soft transition is consistent with hard set, compute functions for
     // the hard set
