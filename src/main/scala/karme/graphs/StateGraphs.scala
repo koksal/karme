@@ -65,9 +65,7 @@ object StateGraphs {
         val booleanSets = state map Experiments.triValuedToBooleanSet
         // take cartesian product of set
         val cartesianProduct = MathUtil.cartesianProduct(booleanSets.toList)
-        // create Concrete boolean states, and then sets of vertices
-        val concreteBooleanStates = cartesianProduct map { prod =>
-        }
+
         val vertexGroup = cartesianProduct map { prod =>
           val concreteBooleanState = ConcreteBooleanState(
             triValuedExperiment.names.zip(prod).toMap)

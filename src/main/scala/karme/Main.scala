@@ -51,8 +51,7 @@ object Main {
 
     val clustering = readClustering(opts.clusterFile)
 
-    // val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
-    //   thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
+    // TODO better undirected graph expansion
     val undirectedStateGraph = StateGraphs.fromTriValuedExperiment(
       triValuedExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
