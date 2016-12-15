@@ -6,9 +6,9 @@ import com.github.tototoshi.csv.CSVWriter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.DirectedStateGraph
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedStateGraph
+import karme.graphs.StateGraphs.UndirectedBooleanStateGraph
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
@@ -20,7 +20,7 @@ import scala.sys.process._
 object StateGraphVisualization {
 
   def plotUndirectedGraph(
-    g: UndirectedStateGraph,
+    g: UndirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String],
     outFolder: File
@@ -31,7 +31,7 @@ object StateGraphVisualization {
   }
 
   def plotDirectedGraph(
-    g: DirectedStateGraph,
+    g: DirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String],
     outFolder: File
@@ -42,7 +42,7 @@ object StateGraphVisualization {
   }
 
   def plotTransitions(
-    g: DirectedStateGraph,
+    g: DirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String],
@@ -64,7 +64,7 @@ object StateGraphVisualization {
   }
 
   private def undirectedDotString(
-    g: UndirectedStateGraph,
+    g: UndirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String]
   ): String = {
@@ -74,7 +74,7 @@ object StateGraphVisualization {
   }
 
   private def directedDotString(
-    g: DirectedStateGraph,
+    g: DirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String]
   ): String = {
@@ -84,7 +84,7 @@ object StateGraphVisualization {
   }
 
   private def transitionDotString(
-    g: DirectedStateGraph,
+    g: DirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String]
@@ -129,7 +129,7 @@ object StateGraphVisualization {
   }
 
   private def undirectedDotEdges(
-    g: UndirectedStateGraph,
+    g: UndirectedBooleanStateGraph,
     nodeToId: Map[StateGraphVertex, String]
   ): String = {
     val sb = new StringBuilder()
@@ -147,7 +147,7 @@ object StateGraphVisualization {
   }
 
   private def directedDotEdges(
-    g: DirectedStateGraph,
+    g: DirectedBooleanStateGraph,
     nodeToID: Map[StateGraphVertex, String]
   ): String = {
     val sb = new StringBuilder()
@@ -175,7 +175,7 @@ object StateGraphVisualization {
   }
 
   private def transitionDotEdges(
-    graph: DirectedStateGraph,
+    graph: DirectedBooleanStateGraph,
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String]
   ): String = {

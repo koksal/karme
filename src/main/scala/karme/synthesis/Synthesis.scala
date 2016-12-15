@@ -172,7 +172,7 @@ object Synthesis {
 
   private def evaluate(
     sf: SymFunExpr,
-    input: AbsBooleanState[_]
+    input: AbstractState[_]
   ): (Variable, Expr) = {
     val res = mkFreshBooleanVar("res")
 
@@ -180,8 +180,6 @@ object Synthesis {
     val varCases = sf.prots map { prot =>
       val varValue = input match {
         case cbs: ConcreteBooleanState => BooleanLiteral(cbs(prot))
-        case cpbs: ConcreteProbabilisticBooleanState =>
-          BooleanLiteral(cpbs(prot).value)
         case sbs: SymBooleanState => sbs(prot)
       }
       Implies(

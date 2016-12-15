@@ -9,7 +9,7 @@ import karme.discretization.Discretization
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
-import karme.graphs.StateGraphs.{DirectedStateGraph, UndirectedStateGraph}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.TransitionLogger
@@ -47,7 +47,8 @@ object Main {
 
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment(mleExperiment)
-    val triValuedExperiment = Experiments.probabilistic2triValued(mleExperiment)
+
+    val triValuedExperiment = Experiments.probabilisticToThreeValued(mleExperiment)
 
     val clustering = readClustering(opts.clusterFile)
 
@@ -127,8 +128,8 @@ object Main {
     discreteExperiment: DiscreteExperiment,
     clustering: mutable.MultiMap[String, String],
     trajectories: Seq[CellTrajectory],
-    undirectedStateGraph: UndirectedStateGraph,
-    directedStateGraph: DirectedStateGraph,
+    undirectedStateGraph: UndirectedBooleanStateGraph,
+    directedStateGraph: DirectedBooleanStateGraph,
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String],
     options: VisualizationOptions,

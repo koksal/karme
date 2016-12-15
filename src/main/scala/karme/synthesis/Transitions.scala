@@ -1,21 +1,23 @@
 package karme.synthesis
 
+import karme.Experiments.High
+import karme.Experiments.ThreeValued
+import karme.Experiments.Uncertain
 import karme.synthesis.Trees._
 import karme.util.MathUtil
 
 object Transitions {
-  class AbsBooleanState[T](mapping: Map[String, T]) {
+  abstract class AbstractState[T] {
+    def mapping: Map[String, T]
     val orderedKeys: Seq[String] = mapping.keys.toList.sorted
     val orderedValues: Seq[T] = orderedKeys map (k => mapping(k))
     def apply(name: String): T = mapping(name)
     def size: Int = orderedKeys.size
   }
 
-  case class ProbabilisticBoolean(value: Boolean, posterior: Double)
-
   case class ConcreteBooleanState(
     mapping: Map[String, Boolean]
-  ) extends AbsBooleanState(mapping) {
+  ) extends AbstractState[Boolean] {
     override def toString: String = {
       val onKeys = (orderedKeys zip orderedValues) collect {
         case (k, v) if v => k
@@ -24,21 +26,15 @@ object Transitions {
     }
   }
 
-  case class ConcreteProbabilisticBooleanState(
-    mapping: Map[String, ProbabilisticBoolean]
-  ) extends AbsBooleanState(mapping) {
+  case class ThreeValuedState(
+    mapping: Map[String, ThreeValued]
+  ) extends AbstractState[ThreeValued] {
     override def toString: String = {
-      val keyPostPairs = (orderedKeys zip orderedValues) collect {
-        case (k, v) if v.value => k -> v.posterior
-      }
-      keyPostPairs.map{ case (k, p) => s"$k (${MathUtil.roundTo(p, 2)})" }
-        .mkString(", ")
-    }
-    def toConcreteBooleanState: ConcreteBooleanState = {
-      val m = this.mapping map {
-        case (k, pv) => k -> pv.value
-      }
-      ConcreteBooleanState(m)
+      val groupedByValue = mapping.groupBy(_._2)
+      val highValues = groupedByValue.getOrElse(High, Set.empty)
+      val uncertainValues = groupedByValue.getOrElse(Uncertain, Set.empty)
+      val strings = uncertainValues.map(x => x + "?") ++ highValues
+      strings.mkString(", ")
     }
   }
 
@@ -71,7 +67,7 @@ object Transitions {
 
   case class SymBooleanState(
     mapping: Map[String, Variable]
-  ) extends AbsBooleanState(mapping) {
+  ) extends AbstractState[Variable] {
     def hasValue(concreteState: ConcreteBooleanState): Expr = {
       val conj = orderedKeys map { key =>
         val symValue = this(key)

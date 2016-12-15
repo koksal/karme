@@ -13,13 +13,14 @@ import scala.collection.mutable
 
 object StateGraphs {
 
-  type UndirectedStateGraph = UnlabeledGraph[StateGraphVertex]
-  type DirectedStateGraph = UnlabeledDiGraph[StateGraphVertex]
+  type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
+  type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
+
 
   def fromDiscreteExperiment(
     discreteExperiment: DiscreteExperiment,
     maxHammingDistance: Int
-  ): UndirectedStateGraph = {
+  ): UndirectedBooleanStateGraph = {
     val stateToMeasurements = discreteExperiment.measurements.groupBy(_.values)
 
     val V = stateToMeasurements map {
@@ -30,7 +31,7 @@ object StateGraphs {
         StateGraphVertex(booleanState, ms)
     }
 
-    var g = new UndirectedStateGraph(V = V.toSet)
+    var g = new UndirectedBooleanStateGraph(V = V.toSet)
 
     // Add edges with Hamming distance <= max
     val vSeq = V.toIndexedSeq
@@ -53,7 +54,7 @@ object StateGraphs {
   def fromTriValuedExperiment(
     triValuedExperiment: TriValuedExperiment,
     maxHammingDistance: Int
-  ): UndirectedStateGraph = {
+  ): UndirectedBooleanStateGraph = {
     val stateToMeasurements = triValuedExperiment.measurements.groupBy(_.values)
 
     // compute vertex groups, each group corresponds to one tri-valued state
@@ -62,7 +63,7 @@ object StateGraphs {
     val vertexGroups = stateToMeasurements map {
       case (state, ms) =>
         // compute Set of booleans for each
-        val booleanSets = state map Experiments.triValuedToBooleanSet
+        val booleanSets = state map Experiments.threeValuedToBooleanSet
         // take cartesian product of set
         val cartesianProduct = MathUtil.cartesianProduct(booleanSets.toList)
 
@@ -79,7 +80,7 @@ object StateGraphs {
     }
 
     // create graph with all vertices
-    var g = new UndirectedStateGraph(V = vertexGroups.flatten.toSet)
+    var g = new UndirectedBooleanStateGraph(V = vertexGroups.flatten.toSet)
 
     // add edges between every pair of nodes except within the set
     val vertexGroupSeq = vertexGroups.toIndexedSeq
@@ -136,9 +137,9 @@ object StateGraphs {
     }
 
     def orientByTrajectories(
-      g: UndirectedStateGraph,
+      g: UndirectedBooleanStateGraph,
       trajectories: Seq[CellTrajectory]
-    ): DirectedStateGraph = {
+    ): DirectedBooleanStateGraph = {
       val directions = new mutable.HashMap[UnlabeledEdge[StateGraphVertex],
         mutable.Set[EdgeDirection]]() with
         mutable.MultiMap[UnlabeledEdge[StateGraphVertex], EdgeDirection]
@@ -159,11 +160,11 @@ object StateGraphs {
       }
 
       // we filter the graph down to edges that could be oriented
-      new DirectedStateGraph(g.V, directions.keySet.toSet, directions)
+      new DirectedBooleanStateGraph(g.V, directions.keySet.toSet, directions)
     }
 
     private def trajectoryDirections(
-      g: UndirectedStateGraph,
+      g: UndirectedBooleanStateGraph,
       trajectory: CellTrajectory
     ): Map[UnlabeledEdge[StateGraphVertex], EdgeDirection] = {
       var res = Map[UnlabeledEdge[StateGraphVertex], EdgeDirection]()

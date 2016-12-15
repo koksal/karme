@@ -1,7 +1,7 @@
 package karme.transformations
 
 import karme.Experiments.ProbabilisticExperiment
-import karme.graphs.StateGraphs.DirectedStateGraph
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.Transition
@@ -12,7 +12,7 @@ object TransitionProducer {
   private val STABLE_MLE_MARGIN = 0.05
 
   def positiveTransitions(
-    graph: DirectedStateGraph,
+    graph: DirectedBooleanStateGraph,
     mleExperiment: ProbabilisticExperiment
   ): Set[Transition] = {
     var transitions = Set[Transition]()
@@ -41,7 +41,7 @@ object TransitionProducer {
   }
 
   def negativeTransitions(
-    graph: DirectedStateGraph,
+    graph: DirectedBooleanStateGraph,
     mleExperiment: ProbabilisticExperiment
   ): Set[Transition] = {
     // for each state, for each stable gene, if there are no neighbors that

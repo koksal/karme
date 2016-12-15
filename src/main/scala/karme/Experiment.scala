@@ -64,7 +64,7 @@ object Experiments {
     exp.copy(measurements = discreteMs)
   }
 
-  def probabilistic2triValued(
+  def probabilisticToThreeValued(
     e: ProbabilisticExperiment
   ): TriValuedExperiment = {
     val UNCERTAINTY_MARGIN = 0.05
@@ -73,7 +73,7 @@ object Experiments {
     val triValuedMs = e.measurements map { m =>
       val triValuedVs = m.values map { v =>
         assert(v >= 0 && v <= 1)
-        val tv: TriValued = if (math.abs(MID_VALUE - v) <= UNCERTAINTY_MARGIN) {
+        val tv: ThreeValued = if (math.abs(MID_VALUE - v) <= UNCERTAINTY_MARGIN) {
           Uncertain
         } else if (v < MID_VALUE) {
           Low
@@ -87,26 +87,26 @@ object Experiments {
     e.copy(measurements = triValuedMs)
   }
 
-  def triValuedToBooleanSet(v: TriValued): Set[Boolean] = v match {
+  def threeValuedToBooleanSet(v: ThreeValued): Set[Boolean] = v match {
     case Low => Set(false)
     case High => Set(true)
     case Uncertain => Set(false, true)
   }
 
-  sealed trait TriValued
-  case object Low extends TriValued
-  case object Uncertain extends TriValued
-  case object High extends TriValued
+  sealed trait ThreeValued
+  case object Low extends ThreeValued
+  case object Uncertain extends ThreeValued
+  case object High extends ThreeValued
 
   type ContinuousExperiment = Experiment[Double]
   type DiscreteExperiment = Experiment[Int]
   type ProbabilisticExperiment = Experiment[Double]
-  type TriValuedExperiment = Experiment[TriValued]
+  type TriValuedExperiment = Experiment[ThreeValued]
 
   case class Measurement[T](id: String, values: Seq[T])
 
   type ContinuousMeasurement = Measurement[Double]
   type DiscreteMeasurement = Measurement[Int]
   type ProbabilisticMeasurement = Measurement[Double]
-  type TriValuedMeasurement = Measurement[TriValued]
+  type TriValuedMeasurement = Measurement[ThreeValued]
 }
