@@ -66,7 +66,7 @@ object Experiments {
 
   def probabilisticToThreeValued(
     e: ProbabilisticExperiment
-  ): TriValuedExperiment = {
+  ): ThreeValuedExperiment = {
     val UNCERTAINTY_MARGIN = 0.05
     val MID_VALUE = 0.5
 
@@ -101,12 +101,12 @@ object Experiments {
   type ContinuousExperiment = Experiment[Double]
   type DiscreteExperiment = Experiment[Int]
   type ProbabilisticExperiment = Experiment[Double]
-  type TriValuedExperiment = Experiment[ThreeValued]
+  type ThreeValuedExperiment = Experiment[ThreeValued]
 
   case class Measurement[T](id: String, values: Seq[T])
 
   type ContinuousMeasurement = Measurement[Double]
   type DiscreteMeasurement = Measurement[Int]
   type ProbabilisticMeasurement = Measurement[Double]
-  type TriValuedMeasurement = Measurement[ThreeValued]
+  type ThreeValuedMeasurement = Measurement[ThreeValued]
 }

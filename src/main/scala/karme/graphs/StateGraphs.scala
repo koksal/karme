@@ -2,11 +2,13 @@ package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments
-import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, TriValuedExperiment}
+import karme.Experiments.ThreeValuedMeasurement
+import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, ThreeValuedExperiment}
 import karme.discretization.Discretization
 import karme.graphs.Graphs._
 import karme.transformations.DiscreteStateAnalysis
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.synthesis.Transitions.ThreeValuedState
 import karme.util.MathUtil
 
 import scala.collection.mutable
@@ -52,7 +54,7 @@ object StateGraphs {
   }
 
   def fromTriValuedExperiment(
-    triValuedExperiment: TriValuedExperiment,
+    triValuedExperiment: ThreeValuedExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
     val stateToMeasurements = triValuedExperiment.measurements.groupBy(_.values)
@@ -113,6 +115,25 @@ object StateGraphs {
       assert(this.state.size == o.state.size)
 
       import scala.math.Ordering.Implicits._
+      if (this.state.orderedValues < o.state.orderedValues) {
+        -1
+      } else if (this.state == o.state) {
+        0
+      } else {
+        1
+      }
+    }
+  }
+
+  case class ThreeValuedStateGraphVertex(
+    state: ThreeValuedState,
+    measurements: Seq[ThreeValuedMeasurement]
+  ) extends Ordered[ThreeValuedStateGraphVertex] {
+    override def compare(o: ThreeValuedStateGraphVertex): Int = {
+
+      implicit val ordering = ThreeValuedState.threeValuedOrdering
+      import scala.math.Ordering.Implicits._
+
       if (this.state.orderedValues < o.state.orderedValues) {
         -1
       } else if (this.state == o.state) {

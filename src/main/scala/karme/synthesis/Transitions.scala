@@ -1,6 +1,7 @@
 package karme.synthesis
 
 import karme.Experiments.High
+import karme.Experiments.Low
 import karme.Experiments.ThreeValued
 import karme.Experiments.Uncertain
 import karme.synthesis.Trees._
@@ -36,6 +37,16 @@ object Transitions {
       val strings = uncertainValues.map(x => x + "?") ++ highValues
       strings.mkString(", ")
     }
+  }
+
+  object ThreeValuedState {
+    private def orderingIndex(tv: ThreeValued): Int = tv match {
+      case Low => 0
+      case Uncertain => 1
+      case High => 2
+    }
+
+    val threeValuedOrdering = Ordering by orderingIndex
   }
 
   case class Transition(
