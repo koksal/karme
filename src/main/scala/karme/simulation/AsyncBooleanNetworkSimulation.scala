@@ -25,7 +25,9 @@ object AsyncBooleanNetworkSimulation {
     var reachableStates = Set.empty[ConcreteBooleanState]
     var processSet = initialStates
 
+    println("Exploring states.")
     while (processSet.nonEmpty) {
+      print(".")
       for (stateToProcess <- processSet) {
         reachableStates += stateToProcess
         processSet -= stateToProcess
@@ -44,6 +46,7 @@ object AsyncBooleanNetworkSimulation {
         processSet ++= unseenStates
       }
     }
+    println()
 
     reachableStates
   }
