@@ -2,8 +2,13 @@ package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments
+import karme.Experiments.BooleanExperiment
+import karme.Experiments.BooleanMeasurement
+import karme.Experiments.Experiment
+import karme.Experiments.Measurement
+import karme.Experiments.ThreeValued
 import karme.Experiments.ThreeValuedMeasurement
-import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, ThreeValuedExperiment}
+import karme.Experiments.ThreeValuedExperiment
 import karme.discretization.Discretization
 import karme.graphs.Graphs._
 import karme.transformations.DiscreteStateAnalysis
@@ -19,16 +24,15 @@ object StateGraphs {
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
   def fromDiscreteExperiment(
-    discreteExperiment: DiscreteExperiment,
+    booleanExperiment: BooleanExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
-    val stateToMeasurements = discreteExperiment.measurements.groupBy(_.values)
+    val stateToMeasurements = booleanExperiment.measurements.groupBy(_.values)
 
     val V = stateToMeasurements map {
       case (state, ms) =>
-        val booleanValues = state map { v => v == Discretization.HIGH_VALUE }
         val booleanState = ConcreteBooleanState(
-          discreteExperiment.names.zip(booleanValues).toMap)
+          booleanExperiment.names.zip(state).toMap)
         StateGraphVertex(booleanState, ms)
     }
 
@@ -52,73 +56,51 @@ object StateGraphs {
     g
   }
 
-  def expandThreeValuedExperiment(
-    threeValuedExperiment: ThreeValuedExperiment
-  ): UndirectedBooleanStateGraph = {
-    // first expand to Boolean experiment
-    // then build a N-Hamming graph
-    // replace >1-Hamming edges with expanded 1-Hamming paths
-    ???
-  }
-
   def fromThreeValuedExperiment(
     threeValuedExperiment: ThreeValuedExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
-    val stateToMeasurements =
-      threeValuedExperiment.measurements.groupBy(_.values)
+    // first expand to Boolean experiment
+    val booleanExperiment = threeValuedExperimentToBoolean(
+      threeValuedExperiment)
 
-    // compute vertex groups, each group corresponds to one tri-valued state
-    // measurements are duplicated across Boolean states mapping to the same
-    // tri-valued state.
-    val vertexGroups = stateToMeasurements map {
-      case (state, ms) =>
-        // compute Set of booleans for each
-        val booleanSets = state map Experiments.threeValuedToBooleanSet
-        // take cartesian product of set
-        val cartesianProduct = MathUtil.cartesianProduct(booleanSets.toList)
+    // then build a N-Hamming graph using above function
+    // try out 1-Hamming to see if it's connected and for simple analysis
+    val hammingGraph = fromDiscreteExperiment(booleanExperiment,
+      maxHammingDistance)
 
-        val vertexGroup = cartesianProduct map { prod =>
-          val concreteBooleanState = ConcreteBooleanState(
-            threeValuedExperiment.names.zip(prod).toMap)
-          // TODO cleanup
-          val intValues = prod map (v =>
-            if (v) Discretization.HIGH_VALUE else Discretization.LOW_VALUE)
-          val newMs = ms.map(m => m.copy(values = intValues))
-          StateGraphVertex(concreteBooleanState, newMs)
-        }
-        vertexGroup
-    }
+    // TODO replace >1-Hamming edges with expanded 1-Hamming paths
+    hammingGraph
+  }
 
-    // create graph with all vertices
-    var g = new UndirectedBooleanStateGraph(V = vertexGroups.flatten.toSet)
-
-    // add edges between every pair of nodes except within the set
-    val vertexGroupSeq = vertexGroups.toIndexedSeq
-    for {
-      i <- 0 until vertexGroupSeq.size
-      j <- (i + 1) until vertexGroupSeq.size
-    } {
-      val vertexGroup1 = vertexGroupSeq(i)
-      val vertexGroup2 = vertexGroupSeq(j)
-
-      for {
-        v1 <- vertexGroup1
-        v2 <- vertexGroup2
-      } {
-        val dist = DiscreteStateAnalysis.hammingDistance(v1.state, v2.state)
-        if (dist <= maxHammingDistance) {
-          g = g.addEdge(v1, v2)
+  private def threeValuedExperimentToBoolean(
+    threeValuedExperiment: ThreeValuedExperiment
+  ): BooleanExperiment = {
+    val booleanMeasurements = threeValuedExperiment.measurements.flatMap{
+      measurement => {
+        val booleanStates = expandThreeValuedState(measurement.values)
+        booleanStates map { booleanState =>
+          Measurement[Boolean](measurement.id, booleanState)
         }
       }
     }
 
-    g
+    Experiment(threeValuedExperiment.names, booleanMeasurements)
+  }
+
+  private def expandThreeValuedState(
+    state: Seq[ThreeValued]
+  ): Set[List[Boolean]] = {
+    // compute Set of booleans for each
+    val booleanSets = state map Experiments.threeValuedToBooleanSet
+
+    // take cartesian product of set
+    MathUtil.cartesianProduct(booleanSets.toList)
   }
 
   case class StateGraphVertex(
     state: ConcreteBooleanState,
-    measurements: Seq[DiscreteMeasurement]
+    measurements: Seq[BooleanMeasurement]
   ) extends Ordered[StateGraphVertex] {
     override def compare(o: StateGraphVertex): Int = {
       assert(this.state.size == o.state.size)

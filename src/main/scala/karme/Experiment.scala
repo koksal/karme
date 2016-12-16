@@ -64,7 +64,7 @@ object Experiments {
     exp.copy(measurements = discreteMs)
   }
 
-  def probabilisticToThreeValued(
+  def probabilisticExperimentToThreeValued(
     e: ProbabilisticExperiment
   ): ThreeValuedExperiment = {
     val UNCERTAINTY_MARGIN = 0.05
@@ -100,6 +100,7 @@ object Experiments {
 
   type ContinuousExperiment = Experiment[Double]
   type DiscreteExperiment = Experiment[Int]
+  type BooleanExperiment = Experiment[Boolean]
   type ProbabilisticExperiment = Experiment[Double]
   type ThreeValuedExperiment = Experiment[ThreeValued]
 
@@ -107,6 +108,7 @@ object Experiments {
 
   type ContinuousMeasurement = Measurement[Double]
   type DiscreteMeasurement = Measurement[Int]
+  type BooleanMeasurement = Measurement[Boolean]
   type ProbabilisticMeasurement = Measurement[Double]
   type ThreeValuedMeasurement = Measurement[ThreeValued]
 }

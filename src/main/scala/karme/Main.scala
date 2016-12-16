@@ -48,14 +48,14 @@ object Main {
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment(mleExperiment)
 
-    val threeValuedExperiment = Experiments.probabilisticToThreeValued(
+    val threeValuedExperiment = Experiments.probabilisticExperimentToThreeValued(
       mleExperiment)
 
     val clustering = readClustering(opts.clusterFile)
 
     // TODO better undirected graph expansion
-    val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
-      thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
+    val undirectedStateGraph = StateGraphs.fromThreeValuedExperiment(
+      threeValuedExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
 
@@ -65,8 +65,7 @@ object Main {
     val negativeTransitions = TransitionProducer.negativeTransitions(
       directedStateGraph, mleExperiment)
 
-    // Synthesis.synthesizeForAllLabels(positiveTransitions,
-    // negativeTransitions)
+    Synthesis.synthesizeForAllLabels(positiveTransitions, negativeTransitions)
 
     val nodeToID = makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = makeCellIDs(nodeToID)
