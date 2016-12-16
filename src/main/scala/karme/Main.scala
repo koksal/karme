@@ -63,7 +63,7 @@ object Main {
       directedStateGraph)
 
     val negativeTransitions = TransitionProducer.negativeTransitions(
-      directedStateGraph, mleExperiment)
+      directedStateGraph, threeValuedExperiment.names)
 
     val nodeToID = makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = makeCellIDs(nodeToID)
@@ -217,7 +217,7 @@ object Main {
       case (node, id) => node.measurements.map(m => m.id -> id)
     }
 
-    cellIDs.toMap
+    cellIDs
   }
 
 }

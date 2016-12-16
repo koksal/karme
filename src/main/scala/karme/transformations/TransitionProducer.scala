@@ -33,29 +33,22 @@ object TransitionProducer {
     transitions
   }
 
-  // TODO remove stability checks that are handled by three-valued experiment
-  // generation
   def negativeTransitions(
     graph: DirectedBooleanStateGraph,
-    mleExperiment: ProbabilisticExperiment
+    labels: Iterable[String]
   ): Set[Transition] = {
-    // for each state, for each stable gene, if there are no neighbors that
-    // switch values reliably, produce a "constant" transition.
     var transitions = Set[Transition]()
 
     for (node <- graph.V) {
-      for (label <- mleExperiment.names) {
-        if (isStableForLabel(node, label, mleExperiment)) {
-          // is the label stable in a neighbor?
-          if (!graph.neighbors(node).exists{ neighbor =>
-            isStableForLabel(neighbor, label, mleExperiment) &&
-              node.state(label) != neighbor.state(label)
-          }) {
-            // add a self-edge for label
-            val weight = node.measurements.size * node.measurements.size
-            transitions += Transition(node.state, node.state(label), label,
-              weight)
-          }
+      for (label <- labels) {
+        // if there is no neighbor with a different value for the label, add
+        // a self-edge for the label
+        if (!graph.neighbors(node).exists{ neighbor =>
+          node.state(label) != neighbor.state(label)
+        }) {
+          val weight = node.measurements.size * node.measurements.size
+          transitions += Transition(node.state, node.state(label), label,
+            weight)
         }
       }
     }
