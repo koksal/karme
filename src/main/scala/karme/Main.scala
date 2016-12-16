@@ -13,6 +13,7 @@ import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanSta
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.TransitionLogger
+import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
 import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
@@ -59,7 +60,7 @@ object Main {
       undirectedStateGraph, trajectories)
 
     val positiveTransitions = TransitionProducer.positiveTransitions(
-      directedStateGraph, mleExperiment)
+      directedStateGraph)
 
     val negativeTransitions = TransitionProducer.negativeTransitions(
       directedStateGraph, mleExperiment)
@@ -88,8 +89,21 @@ object Main {
     val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
       positiveTransitions, negativeTransitions)
 
-    // TODO factor out code that computes average state pseudotimes and pick
-    // state that's earliest.
+    val initialStates = StateGraphs.initialTrajectoryStates(
+      directedStateGraph.V, trajectories)
+
+    val simulationStates =
+      AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
+        labelToFunctionExpressions, initialStates)
+
+    val commonStates = initialStates intersect simulationStates
+    val missedStates = initialStates -- simulationStates
+    val unobservedStates = simulationStates -- initialStates
+
+    // TODO print into file
+    println(s"Common states: ${commonStates.size}")
+    println(s"Missed states: ${missedStates.size}")
+    println(s"Unobserved states: ${unobservedStates.size}")
   }
 
   private def readContinuousExperiment(

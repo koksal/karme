@@ -209,6 +209,15 @@ object StateGraphs {
 
   }
 
+  def initialTrajectoryStates(
+    vertices: Set[StateGraphVertex],
+    trajectories: Iterable[CellTrajectory]
+  ): Set[ConcreteBooleanState] = {
+    trajectories.map{ trajectory =>
+      vertices.toList.sortBy(v => avgNodePseudotime(v, trajectory)).head.state
+    }.toSet
+  }
+
   private def avgNodePseudotime(
     node: StateGraphVertex, trajectory: CellTrajectory
   ): Option[Double] = {

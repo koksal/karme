@@ -12,8 +12,7 @@ object TransitionProducer {
   private val STABLE_MLE_MARGIN = 0.05
 
   def positiveTransitions(
-    graph: DirectedBooleanStateGraph,
-    mleExperiment: ProbabilisticExperiment
+    graph: DirectedBooleanStateGraph
   ): Set[Transition] = {
     var transitions = Set[Transition]()
     for (edge <- graph.E) {
@@ -22,17 +21,11 @@ object TransitionProducer {
         val target = graph.target(edge, direction)
 
         for (label <- UndirectedStateGraphOps.edgeLabels(edge)) {
+          val weight = source.measurements.size * target.measurements.size
 
-          // check that neither state is "ambiguously discretized" for label
-          // if (isStableForLabel(source, label, mleExperiment) &&
-          //   isStableForLabel(target, label, mleExperiment)) {
-          if (true) {
-            val weight = source.measurements.size * target.measurements.size
-
-            // add a transition for the current label
-            transitions += Transition(source.state, target.state.mapping(label),
-              label, weight)
-          }
+          // add a transition for the current label
+          transitions += Transition(source.state, target.state.mapping(label),
+            label, weight)
         }
       }
     }
@@ -40,6 +33,8 @@ object TransitionProducer {
     transitions
   }
 
+  // TODO remove stability checks that are handled by three-valued experiment
+  // generation
   def negativeTransitions(
     graph: DirectedBooleanStateGraph,
     mleExperiment: ProbabilisticExperiment

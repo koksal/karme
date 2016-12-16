@@ -6,7 +6,7 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 object AsyncBooleanNetworkSimulation {
 
-  def pickFunctionAndSimulate(
+  def pickFunctionsAndSimulate(
     labelToFunctions: Map[String, Set[FunExpr]],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
@@ -16,7 +16,7 @@ object AsyncBooleanNetworkSimulation {
     simulate(chosenFunctions, initialStates)
   }
 
-  def simulate(
+  private def simulate(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
