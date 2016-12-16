@@ -12,30 +12,34 @@ object Synthesis {
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
     negativeTransitions: Set[Transition]
-  ): Unit = {
+  ): Map[String, Set[FunExpr]] = {
     val allLabels = positiveTransitions.head.input.orderedKeys
 
     // group both type of transitions by label
     val labelToPosTrans = positiveTransitions.groupBy(_.label)
     val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
+    var labelToFunExpressions = Map[String, Set[FunExpr]]()
     for (label <- allLabels) {
       println()
       println(s"Synthesizing for ${label}")
       println("==========================")
-      synthesizeForSingleLabel(
+      val funExprs = synthesizeForSingleLabel(
         labelToPosTrans.getOrElse(label, Set.empty),
         labelToNegTrans.getOrElse(label, Set.empty),
         allLabels.toSet
       )
+      labelToFunExpressions += label -> funExprs
     }
+
+    labelToFunExpressions
   }
 
-  def synthesizeForSingleLabel(
+  private def synthesizeForSingleLabel(
     positiveTransitions: Set[Transition],
     negativeTransitions: Set[Transition],
     possibleVars: Set[String]
-  ): Unit = {
+  ): Set[FunExpr] = {
     // find a greedy partition of positive transitions such that each subset
     // is "maximally" consistent
     val partition = findGreedyTransitionPartition(positiveTransitions,
@@ -43,14 +47,17 @@ object Synthesis {
     println(s"Partitioned positive examples into ${partition.size} set(s).")
     println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
 
+    var allFunExprs = Set.empty[FunExpr]
     // aim to maximize use of negative transitions for each positive set
     for (subset <- partition) {
-      synthesizeWithHardAndSoftTransitions(subset, negativeTransitions,
-        possibleVars)
+      allFunExprs ++= synthesizeWithHardAndSoftTransitions(subset,
+        negativeTransitions, possibleVars)
     }
+
+    allFunExprs
   }
 
-  def findGreedyTransitionPartition(
+  private def findGreedyTransitionPartition(
     transitions: Set[Transition],
     possibleVars: Set[String]
   ): Set[Set[Transition]] = {
@@ -74,11 +81,11 @@ object Synthesis {
     partition
   }
 
-  def synthesizeWithHardAndSoftTransitions(
+  private def synthesizeWithHardAndSoftTransitions(
     hardTransitions: Set[Transition],
     softTransitions: Set[Transition],
     possibleVars: Set[String]
-  ): Unit = {
+  ): List[FunExpr] = {
     println(
       s"Synthesizing with maximal soft constraints (${softTransitions.size}).")
     var consistentSoftSet: Set[Transition] = Set.empty
@@ -114,13 +121,15 @@ object Synthesis {
     for (expr <- currentExpressions) {
       println(FunctionTrees.prettyString(expr))
     }
+
+    currentExpressions
   }
 
   private def transitionsByDescendingWeight(ts: Iterable[Transition]) = {
     ts.toList.sortBy(_.weight).reverse
   }
 
-  def synthesizeForMinDepth(
+  private def synthesizeForMinDepth(
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): List[FunExpr] = {
@@ -133,7 +142,7 @@ object Synthesis {
     res
   }
 
-  def synthesize(
+  private def synthesize(
     transitions: Iterable[Transition],
     possibleVars: Set[String],
     depth: Int
