@@ -38,8 +38,8 @@ object AsyncBooleanNetworkSimulation {
           }
         }
 
-        val unseenStates = reachableStates ++ processSet --
-          statesViaFunctionApplication
+        val unseenStates = statesViaFunctionApplication.toSet --
+          (reachableStates ++ processSet)
 
         processSet ++= unseenStates
       }
