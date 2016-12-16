@@ -18,7 +18,6 @@ object StateGraphs {
   type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
-
   def fromDiscreteExperiment(
     discreteExperiment: DiscreteExperiment,
     maxHammingDistance: Int
@@ -53,11 +52,21 @@ object StateGraphs {
     g
   }
 
-  def fromTriValuedExperiment(
-    triValuedExperiment: ThreeValuedExperiment,
+  def expandThreeValuedExperiment(
+    threeValuedExperiment: ThreeValuedExperiment
+  ): UndirectedBooleanStateGraph = {
+    // first expand to Boolean experiment
+    // then build a N-Hamming graph
+    // replace >1-Hamming edges with expanded 1-Hamming paths
+    ???
+  }
+
+  def fromThreeValuedExperiment(
+    threeValuedExperiment: ThreeValuedExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
-    val stateToMeasurements = triValuedExperiment.measurements.groupBy(_.values)
+    val stateToMeasurements =
+      threeValuedExperiment.measurements.groupBy(_.values)
 
     // compute vertex groups, each group corresponds to one tri-valued state
     // measurements are duplicated across Boolean states mapping to the same
@@ -71,7 +80,7 @@ object StateGraphs {
 
         val vertexGroup = cartesianProduct map { prod =>
           val concreteBooleanState = ConcreteBooleanState(
-            triValuedExperiment.names.zip(prod).toMap)
+            threeValuedExperiment.names.zip(prod).toMap)
           // TODO cleanup
           val intValues = prod map (v =>
             if (v) Discretization.HIGH_VALUE else Discretization.LOW_VALUE)
@@ -168,14 +177,12 @@ object StateGraphs {
       // compute all directions that can be assigned with trajectories
       val directionMaps = trajectories map (t => trajectoryDirections(g, t))
 
-      // check that inferred directions are not contradictory & merge directions
+      // merge directions
       for (edge <- g.E) {
-        val ds = directionMaps collect {
+        val directionSets = directionMaps collect {
           case dm if dm.isDefinedAt(edge) => dm(edge)
         }
-        // this assertion does not hold
-        // assert(ds.distinct.size == 1)
-        for (d <- ds) {
+        for (ds <- directionSets; d <- ds) {
           directions.addBinding(edge, d)
         }
       }
@@ -187,8 +194,8 @@ object StateGraphs {
     private def trajectoryDirections(
       g: UndirectedBooleanStateGraph,
       trajectory: CellTrajectory
-    ): Map[UnlabeledEdge[StateGraphVertex], EdgeDirection] = {
-      var res = Map[UnlabeledEdge[StateGraphVertex], EdgeDirection]()
+    ): Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]] = {
+      var res = Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]]()
 
       // for each state, compute average pseudotime for given trajectory
       var nodeToPseudotime = Map[StateGraphVertex, Double]()
@@ -203,8 +210,13 @@ object StateGraphs {
       for (e <- g.E) {
         (nodeToPseudotime.get(e.v1), nodeToPseudotime.get(e.v2)) match {
           case (Some(pt1), Some(pt2)) => {
-            val dir = if (pt1 < pt2) Forward else Backward
-            res += e -> dir
+            if (pt1 < pt2) {
+              res += e -> Set(Forward)
+            } else if (pt1 > pt2) {
+              res += e -> Set(Backward)
+            } else {
+              res += e -> Set(Forward, Backward)
+            }
           }
           case _ =>
         }

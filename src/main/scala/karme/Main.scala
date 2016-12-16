@@ -48,13 +48,14 @@ object Main {
     val thresholdedMLEExperiment =
       Experiments.discretizeProbabilisticExperiment(mleExperiment)
 
-    val triValuedExperiment = Experiments.probabilisticToThreeValued(mleExperiment)
+    val threeValuedExperiment = Experiments.probabilisticToThreeValued(
+      mleExperiment)
 
     val clustering = readClustering(opts.clusterFile)
 
     // TODO better undirected graph expansion
-    val undirectedStateGraph = StateGraphs.fromTriValuedExperiment(
-      triValuedExperiment, opts.analysisOptions.maxHammingDistance)
+    val undirectedStateGraph = StateGraphs.fromDiscreteExperiment(
+      thresholdedMLEExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
 
@@ -64,7 +65,8 @@ object Main {
     val negativeTransitions = TransitionProducer.negativeTransitions(
       directedStateGraph, mleExperiment)
 
-    Synthesis.synthesizeForAllLabels(positiveTransitions, negativeTransitions)
+    // Synthesis.synthesizeForAllLabels(positiveTransitions,
+    // negativeTransitions)
 
     val nodeToID = makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = makeCellIDs(nodeToID)
@@ -75,6 +77,8 @@ object Main {
       new File(opts.outFolder, "experiment-mle.csv"))
     ExperimentLogger.saveToFile(thresholdedMLEExperiment, cellToNodeID,
       new File(opts.outFolder, "experiment-mle-thresholded.csv"))
+    ExperimentLogger.saveToFile(threeValuedExperiment, cellToNodeID,
+      new File(opts.outFolder, "experiment-three-valued.csv"))
 
     TransitionLogger.saveToFile(positiveTransitions,
       new File(opts.outFolder, "positive-transitions.csv"))

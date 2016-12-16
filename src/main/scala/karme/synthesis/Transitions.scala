@@ -5,7 +5,6 @@ import karme.Experiments.Low
 import karme.Experiments.ThreeValued
 import karme.Experiments.Uncertain
 import karme.synthesis.Trees._
-import karme.util.MathUtil
 
 object Transitions {
   abstract class AbstractState[T] {
