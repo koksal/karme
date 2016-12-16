@@ -85,7 +85,11 @@ object Main {
       trajectories, undirectedStateGraph, directedStateGraph,
       positiveTransitions, nodeToID, opts.visualizationOptions, opts.outFolder)
 
-    Synthesis.synthesizeForAllLabels(positiveTransitions, negativeTransitions)
+    val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
+      positiveTransitions, negativeTransitions)
+
+    // TODO factor out code that computes average state pseudotimes and pick
+    // state that's earliest.
   }
 
   private def readContinuousExperiment(

@@ -6,6 +6,16 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 object AsyncBooleanNetworkSimulation {
 
+  def pickFunctionAndSimulate(
+    labelToFunctions: Map[String, Set[FunExpr]],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[ConcreteBooleanState] = {
+    val chosenFunctions = labelToFunctions map {
+      case (label, fs) => (label, fs.head)
+    }
+    simulate(chosenFunctions, initialStates)
+  }
+
   def simulate(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
