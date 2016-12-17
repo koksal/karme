@@ -98,9 +98,10 @@ object Main {
       AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
         labelToFunctionExpressions, initialStates)
 
-    val commonStates = initialStates intersect simulationStates
-    val missedStates = initialStates -- simulationStates
-    val unobservedStates = simulationStates -- initialStates
+    val actualStates = directedStateGraph.V.map(_.state)
+    val commonStates = actualStates intersect simulationStates
+    val missedStates = actualStates -- simulationStates
+    val unobservedStates = simulationStates -- actualStates
 
     // TODO print into file
     println(s"Common states: ${commonStates.size}")

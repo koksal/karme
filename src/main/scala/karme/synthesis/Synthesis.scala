@@ -6,8 +6,8 @@ import karme.synthesis.Trees._
 
 object Synthesis {
 
-  val MAX_EXPRESSION_DEPTH = 2
-  val MAX_NB_MODELS = Some(100)
+  val MAX_EXPRESSION_DEPTH = 4
+  val MAX_NB_MODELS = Some(1)
 
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
