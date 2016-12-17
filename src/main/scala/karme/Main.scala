@@ -12,6 +12,7 @@ import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
+import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
@@ -83,10 +84,12 @@ object Main {
     TransitionLogger.saveToFile(negativeTransitions,
       new File(opts.outFolder, "negative-transitions.csv"))
 
+    StatePseudotimeLogger.savePseudotimes(directedStateGraph.V, trajectories,
+      nodeToID, opts.outFolder)
+
     val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
       positiveTransitions, negativeTransitions)
 
-    println("Computing initial states.")
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, trajectories)
 
@@ -227,5 +230,4 @@ object Main {
 
     cellIDs
   }
-
 }

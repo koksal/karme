@@ -214,11 +214,15 @@ object StateGraphs {
     trajectories: Iterable[CellTrajectory]
   ): Set[ConcreteBooleanState] = {
     trajectories.map{ trajectory =>
-      vertices.toList.sortBy(v => avgNodePseudotime(v, trajectory)).head.state
+      val nodePseudotimePairs = vertices.map{ v =>
+        v -> avgNodePseudotime(v, trajectory)
+      }.filter(_._2.isDefined)
+      val firstV = nodePseudotimePairs.toList.sortBy(_._2).head._1
+      firstV.state
     }.toSet
   }
 
-  private def avgNodePseudotime(
+  def avgNodePseudotime(
     node: StateGraphVertex, trajectory: CellTrajectory
   ): Option[Double] = {
     val nodeCellIDs = node.measurements.map(_.id)
