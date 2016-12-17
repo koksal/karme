@@ -90,10 +90,9 @@ object Main {
     val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
       positiveTransitions, negativeTransitions)
 
+    println("Simulating functions.")
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, trajectories)
-
-    println("Simulating functions.")
     val simulationStates =
       AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
         labelToFunctionExpressions, initialStates)

@@ -118,7 +118,7 @@ object StateGraphVisualization {
     nodeToId: Map[StateGraphVertex, String],
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val DEFAULT_COLOR = "black"
+    val DEFAULT_BACKGROUND_COLOR = "white"
     val GROUP_COLORS = List("green", "yellow")
 
     val sb = new StringBuilder()
@@ -127,7 +127,7 @@ object StateGraphVisualization {
         group.contains(node.state)
       }
       val color = if (highlightGroupIndex < 0) {
-        DEFAULT_COLOR
+        DEFAULT_BACKGROUND_COLOR
       } else {
         GROUP_COLORS(highlightGroupIndex)
       }
@@ -138,7 +138,9 @@ object StateGraphVisualization {
         case (cname, ms) => s"$cname (${ms.size})"
       }.mkString("{", ",", "}")
       val nodeStr = s"${id} ${clustersStr}"
-      sb append (s"""${id} [label="${nodeStr}", color="${color}"];""")
+      sb append (
+        s"""${id} [label="${nodeStr}", fillcolor="${color}", style="filled"];
+           |""".stripMargin)
       sb append "\n"
     }
     sb.toString()
