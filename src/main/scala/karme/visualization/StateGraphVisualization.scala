@@ -10,6 +10,7 @@ import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedBooleanStateGraph
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
 
@@ -34,9 +35,10 @@ object StateGraphVisualization {
     g: DirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String],
+    highlightGroups: List[Set[ConcreteBooleanState]],
     outFolder: File
   ): Unit = {
-    val dotString = directedDotString(g, clustering, nodeToID)
+    val dotString = directedDotString(g, clustering, nodeToID, highlightGroups)
     plotGraph(dotString, "directed-state-graph.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
   }
@@ -68,7 +70,7 @@ object StateGraphVisualization {
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID, Nil)
     val edgeStr = undirectedDotEdges(g, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = false)
   }
@@ -76,9 +78,10 @@ object StateGraphVisualization {
   private def directedDotString(
     g: DirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[StateGraphVertex, String]
+    nodeToID: Map[StateGraphVertex, String],
+    highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID, highlightGroups)
     val edgeStr = directedDotEdges(g, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
@@ -89,7 +92,7 @@ object StateGraphVisualization {
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID, Nil)
     val edgeStr = transitionDotEdges(g, transitions, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
@@ -112,17 +115,30 @@ object StateGraphVisualization {
   private def dotNodes(
     V: Iterable[StateGraphVertex],
     clustering: mutable.MultiMap[String, String],
-    nodeToId: Map[StateGraphVertex, String]
+    nodeToId: Map[StateGraphVertex, String],
+    highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
+    val DEFAULT_COLOR = "black"
+    val GROUP_COLORS = List("green", "yellow")
+
     val sb = new StringBuilder()
     for (node <- V) {
+      val highlightGroupIndex = highlightGroups.indexWhere { group =>
+        group.contains(node.state)
+      }
+      val color = if (highlightGroupIndex < 0) {
+        DEFAULT_COLOR
+      } else {
+        GROUP_COLORS(highlightGroupIndex)
+      }
+
       val id = nodeToId(node)
       val clustersStr =
         StateGraphs.nodeMeasurementsPerCluster(node, clustering).map{
         case (cname, ms) => s"$cname (${ms.size})"
       }.mkString("{", ",", "}")
       val nodeStr = s"${id} ${clustersStr}"
-      sb append (s"""${id} [label="${nodeStr}"];""")
+      sb append (s"""${id} [label="${nodeStr}", color="${color}"];""")
       sb append "\n"
     }
     sb.toString()

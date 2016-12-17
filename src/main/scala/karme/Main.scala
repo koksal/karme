@@ -15,6 +15,7 @@ import karme.printing.ExperimentLogger
 import karme.printing.TransitionLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
+import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
 import karme.transformations.TransitionProducer
@@ -82,10 +83,6 @@ object Main {
     TransitionLogger.saveToFile(negativeTransitions,
       new File(opts.outFolder, "negative-transitions.csv"))
 
-    visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
-      trajectories, undirectedStateGraph, directedStateGraph,
-      positiveTransitions, nodeToID, opts.visualizationOptions, opts.outFolder)
-
     val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
       positiveTransitions, negativeTransitions)
 
@@ -107,6 +104,12 @@ object Main {
     println(s"Common states: ${commonStates.size}")
     println(s"Missed states: ${missedStates.size}")
     println(s"Unobserved states: ${unobservedStates.size}")
+
+    visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
+      trajectories, undirectedStateGraph, directedStateGraph,
+      positiveTransitions, nodeToID, initialStates, simulationStates,
+      opts.visualizationOptions, opts.outFolder)
+
   }
 
   private def readContinuousExperiment(
@@ -155,6 +158,8 @@ object Main {
     directedStateGraph: DirectedBooleanStateGraph,
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String],
+    initialStates: Set[ConcreteBooleanState],
+    simulatedStates: Set[ConcreteBooleanState],
     options: VisualizationOptions,
     outFolder: File
   ): Unit = {
@@ -171,7 +176,7 @@ object Main {
       StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
         clustering, nodeToID, outFolder)
       StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
-        nodeToID, outFolder)
+        nodeToID, List(initialStates, simulatedStates), outFolder)
       StateGraphVisualization.plotTransitions(directedStateGraph, clustering,
         transitions, nodeToID, outFolder)
     }
