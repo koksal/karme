@@ -6,6 +6,8 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 object AsyncBooleanNetworkSimulation {
 
+  val SIMULATION_DEPTH_LIMIT = 100
+
   def pickFunctionsAndSimulate(
     labelToFunctions: Map[String, Set[FunExpr]],
     initialStates: Set[ConcreteBooleanState]
@@ -28,7 +30,10 @@ object AsyncBooleanNetworkSimulation {
     println("Simulating with functions:")
     println(functions.mkString("\n"))
 
-    while (processSet.nonEmpty) {
+    var i = 0
+    while (processSet.nonEmpty && i < SIMULATION_DEPTH_LIMIT) {
+      i += 1
+      println(s"Outer simulation loop: ${i}")
       for (stateToProcess <- processSet) {
         println(s"# reachable states: ${reachableStates.size}")
         reachableStates += stateToProcess
