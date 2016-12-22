@@ -2,22 +2,18 @@ package karme
 
 import java.io.File
 
-import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanStateGraph}
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
-import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.synthesis.Transitions.Transition
 import karme.transformations.ContinuousTransformations
 import karme.transformations.TransitionProducer
 import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
@@ -67,8 +63,8 @@ object Main {
     val negativeTransitions = TransitionProducer.negativeTransitions(
       directedStateGraph, threeValuedExperiment.names)
 
-    val nodeToID = makeNodeIDs(directedStateGraph.V)
-    val cellToNodeID = makeCellIDs(nodeToID)
+    val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
+    val cellToNodeID = StateGraphs.makeCellIDs(nodeToID)
 
     ExperimentLogger.saveToFile(discreteExperiment, cellToNodeID,
       new File(opts.outFolder, "experiment-first-discretization.csv"))
@@ -107,10 +103,46 @@ object Main {
     println(s"Missed states: ${missedStates.size}")
     println(s"Unobserved states: ${unobservedStates.size}")
 
-    visualize(continuousExperimentOpt.get, thresholdedMLEExperiment, clustering,
-      trajectories, undirectedStateGraph, directedStateGraph,
-      positiveTransitions, nodeToID, initialStates, simulationStates,
-      opts.visualizationOptions, opts.outFolder)
+    // visualization
+    val visOpts = opts.visualizationOptions
+    if (visOpts.histograms) {
+      DiscretizationHistogram.visualizeDiscretization(
+        continuousExperimentOpt.get, discreteExperiment, clustering,
+        opts.outFolder)
+    }
+
+    if (visOpts.boxPlots) {
+      ExperimentBoxPlots.plot(continuousExperimentOpt.get, clustering,
+        opts.outFolder)
+    }
+
+    if (visOpts.stateGraph) {
+      val highlightGroups = List(initialStates, simulationStates)
+
+      StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
+        clustering, nodeToID, highlightGroups, "original", opts.outFolder)
+      StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
+        nodeToID, highlightGroups, opts.outFolder)
+      StateGraphVisualization.plotTransitions(directedStateGraph, clustering,
+        positiveTransitions, nodeToID, opts.outFolder)
+
+      val actualSimulatedUnionExp = Experiments.booleanStatesToExperiment(
+        simulationStates ++ actualStates)
+      val unionStateGraph = StateGraphs.fromDiscreteExperiment(
+        actualSimulatedUnionExp, opts.analysisOptions.maxHammingDistance)
+      StateGraphVisualization.plotUndirectedGraph(unionStateGraph,
+        highlightGroups, "simulated", opts.outFolder)
+    }
+
+    if (visOpts.curves) {
+      val curveFolder = new File(opts.outFolder, "curves")
+      for ((t, i) <- trajectories.zipWithIndex) {
+        CurvePlot.plot(continuousExperimentOpt.get, t, new File(curveFolder,
+          s"curve-$i-continuous"))
+        CurvePlot.plot(discreteExperiment, t, new File(curveFolder,
+          s"curve-$i-discrete"))
+      }
+    }
 
   }
 
@@ -151,49 +183,6 @@ object Main {
       with mutable.MultiMap[String, String]
   }
 
-  private def visualize(
-    continuousExperiment: ContinuousExperiment,
-    discreteExperiment: DiscreteExperiment,
-    clustering: mutable.MultiMap[String, String],
-    trajectories: Seq[CellTrajectory],
-    undirectedStateGraph: UndirectedBooleanStateGraph,
-    directedStateGraph: DirectedBooleanStateGraph,
-    transitions: Iterable[Transition],
-    nodeToID: Map[StateGraphVertex, String],
-    initialStates: Set[ConcreteBooleanState],
-    simulatedStates: Set[ConcreteBooleanState],
-    options: VisualizationOptions,
-    outFolder: File
-  ): Unit = {
-    if (options.histograms) {
-      DiscretizationHistogram.visualizeDiscretization(continuousExperiment,
-        discreteExperiment, clustering, outFolder)
-    }
-
-    if (options.boxPlots) {
-      ExperimentBoxPlots.plot(continuousExperiment, clustering, outFolder)
-    }
-
-    if (options.stateGraph) {
-      StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
-        clustering, nodeToID, outFolder)
-      StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
-        nodeToID, List(initialStates, simulatedStates), outFolder)
-      StateGraphVisualization.plotTransitions(directedStateGraph, clustering,
-        transitions, nodeToID, outFolder)
-    }
-
-    if (options.curves) {
-      val curveFolder = new File(outFolder, "curves")
-      for ((t, i) <- trajectories.zipWithIndex) {
-        CurvePlot.plot(continuousExperiment, t, new File(curveFolder,
-          s"curve-$i-continuous"))
-        CurvePlot.plot(discreteExperiment, t, new File(curveFolder,
-          s"curve-$i-discrete"))
-      }
-    }
-  }
-
   private def filterByNames[T](
     experiment: Experiment[T], optNamesFile: Option[File]
   ): Experiment[T] = optNamesFile match {
@@ -208,25 +197,5 @@ object Main {
       experiment.project(commonNames.sorted)
     }
     case None => experiment
-  }
-
-  def makeNodeIDs(
-    vs: Iterable[StateGraphVertex]
-  ): Map[StateGraphVertex, String] = {
-    vs.toSeq.sorted.zipWithIndex.map{
-      case (v, i) => {
-        v -> s"V$i"
-      }
-    }.toMap
-  }
-
-  def makeCellIDs(
-    nodeToID: Map[StateGraphVertex, String]
-  ): Map[String, String] = {
-    val cellIDs = nodeToID flatMap {
-      case (node, id) => node.measurements.map(m => m.id -> id)
-    }
-
-    cellIDs
   }
 }

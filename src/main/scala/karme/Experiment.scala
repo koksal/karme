@@ -1,6 +1,7 @@
 package karme
 
 import karme.discretization.Discretization
+import karme.synthesis.Transitions.ConcreteBooleanState
 
 import scala.collection.mutable
 
@@ -85,6 +86,20 @@ object Experiments {
       m.copy(values = triValuedVs)
     }
     e.copy(measurements = triValuedMs)
+  }
+
+  def booleanStatesToExperiment(
+    ss: Set[ConcreteBooleanState]
+  ): BooleanExperiment = {
+    assert(ss.nonEmpty)
+    val names = ss.head.orderedKeys
+    val measurements = ss.toSeq.zipWithIndex map {
+      case (s, i) =>
+        val id = s"m_$i"
+        val values = s.orderedValues
+        Measurement(id, values)
+    }
+    Experiment(names, measurements)
   }
 
   def threeValuedToBooleanSet(v: ThreeValued): Set[Boolean] = v match {

@@ -13,6 +13,7 @@ import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
+import karme.util.MapUtil
 
 import scala.collection.mutable
 import scala.language.postfixOps
@@ -22,12 +23,26 @@ object StateGraphVisualization {
 
   def plotUndirectedGraph(
     g: UndirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[StateGraphVertex, String],
+    highlightGroups: List[Set[ConcreteBooleanState]],
+    name: String,
     outFolder: File
   ): Unit = {
-    val dotString = undirectedDotString(g, clustering, nodeToID)
-    plotGraph(dotString, "undirected-state-graph.png", outFolder)
+    val nodeToID = StateGraphs.makeNodeIDs(g.V)
+    plotUndirectedGraph(g, MapUtil.emptyMultiMap[String, String], nodeToID,
+      highlightGroups, name, outFolder)
+  }
+
+  def plotUndirectedGraph(
+    g: UndirectedBooleanStateGraph,
+    clustering: mutable.MultiMap[String, String],
+    nodeToID: Map[StateGraphVertex, String],
+    highlightGroups: List[Set[ConcreteBooleanState]],
+    name: String,
+    outFolder: File
+  ): Unit = {
+    val dotString = undirectedDotString(g, clustering, nodeToID,
+      highlightGroups)
+    plotGraph(dotString, s"undirected-state-graph-${name}.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
   }
 
@@ -68,9 +83,10 @@ object StateGraphVisualization {
   private def undirectedDotString(
     g: UndirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[StateGraphVertex, String]
+    nodeToID: Map[StateGraphVertex, String],
+    highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID, Nil)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID, highlightGroups)
     val edgeStr = undirectedDotEdges(g, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = false)
   }

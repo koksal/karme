@@ -252,4 +252,24 @@ object StateGraphs {
     result
   }
 
+
+  def makeNodeIDs(
+    vs: Iterable[StateGraphVertex]
+  ): Map[StateGraphVertex, String] = {
+    vs.toSeq.sorted.zipWithIndex.map{
+      case (v, i) => {
+        v -> s"V$i"
+      }
+    }.toMap
+  }
+
+  def makeCellIDs(
+    nodeToID: Map[StateGraphVertex, String]
+  ): Map[String, String] = {
+    val cellIDs = nodeToID flatMap {
+      case (node, id) => node.measurements.map(m => m.id -> id)
+    }
+
+    cellIDs
+  }
 }
