@@ -135,7 +135,7 @@ object StateGraphVisualization {
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
     val DEFAULT_BACKGROUND_COLOR = "white"
-    val GROUP_COLORS = List("green", "yellow")
+    val GROUP_COLORS = List("green", "yellow", "tomato")
 
     val sb = new StringBuilder()
     for (node <- V) {

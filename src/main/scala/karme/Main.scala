@@ -117,7 +117,8 @@ object Main {
     }
 
     if (visOpts.stateGraph) {
-      val highlightGroups = List(initialStates, simulationStates)
+      val highlightGroups = List(initialStates, unobservedStates,
+        simulationStates)
 
       StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
         clustering, nodeToID, highlightGroups, "original", opts.outFolder)
