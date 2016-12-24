@@ -1,15 +1,10 @@
 package karme.transformations
 
-import karme.Experiments.ProbabilisticExperiment
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.Transition
-import karme.util.MathUtil
 
 object TransitionProducer {
-
-  private val STABLE_MLE_MARGIN = 0.05
 
   def positiveTransitions(
     graph: DirectedBooleanStateGraph
@@ -54,19 +49,6 @@ object TransitionProducer {
     }
 
     transitions
-  }
-
-  private def isStableForLabel(
-    node: StateGraphVertex,
-    label: String,
-    mleExperiment: ProbabilisticExperiment
-  ): Boolean = {
-    val measurementIDs = node.measurements.map(_.id)
-    val nodeMLEMeasurements = measurementIDs map mleExperiment.measurementFromId
-    val mleValues = mleExperiment.copy(measurements = nodeMLEMeasurements)
-      .valuesForName(label)
-    val meanMLE = MathUtil.mean(mleValues)
-    math.abs(meanMLE - 0.5) >= STABLE_MLE_MARGIN
   }
 
 }

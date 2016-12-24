@@ -26,6 +26,19 @@ object Transitions {
     }
   }
 
+  case class SymBooleanState(
+    mapping: Map[String, Variable]
+  ) extends AbstractState[Variable] {
+    def hasValue(concreteState: ConcreteBooleanState): Expr = {
+      val conj = orderedKeys map { key =>
+        val symValue = this(key)
+        val concValue = concreteState(key)
+        Equals(symValue, BooleanLiteral(concValue))
+      }
+      And(conj: _*)
+    }
+  }
+
   case class ThreeValuedState(
     mapping: Map[String, ThreeValued]
   ) extends AbstractState[ThreeValued] {
@@ -72,19 +85,6 @@ object Transitions {
       sb.append("Output:\n")
       sb.append(s"$label = $outputStr")
       sb.toString
-    }
-  }
-
-  case class SymBooleanState(
-    mapping: Map[String, Variable]
-  ) extends AbstractState[Variable] {
-    def hasValue(concreteState: ConcreteBooleanState): Expr = {
-      val conj = orderedKeys map { key =>
-        val symValue = this(key)
-        val concValue = concreteState(key)
-        Equals(symValue, BooleanLiteral(concValue))
-      }
-      And(conj: _*)
     }
   }
 

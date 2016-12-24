@@ -6,7 +6,6 @@ import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser, DiscreteExperimentParser}
 import karme.printing.ExperimentLogger
@@ -44,9 +43,6 @@ object Main {
     val mleExperiment = BinomialMLE.run(discreteExperiment, trajectories,
       opts.analysisOptions.windowRadius)
 
-    val thresholdedMLEExperiment =
-      Experiments.discretizeProbabilisticExperiment(mleExperiment)
-
     val threeValuedExperiment =
       Experiments.probabilisticExperimentToThreeValued(mleExperiment)
 
@@ -70,8 +66,6 @@ object Main {
       new File(opts.outFolder, "experiment-first-discretization.csv"))
     ExperimentLogger.saveToFile(mleExperiment, cellToNodeID,
       new File(opts.outFolder, "experiment-mle.csv"))
-    ExperimentLogger.saveToFile(thresholdedMLEExperiment, cellToNodeID,
-      new File(opts.outFolder, "experiment-mle-thresholded.csv"))
     ExperimentLogger.saveToFile(threeValuedExperiment, cellToNodeID,
       new File(opts.outFolder, "experiment-three-valued.csv"))
 
