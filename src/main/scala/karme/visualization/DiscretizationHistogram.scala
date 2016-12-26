@@ -50,8 +50,8 @@ object DiscretizationHistogram {
     val R = RClient()
     R.eval("library(ggplot2)")
 
-    val contValuesPerName = contExp.measurements.map(_.values).transpose
-    val discValuesPerName = discExp.measurements.map(_.values).transpose
+    val contValuesPerName = contExp.names.map(n => contExp.valuesForName(n))
+    val discValuesPerName = discExp.names.map(n => discExp.valuesForName(n))
 
     assert(contValuesPerName.size == discValuesPerName.size)
 

@@ -2,7 +2,7 @@ package karme.simulation
 
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.FunctionTrees.FunVar
-import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.synthesis.Transitions.GenericState
 import org.scalatest.FunSuite
 
 class AsyncBooleanNetworkSimulationTest extends FunSuite {
@@ -14,18 +14,18 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     )
 
     val initStates = Set(
-      ConcreteBooleanState(Map(
+      GenericState(Map(
         "A" -> false,
         "B" -> true
       ))
     )
 
     val expected = Set(
-      ConcreteBooleanState(Map(
+      GenericState(Map(
         "A" -> false,
         "B" -> true
       )),
-      ConcreteBooleanState(Map(
+      GenericState(Map(
         "A" -> true,
         "B" -> true
       ))

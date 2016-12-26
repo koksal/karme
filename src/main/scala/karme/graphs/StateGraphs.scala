@@ -9,10 +9,10 @@ import karme.Experiments.Measurement
 import karme.Experiments.ThreeValued
 import karme.Experiments.ThreeValuedMeasurement
 import karme.Experiments.ThreeValuedExperiment
-import karme.discretization.Discretization
 import karme.graphs.Graphs._
 import karme.transformations.DiscreteStateAnalysis
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState
 import karme.util.MathUtil
 
@@ -27,13 +27,11 @@ object StateGraphs {
     booleanExperiment: BooleanExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
-    val stateToMeasurements = booleanExperiment.measurements.groupBy(_.values)
+    val stateToMeasurements = booleanExperiment.measurements.groupBy(_.state)
 
     val V = stateToMeasurements map {
       case (state, ms) =>
-        val booleanState = ConcreteBooleanState(
-          booleanExperiment.names.zip(state).toMap)
-        StateGraphVertex(booleanState, ms)
+        StateGraphVertex(state, ms)
     }
 
     var g = new UndirectedBooleanStateGraph(V = V.toSet)
@@ -78,24 +76,28 @@ object StateGraphs {
   ): BooleanExperiment = {
     val booleanMeasurements = threeValuedExperiment.measurements.flatMap{
       measurement => {
-        val booleanStates = expandThreeValuedState(measurement.values)
+        val booleanStates = expandThreeValuedState(measurement.state)
         booleanStates map { booleanState =>
           Measurement[Boolean](measurement.id, booleanState)
         }
       }
     }
 
-    Experiment(threeValuedExperiment.names, booleanMeasurements)
+    Experiment(booleanMeasurements)
   }
 
   private def expandThreeValuedState(
-    state: Seq[ThreeValued]
-  ): Set[List[Boolean]] = {
+    state: GenericState[ThreeValued]
+  ): Set[GenericState[Boolean]] = {
     // compute Set of booleans for each
-    val booleanSets = state map Experiments.threeValuedToBooleanSet
+    val booleanSets =
+      state.orderedValues map Experiments.threeValuedToBooleanSet
 
     // take cartesian product of set
-    MathUtil.cartesianProduct(booleanSets.toList)
+    val booleanSeqs = MathUtil.cartesianProduct(booleanSets.toList)
+    booleanSeqs map { bs =>
+      GenericState(state.orderedKeys.zip(bs).toMap)
+    }
   }
 
   case class StateGraphVertex(

@@ -181,15 +181,15 @@ object Synthesis {
 
   private def evaluate(
     sf: SymFunExpr,
-    input: AbstractState[_]
+    input: GenericState[_]
   ): (Variable, Expr) = {
     val res = mkFreshBooleanVar("res")
 
     val size = input.orderedKeys.size
     val varCases = sf.prots map { prot =>
-      val varValue = input match {
-        case cbs: ConcreteBooleanState => BooleanLiteral(cbs(prot))
-        case sbs: SymBooleanState => sbs(prot)
+      val varValue = input.value(prot) match {
+        case b: Boolean => BooleanLiteral(b)
+        case v: Variable => v
       }
       Implies(
         sf.isPROT(prot),
@@ -301,6 +301,18 @@ object Synthesis {
       }
     }
 
+  }
+
+  private def symbolicStateHasValue(
+    symbolicState: SymBooleanState,
+    concreteState: ConcreteBooleanState
+  ): Expr = {
+    val conj = symbolicState.orderedKeys map { key =>
+      val symValue = symbolicState.value(key)
+      val concValue = concreteState.value(key)
+      Equals(symValue, BooleanLiteral(concValue))
+    }
+    And(conj: _*)
   }
 
 }

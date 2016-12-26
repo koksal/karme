@@ -22,7 +22,7 @@ object ContinuousTransformations {
     experiment: ContinuousExperiment
   ): ContinuousExperiment = {
     val transformedMeasurements = experiment.measurements map { m =>
-      m.copy(values = m.values.map(pseudoLog(_, ARCSINH_FACTOR)))
+      m.copy(state = m.state.mapValues(pseudoLog(_, ARCSINH_FACTOR)))
     }
     experiment.copy(measurements = transformedMeasurements)
   }
@@ -35,6 +35,6 @@ object ContinuousTransformations {
 
     val nbRemovedDimensions = exp.names.size - namesWithMultipleLevels.size
     println(s"Removed ${nbRemovedDimensions} dimensions")
-    exp.project(namesWithMultipleLevels)
+    exp.project(namesWithMultipleLevels.toSet)
   }
 }

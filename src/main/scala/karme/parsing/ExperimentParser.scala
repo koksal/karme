@@ -5,6 +5,7 @@ import java.io.File
 import com.github.tototoshi.csv.CSVReader
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
+import karme.synthesis.Transitions.GenericState
 
 object ExperimentParser {
 
@@ -30,10 +31,11 @@ abstract class ExperimentParser[T] {
     val measurements = cellRows map { row =>
       val id = row.head
       val values = row.tail.map(makeValue)
-      Measurement(id, values)
+      val state = GenericState[T](headers.zip(values).toMap)
+      Measurement(id, state)
     }
 
-    Experiment(names, measurements)
+    Experiment(measurements)
   }
 }
 

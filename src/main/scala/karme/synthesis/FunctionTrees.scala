@@ -12,7 +12,7 @@ object FunctionTrees {
   case class FunNot(e: FunExpr) extends FunExpr
 
   def eval(fe: FunExpr, in: ConcreteBooleanState): Boolean = fe match {
-    case FunVar(id) => in(id)
+    case FunVar(id) => in.value(id)
     case FunAnd(l, r) => eval(l, in) && eval(r, in)
     case FunOr(l, r) => eval(l, in) || eval(r, in)
     case FunNot(e) => !eval(e, in)

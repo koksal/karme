@@ -39,10 +39,10 @@ object TransitionProducer {
         // if there is no neighbor with a different value for the label, add
         // a self-edge for the label
         if (!graph.neighbors(node).exists{ neighbor =>
-          node.state(label) != neighbor.state(label)
+          node.state.value(label) != neighbor.state.value(label)
         }) {
           val weight = node.measurements.size * node.measurements.size
-          transitions += Transition(node.state, node.state(label), label,
+          transitions += Transition(node.state, node.state.value(label), label,
             weight)
         }
       }

@@ -7,6 +7,7 @@ import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.Experiments.ProbabilisticExperiment
 import karme.discretization.Discretization
+import karme.synthesis.Transitions.GenericState
 
 object BinomialMLE {
 
@@ -26,18 +27,19 @@ object BinomialMLE {
       val vicinityMeasurements = vicinityCellIDs map { id =>
         exp.measurementFromId(id)
       }
-      val expInVicinity = Experiment(exp.names, vicinityMeasurements)
+      val expInVicinity = Experiment(vicinityMeasurements)
 
       // MLE is the proportion of 1 values across cells
       val mleValues = for (name <- exp.names) yield {
         val values = expInVicinity.valuesForName(name)
-        values.count(_ == Discretization.HIGH_VALUE).toDouble / values.size
+        name ->
+          values.count(_ == Discretization.HIGH_VALUE).toDouble / values.size
       }
 
-      Measurement(measurement.id, mleValues)
+      Measurement(measurement.id, GenericState(mleValues.toMap))
     }
 
-    Experiment(exp.names, probMeasurements)
+    Experiment(probMeasurements)
   }
 
   // may return duplicate cells if the cell is on multiple curves

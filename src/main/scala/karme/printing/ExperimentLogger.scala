@@ -14,8 +14,9 @@ object ExperimentLogger {
     val writer = CSVWriter.open(f)
 
     val headerRow = List(ExperimentParser.ID_LABEL, "NODE_ID") ++ e.names
-    val cellRows = e.measurements.map(m =>
-      List(m.id, cellToNodeID(m.id)) ++ m.values)
+    val cellRows = e.measurements map { m =>
+      List(m.id, cellToNodeID(m.id)) ++ m.state.orderedValues
+    }
 
     writer.writeAll(headerRow +: cellRows)
   }

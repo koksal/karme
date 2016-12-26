@@ -28,14 +28,14 @@ object DiscreteStateAnalysis {
   private def printUniqueStates(ms: Iterable[Measurement[Int]]): Unit = {
     println(s"# All measurements: ${ms.size}")
     println(s"# Unique states: ${nbUniqueStates(ms)}")
-    val grouped = ms.groupBy(_.values)
+    val grouped = ms.groupBy(_.state)
     val cardinalitySeq = grouped.toSeq.map(_._2.size).sorted.reverse
     println("Cardinality of discrete states: ")
     println(cardinalitySeq.mkString("\n"))
   }
 
   def nbUniqueStates(ms: Iterable[DiscreteMeasurement]): Int = {
-    ms.map(_.values).toSet.size
+    ms.map(_.state).toSet.size
   }
 
   def printDistances(ms: Iterable[DiscreteMeasurement]): Unit = {
@@ -54,7 +54,7 @@ object DiscreteStateAnalysis {
     m1: DiscreteMeasurement,
     m2: DiscreteMeasurement
   ): Int = {
-    distance(m1.values, m2.values)
+    distance(m1.state.orderedValues, m2.state.orderedValues)
   }
 
   def distance(vs1: Seq[Int], vs2: Seq[Int]): Int = {

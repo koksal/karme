@@ -188,7 +188,7 @@ object Main {
       }
 
       println(s"Names in common with experiment: ${commonNames.size}")
-      experiment.project(commonNames.sorted)
+      experiment.project(commonNames.toSet)
     }
     case None => experiment
   }

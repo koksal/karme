@@ -219,7 +219,7 @@ object StateGraphVisualization {
       val inputVertex = graph.V.find(_.state == transition.input).get
       val neighbors = graph.neighbors(inputVertex)
       for (neighbor <- neighbors) {
-        if (neighbor.state(transition.label) == transition.output) {
+        if (neighbor.state.value(transition.label) == transition.output) {
           val lhs = nodeToID(inputVertex)
           val rhs = nodeToID(neighbor)
           val label = s"${transition.label} (${transition.weight})"

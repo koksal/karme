@@ -7,48 +7,36 @@ import karme.Experiments.Uncertain
 import karme.synthesis.Trees._
 
 object Transitions {
-  abstract class AbstractState[T] {
-    def mapping: Map[String, T]
+  case class GenericState[T](mapping: Map[String, T]) {
     val orderedKeys: Seq[String] = mapping.keys.toList.sorted
     val orderedValues: Seq[T] = orderedKeys map (k => mapping(k))
-    def apply(name: String): T = mapping(name)
+    def value(name: String): T = mapping(name)
     def size: Int = orderedKeys.size
-  }
-
-  case class ConcreteBooleanState(
-    mapping: Map[String, Boolean]
-  ) extends AbstractState[Boolean] {
-    override def toString: String = {
-      val onKeys = (orderedKeys zip orderedValues) collect {
-        case (k, v) if v => k
+    def mapValues[U](f: T => U): GenericState[U] = {
+      val newMapping = mapping map {
+        case (k, v) => k -> f(v)
       }
-      onKeys.mkString(", ")
+      GenericState(newMapping)
     }
   }
 
-  case class SymBooleanState(
-    mapping: Map[String, Variable]
-  ) extends AbstractState[Variable] {
-    def hasValue(concreteState: ConcreteBooleanState): Expr = {
-      val conj = orderedKeys map { key =>
-        val symValue = this(key)
-        val concValue = concreteState(key)
-        Equals(symValue, BooleanLiteral(concValue))
-      }
-      And(conj: _*)
+  type ConcreteBooleanState = GenericState[Boolean]
+  type SymBooleanState = GenericState[Variable]
+  type ThreeValuedState = GenericState[ThreeValued]
+
+  def printConcreteBooleanState(s: ConcreteBooleanState): String = {
+    val onKeys = (s.orderedKeys zip s.orderedValues) collect {
+      case (k, v) if v => k
     }
+    onKeys.mkString(", ")
   }
 
-  case class ThreeValuedState(
-    mapping: Map[String, ThreeValued]
-  ) extends AbstractState[ThreeValued] {
-    override def toString: String = {
-      val groupedByValue = mapping.groupBy(_._2)
-      val highValues = groupedByValue.getOrElse(High, Set.empty)
-      val uncertainValues = groupedByValue.getOrElse(Uncertain, Set.empty)
-      val strings = uncertainValues.map(x => x + "?") ++ highValues
-      strings.mkString(", ")
-    }
+  def printThreeValuedState(s: ThreeValuedState): String = {
+    val groupedByValue = s.mapping.groupBy(_._2)
+    val highValues = groupedByValue.getOrElse(High, Set.empty)
+    val uncertainValues = groupedByValue.getOrElse(Uncertain, Set.empty)
+    val strings = uncertainValues.map(x => x + "?") ++ highValues
+    strings.mkString(", ")
   }
 
   object ThreeValuedState {
@@ -79,7 +67,7 @@ object Transitions {
       val sb = new StringBuffer()
       sb.append("Input:\n")
       for (l <- this.allLabels) {
-        sb.append(s"$l\t= ${if (input(l)) "1" else "0"}\n")
+        sb.append(s"$l\t= ${if (input.value(l)) "1" else "0"}\n")
       }
       val outputStr = if (this.output) "1" else "0"
       sb.append("Output:\n")
