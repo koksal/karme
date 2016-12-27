@@ -168,8 +168,9 @@ object Synthesis {
     Enumeration.enumerate(extract, symEq, constraints, MAX_NB_MODELS)
   }
 
-  private def mkFreshSymFunExpr(depth: Int, possibleVars: Set[String]):
-    SymFunExpr = {
+  private def mkFreshSymFunExpr(
+    depth: Int, possibleVars: Set[String]
+  ): SymFunExpr = {
     if (depth == 0) {
       new SymFunLeaf(Trees.mkFreshIntVar("leaf"), possibleVars)
     } else {
@@ -185,14 +186,14 @@ object Synthesis {
   ): (Variable, Expr) = {
     val res = mkFreshBooleanVar("res")
 
-    val size = input.orderedKeys.size
-    val varCases = sf.prots map { prot =>
-      val varValue = input.value(prot) match {
+    val varCases = sf.orderedVariableOptions map { varName =>
+      val varValue = input.value(varName) match {
         case b: Boolean => BooleanLiteral(b)
         case v: Variable => v
+        case _ => sys.error("Unknown state type.")
       }
       Implies(
-        sf.isPROT(prot),
+        sf.isVARLITERAL(varName),
         Equals(res, varValue)
       )
     }

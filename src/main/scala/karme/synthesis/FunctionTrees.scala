@@ -67,8 +67,8 @@ object FunctionTrees {
 
   abstract class SymFunExpr {
     val possibleVars: Set[String]
-    val prots: List[String] = possibleVars.toList.sorted
-    val encodingMapping = new EncodingMapping(prots)
+    val orderedVariableOptions: List[String] = possibleVars.toList.sorted
+    val encodingMapping = new EncodingMapping(orderedVariableOptions)
 
     def nodeValue: Variable
     def children: List[SymFunExpr]
@@ -107,7 +107,7 @@ object FunctionTrees {
     def isOR: Expr = Equals(this.nodeValue, encodingMapping.OR_NODE)
     def isNOT: Expr = Equals(this.nodeValue, encodingMapping.NOT_NODE)
     def isIGNORE: Expr = Equals(this.nodeValue, encodingMapping.IGNORE_NODE)
-    def isPROT(name: String) =
+    def isVARLITERAL(name: String) =
       Equals(this.nodeValue, encodingMapping.VAR_NODE(name))
 
     def isVAR: Expr = {
