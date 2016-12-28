@@ -46,7 +46,7 @@ object FunctionTrees {
     case FunNot(_) => 0
   }
 
-  class EncodingMapping(prots: Seq[String]) {
+  class EncodingMapping(variableNames: Seq[String]) {
     // constant values
     val AND       = 0
     val OR        = 1
@@ -59,10 +59,10 @@ object FunctionTrees {
     val OR_NODE                 = IntLiteral(OR)
     val NOT_NODE                = IntLiteral(NOT)
     val IGNORE_NODE             = IntLiteral(IGNORE)
-    def VAR_NODE(name: String)  = IntLiteral(prots.indexOf(name) + VARSTART)
-    val VAR_NODE_RANGE          = prots map VAR_NODE
+    def VAR_NODE(name: String)  = IntLiteral(variableNames.indexOf(name) + VARSTART)
+    val VAR_NODE_RANGE          = variableNames map VAR_NODE
 
-    def VAR_NAME(modelValue: Int) = prots(modelValue - this.VARSTART)
+    def VAR_NAME(modelValue: Int) = variableNames(modelValue - this.VARSTART)
   }
 
   abstract class SymFunExpr {

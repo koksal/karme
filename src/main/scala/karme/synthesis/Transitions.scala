@@ -49,8 +49,10 @@ object Transitions {
     val threeValuedOrdering = Ordering by orderingIndex
   }
 
+  import scala.language.existentials
+
   case class Transition(
-    input: ConcreteBooleanState,
+    input: GenericState[_],
     output: Boolean,
     label: String,
     weight: Double
@@ -67,11 +69,10 @@ object Transitions {
       val sb = new StringBuffer()
       sb.append("Input:\n")
       for (l <- this.allLabels) {
-        sb.append(s"$l\t= ${if (input.value(l)) "1" else "0"}\n")
+        sb.append(s"$l\t= ${input.value(l)}\n")
       }
-      val outputStr = if (this.output) "1" else "0"
       sb.append("Output:\n")
-      sb.append(s"$label = $outputStr")
+      sb.append(s"$label = $outputString")
       sb.toString
     }
   }
