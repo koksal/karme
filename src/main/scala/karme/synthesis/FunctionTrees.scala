@@ -59,7 +59,8 @@ object FunctionTrees {
     val OR_NODE                 = IntLiteral(OR)
     val NOT_NODE                = IntLiteral(NOT)
     val IGNORE_NODE             = IntLiteral(IGNORE)
-    def VAR_NODE(name: String)  = IntLiteral(variableNames.indexOf(name) + VARSTART)
+    def VAR_NODE(name: String)  = IntLiteral(
+      variableNames.indexOf(name) + VARSTART)
     val VAR_NODE_RANGE          = variableNames map VAR_NODE
 
     def VAR_NAME(modelValue: Int) = variableNames(modelValue - this.VARSTART)

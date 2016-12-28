@@ -17,7 +17,7 @@ case class Options(
 
 case class AnalysisOptions(
   windowRadius: Int = 20,
-  maxHammingDistance: Int = 2
+  maxHammingDistance: Int = 1
 )
 
 case class VisualizationOptions(

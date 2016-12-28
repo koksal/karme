@@ -17,7 +17,7 @@ abstract class ExperimentParser[T] {
 
   def makeValue(s: String): T
 
-  def parse(f: File): Experiment[T] = {
+  def parse(f: File, namesToFilterOpt: Option[Set[String]]): Experiment[T] = {
     val reader = CSVReader.open(f)
     val allRows = reader.all()
     val headers = allRows.head
@@ -26,12 +26,17 @@ abstract class ExperimentParser[T] {
     assert(headers.size > 1)
     assert(headers.head == ExperimentParser.ID_LABEL)
 
-    val names = headers.tail
+    val experimentNames = headers.tail
+    val namesToFilter = namesToFilterOpt.getOrElse(experimentNames)
+    val namesToUse = namesToFilter.toSet.intersect(experimentNames.toSet)
 
     val measurements = cellRows map { row =>
       val id = row.head
       val values = row.tail.map(makeValue)
-      val state = GenericState[T](headers.zip(values).toMap)
+      val mapping = experimentNames.zip(values).filter {
+        case (n, _) => namesToUse.contains(n)
+      }
+      val state = GenericState[T](mapping.toMap)
       Measurement(id, state)
     }
 

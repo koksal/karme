@@ -29,10 +29,9 @@ object Main {
     val continuousExperimentOpt = readContinuousExperiment(
       opts.continuousExperimentFile, opts.namesFile)
 
-    var discreteExperiment = readDiscreteExperiment(
-      opts.discreteExperimentFile, opts.namesFile).getOrElse(
-        Discretization.discretize(continuousExperimentOpt.getOrElse(
-          sys.error("No continuous or discrete experiment given."))))
+    var discreteExperiment = Discretization.discretize(
+      continuousExperimentOpt.getOrElse(sys.error(
+        "No continuous or discrete experiment given.")))
 
     discreteExperiment = ContinuousTransformations.removeNamesWithOneLevel(
       discreteExperiment)
@@ -146,27 +145,13 @@ object Main {
     namesFile: Option[File]
   ): Option[ContinuousExperiment] = {
     experimentFile map { f =>
-      println("Reading continuous experiment.")
-      var e = ContinuousExperimentParser.parse(f)
+      val namesToFilterOpt = namesFile map readNamesToFilter
 
-      println("Filtering by names.")
-      e = filterByNames(e, namesFile)
+      println("Reading continuous experiment.")
+      var e = ContinuousExperimentParser.parse(f, namesToFilterOpt)
 
       println("Transforming data.")
       ContinuousTransformations.pseudoLog(e)
-    }
-  }
-
-  private def readDiscreteExperiment(
-    experimentFile: Option[File],
-    namesFile: Option[File]
-  ): Option[DiscreteExperiment] = {
-    experimentFile map { f =>
-      println("Reading discretized experiment.")
-      val de = DiscreteExperimentParser.parse(f)
-
-      println("Filtering by names.")
-      filterByNames(de, namesFile)
     }
   }
 
@@ -176,6 +161,12 @@ object Main {
     case Some(f) => ClusteringParser.parse(f)
     case None => new mutable.HashMap[String, mutable.Set[String]]
       with mutable.MultiMap[String, String]
+  }
+
+  private def readNamesToFilter(f: File): Set[String] = {
+    val names = Source.fromFile(f).getLines().toSeq
+    println(s"Filtering down to ${names.size} names.")
+    names.toSet
   }
 
   private def filterByNames[T](
