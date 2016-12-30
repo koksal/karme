@@ -23,10 +23,6 @@ object ArgHandling {
         o.copy(continuousExperimentFile = Some(v))
       } text "continuous experiment file in CSV format"
 
-      opt[File]("discrexp") action { (v, o) =>
-        o.copy(discreteExperimentFile = Some(v))
-      } text "discrete experiment file in CSV format"
-
       opt[File]("clusters") action { (v, o) =>
         o.copy(clusterFile = Some(v))
       } text "cluster file in CSV format"

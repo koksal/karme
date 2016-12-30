@@ -168,20 +168,4 @@ object Main {
     println(s"Filtering down to ${names.size} names.")
     names.toSet
   }
-
-  private def filterByNames[T](
-    experiment: Experiment[T], optNamesFile: Option[File]
-  ): Experiment[T] = optNamesFile match {
-    case Some(nf) => {
-      val names = Source.fromFile(nf).getLines().toSeq
-      println(s"Filtering down to ${names.size} names.")
-      val commonNames = experiment.names filter { n1 =>
-        names.exists((n2: String) => n2.toUpperCase().equals(n1.toUpperCase()))
-      }
-
-      println(s"Names in common with experiment: ${commonNames.size}")
-      experiment.project(commonNames.toSet)
-    }
-    case None => experiment
-  }
 }
