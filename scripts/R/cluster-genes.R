@@ -12,6 +12,6 @@ valuesPerGene = t(cellValues)
 geneIDs = rownames(valuesPerGene)
 
 res<-NbClust(valuesPerGene, diss=NULL, distance = "euclidean", min.nc=2, max.nc=50,
-             method = "kmeans", index = "all")
+             method = "ward.D2", index = "all")
 
 print(res)
