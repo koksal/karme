@@ -1,5 +1,7 @@
 options(warn = 1)
 library(NbClust)
+# library(proxy)
+# library(ggdendro)
 
 args = commandArgs(trailingOnly = TRUE)
 inputFile = args[[1]]
@@ -9,9 +11,17 @@ d = read.csv(inputFile)
 cellIDs = d[, "id"]
 cellValues = d[, -1]
 valuesPerGene = t(cellValues)
-geneIDs = rownames(valuesPerGene)
+valuesPerGene = head(valuesPerGene, 100)
+valuesPerGene = apply(valuesPerGene, 1:2, function(x) asinh(x / 5))
 
-res<-NbClust(valuesPerGene, diss=NULL, distance = "euclidean", min.nc=2, max.nc=50,
-             method = "ward.D2", index = "all")
+# distMatrix = dist(valuesPerGene, method = 'Pearson')
+# clusters <- hclust(distMatrix)
+# ggdendrogram(clusters, rotate = FALSE, size = 2)
+
+# geneIDs = rownames(valuesPerGene)
+# print(geneIDs)
+
+res<-NbClust(valuesPerGene, diss=NULL, distance = "euclidean", min.nc=2, max.nc=10,
+             method = "ward.D", index = "silhouette")
 
 print(res)
