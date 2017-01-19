@@ -29,6 +29,10 @@ object Main {
     val continuousExperimentOpt = readContinuousExperiment(
       opts.continuousExperimentFile, opts.namesFile)
 
+    ExperimentLogger.saveToFile(continuousExperimentOpt.get,
+      new File("filtered-continuous-experiment.csv"), None)
+    sys.exit(0)
+
     var discreteExperiment = Discretization.discretize(
       continuousExperimentOpt.getOrElse(sys.error(
         "No continuous or discrete experiment given.")))
@@ -61,12 +65,14 @@ object Main {
     val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = StateGraphs.makeCellIDs(nodeToID)
 
-    ExperimentLogger.saveToFile(discreteExperiment, cellToNodeID,
-      new File(opts.outFolder, "experiment-first-discretization.csv"))
-    ExperimentLogger.saveToFile(mleExperiment, cellToNodeID,
-      new File(opts.outFolder, "experiment-mle.csv"))
-    ExperimentLogger.saveToFile(threeValuedExperiment, cellToNodeID,
-      new File(opts.outFolder, "experiment-three-valued.csv"))
+    ExperimentLogger.saveToFile(discreteExperiment,
+      new File(opts.outFolder, "experiment-first-discretization.csv"),
+      Some(cellToNodeID) )
+    ExperimentLogger.saveToFile(mleExperiment,
+      new File(opts.outFolder, "experiment-mle.csv"), Some(cellToNodeID))
+    ExperimentLogger.saveToFile(threeValuedExperiment,
+      new File(opts.outFolder, "experiment-three-valued.csv"),
+      Some(cellToNodeID))
 
     TransitionLogger.saveToFile(positiveTransitions,
       new File(opts.outFolder, "positive-transitions.csv"))
