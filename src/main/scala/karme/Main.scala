@@ -3,6 +3,7 @@ package karme
 import java.io.File
 
 import karme.Experiments.{ContinuousExperiment, DiscreteExperiment, Experiment}
+import karme.clustering.HierarchicalClustering
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
@@ -29,10 +30,6 @@ object Main {
     val continuousExperimentOpt = readContinuousExperiment(
       opts.continuousExperimentFile, opts.namesFiles)
 
-    ExperimentLogger.saveToFile(continuousExperimentOpt.get,
-      new File("filtered-continuous-experiment.csv"), None)
-    sys.exit(0)
-
     var discreteExperiment = Discretization.discretize(
       continuousExperimentOpt.getOrElse(sys.error(
         "No continuous or discrete experiment given.")))
@@ -46,8 +43,11 @@ object Main {
     val mleExperiment = BinomialMLE.run(discreteExperiment, trajectories,
       opts.analysisOptions.windowRadius)
 
+    val clusteredExp = HierarchicalClustering.clusteredExperiment(mleExperiment,
+      30)
+
     val threeValuedExperiment =
-      Experiments.probabilisticExperimentToThreeValued(mleExperiment)
+      Experiments.probabilisticExperimentToThreeValued(clusteredExp)
 
     val clustering = readClustering(opts.clusterFile)
 
