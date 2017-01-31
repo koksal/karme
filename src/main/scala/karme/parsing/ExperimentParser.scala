@@ -29,6 +29,8 @@ abstract class ExperimentParser[T] {
     val experimentNames = headers.tail
     val namesToFilter = namesToFilterOpt.getOrElse(experimentNames)
     val namesToUse = namesToFilter.toSet.intersect(experimentNames.toSet)
+    println(s"Total number of names in experiment: ${experimentNames.size}")
+    println(s"Reading ${namesToUse.size} names from experiment.")
 
     val measurements = cellRows map { row =>
       val id = row.head

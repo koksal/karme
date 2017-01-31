@@ -27,9 +27,9 @@ object ArgHandling {
         o.copy(clusterFile = Some(v))
       } text "cluster file in CSV format"
 
-      opt[File]("names") action { (v, o) =>
-        o.copy(namesFile = Some(v))
-      } text "file with names to project experiment to"
+      opt[Seq[File]]("names") action { (vs, o) =>
+        o.copy(namesFiles = vs)
+      } text "names files to filter experiment with"
 
       opt[Seq[File]]("trajectory") action { (vs, o) =>
         o.copy(trajectoryFiles = vs)

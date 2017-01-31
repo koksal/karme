@@ -27,7 +27,7 @@ object Main {
     opts.outFolder.mkdirs()
 
     val continuousExperimentOpt = readContinuousExperiment(
-      opts.continuousExperimentFile, opts.namesFile)
+      opts.continuousExperimentFile, opts.namesFiles)
 
     ExperimentLogger.saveToFile(continuousExperimentOpt.get,
       new File("filtered-continuous-experiment.csv"), None)
@@ -148,13 +148,18 @@ object Main {
 
   private def readContinuousExperiment(
     experimentFile: Option[File],
-    namesFile: Option[File]
+    namesFiles: Seq[File]
   ): Option[ContinuousExperiment] = {
     experimentFile map { f =>
-      val namesToFilterOpt = namesFile map readNamesToFilter
+      val namesToFilter = if (namesFiles.isEmpty) {
+        None
+      } else {
+        Some(namesFiles.map(
+          f => readNamesToFilter(f)).reduce(_.intersect(_)))
+      }
 
       println("Reading continuous experiment.")
-      var e = ContinuousExperimentParser.parse(f, namesToFilterOpt)
+      val e = ContinuousExperimentParser.parse(f, namesToFilter)
 
       println("Transforming data.")
       ContinuousTransformations.pseudoLog(e)
@@ -171,7 +176,6 @@ object Main {
 
   private def readNamesToFilter(f: File): Set[String] = {
     val names = Source.fromFile(f).getLines().toSeq
-    println(s"Filtering down to ${names.size} names.")
     names.toSet
   }
 }
