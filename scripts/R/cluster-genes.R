@@ -1,7 +1,6 @@
 options(warn = 1)
-library(NbClust)
-# library(proxy)
-# library(ggdendro)
+library(gplots)
+library(RColorBrewer)
 
 args = commandArgs(trailingOnly = TRUE)
 inputFile = args[[1]]
@@ -10,18 +9,25 @@ d = read.csv(inputFile)
 
 cellIDs = d[, "id"]
 cellValues = d[, -1]
-valuesPerGene = t(cellValues)
-valuesPerGene = head(valuesPerGene, 100)
-valuesPerGene = apply(valuesPerGene, 1:2, function(x) asinh(x / 5))
+geneValues = t(cellValues)
+cellClustering = hclust(dist(cellValues))
+geneClustering = hclust(dist(geneValues))
+cellDendro = as.dendrogram(cellClustering)
+geneDendro = as.dendrogram(geneClustering)
 
-# distMatrix = dist(valuesPerGene, method = 'Pearson')
-# clusters <- hclust(distMatrix)
-# ggdendrogram(clusters, rotate = FALSE, size = 2)
+k = 3
 
-# geneIDs = rownames(valuesPerGene)
-# print(geneIDs)
+continuousPalette = colorRampPalette(c("blue", "white", "red"))(100)
+discretePalette = brewer.pal(k, "Set3")
 
-res<-NbClust(valuesPerGene, diss=NULL, distance = "euclidean", min.nc=2, max.nc=10,
-             method = "ward.D", index = "silhouette")
-
-print(res)
+pdf("heatmap.pdf", 10, 10)
+heatmap.2(
+          as.matrix(cellValues), 
+          scale = "none", 
+          Colv = geneDendro, 
+          Rowv = cellDendro, 
+          col = continuousPalette,
+          trace = "none", 
+          ColSideColors = discretePalette[cutree(geneClustering, k = k)]
+          )
+dev.off()
