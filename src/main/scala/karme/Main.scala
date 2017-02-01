@@ -42,9 +42,11 @@ object Main {
 
     val mleExperiment = BinomialMLE.run(discreteExperiment, trajectories,
       opts.analysisOptions.windowRadius)
+    println("Done computing MLE.")
 
     val clusteredExp = HierarchicalClustering.clusteredExperiment(mleExperiment,
-      30)
+      10)
+    println("Done clustering genes.")
 
     val threeValuedExperiment =
       Experiments.probabilisticExperimentToThreeValued(clusteredExp)

@@ -10,6 +10,8 @@ object HierarchicalClustering {
   def clusteredExperiment(
     exp: Experiment[Double], k: Int
   ): Experiment[Double] = {
+    assert(exp.names.size >= k)
+
     val nameToCluster = HclustInterface.clusterAndCutree(exp, k)
     val clusterToNames = makeClusterToNameMap(nameToCluster)
     experimentFromClusterAverages(exp, clusterToNames)
