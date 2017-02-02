@@ -23,6 +23,14 @@ object ArgHandling {
         o.copy(continuousExperimentFile = Some(v))
       } text "continuous experiment file in CSV format"
 
+      opt[File]("discrexp") action { (v, o) =>
+        o.copy(discretizedExperimentFile = Some(v))
+      } text "discretized experiment file in CSV format"
+
+      opt[File]("mle") action { (v, o) =>
+        o.copy(mleExperimentFile = Some(v))
+      } text "MLE experiment file in CSV format"
+
       opt[File]("clusters") action { (v, o) =>
         o.copy(clusterFile = Some(v))
       } text "cluster file in CSV format"
@@ -64,6 +72,10 @@ object ArgHandling {
       opt[Int]("hamming") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
+
+      opt[Int]("nbclusters") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = i))
+      } text "number of clusters to reduce experiment"
 
       help("help") text "print this help message"
     }

@@ -2,8 +2,9 @@ package karme.transformations
 
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.DiscreteExperiment
+import karme.discretization.Discretization
 
-object ContinuousTransformations {
+object ExperimentTransformation {
 
   val ARCSINH_FACTOR = 2.0
 
@@ -36,5 +37,22 @@ object ContinuousTransformations {
     val nbRemovedDimensions = exp.names.size - namesWithMultipleLevels.size
     println(s"Removed ${nbRemovedDimensions} dimensions")
     exp.project(namesWithMultipleLevels.toSet)
+  }
+
+  def removeMostlyInactiveVariables(
+    exp: DiscreteExperiment
+  ): DiscreteExperiment = {
+    val INACTIVE_CELL_RATIO_THRESHOLD = 0.80
+    val activeVariables = exp.names filter { name =>
+      val vs = exp.valuesForName(name)
+      val nbHigh = vs.count(_ == Discretization.HIGH_VALUE)
+      val nbLow = vs.count(_ == Discretization.LOW_VALUE)
+      assert(nbHigh + nbLow == vs.size)
+      val lowRatio = nbLow.toDouble / vs.size
+      println(s"${name} low value ratio: ${lowRatio}")
+      lowRatio < INACTIVE_CELL_RATIO_THRESHOLD
+    }
+    println(s"Reducing experiment to ${activeVariables.size} active variables.")
+    exp.project(activeVariables.toSet)
   }
 }

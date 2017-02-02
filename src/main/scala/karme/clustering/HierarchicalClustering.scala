@@ -1,5 +1,7 @@
 package karme.clustering
 
+import java.io.File
+
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
@@ -8,12 +10,16 @@ import karme.util.MathUtil
 object HierarchicalClustering {
 
   def clusteredExperiment(
-    exp: Experiment[Double], k: Int
+    exp: Experiment[Double], k: Int, outFolder: File, markers: Set[String]
   ): Experiment[Double] = {
     assert(exp.names.size >= k)
 
-    val nameToCluster = HclustInterface.clusterAndCutree(exp, k)
+    val nameToCluster = HclustInterface.clusterAndCutree(exp, k, outFolder)
     val clusterToNames = makeClusterToNameMap(nameToCluster)
+
+    for (marker <- markers.toList.sorted) {
+      println(s"${marker} in cluster ${nameToCluster.get(marker)}")
+    }
     experimentFromClusterAverages(exp, clusterToNames)
   }
 

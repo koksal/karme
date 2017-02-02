@@ -4,6 +4,8 @@ import java.io.File
 
 case class Options(
   continuousExperimentFile: Option[File] = None,
+  discretizedExperimentFile: Option[File] = None,
+  mleExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
   namesFiles: Seq[File] = Seq(),
   trajectoryFiles: Seq[File] = Seq(),
@@ -16,7 +18,8 @@ case class Options(
 
 case class AnalysisOptions(
   windowRadius: Int = 20,
-  maxHammingDistance: Int = 1
+  maxHammingDistance: Int = 1,
+  nbClusters: Int = 30
 )
 
 case class VisualizationOptions(
