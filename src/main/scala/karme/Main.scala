@@ -74,16 +74,24 @@ object Main {
     // Read markers for some quick analysis
     val markers = readNames(new File("data/markers.txt"))
 
-    println("Clustering variables.")
-    val clusteredExp = HierarchicalClustering.clusteredExperiment(mleExperiment,
-      opts.analysisOptions.nbClusters, opts.outFolder, markers)
-    ExperimentLogger.saveToFile(clusteredExp,
-      new File(opts.outFolder, "experiment-clustered.csv"), None)
-    plotExperiment(clusteredExp, trajectories, "mle-clustered", opts.outFolder)
+    val smoothedExperiment = opts.analysisOptions.nbClusters match {
+      case Some(nbClusters) => {
+        println("Clustering variables.")
+        val clusteredExp = HierarchicalClustering.clusteredExperiment(
+          mleExperiment, nbClusters, opts.outFolder, markers)
+        ExperimentLogger.saveToFile(clusteredExp,
+          new File(opts.outFolder, "experiment-clustered.csv"), None)
+        plotExperiment(clusteredExp, trajectories, "mle-clustered", opts.outFolder)
+        clusteredExp
+      }
+      case None => {
+        mleExperiment
+      }
+    }
 
     println("Converting to three-valued states")
     val threeValuedExperiment =
-      Experiments.probabilisticExperimentToThreeValued(clusteredExp)
+      Experiments.probabilisticExperimentToThreeValued(smoothedExperiment)
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"), None)
 
@@ -94,6 +102,9 @@ object Main {
       threeValuedExperiment, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
+    println(s"Produced an undirected state graph with " +
+      s"|V| = ${undirectedStateGraph.V.size} and " +
+      s"|E| = ${undirectedStateGraph.E.size}")
 
     val initialGraphStates = StateGraphs.initialTrajectoryStates(
       undirectedStateGraph.V, trajectories)
@@ -137,7 +148,6 @@ object Main {
     val missedStates = actualStates -- simulationStates
     val unobservedStates = simulationStates -- actualStates
 
-    // TODO print into file
     println(s"Common states: ${commonStates.size}")
     println(s"Missed states: ${missedStates.size}")
     println(s"Unobserved states: ${unobservedStates.size}")

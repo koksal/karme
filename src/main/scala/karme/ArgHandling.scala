@@ -74,7 +74,7 @@ object ArgHandling {
       } text "maximum hamming distance in state graph"
 
       opt[Int]("nbclusters") action { (i, o) =>
-        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = i))
+        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
       } text "number of clusters to reduce experiment"
 
       help("help") text "print this help message"

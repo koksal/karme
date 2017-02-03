@@ -49,7 +49,6 @@ object ExperimentTransformation {
       val nbLow = vs.count(_ == Discretization.LOW_VALUE)
       assert(nbHigh + nbLow == vs.size)
       val lowRatio = nbLow.toDouble / vs.size
-      println(s"${name} low value ratio: ${lowRatio}")
       lowRatio < INACTIVE_CELL_RATIO_THRESHOLD
     }
     println(s"Reducing experiment to ${activeVariables.size} active variables.")

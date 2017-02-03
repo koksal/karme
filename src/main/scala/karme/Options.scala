@@ -19,7 +19,7 @@ case class Options(
 case class AnalysisOptions(
   windowRadius: Int = 20,
   maxHammingDistance: Int = 1,
-  nbClusters: Int = 30
+  nbClusters: Option[Int] = None
 )
 
 case class VisualizationOptions(
