@@ -191,10 +191,16 @@ object StateGraphVisualization {
       val rhsID = nodeToID(e.v2)
       val edgeDirections = g.edgeDirections(e).toSet
       if (edgeDirections contains Forward) {
-        sb append directedDotEdge(lhsID, rhsID, labels)
+        for (label <- labels) {
+          val labelSuffix = if (e.v1.state.value(label)) "-" else "+"
+          sb append directedDotEdge(lhsID, rhsID, Set(label + labelSuffix))
+        }
       }
       if (edgeDirections contains Backward) {
-        sb append directedDotEdge(rhsID, lhsID, labels)
+        for (label <- labels) {
+          val labelSuffix = if (e.v2.state.value(label)) "-" else "+"
+          sb append directedDotEdge(rhsID, lhsID, Set(label + labelSuffix))
+        }
       }
     }
 
