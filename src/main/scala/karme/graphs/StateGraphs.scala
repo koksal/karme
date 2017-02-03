@@ -23,7 +23,10 @@ object StateGraphs {
   type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
-  def fromDiscreteExperiment(
+  /**
+    * Builds a state graph by adding all edges within maximum Hamming distance.
+    */
+  def fromBooleanExperiment(
     booleanExperiment: BooleanExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
@@ -54,6 +57,10 @@ object StateGraphs {
     g
   }
 
+  /**
+    * Convert three-valued states to all possible Boolean states and build a
+    * Hamming graph from those states.
+    */
   def fromThreeValuedExperiment(
     threeValuedExperiment: ThreeValuedExperiment,
     maxHammingDistance: Int
@@ -62,13 +69,7 @@ object StateGraphs {
     val booleanExperiment = threeValuedExperimentToBoolean(
       threeValuedExperiment)
 
-    // then build a N-Hamming graph using above function
-    // try out 1-Hamming to see if it's connected and for simple analysis
-    val hammingGraph = fromDiscreteExperiment(booleanExperiment,
-      maxHammingDistance)
-
-    // TODO replace >1-Hamming edges with expanded 1-Hamming paths
-    hammingGraph
+    fromBooleanExperiment(booleanExperiment, maxHammingDistance)
   }
 
   private def threeValuedExperimentToBoolean(

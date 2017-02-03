@@ -71,6 +71,7 @@ object Main {
       }
     }
 
+    // Read markers for some quick analysis
     val markers = readNames(new File("data/markers.txt"))
 
     println("Clustering variables.")
@@ -94,6 +95,17 @@ object Main {
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
 
+    val initialGraphStates = StateGraphs.initialTrajectoryStates(
+      undirectedStateGraph.V, trajectories)
+
+    // plotting graphs
+    val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
+    val highlightGroups = List(initialGraphStates)
+    StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
+      clustering, nodeToID, highlightGroups, "original", opts.outFolder)
+    StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
+      nodeToID, highlightGroups, opts.outFolder)
+
     println("Producing transitions.")
     val positiveTransitions = TransitionProducer.positiveTransitions(
       directedStateGraph)
@@ -104,7 +116,6 @@ object Main {
     TransitionLogger.saveToFile(negativeTransitions,
       new File(opts.outFolder, "negative-transitions.csv"))
 
-    val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
     val cellToNodeID = StateGraphs.makeCellIDs(nodeToID)
 
     StatePseudotimeLogger.savePseudotimes(directedStateGraph.V, trajectories,
@@ -157,7 +168,7 @@ object Main {
 
       val actualSimulatedUnionExp = Experiments.booleanStatesToExperiment(
         simulationStates ++ actualStates)
-      val unionStateGraph = StateGraphs.fromDiscreteExperiment(
+      val unionStateGraph = StateGraphs.fromBooleanExperiment(
         actualSimulatedUnionExp, opts.analysisOptions.maxHammingDistance)
       StateGraphVisualization.plotUndirectedGraph(unionStateGraph,
         highlightGroups, "simulated", opts.outFolder)
