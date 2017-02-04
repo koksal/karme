@@ -74,14 +74,15 @@ object Main {
     // Read markers for some quick analysis
     val markers = readNames(new File("data/markers.txt"))
 
-    val smoothedExperiment = opts.analysisOptions.nbClusters match {
+    val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {
         println("Clustering variables.")
         val clusteredExp = HierarchicalClustering.clusteredExperiment(
           mleExperiment, nbClusters, opts.outFolder, markers)
         ExperimentLogger.saveToFile(clusteredExp,
           new File(opts.outFolder, "experiment-clustered.csv"), None)
-        plotExperiment(clusteredExp, trajectories, "mle-clustered", opts.outFolder)
+        plotExperiment(clusteredExp, trajectories, "mle-clustered",
+          opts.outFolder)
         clusteredExp
       }
       case None => {
@@ -91,7 +92,7 @@ object Main {
 
     println("Converting to three-valued states")
     val threeValuedExperiment =
-      Experiments.probabilisticExperimentToThreeValued(smoothedExperiment)
+      Experiments.probabilisticExperimentToThreeValued(clusteredExperiment)
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"), None)
 
