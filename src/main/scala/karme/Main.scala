@@ -36,12 +36,13 @@ object Main {
 
     val discreteExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
+        println("Reading discrete experiment from file.")
         DiscreteExperimentParser.parse(f, None)
       }
       case None => {
-        val parsed = Discretization.discretize(continuousExperiment)
+        val discretized = Discretization.discretize(continuousExperiment)
         var transformed = ExperimentTransformation.removeNamesWithOneLevel(
-          parsed)
+          discretized)
         transformed = ExperimentTransformation.removeMostlyInactiveVariables(
           transformed)
         ExperimentLogger.saveToFile(transformed,

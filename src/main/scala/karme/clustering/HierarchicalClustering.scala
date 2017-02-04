@@ -14,7 +14,7 @@ object HierarchicalClustering {
   ): Experiment[Double] = {
     assert(exp.names.size >= k)
 
-    val nameToCluster = HclustInterface.clusterAndCutree(exp, k, outFolder)
+    val nameToCluster = HclustInterface.computeOptimalClustering(exp, k, outFolder)
     val clusterToNames = makeClusterToNameMap(nameToCluster)
 
     for (marker <- markers.toList.sorted) {

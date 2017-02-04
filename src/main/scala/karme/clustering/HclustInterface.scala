@@ -7,9 +7,11 @@ import org.ddahl.rscala.RClient
 
 object HclustInterface {
 
-  def clusterAndCutree(
-    exp: Experiment[Double], k: Int, outFolder: File
+  def computeOptimalClustering(
+    exp: Experiment[Double], kMax: Int, outFolder: File
   ): Map[String, Int] = {
+    assert(kMax >= 1)
+
     val R = RClient()
     R eval "library(gplots)"
     R eval "library(RColorBrewer)"
@@ -28,7 +30,12 @@ object HclustInterface {
     R.eval("varDendrogram = as.dendrogram(varClustering)")
     R.eval("cellDendrogram = as.dendrogram(cellClustering)")
 
-    R.eval(s"varClusterAssignments = cutree(varClustering, k = ${k})")
+    R.eval(s"varClusterAssignments = cutree(varClustering, k = 1:${kMax})")
+
+    // a matrix where each column corresponds to one element of vector k
+    val varClusterAssignments = R.getI2("varClusterAssignments")
+    assert(exp.names.size == varClusterAssignments.size)
+
 
     R.eval("continuousPalette = " +
       "colorRampPalette(c(\"blue\", \"white\", \"red\"))(100)")
@@ -49,9 +56,6 @@ object HclustInterface {
              |          ColSideColors = discretePalette[varClusterAssignments]
              |          )""".stripMargin)
     R.eval("dev.off()")
-
-    val varClusterAssignments = R.getI1("varClusterAssignments")
-    assert(exp.names.size == varClusterAssignments.size)
 
     exp.names.zip(varClusterAssignments).toMap
   }
