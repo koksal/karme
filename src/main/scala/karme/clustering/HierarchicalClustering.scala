@@ -10,20 +10,26 @@ import karme.util.MathUtil
 object HierarchicalClustering {
 
   def clusteredExperiment(
-    exp: Experiment[Double], k: Int, outFolder: File, markers: Set[String]
+    exp: Experiment[Double], kMax: Int, outFolder: File, markers: Set[String]
   ): Experiment[Double] = {
-    assert(exp.names.size >= k)
+    assert(exp.names.size >= kMax)
 
-    val nameToCluster = HclustInterface.computeOptimalClustering(exp, k, outFolder)
-    val clusterToNames = makeClusterToNameMap(nameToCluster)
+    println("Computing all cuts.")
+    val allCuts = HclustInterface.computeClusterCuts(exp, kMax, outFolder)
 
-    for (marker <- markers.toList.sorted) {
-      println(s"${marker} in cluster ${nameToCluster.get(marker)}")
+    println("Computing withinss for each cut.")
+    val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
+
+    println("Computed withinss:")
+    for ((wss, i) <- withinSumSquares.zipWithIndex) {
+      println(s"${i}: ${wss}")
     }
-    experimentFromClusterAverages(exp, clusterToNames)
+
+    // experimentFromClusterAverages(exp, clusterToNames)
+    ???
   }
 
-  private def makeClusterToNameMap(
+  private def makeClusterToNamesMap(
     nameToCluster: Map[String, Int]
   ): Map[Int, Set[String]] = {
     nameToCluster.groupBy{
@@ -31,6 +37,20 @@ object HierarchicalClustering {
     }.map{
       case (cluster, map) => cluster -> map.keySet
     }
+  }
+
+  private def withinSumSquare(
+    cut: Map[String, Int],
+    exp: Experiment[Double]
+  ): Double = {
+    val clusterToNames = makeClusterToNamesMap(cut)
+    val clusterSums = for ((clusterIndex, names) <- clusterToNames) yield {
+      val valuesPerVariable = names.toSeq map { name =>
+        exp.valuesForName(name)
+      }
+      KmeansInterface.withinSumOfSquares(valuesPerVariable)
+    }
+    clusterSums.sum
   }
 
   private def experimentFromClusterAverages(

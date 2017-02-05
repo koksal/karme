@@ -7,9 +7,9 @@ import org.ddahl.rscala.RClient
 
 object HclustInterface {
 
-  def computeOptimalClustering(
+  def computeClusterCuts(
     exp: Experiment[Double], kMax: Int, outFolder: File
-  ): Map[String, Int] = {
+  ): Seq[Map[String, Int]] = {
     assert(kMax >= 1)
 
     val R = RClient()
@@ -34,12 +34,25 @@ object HclustInterface {
 
     // a matrix where each column corresponds to one element of vector k
     val varClusterAssignments = R.getI2("varClusterAssignments")
+    assert(varClusterAssignments.size == kMax)
     assert(exp.names.size == varClusterAssignments.size)
 
+    visualizeClustering(R, kMax, outFolder)
+    R.exit()
 
+    varClusterAssignments.transpose map { assignmentForCluster =>
+      exp.names.zip(assignmentForCluster).toMap
+    }
+  }
+
+  private def visualizeClustering(
+    R: RClient,
+    kMax: Int,
+    outFolder: File
+  ): Unit = {
     R.eval("continuousPalette = " +
       "colorRampPalette(c(\"blue\", \"white\", \"red\"))(100)")
-    val nbColorRepetition = k / 12 + 1
+    val nbColorRepetition = kMax / 12 + 1
     R.eval(
       s"""discretePalette =
          |  rep(brewer.pal(12, "Set3"), ${nbColorRepetition})""".stripMargin)
@@ -56,8 +69,7 @@ object HclustInterface {
              |          ColSideColors = discretePalette[varClusterAssignments]
              |          )""".stripMargin)
     R.eval("dev.off()")
-
-    exp.names.zip(varClusterAssignments).toMap
   }
+
 
 }
