@@ -6,7 +6,7 @@ object KmeansInterface {
 
   def withinSumOfSquares(xss: Seq[Seq[Double]]): Double = {
     val R = RClient()
-    R.set("xss", xss)
+    R.set("xss", xss.map(_.toArray).toArray)
     R.eval("res = kmeans(xss, 1)")
     R.evalD0("res$withinss")
   }

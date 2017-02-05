@@ -34,14 +34,16 @@ object HclustInterface {
 
     // a matrix where each column corresponds to one element of vector k
     val varClusterAssignments = R.getI2("varClusterAssignments")
-    assert(varClusterAssignments.size == kMax)
-    assert(exp.names.size == varClusterAssignments.size)
+    val assignmentsPerK = varClusterAssignments.transpose
+    assert(assignmentsPerK.size == kMax)
 
-    visualizeClustering(R, kMax, outFolder)
+    // TODO visualize for all k
+    // visualizeClustering(R, kMax, outFolder)
     R.exit()
 
-    varClusterAssignments.transpose map { assignmentForCluster =>
-      exp.names.zip(assignmentForCluster).toMap
+    assignmentsPerK map { assignment =>
+      assert(assignment.size == exp.names.size)
+      exp.names.zip(assignment).toMap
     }
   }
 
