@@ -53,17 +53,16 @@ object Main {
         val inactiveVars = ExperimentTransformation.inactiveVariables(
           binarized, opts.analysisOptions.cellActivityThreshold)
         val varsToDrop = variablesWithOneLevel ++ inactiveVars -- annotationVars
-        val filtered = binarized.project(
-          binarized.names.toSet -- varsToDrop)
+        val filtered = binarized.project(binarized.names.toSet -- varsToDrop)
 
         ExperimentLogger.saveToFile(filtered,
           new File(opts.outFolder, "experiment-discretized-filtered.csv"))
+
         filtered
       }
     }
 
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
-    println(s"Read ${trajectories.size} trajectories.")
 
     val mleExperiment = opts.mleExperimentFile match {
       case Some(f) => {
@@ -74,11 +73,10 @@ object Main {
           opts.analysisOptions.windowRadius)
         ExperimentLogger.saveToFile(res,
           new File(opts.outFolder, "experiment-mle.csv"))
-        plotExperiment(res, trajectories, "mle", opts.outFolder)
-
         res
       }
     }
+    plotExperiment(mleExperiment, trajectories, "mle", opts.outFolder)
 
     val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {
@@ -102,7 +100,7 @@ object Main {
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"))
 
-    val clustering = readClustering(opts.clusterFile)
+    val cellClustering = readClustering(opts.clusterFile)
 
     println("Building graphs.")
     val undirectedStateGraph = StateGraphs.fromThreeValuedExperiment(
@@ -113,16 +111,16 @@ object Main {
       s"|V| = ${undirectedStateGraph.V.size} and " +
       s"|E| = ${undirectedStateGraph.E.size}")
 
-    val initialGraphStates = StateGraphs.initialTrajectoryStates(
-      undirectedStateGraph.V, trajectories)
-
-    // plotting graphs
-    val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
-    val highlightGroups = List(initialGraphStates)
-    StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
-      clustering, nodeToID, highlightGroups, "original", opts.outFolder)
-    StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
-      nodeToID, highlightGroups, opts.outFolder)
+    if (opts.visualizationOptions.stateGraphs) {
+      val initialGraphStates = StateGraphs.initialTrajectoryStates(
+        undirectedStateGraph.V, trajectories)
+      val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
+      val highlightGroups = List(initialGraphStates)
+      StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
+        cellClustering, highlightGroups, "original", opts.outFolder)
+      StateGraphVisualization.plotDirectedGraph(directedStateGraph,
+        cellClustering, highlightGroups, opts.outFolder)
+    }
 
     println("Producing transitions.")
     val positiveTransitions = TransitionProducer.positiveTransitions(
@@ -133,11 +131,6 @@ object Main {
       new File(opts.outFolder, "positive-transitions.csv"))
     TransitionLogger.saveToFile(negativeTransitions,
       new File(opts.outFolder, "negative-transitions.csv"))
-
-    val cellToNodeID = StateGraphs.makeCellIDs(nodeToID)
-
-    StatePseudotimeLogger.savePseudotimes(directedStateGraph.V, trajectories,
-      nodeToID, opts.outFolder)
 
     println("Synthesizing.")
     val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
@@ -161,27 +154,10 @@ object Main {
 
     // visualization
     val visOpts = opts.visualizationOptions
-    if (visOpts.histograms) {
-      DiscretizationHistogram.visualizeDiscretization(
-        continuousExperiment, booleanExperiment, clustering,
-        opts.outFolder)
-    }
-
-    if (visOpts.boxPlots) {
-      ExperimentBoxPlots.plot(continuousExperiment, clustering,
-        opts.outFolder)
-    }
-
-    if (visOpts.stateGraph) {
+    if (visOpts.stateGraphs) {
+      // TODO plot simulation after it runs
       val highlightGroups = List(initialStates, unobservedStates,
         simulationStates)
-
-      StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
-        clustering, nodeToID, highlightGroups, "original", opts.outFolder)
-      StateGraphVisualization.plotDirectedGraph(directedStateGraph, clustering,
-        nodeToID, highlightGroups, opts.outFolder)
-      StateGraphVisualization.plotTransitions(directedStateGraph, clustering,
-        positiveTransitions, nodeToID, opts.outFolder)
 
       val actualSimulatedUnionExp = Experiments.booleanStatesToExperiment(
         simulationStates ++ actualStates)

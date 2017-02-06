@@ -33,5 +33,5 @@ case class VisualizationOptions(
   histograms: Boolean = false,
   boxPlots: Boolean = false,
   curves: Boolean = false,
-  stateGraph: Boolean = false
+  stateGraphs: Boolean = false
 )

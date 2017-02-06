@@ -27,8 +27,19 @@ object StateGraphVisualization {
     name: String,
     outFolder: File
   ): Unit = {
-    val nodeToID = StateGraphs.makeNodeIDs(g.V)
-    plotUndirectedGraph(g, MapUtil.emptyMultiMap[String, String], nodeToID,
+    plotUndirectedGraph(g, MapUtil.emptyMultiMap[String, String],
+      highlightGroups, name, outFolder)
+  }
+
+  def plotUndirectedGraph(
+    g: UndirectedBooleanStateGraph,
+    clustering: mutable.MultiMap[String, String],
+    highlightGroups: List[Set[ConcreteBooleanState]],
+    name: String,
+    outFolder: File
+  ): Unit = {
+    val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
+    plotUndirectedGraph(g, clustering, nodeToID,
       highlightGroups, name, outFolder)
   }
 
@@ -44,6 +55,16 @@ object StateGraphVisualization {
       highlightGroups)
     plotGraph(dotString, s"undirected-state-graph-${name}.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
+  }
+
+  def plotDirectedGraph(
+    g: DirectedBooleanStateGraph,
+    clustering: mutable.MultiMap[String, String],
+    highlightGroups: List[Set[ConcreteBooleanState]],
+    outFolder: File
+  ): Unit = {
+    val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
+    plotDirectedGraph(g, clustering, nodeToID, highlightGroups, outFolder)
   }
 
   def plotDirectedGraph(

@@ -70,7 +70,7 @@ object ArgHandling {
 
       opt[Unit]("graphs") action { (_, o) =>
         o.copy(visualizationOptions =
-          o.visualizationOptions.copy(stateGraph = true))
+          o.visualizationOptions.copy(stateGraphs = true))
       } text "visualize state graphs"
 
       opt[Int]("window-radius") action { (i, o) =>

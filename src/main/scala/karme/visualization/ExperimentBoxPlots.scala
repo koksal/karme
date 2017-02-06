@@ -14,17 +14,15 @@ object ExperimentBoxPlots {
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
-    val markers = Source.fromFile("data/markers.txt").getLines()
-
     val clusterToContExp = contExp.partitionClusters(clustering)
-    for (marker <- markers) {
+    for (name <- contExp.names) {
       val labelToValues = for (
         (cluster, contClusterExp) <- clusterToContExp) yield {
-        val markerClusterValues = contClusterExp.valuesForName(marker)
+        val markerClusterValues = contClusterExp.valuesForName(name)
         cluster -> markerClusterValues
       }
-      println(s"Plotting for $marker")
-      BoxPlot.plot(labelToValues, marker, outFolder)
+      println(s"Plotting for $name")
+      BoxPlot.plot(labelToValues, name, outFolder)
     }
   }
 
