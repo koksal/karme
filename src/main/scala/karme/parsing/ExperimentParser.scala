@@ -50,7 +50,7 @@ object ContinuousExperimentParser extends ExperimentParser[Double] {
   override def makeValue(s: String): Double = s.toDouble
 }
 
-object DiscreteExperimentParser extends ExperimentParser[Int] {
-  override def makeValue(s: String): Int = s.toInt
+object BooleanExperimentParser extends ExperimentParser[Boolean] {
+  override def makeValue(s: String): Boolean = s.toBoolean
 }
 

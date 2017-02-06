@@ -1,5 +1,6 @@
 package karme.transformations
 
+import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.DiscreteExperiment
 import karme.discretization.Discretization
@@ -28,22 +29,21 @@ object ExperimentTransformation {
     arcsinh(v, factor) / math.log(10.0)
   }
 
-  def namesWithOneLevel(exp: DiscreteExperiment): Set[String] = {
+  def namesWithOneLevel(exp: BooleanExperiment): Set[String] = {
     val nameSeq = exp.names filter { n =>
       val nvs = exp.valuesForName(n)
+      // uses implicit Boolean ordering
       nvs.min == nvs.max
     }
     nameSeq.toSet
   }
 
   def inactiveVariables(
-    exp: DiscreteExperiment, minCellActivityRatio: Double
+    exp: BooleanExperiment, minCellActivityRatio: Double
   ): Set[String] = {
     val inactiveSeq = exp.names filter { name =>
       val vs = exp.valuesForName(name)
-      val nbHigh = vs.count(_ == Discretization.HIGH_VALUE)
-      val nbLow = vs.count(_ == Discretization.LOW_VALUE)
-      assert(nbHigh + nbLow == vs.size)
+      val nbHigh = vs.count(v => v)
       val highRatio = nbHigh.toDouble / vs.size
       highRatio < minCellActivityRatio
     }

@@ -2,9 +2,8 @@ package karme.visualization
 
 import java.io.File
 
+import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
-import karme.Experiments.DiscreteExperiment
-import karme.util.FileUtil
 import org.ddahl.rscala.RClient
 
 import scala.collection.mutable
@@ -16,11 +15,11 @@ object DiscretizationHistogram {
     */
   def visualizeDiscretization(
     contExp: ContinuousExperiment,
-    discExp: DiscreteExperiment,
+    discExp: BooleanExperiment,
     clustering: mutable.MultiMap[String, String],
     outFolder: File
   ): Unit = {
-    val folder = new File(outFolder, "histograms")
+    val histogramsFolder = new File(outFolder, "histograms")
 
     val clusterToContExp = contExp.partitionClusters(clustering)
     val clusterToDiscExp = discExp.partitionClusters(clustering)
@@ -33,17 +32,17 @@ object DiscretizationHistogram {
         clusterDiscExp.measurements.map(_.id))
 
       visualizeDiscretization(clusterContExp, clusterDiscExp,
-        new File(folder, s"cluster-$cluster"))
+        new File(histogramsFolder, s"cluster-$cluster"))
     }
 
     // visualize across clusters
-    visualizeDiscretization(contExp, discExp, new File(folder, "all"))
+    visualizeDiscretization(contExp, discExp, new File(histogramsFolder, "all"))
   }
 
   private def visualizeDiscretization(
     contExp: ContinuousExperiment,
-    discExp: DiscreteExperiment,
-    outFolder: File
+    discExp: BooleanExperiment,
+    folder: File
   ): Unit = {
     assert(contExp.names == discExp.names)
 
@@ -60,15 +59,13 @@ object DiscretizationHistogram {
       val name = contExp.names(i)
 
       R.set("contValues", contValues.toArray)
-      R.set("discValues", discValues.map("Level " + _).toArray)
+      R.set("discValues", discValues.toArray)
       R.eval("data <- data.frame(continuous = contValues, discrete = " +
         "discValues)")
 
       R.eval("plot = ggplot(data, aes(x=continuous, fill=discrete)) + " +
         "geom_histogram(alpha=.5, position=\"identity\")")
 
-      val folderName = "discretization-vis"
-      val folder = new File(outFolder, folderName)
       folder.mkdirs()
       val f = new File(folder, s"$name.pdf")
 

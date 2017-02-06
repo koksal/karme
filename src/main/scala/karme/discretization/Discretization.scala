@@ -1,7 +1,7 @@
 package karme.discretization
 
+import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
-import karme.Experiments.DiscreteExperiment
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
@@ -11,7 +11,7 @@ object Discretization {
   val LOW_VALUE = 1
   val HIGH_VALUE = 2
 
-  def discretize(experiment: ContinuousExperiment): DiscreteExperiment = {
+  def binarize(experiment: ContinuousExperiment): BooleanExperiment = {
     // transpose values to get values per name
     val valuesPerName = experiment.names.map(experiment.valuesForName(_))
 
@@ -24,7 +24,8 @@ object Discretization {
     val discreteMeasurements =
       experiment.measurements.map(_.id).zip(discreteCellValues) map {
       case (id, vs) => {
-        val state = new GenericState(experiment.names.zip(vs).toMap)
+        val booleanValues = vs map (_ == HIGH_VALUE)
+        val state = new GenericState(experiment.names.zip(booleanValues).toMap)
         Measurement(id, state)
       }
     }

@@ -2,17 +2,16 @@ package karme.transformations
 
 import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.DiscreteExperiment
+import karme.Experiments.BooleanExperiment
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.Experiments.ProbabilisticExperiment
-import karme.discretization.Discretization
 import karme.synthesis.Transitions.GenericState
 
 object BinomialMLE {
 
   def run(
-    exp: DiscreteExperiment,
+    exp: BooleanExperiment,
     trajectories: Seq[CellTrajectory],
     windowRadius: Int
   ): ProbabilisticExperiment = {
@@ -33,7 +32,7 @@ object BinomialMLE {
       val mleValues = for (name <- exp.names) yield {
         val values = expInVicinity.valuesForName(name)
         name ->
-          values.count(_ == Discretization.HIGH_VALUE).toDouble / values.size
+          values.count(v => v).toDouble / values.size
       }
 
       Measurement(measurement.id, GenericState(mleValues.toMap))

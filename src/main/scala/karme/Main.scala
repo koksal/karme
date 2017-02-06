@@ -10,7 +10,7 @@ import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
-import karme.parsing.DiscreteExperimentParser
+import karme.parsing.BooleanExperimentParser
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.StatePseudotimeLogger
@@ -39,22 +39,22 @@ object Main {
       case None => Set[String]()
     }
 
-    val discreteExperiment = opts.discretizedExperimentFile match {
+    val booleanExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
-        DiscreteExperimentParser.parse(f, None)
+        BooleanExperimentParser.parse(f, None)
       }
       case None => {
         // first discretization pass via Ckmeans
-        val discretized = Discretization.discretize(continuousExperiment)
+        val binarized = Discretization.binarize(continuousExperiment)
 
         // compute set of variables to filter out
-        val variablesWithOneLevel = ExperimentTransformation .namesWithOneLevel(
-          discretized)
+        val variablesWithOneLevel = ExperimentTransformation.namesWithOneLevel(
+          binarized)
         val inactiveVars = ExperimentTransformation.inactiveVariables(
-          discretized, opts.analysisOptions.cellActivityThreshold)
+          binarized, opts.analysisOptions.cellActivityThreshold)
         val varsToDrop = variablesWithOneLevel ++ inactiveVars -- annotationVars
-        val filtered = discretized.project(
-          discretized.names.toSet -- varsToDrop)
+        val filtered = binarized.project(
+          binarized.names.toSet -- varsToDrop)
 
         ExperimentLogger.saveToFile(filtered,
           new File(opts.outFolder, "experiment-discretized-filtered.csv"))
@@ -70,7 +70,7 @@ object Main {
         ContinuousExperimentParser.parse(f, None)
       }
       case None => {
-        val res = BinomialMLE.run(discreteExperiment, trajectories,
+        val res = BinomialMLE.run(booleanExperiment, trajectories,
           opts.analysisOptions.windowRadius)
         ExperimentLogger.saveToFile(res,
           new File(opts.outFolder, "experiment-mle.csv"))
@@ -163,7 +163,7 @@ object Main {
     val visOpts = opts.visualizationOptions
     if (visOpts.histograms) {
       DiscretizationHistogram.visualizeDiscretization(
-        continuousExperiment, discreteExperiment, clustering,
+        continuousExperiment, booleanExperiment, clustering,
         opts.outFolder)
     }
 
