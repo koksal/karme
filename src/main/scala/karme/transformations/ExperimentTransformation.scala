@@ -15,10 +15,6 @@ object ExperimentTransformation {
     math.log(interior)
   }
 
-  def pseudoLog(v: Double, factor: Double): Double = {
-    arcsinh(v, factor) / math.log(10.0)
-  }
-
   def pseudoLog(
     experiment: ContinuousExperiment
   ): ContinuousExperiment = {
@@ -28,30 +24,29 @@ object ExperimentTransformation {
     experiment.copy(measurements = transformedMeasurements)
   }
 
-  def removeNamesWithOneLevel(exp: DiscreteExperiment): DiscreteExperiment = {
-    val namesWithMultipleLevels = exp.names filter { n =>
-      val nvs = exp.valuesForName(n)
-      nvs.min < nvs.max
-    }
-
-    val nbRemovedDimensions = exp.names.size - namesWithMultipleLevels.size
-    println(s"Removed ${nbRemovedDimensions} dimensions")
-    exp.project(namesWithMultipleLevels.toSet)
+  def pseudoLog(v: Double, factor: Double): Double = {
+    arcsinh(v, factor) / math.log(10.0)
   }
 
-  def removeMostlyInactiveVariables(
-    exp: DiscreteExperiment
-  ): DiscreteExperiment = {
-    val INACTIVE_CELL_RATIO_THRESHOLD = 0.80
-    val activeVariables = exp.names filter { name =>
+  def namesWithOneLevel(exp: DiscreteExperiment): Set[String] = {
+    val nameSeq = exp.names filter { n =>
+      val nvs = exp.valuesForName(n)
+      nvs.min == nvs.max
+    }
+    nameSeq.toSet
+  }
+
+  def inactiveVariables(
+    exp: DiscreteExperiment, minCellActivityRatio: Double
+  ): Set[String] = {
+    val inactiveSeq = exp.names filter { name =>
       val vs = exp.valuesForName(name)
       val nbHigh = vs.count(_ == Discretization.HIGH_VALUE)
       val nbLow = vs.count(_ == Discretization.LOW_VALUE)
       assert(nbHigh + nbLow == vs.size)
-      val lowRatio = nbLow.toDouble / vs.size
-      lowRatio < INACTIVE_CELL_RATIO_THRESHOLD
+      val highRatio = nbHigh.toDouble / vs.size
+      highRatio < minCellActivityRatio
     }
-    println(s"Reducing experiment to ${activeVariables.size} active variables.")
-    exp.project(activeVariables.toSet)
+    inactiveSeq.toSet
   }
 }

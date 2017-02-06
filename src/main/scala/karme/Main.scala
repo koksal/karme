@@ -34,20 +34,31 @@ object Main {
       opts.continuousExperimentFile.getOrElse(sys.error(
         "No continuous experiment given.")), opts.namesFiles)
 
+    val annotationVars = opts.annotationsFile match {
+      case Some(f) => readNames(f)
+      case None => Set[String]()
+    }
+
     val discreteExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
         DiscreteExperimentParser.parse(f, None)
       }
       case None => {
+        // first discretization pass via Ckmeans
         val discretized = Discretization.discretize(continuousExperiment)
-        val discretizedIntoTwoLevels =
-          ExperimentTransformation.removeNamesWithOneLevel(discretized)
-        val filteredByActivity =
-          ExperimentTransformation.removeMostlyInactiveVariables(
-            discretizedIntoTwoLevels)
-        ExperimentLogger.saveToFile(filteredByActivity,
+
+        // compute set of variables to filter out
+        val variablesWithOneLevel = ExperimentTransformation .namesWithOneLevel(
+          discretized)
+        val inactiveVars = ExperimentTransformation.inactiveVariables(
+          discretized, opts.analysisOptions.cellActivityThreshold)
+        val varsToDrop = variablesWithOneLevel ++ inactiveVars -- annotationVars
+        val filtered = discretized.project(
+          discretized.names.toSet -- varsToDrop)
+
+        ExperimentLogger.saveToFile(filtered,
           new File(opts.outFolder, "experiment-discretized-filtered.csv"))
-        filteredByActivity
+        filtered
       }
     }
 
@@ -68,9 +79,6 @@ object Main {
         res
       }
     }
-
-    // Read markers for some quick analysis
-    val markers = readNames(new File("data/markers.txt"))
 
     val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {
