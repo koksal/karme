@@ -9,9 +9,12 @@ import karme.util.MathUtil
 
 object HierarchicalClustering {
 
+  val NB_EXTRA_CLUSTERS_FOR_ELBOW_METHOD = 10
+
   def clusteredExperiment(
-    exp: Experiment[Double], kMax: Int, outFolder: File, markers: Set[String]
+    exp: Experiment[Double], k: Int, outFolder: File, markers: Set[String]
   ): Experiment[Double] = {
+    val kMax = k + NB_EXTRA_CLUSTERS_FOR_ELBOW_METHOD
     assert(exp.names.size >= kMax)
 
     println("Computing all cuts.")
@@ -20,6 +23,7 @@ object HierarchicalClustering {
     println("Computing withinss for each cut.")
     val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
 
+    // TODO plot this as a curve in R
     println("Computed withinss:")
     for ((wss, i) <- withinSumSquares.zipWithIndex) {
       println(s"${i}: ${wss}")

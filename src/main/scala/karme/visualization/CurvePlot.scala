@@ -13,9 +13,6 @@ object CurvePlot {
   def plot[T](
     exp: Experiment[T], trajectory: CellTrajectory, outFolder: File
   ) : Unit = {
-    val R = RClient()
-    R eval "library(ggplot2)"
-
     // order measurements by trajectory
     val orderedIDs = CellTrajectories.cellOrder(trajectory)
     val orderedMs = orderedIDs map exp.measurementFromId
@@ -23,25 +20,13 @@ object CurvePlot {
 
     outFolder.mkdirs()
 
-    // plot one chart per name
+    // plot one scatter plot per name
     for (name <- exp.names) {
       val valueArray = trajectoryExp.valuesForName(name).map(_.toString).toArray
       val indexArray = valueArray.indices.toArray
 
-      R.set("indices", indexArray)
-      R.set("values", valueArray)
-
-      R.eval("data <- data.frame(index = indices, value = values)")
-
-      R.eval("plot = ggplot(data, aes(x = index, y = value)) + geom_point() + " +
-        "  theme(" +
-        "     axis.text.y=element_blank(), " +
-        "     axis.ticks.y=element_blank())")
-
       val f = new File(outFolder, s"$name.pdf")
-
-      R.set("fname", f.getAbsolutePath())
-      R.eval("ggsave(plot, file = fname)")
+      ScatterPlot.plot(indexArray, valueArray, f)
     }
   }
 
