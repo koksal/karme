@@ -6,6 +6,7 @@ import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
 import karme.util.MathUtil
+import karme.visualization.ScatterPlot
 
 object HierarchicalClustering {
 
@@ -23,11 +24,11 @@ object HierarchicalClustering {
     println("Computing withinss for each cut.")
     val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
 
-    // TODO plot this as a curve in R
-    println("Computed withinss:")
-    for ((wss, i) <- withinSumSquares.zipWithIndex) {
-      println(s"${i}: ${wss}")
-    }
+    ScatterPlot.plot(
+      1 to withinSumSquares.size,
+      withinSumSquares,
+      new File(outFolder, "withinSumSquares-vs-nbClusters.pdf")
+    )
 
     // experimentFromClusterAverages(exp, clusterToNames)
     ???
