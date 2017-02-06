@@ -112,10 +112,10 @@ object Main {
       s"|E| = ${undirectedStateGraph.E.size}")
 
     if (opts.visualizationOptions.stateGraphs) {
-      val initialGraphStates = StateGraphs.initialTrajectoryStates(
+      val initialStates = StateGraphs.initialTrajectoryStates(
         undirectedStateGraph.V, trajectories)
-      val nodeToID = StateGraphs.makeNodeIDs(directedStateGraph.V)
-      val highlightGroups = List(initialGraphStates)
+      val highlightGroups = List(initialStates)
+
       StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
         cellClustering, highlightGroups, "original", opts.outFolder)
       StateGraphVisualization.plotDirectedGraph(directedStateGraph,
@@ -132,41 +132,43 @@ object Main {
     TransitionLogger.saveToFile(negativeTransitions,
       new File(opts.outFolder, "negative-transitions.csv"))
 
-    println("Synthesizing.")
-    val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
-      positiveTransitions, negativeTransitions)
+    if (opts.runSynthesis) {
+      println("Synthesizing.")
+      val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
+        positiveTransitions, negativeTransitions)
 
-    println("Simulating functions.")
-    val initialStates = StateGraphs.initialTrajectoryStates(
-      directedStateGraph.V, trajectories)
-    val simulationStates =
-      AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
-        labelToFunctionExpressions, initialStates)
+      if (opts.runSimulation) {
+        println("Simulating functions.")
+        val initialStates = StateGraphs.initialTrajectoryStates(
+          directedStateGraph.V, trajectories)
+        val simulatedStates =
+          AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
+            labelToFunctionExpressions, initialStates)
 
-    val actualStates = directedStateGraph.V.map(_.state)
-    val commonStates = actualStates intersect simulationStates
-    val missedStates = actualStates -- simulationStates
-    val unobservedStates = simulationStates -- actualStates
+        val actualStates = directedStateGraph.V.map(_.state)
+        val commonStates = actualStates intersect simulatedStates
+        val missedStates = actualStates -- simulatedStates
+        val unobservedStates = simulatedStates -- actualStates
 
-    println(s"Common states: ${commonStates.size}")
-    println(s"Missed states: ${missedStates.size}")
-    println(s"Unobserved states: ${unobservedStates.size}")
+        println(s"Common states: ${commonStates.size}")
+        println(s"Missed states: ${missedStates.size}")
+        println(s"Unobserved states: ${unobservedStates.size}")
 
-    // visualization
-    val visOpts = opts.visualizationOptions
-    if (visOpts.stateGraphs) {
-      // TODO plot simulation after it runs
-      val highlightGroups = List(initialStates, unobservedStates,
-        simulationStates)
+        if (opts.visualizationOptions.stateGraphs) {
+          // create a new experiment with simulated states for graph creation
+          val actualSimulatedUnionExp = Experiments.booleanStatesToExperiment(
+            simulatedStates ++ actualStates)
+          val unionStateGraph = StateGraphs.fromBooleanExperiment(
+            actualSimulatedUnionExp, opts.analysisOptions.maxHammingDistance)
 
-      val actualSimulatedUnionExp = Experiments.booleanStatesToExperiment(
-        simulationStates ++ actualStates)
-      val unionStateGraph = StateGraphs.fromBooleanExperiment(
-        actualSimulatedUnionExp, opts.analysisOptions.maxHammingDistance)
-      StateGraphVisualization.plotUndirectedGraph(unionStateGraph,
-        highlightGroups, "simulated", opts.outFolder)
+          val highlightGroups = List(initialStates, unobservedStates,
+            simulatedStates)
+          StateGraphVisualization.plotUndirectedGraph(unionStateGraph,
+            highlightGroups, "simulated", opts.outFolder)
+        }
+
+      }
     }
-
   }
 
   private def plotExperiment[T](
