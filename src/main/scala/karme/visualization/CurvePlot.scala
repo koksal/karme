@@ -7,9 +7,12 @@ import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
 import org.ddahl.rscala.RClient
 
+/**
+  * Plots pseudotime-ordered scatter plots for each dimension (name) in the
+  * experiment.
+  */
 object CurvePlot {
 
-  /** Plots all components along the trajectory. */
   def plot[T](
     exp: Experiment[T], trajectory: CellTrajectory, outFolder: File
   ) : Unit = {
