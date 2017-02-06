@@ -3,15 +3,21 @@ package karme
 import java.io.File
 
 case class Options(
+  // input files
   continuousExperimentFile: Option[File] = None,
   discretizedExperimentFile: Option[File] = None,
   mleExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
   namesFiles: Seq[File] = Seq(),
+  annotationsFile: Option[File] = None,
   trajectoryFiles: Seq[File] = Seq(),
+  // output
   outFolder: File = new File("."),
-  discreteAnalysis: Boolean = false,
-  continuousAnalysis: Boolean = false,
+  // pipeline options
+  runElbow: Boolean = false,
+  runSynthesis: Boolean = false,
+  runSimulation: Boolean = false,
+  // sub-options
   analysisOptions: AnalysisOptions = AnalysisOptions(),
   visualizationOptions: VisualizationOptions = VisualizationOptions()
 )

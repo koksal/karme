@@ -36,19 +36,18 @@ object Main {
 
     val discreteExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
-        println("Reading discrete experiment from file.")
         DiscreteExperimentParser.parse(f, None)
       }
       case None => {
         val discretized = Discretization.discretize(continuousExperiment)
-        var transformed = ExperimentTransformation.removeNamesWithOneLevel(
-          discretized)
-        transformed = ExperimentTransformation.removeMostlyInactiveVariables(
-          transformed)
-        ExperimentLogger.saveToFile(transformed,
-          new File(opts.outFolder, "experiment-discretized-non-smoothed.csv"),
-          None)
-        transformed
+        val discretizedIntoTwoLevels =
+          ExperimentTransformation.removeNamesWithOneLevel(discretized)
+        val filteredByActivity =
+          ExperimentTransformation.removeMostlyInactiveVariables(
+            discretizedIntoTwoLevels)
+        ExperimentLogger.saveToFile(filteredByActivity,
+          new File(opts.outFolder, "experiment-discretized-filtered.csv"))
+        filteredByActivity
       }
     }
 
@@ -57,15 +56,13 @@ object Main {
 
     val mleExperiment = opts.mleExperimentFile match {
       case Some(f) => {
-        println("Reading MLE from file.")
         ContinuousExperimentParser.parse(f, None)
       }
       case None => {
-        println("Running MLE.")
         val res = BinomialMLE.run(discreteExperiment, trajectories,
           opts.analysisOptions.windowRadius)
         ExperimentLogger.saveToFile(res,
-          new File(opts.outFolder, "experiment-mle.csv"), None)
+          new File(opts.outFolder, "experiment-mle.csv"))
         plotExperiment(res, trajectories, "mle", opts.outFolder)
 
         res
@@ -79,9 +76,9 @@ object Main {
       case Some(nbClusters) => {
         println("Clustering variables.")
         val clusteredExp = HierarchicalClustering.clusteredExperiment(
-          mleExperiment, nbClusters, opts.outFolder, markers)
+          mleExperiment, nbClusters, opts.runElbow, opts.outFolder)
         ExperimentLogger.saveToFile(clusteredExp,
-          new File(opts.outFolder, "experiment-clustered.csv"), None)
+          new File(opts.outFolder, "experiment-clustered.csv"))
         plotExperiment(clusteredExp, trajectories, "mle-clustered",
           opts.outFolder)
         clusteredExp
@@ -95,7 +92,7 @@ object Main {
     val threeValuedExperiment =
       Experiments.probabilisticExperimentToThreeValued(clusteredExperiment)
     ExperimentLogger.saveToFile(threeValuedExperiment,
-      new File(opts.outFolder, "experiment-three-valued.csv"), None)
+      new File(opts.outFolder, "experiment-three-valued.csv"))
 
     val clustering = readClustering(opts.clusterFile)
 

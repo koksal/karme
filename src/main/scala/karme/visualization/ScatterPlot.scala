@@ -6,9 +6,9 @@ import org.ddahl.rscala.RClient
 
 object ScatterPlot {
 
-  def plot[T](
-    xs: Iterable[T],
-    ys: Iterable[T],
+  def plot[T, U](
+    xs: Array[T],
+    ys: Array[U],
     file: File
   ): Unit = {
     assert(xs.size == ys.size)
@@ -16,8 +16,8 @@ object ScatterPlot {
     val R = RClient()
     R eval "library(ggplot2)"
 
-    R.set("xs", xs.toArray)
-    R.set("ys", ys.toArray)
+    R.set("xs", xs)
+    R.set("ys", ys)
 
     R.eval("data <- data.frame(x = xs, y = ys)")
 

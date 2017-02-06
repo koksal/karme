@@ -39,6 +39,10 @@ object ArgHandling {
         o.copy(namesFiles = vs)
       } text "names files to filter experiment with"
 
+      opt[File]("annotations") action { (v, o) =>
+        o.copy(annotationsFile = Some(v))
+      } text "file with list of variables to annotate clusters with."
+
       opt[Seq[File]]("trajectory") action { (vs, o) =>
         o.copy(trajectoryFiles = vs)
       } text "trajectory files in CSV format"
@@ -46,6 +50,18 @@ object ArgHandling {
       opt[String]("outfolder") action { (v, o) =>
         o.copy(outFolder = new File(v))
       } text "output folder"
+
+      opt[Unit]("elbow") action { (_, o) =>
+        o.copy(runElbow = true)
+      } text "run within-cluster sum of squares and plot results"
+
+      opt[Unit]("synthesis") action { (_, o) =>
+        o.copy(runSynthesis = true)
+      } text "run function synthesis"
+
+      opt[Unit]("simulation") action { (_, o) =>
+        o.copy(runSimulation = true)
+      } text "run function simulation"
 
       opt[Unit]("visualize") action { (_, o) =>
         o.copy(visualizationOptions = VisualizationOptions(true, true, true,
@@ -56,14 +72,6 @@ object ArgHandling {
         o.copy(visualizationOptions =
           o.visualizationOptions.copy(stateGraph = true))
       } text "visualize state graphs"
-
-      opt[Unit]("discrete-analysis") action { (_, o) =>
-        o.copy(discreteAnalysis = true)
-      } text "run discrete data analysis"
-
-      opt[Unit]("continuous-analysis") action { (_, o) =>
-        o.copy(continuousAnalysis = true)
-      } text "run continuous data analysis"
 
       opt[Int]("window-radius") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))

@@ -8,23 +8,13 @@ import karme.parsing.ExperimentParser
 
 object ExperimentLogger {
 
-  def saveToFile[T](
-    e: Experiment[T], f: File, cellToNodeIDOpt: Option[Map[String, String]]
-  ): Unit = {
+  def saveToFile[T](e: Experiment[T], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
-    val headerRow = cellToNodeIDOpt match {
-      case Some(_) => List(ExperimentParser.ID_LABEL, "NODE_ID") ++ e.names
-      case None => ExperimentParser.ID_LABEL +: e.names
-    }
+    val headerRow = ExperimentParser.ID_LABEL +: e.names
 
     val cellRows = e.measurements map { m =>
-      cellToNodeIDOpt match {
-        case Some(cellToNodeID) => {
-          List(m.id, cellToNodeID(m.id)) ++ m.state.orderedValues
-        }
-        case None => m.id +: m.state.orderedValues
-      }
+      m.id +: m.state.orderedValues
     }
 
     writer.writeAll(headerRow +: cellRows)

@@ -10,28 +10,29 @@ import karme.visualization.ScatterPlot
 
 object HierarchicalClustering {
 
-  val NB_EXTRA_CLUSTERS_FOR_ELBOW_METHOD = 10
-
   def clusteredExperiment(
-    exp: Experiment[Double], k: Int, outFolder: File, markers: Set[String]
+    exp: Experiment[Double],
+    k: Int,
+    elbowMethod: Boolean,
+    outFolder: File
   ): Experiment[Double] = {
-    val kMax = k + NB_EXTRA_CLUSTERS_FOR_ELBOW_METHOD
-    assert(exp.names.size >= kMax)
+    assert(exp.names.size >= k)
 
     println("Computing all cuts.")
-    val allCuts = HclustInterface.computeClusterCuts(exp, kMax, outFolder)
+    val allCuts = HclustInterface.computeClusterCuts(exp, k, outFolder)
 
-    println("Computing withinss for each cut.")
-    val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
+    if (elbowMethod) {
+      println("Computing withinss for each cut.")
+      val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
 
-    ScatterPlot.plot(
-      1 to withinSumSquares.size,
-      withinSumSquares,
-      new File(outFolder, "withinSumSquares-vs-nbClusters.pdf")
-    )
+      ScatterPlot.plot(
+        (1 to withinSumSquares.size).toArray,
+        withinSumSquares.toArray,
+        new File(outFolder, "withinSumSquares-vs-nbClusters.pdf")
+      )
+    }
 
-    // experimentFromClusterAverages(exp, clusterToNames)
-    ???
+    experimentFromClusterAverages(exp, makeClusterToNamesMap(allCuts.last))
   }
 
   private def makeClusterToNamesMap(
