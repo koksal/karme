@@ -13,13 +13,12 @@ import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.BooleanExperimentParser
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser}
 import karme.printing.ExperimentLogger
-import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
-import karme.visualization.{CurvePlot, DiscretizationHistogram, ExperimentBoxPlots, StateGraphVisualization}
+import karme.visualization.{CurvePlot, StateGraphVisualization}
 
 import scala.collection.mutable
 import scala.io.Source
@@ -82,7 +81,8 @@ object Main {
       case Some(nbClusters) => {
         println("Clustering variables.")
         val clusteredExp = HierarchicalClustering.clusteredExperiment(
-          mleExperiment, nbClusters, opts.runElbow, opts.outFolder)
+          mleExperiment, nbClusters, annotationVars, opts.runElbow,
+          opts.outFolder)
         ExperimentLogger.saveToFile(clusteredExp,
           new File(opts.outFolder, "experiment-clustered.csv"))
         plotExperiment(clusteredExp, trajectories, "mle-clustered",
@@ -191,7 +191,7 @@ object Main {
       None
     } else {
       Some(namesFiles.map(
-        nf => readNames(nf)).reduce(_.intersect(_)))
+        nf => readNames(nf)).reduce(_.union(_)))
     }
 
     println("Reading continuous experiment.")

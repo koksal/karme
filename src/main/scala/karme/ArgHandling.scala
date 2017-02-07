@@ -63,15 +63,9 @@ object ArgHandling {
         o.copy(runSimulation = true)
       } text "run function simulation"
 
-      opt[Unit]("visualize") action { (_, o) =>
-        o.copy(visualizationOptions = VisualizationOptions(true, true, true,
-          true))
-      } text "run all visualizations"
-
-      opt[Unit]("graphs") action { (_, o) =>
-        o.copy(visualizationOptions =
-          o.visualizationOptions.copy(stateGraphs = true))
-      } text "visualize state graphs"
+      opt[Int]("nbclusters") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
+      } text "number of clusters to reduce experiment"
 
       opt[Int]("window-radius") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))
@@ -81,9 +75,15 @@ object ArgHandling {
         o.copy(analysisOptions = o.analysisOptions.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
 
-      opt[Int]("nbclusters") action { (i, o) =>
-        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
-      } text "number of clusters to reduce experiment"
+      opt[Unit]("visualize") action { (_, o) =>
+        o.copy(visualizationOptions = VisualizationOptions(true, true, true,
+          true))
+      } text "run all visualizations"
+
+      opt[Unit]("graphs") action { (_, o) =>
+        o.copy(visualizationOptions =
+          o.visualizationOptions.copy(stateGraphs = true))
+      } text "visualize state graphs"
 
       help("help") text "print this help message"
     }

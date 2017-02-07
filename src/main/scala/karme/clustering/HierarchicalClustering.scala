@@ -13,6 +13,7 @@ object HierarchicalClustering {
   def clusteredExperiment(
     exp: Experiment[Double],
     k: Int,
+    annotationVars: Set[String],
     elbowMethod: Boolean,
     outFolder: File
   ): Experiment[Double] = {
@@ -32,7 +33,14 @@ object HierarchicalClustering {
       )
     }
 
-    experimentFromClusterAverages(exp, makeClusterToNamesMap(allCuts.last))
+    val kCut = allCuts.last
+
+    // print membership for annotation variables
+    for (annotationVar <- annotationVars) {
+      println(s"$annotationVar is in cluster ${kCut.get(annotationVar)}")
+    }
+
+    experimentFromClusterAverages(exp, makeClusterToNamesMap(kCut))
   }
 
   private def makeClusterToNamesMap(
