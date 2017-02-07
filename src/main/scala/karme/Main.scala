@@ -43,9 +43,12 @@ object Main {
         BooleanExperimentParser.parse(f, None)
       }
       case None => {
+        println("Discretizing.")
+
         // first discretization pass via Ckmeans
         val binarized = Discretization.binarize(continuousExperiment)
 
+        println("Filtering.")
         // compute set of variables to filter out
         val variablesWithOneLevel = ExperimentTransformation.namesWithOneLevel(
           binarized)
@@ -61,6 +64,7 @@ object Main {
       }
     }
 
+    println("Reading trajectories.")
     val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
 
     val mleExperiment = opts.mleExperimentFile match {
@@ -68,6 +72,8 @@ object Main {
         ContinuousExperimentParser.parse(f, None)
       }
       case None => {
+        println("Computing MLE.")
+
         val res = BinomialMLE.run(booleanExperiment, trajectories,
           opts.analysisOptions.windowRadius)
         ExperimentLogger.saveToFile(res,
