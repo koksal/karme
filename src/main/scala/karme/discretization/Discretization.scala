@@ -16,8 +16,10 @@ object Discretization {
     val valuesPerName = experiment.names.map(experiment.valuesForName(_))
 
     // discretize all values per name
+    println("Running ckmeans.")
     val discreteCellValues =
       valuesPerName.map(CkmeansInterface.ckmeans).transpose
+    println()
 
     assert(discreteCellValues.size == experiment.measurements.size)
 

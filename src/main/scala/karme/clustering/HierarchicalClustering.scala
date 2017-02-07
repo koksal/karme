@@ -36,8 +36,8 @@ object HierarchicalClustering {
     val kCut = allCuts.last
 
     // print membership for annotation variables
-    for (annotationVar <- annotationVars) {
-      println(s"$annotationVar is in cluster ${kCut.get(annotationVar)}")
+    for (annotationVar <- annotationVars.toSeq.sorted) {
+      println(s"$annotationVar is in cluster ${kCut(annotationVar)}")
     }
 
     experimentFromClusterAverages(exp, makeClusterToNamesMap(kCut))

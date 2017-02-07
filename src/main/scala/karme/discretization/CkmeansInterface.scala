@@ -4,7 +4,7 @@ import org.ddahl.rscala.RClient
 
 object CkmeansInterface {
   def ckmeans(xs: Seq[Double]): Seq[Int] = {
-    println(s"Invoking Ckmeans with ${xs.size} values.")
+    print(".")
     val R = RClient()
     R.eval("library(Ckmeans.1d.dp)")
 
