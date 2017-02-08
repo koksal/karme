@@ -81,7 +81,9 @@ object Main {
         res
       }
     }
-    plotExperiment(mleExperiment, trajectories, "mle", opts.outFolder)
+    if (opts.visualizationOptions.curves) {
+      plotExperiment(mleExperiment, trajectories, "mle", opts.outFolder)
+    }
 
     val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {
@@ -91,8 +93,10 @@ object Main {
           opts.outFolder)
         ExperimentLogger.saveToFile(clusteredExp,
           new File(opts.outFolder, "experiment-clustered.csv"))
-        plotExperiment(clusteredExp, trajectories, "mle-clustered",
-          opts.outFolder)
+        if (opts.visualizationOptions.curves) {
+          plotExperiment(clusteredExp, trajectories, "mle-clustered",
+            opts.outFolder)
+        }
         clusteredExp
       }
       case None => {

@@ -61,6 +61,7 @@ object Experiments {
   def probabilisticExperimentToThreeValued(
     e: ProbabilisticExperiment
   ): ThreeValuedExperiment = {
+    // TODO take this as argument
     val UNCERTAINTY_MARGIN = 0.05
     val MID_VALUE = 0.5
 
