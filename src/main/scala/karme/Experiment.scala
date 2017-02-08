@@ -59,25 +59,23 @@ object Experiments {
   }
 
   def probabilisticExperimentToThreeValued(
-    e: ProbabilisticExperiment
+    e: ProbabilisticExperiment,
+    uncertaintyMargin: Double
   ): ThreeValuedExperiment = {
-    // TODO take this as argument
-    val UNCERTAINTY_MARGIN = 0.05
     val MID_VALUE = 0.5
 
     val threeValuedMeasurements = e.measurements map { m =>
-      val threeValMapping = m.state.mapping map { case(k, v) =>
+      val threeValState = m.state.mapValues[ThreeValued] { v =>
         assert(v >= 0 && v <= 1)
-        val tv: ThreeValued = if (math.abs(MID_VALUE - v) <= UNCERTAINTY_MARGIN) {
+        if (math.abs(MID_VALUE - v) <= uncertaintyMargin) {
           Uncertain
         } else if (v < MID_VALUE) {
           Low
         } else {
           High
         }
-        k -> tv
       }
-      m.copy(state = new GenericState[ThreeValued](threeValMapping))
+      m.copy(state = threeValState)
     }
     e.copy(measurements = threeValuedMeasurements)
   }

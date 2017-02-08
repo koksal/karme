@@ -67,6 +67,10 @@ object ArgHandling {
         o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
       } text "number of clusters to reduce experiment"
 
+      opt[Double]("uncertainty") action { (d, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(uncertaintyMargin = d))
+      } text "maximum distance from middle MLE value for uncertain values"
+
       opt[Int]("window-radius") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))
       } text "window radius for binomial MLE pass"

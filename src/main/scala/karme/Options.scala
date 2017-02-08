@@ -24,6 +24,7 @@ case class Options(
 
 case class AnalysisOptions(
   cellActivityThreshold: Double = 0.20,
+  uncertaintyMargin: Double = 0.05,
   windowRadius: Int = 20,
   maxHammingDistance: Int = 1,
   nbClusters: Option[Int] = None
