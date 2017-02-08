@@ -5,10 +5,12 @@ import karme.Experiments
 import karme.Experiments.BooleanExperiment
 import karme.Experiments.BooleanMeasurement
 import karme.Experiments.Experiment
+import karme.Experiments.High
 import karme.Experiments.Measurement
 import karme.Experiments.ThreeValued
 import karme.Experiments.ThreeValuedMeasurement
 import karme.Experiments.ThreeValuedExperiment
+import karme.Experiments.Uncertain
 import karme.graphs.Graphs._
 import karme.transformations.DiscreteStateAnalysis
 import karme.synthesis.Transitions.ConcreteBooleanState
@@ -74,6 +76,29 @@ object StateGraphs {
     }
 
     Experiment(booleanMeasurements)
+  }
+
+  /**
+    * Filters out every state with uncertain values and converts remaining
+    * states to Boolean states.
+    */
+  def eliminateStatesWithUncertainValues(
+    threeValuedExperiment: ThreeValuedExperiment
+  ): BooleanExperiment = {
+    // filter out measurements which have states with uncertain values.
+    val msWithoutUncertainty = threeValuedExperiment.measurements.filter { m =>
+      m.state.orderedValues.forall(_ != Uncertain)
+    }
+
+    // map to measurements with Boolean states
+    val booleanMs = msWithoutUncertainty map { m =>
+      val boolState = m.state.mapValues { tv =>
+        assert(tv != Uncertain)
+        tv == High
+      }
+      Measurement(m.id, boolState)
+    }
+    Experiment(booleanMs)
   }
 
   private def expandThreeValuedState(
