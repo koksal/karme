@@ -108,13 +108,17 @@ object Main {
 
     val cellClustering = readClustering(opts.clusterFile)
 
-    println("Expanding three-valued experiment to Boolean combinations.")
-    val booleanExpFromCombinations = StateGraphs.expandWithBooleanCombinations(
-      threeValuedExperiment)
+    // println("Expanding three-valued experiment to Boolean combinations.")
+    // val booleanExpFromCombinations = StateGraphs.expandWithBooleanCombinations(
+    //   threeValuedExperiment)
+
+    println("Converting to Boolean by filtering out uncertain values.")
+    val booleanExpFromFiltering =
+      StateGraphs.eliminateStatesWithUncertainValues(threeValuedExperiment)
 
     println("Building graphs.")
     val undirectedStateGraph = StateGraphs.fromBooleanExperiment(
-      booleanExpFromCombinations, opts.analysisOptions.maxHammingDistance)
+      booleanExpFromFiltering, opts.analysisOptions.maxHammingDistance)
     val directedStateGraph = UndirectedStateGraphOps.orientByTrajectories(
       undirectedStateGraph, trajectories)
     println(s"Produced an undirected state graph with " +
