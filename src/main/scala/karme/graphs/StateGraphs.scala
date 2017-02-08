@@ -58,21 +58,10 @@ object StateGraphs {
   }
 
   /**
-    * Convert three-valued states to all possible Boolean states and build a
-    * Hamming graph from those states.
+    * Converts every state with uncertain values to a set of states with all
+    * Boolean combinations of values.
     */
-  def fromThreeValuedExperiment(
-    threeValuedExperiment: ThreeValuedExperiment,
-    maxHammingDistance: Int
-  ): UndirectedBooleanStateGraph = {
-    // first expand to Boolean experiment
-    val booleanExperiment = threeValuedExperimentToBoolean(
-      threeValuedExperiment)
-
-    fromBooleanExperiment(booleanExperiment, maxHammingDistance)
-  }
-
-  private def threeValuedExperimentToBoolean(
+  def expandWithBooleanCombinations(
     threeValuedExperiment: ThreeValuedExperiment
   ): BooleanExperiment = {
     val booleanMeasurements = threeValuedExperiment.measurements.flatMap{
