@@ -12,8 +12,8 @@ object AsyncBooleanNetworkSimulation {
     labelToFunctions: Map[String, Set[FunExpr]],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    val chosenFunctions = labelToFunctions map {
-      case (label, fs) => (label, fs.head)
+    val chosenFunctions = labelToFunctions collect {
+      case (label, fs) if fs.nonEmpty => (label, fs.head)
     }
     simulate(chosenFunctions, initialStates)
   }
