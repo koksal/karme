@@ -97,6 +97,22 @@ object Synthesis {
       if (expressions.nonEmpty) {
         consistentSoftSet += transition
         currentExpressions = expressions
+        println("Soft constraint consistent with current set.")
+      } else {
+        println("Soft constraint inconsistent with current set.")
+        // TODO
+        // check if the current transition is consistent with the hard set
+        val exprForHardAndNew = synthesize(hardTransitions + transition,
+          possibleVars, MAX_EXPRESSION_DEPTH)
+        if (exprForHardAndNew.nonEmpty) {
+          println("It is consistent with hard set.")
+        } else {
+          println("It is inconsistent with hard set.")
+        }
+        
+        // more generally, find a minimal unsat core that includes it
+        // take current set, keep removing transitions until it becomes sat.
+        // use max expression depth from start, do not synthesize for min depth
       }
       print(".")
     }
