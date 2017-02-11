@@ -25,9 +25,9 @@ object Synthesis {
       println(s"Synthesizing for ${label}")
       println("==========================")
       val funExprs = synthesizeForSingleLabel(
-        labelToPosTrans.getOrElse(label, Set.empty),
-        labelToNegTrans.getOrElse(label, Set.empty),
-        allLabels.toSet
+        hardTransitions = labelToNegTrans.getOrElse(label, Set.empty),
+        softTransitions = labelToPosTrans.getOrElse(label, Set.empty),
+        possibleVars = allLabels.toSet
       )
       labelToFunExpressions += label -> funExprs
     }
@@ -36,22 +36,22 @@ object Synthesis {
   }
 
   private def synthesizeForSingleLabel(
-    positiveTransitions: Set[Transition],
-    negativeTransitions: Set[Transition],
+    hardTransitions: Set[Transition],
+    softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Set[FunExpr] = {
-    // find a greedy partition of positive transitions such that each subset
+    // find a greedy partition of hard transitions such that each subset
     // is "maximally" consistent
-    val partition = findGreedyTransitionPartition(positiveTransitions,
+    val partition = findGreedyTransitionPartition(hardTransitions,
       possibleVars)
-    println(s"Partitioned positive examples into ${partition.size} set(s).")
+    println(s"Partitioned hard examples into ${partition.size} set(s).")
     println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
 
     var allFunExprs = Set.empty[FunExpr]
-    // aim to maximize use of negative transitions for each positive set
+    // aim to maximize use of soft transitions for each positive set
     for (subset <- partition) {
       allFunExprs ++= synthesizeWithHardAndSoftTransitions(subset,
-        negativeTransitions, possibleVars)
+        softTransitions, possibleVars)
     }
 
     allFunExprs

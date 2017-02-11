@@ -6,7 +6,7 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 object AsyncBooleanNetworkSimulation {
 
-  val SIMULATION_DEPTH_LIMIT = 10
+  val SIMULATION_DEPTH_LIMIT = 100
 
   def pickFunctionsAndSimulate(
     labelToFunctions: Map[String, Set[FunExpr]],
