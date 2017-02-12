@@ -99,20 +99,13 @@ object Synthesis {
         currentExpressions = expressions
         println("Soft constraint consistent with current set.")
       } else {
-        println("Soft constraint inconsistent with current set.")
-        // TODO
-        // check if the current transition is consistent with the hard set
-        val exprForHardAndNew = synthesize(hardTransitions + transition,
-          possibleVars, MAX_EXPRESSION_DEPTH)
-        if (exprForHardAndNew.nonEmpty) {
-          println("It is consistent with hard set.")
-        } else {
-          println("It is inconsistent with hard set.")
-        }
-        
-        // more generally, find a minimal unsat core that includes it
-        // take current set, keep removing transitions until it becomes sat.
-        // use max expression depth from start, do not synthesize for min depth
+        println("Soft constraint inconsistent with current set:")
+        println(transition)
+
+        val core = minimalUnsatCore(Set(transition),
+          hardTransitions ++ consistentSoftSet, possibleVars)
+        println(s"Minimal core:")
+        println(core.mkString("\n"))
       }
       print(".")
     }
@@ -139,6 +132,37 @@ object Synthesis {
     }
 
     currentExpressions
+  }
+
+  private def minimalUnsatCore(
+    initialSet: Set[Transition],
+    candidateSet: Set[Transition],
+    possibleVars: Set[String]
+  ): Set[Transition] = {
+    assert(initialSet.nonEmpty)
+    assert(candidateSet.nonEmpty)
+
+    var currentSet = initialSet
+    var foundCore = false
+    while (!foundCore) {
+      val stepCandidateSet = candidateSet -- currentSet
+      for (candidate <- stepCandidateSet; if !foundCore) {
+        val toTest = currentSet + candidate
+        val isUNSAT = synthesize(
+          toTest, possibleVars, MAX_EXPRESSION_DEPTH).isEmpty
+        if (isUNSAT) {
+          foundCore = true
+          currentSet = toTest
+        }
+      }
+      if (!foundCore) {
+        // add one (consistent) candidate to current set and repeat
+        currentSet += stepCandidateSet.head
+      }
+    }
+
+    assert(foundCore)
+    currentSet
   }
 
   private def transitionsByDescendingWeight(ts: Iterable[Transition]) = {
