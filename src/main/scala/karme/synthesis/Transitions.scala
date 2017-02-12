@@ -52,28 +52,15 @@ object Transitions {
   import scala.language.existentials
 
   case class Transition(
-    input: GenericState[_],
+    input: GenericState[Boolean],
     output: Boolean,
     label: String,
     weight: Double
   ) {
-    private val allLabels = {
-      input.orderedKeys
-    }
-
-    private def booleanValueString(b: Boolean): String = if (b) "1" else "0"
-
-    val outputString: String = booleanValueString(output)
+    val outputString: String = if (output) label else s"!$label"
 
     override def toString: String = {
-      val sb = new StringBuffer()
-      sb.append("Input:\n")
-      for (l <- this.allLabels) {
-        sb.append(s"$l\t= ${input.value(l)}\n")
-      }
-      sb.append("Output:\n")
-      sb.append(s"$label = $outputString")
-      sb.toString
+      printConcreteBooleanState(input) + " -> " + outputString
     }
   }
 

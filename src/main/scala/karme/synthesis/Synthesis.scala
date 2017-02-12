@@ -6,7 +6,7 @@ import karme.synthesis.Trees._
 
 object Synthesis {
 
-  val MAX_EXPRESSION_DEPTH = 2
+  val MAX_EXPRESSION_DEPTH = 3
   val MAX_NB_MODELS = Some(1)
 
   def synthesizeForAllLabels(
@@ -102,14 +102,13 @@ object Synthesis {
         println("Soft constraint inconsistent with current set:")
         println(transition)
 
-        val core = minimalUnsatCore(Set(transition),
-          hardTransitions ++ consistentSoftSet, possibleVars)
-        println(s"Minimal core:")
-        println(core.mkString("\n"))
+        // val core = minimalUnsatCore(Set(transition),
+        //   hardTransitions ++ consistentSoftSet, possibleVars)
+        // println(s"Minimal core:")
+        // println(core.mkString("\n"))
+        // println()
       }
-      print(".")
     }
-    println()
 
     // If no soft transition is consistent with hard set, compute functions for
     // the hard set
@@ -142,6 +141,8 @@ object Synthesis {
     assert(initialSet.nonEmpty)
     assert(candidateSet.nonEmpty)
 
+    println("searching for unsat core.")
+
     var currentSet = initialSet
     var foundCore = false
     while (!foundCore) {
@@ -158,6 +159,13 @@ object Synthesis {
       if (!foundCore) {
         // add one (consistent) candidate to current set and repeat
         currentSet += stepCandidateSet.head
+        println("Core not found, adding one candidate to current core:")
+        println(currentSet.mkString("\n"))
+        println()
+        println("Function for current core:")
+        println(FunctionTrees.prettyString(synthesizeForMinDepth(currentSet,
+          possibleVars).head))
+        println()
       }
     }
 
