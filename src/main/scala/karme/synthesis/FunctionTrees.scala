@@ -2,6 +2,7 @@ package karme.synthesis
 
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Trees._
+import karme.synthesis.traversal.BFS
 
 object FunctionTrees {
 
@@ -171,10 +172,7 @@ object FunctionTrees {
         r.isIGNORE
       )
 
-      val symmetryBreak = Implies(
-        And(Not(l.isIGNORE), Not(r.isIGNORE)),
-        LessEquals(l.nodeValue, r.nodeValue)
-      )
+      val symmetryBreak = lexicographicalLTE(BFS.order(l), BFS.order(r))
       val onlyVarNegations = Implies(
         this.isNOT,
         this.l.isVAR
@@ -184,6 +182,25 @@ object FunctionTrees {
         onlyVarNegations,
         Or(andCase, orCase, notCase, ignoreCase, varCase)
       )
+    }
+
+    // TODO move somewhere else.
+    private def lexicographicalLTE(
+      ls: Seq[SymFunExpr], rs: Seq[SymFunExpr]
+    ): Expr = (ls.toList, rs.toList) match {
+      case (l :: lRest, r :: rRest) => {
+        Or(
+          LessThan(l.nodeValue, r.nodeValue),
+          And(
+            Equals(l.nodeValue, r.nodeValue),
+            lexicographicalLTE(lRest, rRest)
+          )
+        )
+      }
+      case (Nil, Nil) => {
+        BooleanLiteral(true)
+      }
+      case _ => sys.error("Sequences of unequal length.")
     }
 
     def nbVariables(): Expr = {
