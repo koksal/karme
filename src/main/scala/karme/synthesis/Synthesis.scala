@@ -8,6 +8,7 @@ object Synthesis {
 
   val MAX_EXPRESSION_DEPTH = 3
   val MAX_NB_MODELS = None // Some(1)
+  val FIND_UNSAT_CORES = false
 
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
@@ -44,8 +45,11 @@ object Synthesis {
     // is "maximally" consistent
     val partition = findGreedyTransitionPartition(hardTransitions,
       possibleVars)
-    println(s"Partitioned hard examples into ${partition.size} set(s).")
-    println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
+    if (partition.size > 1) {
+      println("Warning: Hard constraints are not consistent.")
+      println(s"Partitioned hard examples into ${partition.size} set(s).")
+      println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
+    }
 
     var allFunExprs = Set.empty[FunExpr]
     for (subset <- partition) {
@@ -85,8 +89,6 @@ object Synthesis {
     softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): List[FunExpr] = {
-    println(
-      s"Synthesizing with maximal soft constraints (${softTransitions.size}).")
     var consistentSoftSet: Set[Transition] = Set.empty
     var currentExpressions: List[FunExpr] = Nil
 
@@ -96,23 +98,21 @@ object Synthesis {
       if (expressions.nonEmpty) {
         consistentSoftSet += transition
         currentExpressions = expressions
-        println("Soft constraint consistent with current set.")
-      } else {
+      } else if (FIND_UNSAT_CORES) {
         println("Soft constraint inconsistent with current set:")
         println(transition)
 
-        // val core = minimalUnsatCore(Set(transition),
-        //   hardTransitions ++ consistentSoftSet, possibleVars)
-        // println(s"Minimal core:")
-        // println(core.mkString("\n"))
-        // println()
+        val core = minimalUnsatCore(Set(transition),
+          hardTransitions ++ consistentSoftSet, possibleVars)
+        println(s"Minimal core:")
+        println(core.mkString("\n"))
+        println()
       }
     }
 
     // If no soft transition is consistent with hard set, compute functions for
     // the hard set
     if (currentExpressions.isEmpty) {
-      println("Hard constraints could not be extended with soft constraints.")
       currentExpressions = synthesizeForMinDepth(hardTransitions, possibleVars)
     }
 
