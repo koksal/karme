@@ -180,9 +180,19 @@ object FunctionTrees {
     }
 
     def nbVariables(): Expr = {
-      // if this is a var, then 1. else, sum of children's vars
-      // TODO use ITE
-      ???
+      // if this is a var, then 1.
+      // if it's a NOT, then carry from left child.
+      // if a binary gate, then it's the sum of children's vars.
+      // we don't care about IGNORE nodes.
+      ITE(
+        this.isVAR,
+        IntLiteral(1),
+        ITE(
+          this.isNOT,
+          l.nbVariables(),
+          Plus(l.nbVariables(), r.nbVariables())
+        )
+      )
     }
   }
 
@@ -207,6 +217,9 @@ object FunctionTrees {
       )
     }
 
-    override def nbVariables() = ???
+    def nbVariables(): Expr = {
+      // only used for VAR cases from parent nodes.
+      IntLiteral(1)
+    }
   }
 }
