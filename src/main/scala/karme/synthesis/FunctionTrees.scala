@@ -5,6 +5,8 @@ import karme.synthesis.Trees._
 
 object FunctionTrees {
 
+  private val USE_DISTINCT_VARS = false
+
   sealed trait FunExpr
   case class FunVar(id: String) extends FunExpr
   case class FunAnd(l: FunExpr, r: FunExpr) extends FunExpr
@@ -88,7 +90,7 @@ object FunctionTrees {
       }
       And(
         Not(this.isIGNORE),
-        And(distinctVars: _*),
+        if (USE_DISTINCT_VARS) And(distinctVars: _*) else BooleanLiteral(true),
         this.recursiveConsistency()
       )
     }
@@ -173,13 +175,13 @@ object FunctionTrees {
         And(Not(l.isIGNORE), Not(r.isIGNORE)),
         LessEquals(l.nodeValue, r.nodeValue)
       )
-      val noDoubleNegation = Implies(
+      val onlyVarNegations = Implies(
         this.isNOT,
-        Not(this.l.isNOT)
+        this.l.isVAR
       )
       And(
         symmetryBreak,
-        noDoubleNegation,
+        onlyVarNegations,
         Or(andCase, orCase, notCase, ignoreCase, varCase)
       )
     }
