@@ -104,6 +104,8 @@ object FunctionTrees {
 
     def nodeConsistency(): Expr
 
+    def nbVariables(): Expr
+
     def isAND: Expr = Equals(this.nodeValue, encodingMapping.AND_NODE)
     def isOR: Expr = Equals(this.nodeValue, encodingMapping.OR_NODE)
     def isNOT: Expr = Equals(this.nodeValue, encodingMapping.NOT_NODE)
@@ -176,6 +178,12 @@ object FunctionTrees {
         Or(andCase, orCase, notCase, ignoreCase, varCase)
       )
     }
+
+    def nbVariables(): Expr = {
+      // if this is a var, then 1. else, sum of children's vars
+      // TODO use ITE
+      ???
+    }
   }
 
   object SymFunLeaf {
@@ -198,5 +206,7 @@ object FunctionTrees {
         this.isIGNORE
       )
     }
+
+    override def nbVariables() = ???
   }
 }

@@ -44,6 +44,9 @@ object Optimization {
             case IntLiteral(objectiveValue) => {
               updateObjective(objectiveValue)
             }
+            case _ => {
+              sys.error("Unexpected model value.")
+            }
           }
         }
         case None => {

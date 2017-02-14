@@ -123,4 +123,17 @@ object Trees {
   case class GreaterEquals(left: Expr, right: Expr) extends Expr with FixedType {
     val fixedType = BooleanType
   }
+
+  case class ITE(cond: Expr, thn: Expr, els: Expr) extends Expr {
+    assert(cond.getType == BooleanType)
+
+    override def getType: TypeTree = {
+      assert(thn.getType == els.getType)
+      thn.getType
+    }
+
+    override def setType(tt: TypeTree) = {
+      sys.error("Trying to set type for ITE expression.")
+    }
+  }
 }

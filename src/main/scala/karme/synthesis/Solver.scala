@@ -98,6 +98,8 @@ class Solver {
       val nl = toZ3Formula(l)
       val nr = toZ3Formula(r)
       if (USEBV) ctx.mkBVSge(nl, nr) else ctx.mkGE(nl, nr)
+    case ITE(cond, thn, els) =>
+      ctx.mkITE(toZ3Formula(cond), toZ3Formula(thn), toZ3Formula(els))
     case v @ Variable(id) => z3Vars.get(id) match {
       case Some(ast) => ast
       case None =>
