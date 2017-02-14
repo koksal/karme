@@ -197,13 +197,27 @@ object Synthesis {
   ): List[FunExpr] = {
     // create symbolic tree
     val symTree = mkFreshSymFunExpr(depth, possibleVars)
-    val treeConsistent = symTree.consistency()
+    val treeConsistent = symTree.topLevelConsistency()
 
     // applying symbolic tree to all transitions should yield output
     val transitionsValid = And(
       transitions.toList map (t => validTransition(symTree, t)): _*)
 
-    enumerateFunExpr(symTree, And(treeConsistent, transitionsValid))
+    val consistencyAndIO = And(treeConsistent, transitionsValid)
+    findMinNbVars(symTree, consistencyAndIO) match {
+      case Some(v) => {
+        println(s"Min # vars: $v")
+        val minimalNbVars = Equals(
+          symTree.nbVariables(),
+          IntLiteral(v)
+        )
+        enumerateFunExpr(symTree, And(consistencyAndIO, minimalNbVars))
+      }
+      case None => {
+        Nil
+      }
+    }
+
   }
 
   private def enumerateFunExpr(
@@ -214,6 +228,18 @@ object Synthesis {
       funExprValue(sfe, model)
     def symEq(fe: FunExpr): Expr = funExprEquals(sfe, fe)
     Enumeration.enumerate(extract, symEq, constraints, MAX_NB_MODELS)
+  }
+
+  private def findMinNbVars(
+    sfe: SymFunExpr,
+    constraints: Expr
+  ): Option[Int] = {
+    val objectiveVar = Trees.mkFreshIntVar("obj")
+    val toMinimize = And(
+      constraints,
+      Equals(objectiveVar, sfe.nbVariables())
+    )
+    Optimization.minimize(objectiveVar.id, toMinimize)
   }
 
   private def mkFreshSymFunExpr(

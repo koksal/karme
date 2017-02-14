@@ -75,7 +75,7 @@ object FunctionTrees {
     def children: List[SymFunExpr]
     def descendants: List[SymFunExpr]
 
-    def consistency(): Expr = {
+    def topLevelConsistency(): Expr = {
       val allNodes = this :: this.descendants
       // all variables are distinct
       val distinctVars = for (
