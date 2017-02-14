@@ -4,8 +4,6 @@ import karme.synthesis.FunctionTrees.SymFunExpr
 import karme.synthesis.FunctionTrees.SymFunLeaf
 import karme.synthesis.FunctionTrees.SymFunTree
 import karme.synthesis.Trees
-import karme.synthesis.Trees.And
-import karme.synthesis.Trees.Or
 import org.scalatest.FunSuite
 
 class BFSTest extends FunSuite {
