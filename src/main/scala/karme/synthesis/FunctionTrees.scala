@@ -106,7 +106,6 @@ object FunctionTrees {
     }
 
     def nodeConsistency(): Expr
-
     def nbVariables(): Expr
 
     def isAND: Expr = Equals(this.nodeValue, encodingMapping.AND_NODE)
@@ -172,15 +171,21 @@ object FunctionTrees {
         r.isIGNORE
       )
 
-      val symmetryBreak = lexicographicalLTE(BFS.order(l), BFS.order(r))
       val onlyVarNegations = Implies(
         this.isNOT,
         this.l.isVAR
       )
       And(
-        symmetryBreak,
         onlyVarNegations,
+        symmetryBreaking(),
         Or(andCase, orCase, notCase, ignoreCase, varCase)
+      )
+    }
+
+    def symmetryBreaking(): Expr = {
+      Implies(
+        Or(this.isAND, this.isOR),
+        lexicographicalLTE(BFS.order(l), BFS.order(r))
       )
     }
 
@@ -239,6 +244,10 @@ object FunctionTrees {
         this.isVAR,
         this.isIGNORE
       )
+    }
+
+    def symmetryBreaking(): Expr = {
+      BooleanLiteral(true)
     }
 
     def nbVariables(): Expr = {
