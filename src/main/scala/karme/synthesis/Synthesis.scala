@@ -7,7 +7,7 @@ import karme.synthesis.Trees._
 object Synthesis {
 
   val MAX_EXPRESSION_DEPTH = 3
-  val MAX_NB_MODELS = Some(1)
+  val MAX_NB_MODELS = None // Some(1)
 
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
@@ -48,7 +48,6 @@ object Synthesis {
     println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
 
     var allFunExprs = Set.empty[FunExpr]
-    // aim to maximize use of soft transitions for each positive set
     for (subset <- partition) {
       allFunExprs ++= synthesizeWithHardAndSoftTransitions(subset,
         softTransitions, possibleVars)

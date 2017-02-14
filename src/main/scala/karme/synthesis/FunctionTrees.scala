@@ -173,8 +173,13 @@ object FunctionTrees {
         And(Not(l.isIGNORE), Not(r.isIGNORE)),
         LessEquals(l.nodeValue, r.nodeValue)
       )
+      val noDoubleNegation = Implies(
+        this.isNOT,
+        Not(this.l.isNOT)
+      )
       And(
         symmetryBreak,
+        noDoubleNegation,
         Or(andCase, orCase, notCase, ignoreCase, varCase)
       )
     }
