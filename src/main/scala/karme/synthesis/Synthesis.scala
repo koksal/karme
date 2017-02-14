@@ -206,7 +206,6 @@ object Synthesis {
     val consistencyAndIO = And(treeConsistent, transitionsValid)
     findMinNbVars(symTree, consistencyAndIO) match {
       case Some(v) => {
-        println(s"Min # vars: $v")
         val minimalNbVars = Equals(
           symTree.nbVariables(),
           IntLiteral(v)
