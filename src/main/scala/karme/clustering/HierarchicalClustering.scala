@@ -40,7 +40,8 @@ object HierarchicalClustering {
       println(s"$annotationVar is in cluster ${kCut(annotationVar)}")
     }
 
-    experimentFromClusterAverages(exp, makeClusterToNamesMap(kCut))
+    experimentFromClusterAverages(exp, makeClusterToNamesMap(kCut),
+      annotationVars)
   }
 
   private def makeClusterToNamesMap(
@@ -68,20 +69,33 @@ object HierarchicalClustering {
   }
 
   private def experimentFromClusterAverages(
-    exp: Experiment[Double], clusterToNames: Map[Int, Set[String]]
+    exp: Experiment[Double],
+    clusterToNames: Map[Int, Set[String]],
+    annotationVars: Set[String]
   ): Experiment[Double] = {
     // for each measurement, compute cluster averages
     val clusterMs = exp.measurements map { m =>
       val clusterToMeanValue = clusterToNames.map{
         case (cluster, names) => {
           val values = names.map(n => m.state.value(n))
-          s"cluster_${cluster}" -> MathUtil.mean(values)
+          val cname = clusterName(cluster, clusterToNames, annotationVars)
+          cname -> MathUtil.mean(values)
         }
       }
       Measurement(m.id, GenericState(clusterToMeanValue))
     }
 
     Experiment(clusterMs)
+  }
+
+  private def clusterName(
+    index: Int,
+    clusterToNames: Map[Int, Set[String]],
+    annotationVars: Set[String]
+  ): String = {
+    val annotationsInCluster = annotationVars.intersect(clusterToNames(index))
+    val annotationStr = annotationsInCluster.mkString(",")
+    s"c_${index}_${annotationStr}"
   }
 
 }
