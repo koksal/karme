@@ -27,16 +27,18 @@ abstract class ExperimentParser[T] {
     assert(headers.head == ExperimentParser.ID_LABEL)
 
     val experimentNames = headers.tail
-    val namesToFilter = namesToFilterOpt.getOrElse(experimentNames)
-    val namesToUse = namesToFilter.toSet.intersect(experimentNames.toSet)
+    val projectionNames = namesToFilterOpt match {
+      case None => experimentNames.toSet
+      case Some(fns) => selectNames(experimentNames.toSet, fns)
+    }
     println(s"Total number of names in experiment: ${experimentNames.size}")
-    println(s"Reading ${namesToUse.size} names from experiment.")
+    println(s"Reading ${projectionNames.size} names from experiment.")
 
     val measurements = cellRows map { row =>
       val id = row.head
       val values = row.tail.map(makeValue)
       val mapping = experimentNames.zip(values).filter {
-        case (n, _) => namesToUse.contains(n)
+        case (n, _) => projectionNames.contains(n)
       }
       val state = GenericState[T](mapping.toMap)
       Measurement(id, state)
@@ -44,6 +46,17 @@ abstract class ExperimentParser[T] {
 
     Experiment(measurements)
   }
+
+  def selectNames(
+    namesToPrune: Set[String], filterNames: Set[String]
+  ): Set[String] = {
+    val canonicalFilterNames = filterNames map canonicalize
+    namesToPrune filter { n =>
+      canonicalFilterNames contains canonicalize(n)
+    }
+  }
+
+  def canonicalize(n: String): String = n.toLowerCase()
 }
 
 object ContinuousExperimentParser extends ExperimentParser[Double] {
