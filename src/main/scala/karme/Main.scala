@@ -13,6 +13,7 @@ import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.BooleanExperimentParser
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser}
 import karme.printing.ExperimentLogger
+import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
@@ -139,6 +140,9 @@ object Main {
         cellClustering, highlightGroups, "original", opts.outFolder)
       StateGraphVisualization.plotDirectedGraph(directedStateGraph,
         cellClustering, highlightGroups, opts.outFolder)
+
+      StatePseudotimeLogger.savePseudotimes(undirectedStateGraph.V,
+        trajectories, opts.outFolder)
     }
 
     println("Producing transitions.")

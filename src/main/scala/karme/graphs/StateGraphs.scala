@@ -214,6 +214,7 @@ object StateGraphs {
             } else if (pt1 > pt2) {
               res += e -> Set(Backward)
             } else {
+              println("Average pseudotime equal between nodes.")
               res += e -> Set(Forward, Backward)
             }
           }

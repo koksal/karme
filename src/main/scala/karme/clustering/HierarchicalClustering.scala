@@ -94,8 +94,12 @@ object HierarchicalClustering {
     annotationVars: Set[String]
   ): String = {
     val annotationsInCluster = annotationVars.intersect(clusterToNames(index))
-    val annotationStr = annotationsInCluster.mkString(",")
-    s"c_${index}_${annotationStr}"
+    val annotationStr = if (annotationsInCluster.isEmpty) {
+      ""
+    } else {
+      "_" + annotationsInCluster.mkString(",")
+    }
+    s"c_${index}${annotationStr}"
   }
 
 }

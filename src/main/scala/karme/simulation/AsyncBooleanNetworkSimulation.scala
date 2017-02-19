@@ -15,6 +15,10 @@ object AsyncBooleanNetworkSimulation {
     val chosenFunctions = labelToFunctions collect {
       case (label, fs) if fs.nonEmpty => (label, fs.head)
     }
+    println("Chosen functions for simulation:")
+    for ((label, fun) <- chosenFunctions) {
+      println(s"${label}: ${fun}")
+    }
     simulate(chosenFunctions, initialStates)
   }
 

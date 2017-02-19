@@ -11,9 +11,9 @@ object StatePseudotimeLogger {
   def savePseudotimes(
     vertices: Iterable[StateGraphVertex],
     trajectories: Iterable[CellTrajectory],
-    nodeToID: Map[StateGraphVertex, String],
     outFolder: File
   ): Unit = {
+    val nodeToID = StateGraphs.makeNodeIDs(vertices.toSeq.sorted)
     for ((trajectory, i) <- trajectories.zipWithIndex) {
       val filename = s"state-pseudotimes-${i}.csv"
       val file = new File(outFolder, filename)
