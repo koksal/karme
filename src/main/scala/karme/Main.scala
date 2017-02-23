@@ -118,10 +118,6 @@ object Main {
     val booleanExpFromCombinations = StateGraphs.expandWithBooleanCombinations(
       threeValuedExperiment)
 
-    // println("Converting to Boolean by filtering out uncertain values.")
-    // val booleanExpFromFiltering =
-    //   StateGraphs.eliminateStatesWithUncertainValues(threeValuedExperiment)
-
     println("Building graphs.")
     val undirectedStateGraph = StateGraphs.fromBooleanExperiment(
       booleanExpFromCombinations, opts.analysisOptions.maxHammingDistance)
@@ -157,7 +153,7 @@ object Main {
 
     if (opts.runSynthesis) {
       println("Synthesizing.")
-      val labelToFunctionExpressions = Synthesis.synthesizeForAllLabels(
+      val labelToSynthesisResults = Synthesis.synthesizeForAllLabels(
         positiveTransitions, negativeTransitions)
 
       if (opts.runSimulation) {
@@ -166,7 +162,7 @@ object Main {
           directedStateGraph.V, trajectories)
         val simulatedStates =
           AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
-            labelToFunctionExpressions, initialStates)
+            labelToSynthesisResults, initialStates)
 
         val actualStates = directedStateGraph.V.map(_.state)
         val commonStates = actualStates intersect simulatedStates

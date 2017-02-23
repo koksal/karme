@@ -7,40 +7,40 @@ import karme.synthesis.Trees._
 object Synthesis {
 
   val MAX_EXPRESSION_DEPTH = 3
-  val MAX_NB_MODELS = None // Some(1)
-  val FIND_UNSAT_CORES = false
+  val MAX_NB_MODELS = Some(1)
+  val FIND_UNSAT_CORES = true
 
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
     negativeTransitions: Set[Transition]
-  ): Map[String, Set[FunExpr]] = {
+  ): Map[String, Set[SynthesisResult]] = {
     val allLabels = positiveTransitions.head.input.orderedKeys
 
     // group both type of transitions by label
     val labelToPosTrans = positiveTransitions.groupBy(_.label)
     val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
-    var labelToFunExpressions = Map[String, Set[FunExpr]]()
+    var labelToSynthesisResults = Map[String, Set[SynthesisResult]]()
     for (label <- allLabels) {
       println()
       println(s"Synthesizing for ${label}")
       println("==========================")
-      val funExprs = synthesizeForSingleLabel(
+      val resultsForLabel = synthesizeForSingleLabel(
         hardTransitions = labelToNegTrans.getOrElse(label, Set.empty),
         softTransitions = labelToPosTrans.getOrElse(label, Set.empty),
         possibleVars = allLabels.toSet
       )
-      labelToFunExpressions += label -> funExprs
+      labelToSynthesisResults += label -> resultsForLabel
     }
 
-    labelToFunExpressions
+    labelToSynthesisResults
   }
 
   private def synthesizeForSingleLabel(
     hardTransitions: Set[Transition],
     softTransitions: Set[Transition],
     possibleVars: Set[String]
-  ): Set[FunExpr] = {
+  ): Set[SynthesisResult] = {
     // find a greedy partition of hard transitions such that each subset
     // is "maximally" consistent
     val partition = findGreedyTransitionPartition(hardTransitions,
@@ -51,13 +51,13 @@ object Synthesis {
       println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
     }
 
-    var allFunExprs = Set.empty[FunExpr]
+    var allResults = Set.empty[SynthesisResult]
     for (subset <- partition) {
-      allFunExprs ++= synthesizeWithHardAndSoftTransitions(subset,
+      allResults ++= synthesizeWithHardAndSoftTransitions(subset,
         softTransitions, possibleVars)
     }
 
-    allFunExprs
+    allResults
   }
 
   private def findGreedyTransitionPartition(
@@ -84,52 +84,85 @@ object Synthesis {
     partition
   }
 
+  // assumes that hard transitions are consistent
   private def synthesizeWithHardAndSoftTransitions(
     hardTransitions: Set[Transition],
     softTransitions: Set[Transition],
     possibleVars: Set[String]
-  ): List[FunExpr] = {
-    var consistentSoftSet: Set[Transition] = Set.empty
-    var currentExpressions: List[FunExpr] = Nil
+  ): Set[SynthesisResult] = {
+    var unusedTransitions = softTransitions
+    var currentResults = Set.empty[SynthesisResult]
 
-    for (transition <- transitionsByDescendingWeight(softTransitions)) {
-      val toTest = hardTransitions ++ consistentSoftSet + transition
-      val expressions = synthesizeForMinDepth(toTest, possibleVars)
-      if (expressions.nonEmpty) {
-        consistentSoftSet += transition
-        currentExpressions = expressions
-      } else if (FIND_UNSAT_CORES) {
-        println("Soft constraint inconsistent with current set:")
-        println(transition)
+    while (unusedTransitions.nonEmpty) {
+      val nextBestUnused =
+        transitionsByDescendingWeight(unusedTransitions).head
 
-        val core = minimalUnsatCore(Set(transition),
-          hardTransitions ++ consistentSoftSet, possibleVars)
-        println(s"Minimal core:")
-        println(core.mkString("\n"))
-        println()
+      // try to extend hard + next best with all soft constraints
+      synthesizeWithMaximalSoftTransitions(hardTransitions + nextBestUnused,
+        softTransitions - nextBestUnused, possibleVars) match {
+        case Some(result @ SynthesisResult(ts, _)) => {
+          // remove used ts from transitions to check
+          unusedTransitions = unusedTransitions -- ts
+          // add to current results
+          currentResults += result
+        }
+        case None => {
+          // the next best is not compatible with hard transitions
+          unusedTransitions = unusedTransitions - nextBestUnused
+        }
       }
     }
 
-    // If no soft transition is consistent with hard set, compute functions for
-    // the hard set
-    if (currentExpressions.isEmpty) {
-      currentExpressions = synthesizeForMinDepth(hardTransitions, possibleVars)
+    // If no soft transition is consistent with hard set (or there are none),
+    // compute functions for the hard set
+    if (currentResults.isEmpty) {
+      val fs = synthesizeForMinDepth(hardTransitions, possibleVars)
+      assert(fs.nonEmpty)
+      currentResults += SynthesisResult(hardTransitions, fs.toSet)
     }
 
-    val inconsistentSet = softTransitions -- consistentSoftSet
-    val totalSoftWeightSum = softTransitions.map(_.weight).sum
-    val inconsistentWeightSum = inconsistentSet.map(_.weight).sum
-    println(s"There are ${inconsistentSet.size} / ${softTransitions.size} " +
-      "inconsistent soft constraints (weights: " +
-        s"${inconsistentWeightSum} / ${totalSoftWeightSum})")
+    // val inconsistentSet = softTransitions -- consistentSoftSet
+    // val totalSoftWeightSum = softTransitions.map(_.weight).sum
+    // val inconsistentWeightSum = inconsistentSet.map(_.weight).sum
+    // println(s"There are ${inconsistentSet.size} / ${softTransitions.size} " +
+    //   "inconsistent soft constraints (weights: " +
+    //     s"${inconsistentWeightSum} / ${totalSoftWeightSum})")
 
-    println(s"${currentExpressions.size} function(s) inferred with maximal " +
-      s"soft constraints:")
-    for (expr <- currentExpressions) {
-      println(FunctionTrees.prettyString(expr))
+    // println(s"${currentExpressions.size} function(s) inferred with maximal " +
+    //   s"soft constraints:")
+    // for (expr <- currentExpressions) {
+    //   println(FunctionTrees.prettyString(expr))
+    // }
+
+    currentResults
+  }
+
+  private def synthesizeWithMaximalSoftTransitions(
+    hardTransitions: Set[Transition],
+    softTransitions: Set[Transition],
+    possibleVars: Set[String]
+  ): Option[SynthesisResult] = {
+    val exprsForHardTrans = synthesizeForMinDepth(hardTransitions, possibleVars)
+
+    if (exprsForHardTrans.nonEmpty) {
+      // If the hard transitions are SAT, proceed with adding soft transitions.
+      var currentSet = hardTransitions
+      var currentExprs = exprsForHardTrans.toSet
+
+      for (t <- transitionsByDescendingWeight(softTransitions)) {
+        // try adding t to current set
+        val toCheck = currentSet + t
+        val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
+        if (exprsWithNewT.nonEmpty) {
+          currentSet = toCheck
+          currentExprs = exprsWithNewT.toSet
+        }
+      }
+
+      Some(SynthesisResult(currentSet, currentExprs))
+    } else {
+      None
     }
-
-    currentExpressions
   }
 
   private def minimalUnsatCore(
@@ -158,12 +191,9 @@ object Synthesis {
       if (!foundCore) {
         // add one (consistent) candidate to current set and repeat
         currentSet += stepCandidateSet.head
-        println("Core not found, adding one candidate to current core:")
+        println(s"No core with ${currentSet.size} transitions, adding one " +
+          s"candidate to current set:")
         println(currentSet.mkString("\n"))
-        println()
-        println("Function for current core:")
-        println(FunctionTrees.prettyString(synthesizeForMinDepth(currentSet,
-          possibleVars).head))
         println()
       }
     }

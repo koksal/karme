@@ -8,9 +8,9 @@ import org.scalatest.FunSuite
 class AsyncBooleanNetworkSimulationTest extends FunSuite {
 
   test("simulate two functions") {
-    val labelToFunctions = Map[String, Set[FunExpr]](
-      "A" -> Set(FunVar("B")),
-      "B" -> Set(FunVar("B"))
+    val labelToFun = Map[String, FunExpr](
+      "A" -> FunVar("B"),
+      "B" -> FunVar("B")
     )
 
     val initStates = Set(
@@ -32,8 +32,7 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     )
 
     assertResult(expected)(
-      AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
-        labelToFunctions, initStates))
+      AsyncBooleanNetworkSimulation.simulate(labelToFun, initStates))
   }
 
 }

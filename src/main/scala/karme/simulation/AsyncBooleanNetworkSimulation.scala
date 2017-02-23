@@ -2,6 +2,7 @@ package karme.simulation
 
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
+import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
 
 object AsyncBooleanNetworkSimulation {
@@ -9,11 +10,11 @@ object AsyncBooleanNetworkSimulation {
   val SIMULATION_DEPTH_LIMIT = 100
 
   def pickFunctionsAndSimulate(
-    labelToFunctions: Map[String, Set[FunExpr]],
+    labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    val chosenFunctions = labelToFunctions collect {
-      case (label, fs) if fs.nonEmpty => (label, fs.head)
+    val chosenFunctions = labelToSynthesisResults collect {
+      case (label, res) if res.nonEmpty => (label, res.head.functions.head)
     }
     println("Chosen functions for simulation:")
     for ((label, fun) <- chosenFunctions) {
@@ -22,7 +23,7 @@ object AsyncBooleanNetworkSimulation {
     simulate(chosenFunctions, initialStates)
   }
 
-  private def simulate(
+  def simulate(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
