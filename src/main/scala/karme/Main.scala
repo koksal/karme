@@ -133,9 +133,11 @@ object Main {
       val highlightGroups = List(initialStates)
 
       StateGraphVisualization.plotUndirectedGraph(undirectedStateGraph,
-        cellClustering, highlightGroups, "original", opts.outFolder)
+        "original", opts.outFolder, cellClustering = cellClustering,
+        nodeHighlightGroups = highlightGroups)
       StateGraphVisualization.plotDirectedGraph(directedStateGraph,
-        cellClustering, highlightGroups, opts.outFolder)
+        opts.outFolder, cellClustering = cellClustering,
+        nodeHighlightGroups = highlightGroups)
 
       StatePseudotimeLogger.savePseudotimes(undirectedStateGraph.V,
         trajectories, opts.outFolder)
@@ -155,6 +157,9 @@ object Main {
       println("Synthesizing.")
       val labelToSynthesisResults = Synthesis.synthesizeForAllLabels(
         positiveTransitions, negativeTransitions)
+
+      // TODO for each label, plot graphs where used transitions are highlighted
+      // also print out functions with same labeling
 
       if (opts.runSimulation) {
         println("Simulating functions.")
@@ -183,7 +188,9 @@ object Main {
           val highlightGroups = List(initialStates, unobservedStates,
             simulatedStates)
           StateGraphVisualization.plotUndirectedGraph(unionStateGraph,
-            highlightGroups, "simulated", opts.outFolder)
+            "simulated", opts.outFolder,
+            cellClustering = cellClustering,
+            nodeHighlightGroups = highlightGroups)
         }
 
       }

@@ -5,6 +5,7 @@ import java.io.File
 import com.github.tototoshi.csv.CSVWriter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
+import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
@@ -23,58 +24,29 @@ object StateGraphVisualization {
 
   def plotUndirectedGraph(
     g: UndirectedBooleanStateGraph,
-    highlightGroups: List[Set[ConcreteBooleanState]],
     name: String,
-    outFolder: File
-  ): Unit = {
-    plotUndirectedGraph(g, MapUtil.emptyMultiMap[String, String],
-      highlightGroups, name, outFolder)
-  }
-
-  def plotUndirectedGraph(
-    g: UndirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
-    highlightGroups: List[Set[ConcreteBooleanState]],
-    name: String,
-    outFolder: File
+    outFolder: File,
+    cellClustering: mutable.MultiMap[String, String] = MapUtil.emptyMultiMap,
+    nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
+    edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
     val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
-    plotUndirectedGraph(g, clustering, nodeToID,
-      highlightGroups, name, outFolder)
-  }
-
-  def plotUndirectedGraph(
-    g: UndirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[StateGraphVertex, String],
-    highlightGroups: List[Set[ConcreteBooleanState]],
-    name: String,
-    outFolder: File
-  ): Unit = {
-    val dotString = undirectedDotString(g, clustering, nodeToID,
-      highlightGroups)
+    val dotString = undirectedDotString(g, cellClustering, nodeToID,
+      nodeHighlightGroups)
     plotGraph(dotString, s"undirected-state-graph-${name}.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
   }
 
   def plotDirectedGraph(
     g: DirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
-    highlightGroups: List[Set[ConcreteBooleanState]],
-    outFolder: File
+    outFolder: File,
+    cellClustering: mutable.MultiMap[String, String] = MapUtil.emptyMultiMap,
+    nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
+    edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
     val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
-    plotDirectedGraph(g, clustering, nodeToID, highlightGroups, outFolder)
-  }
-
-  def plotDirectedGraph(
-    g: DirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
-    nodeToID: Map[StateGraphVertex, String],
-    highlightGroups: List[Set[ConcreteBooleanState]],
-    outFolder: File
-  ): Unit = {
-    val dotString = directedDotString(g, clustering, nodeToID, highlightGroups)
+    val dotString = directedDotString(g, cellClustering, nodeToID,
+      nodeHighlightGroups)
     plotGraph(dotString, "directed-state-graph.png", outFolder)
     printCellsPerNodeID(nodeToID, outFolder)
   }
@@ -105,9 +77,9 @@ object StateGraphVisualization {
     g: UndirectedBooleanStateGraph,
     clustering: mutable.MultiMap[String, String],
     nodeToID: Map[StateGraphVertex, String],
-    highlightGroups: List[Set[ConcreteBooleanState]]
+    nodeHighlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID, highlightGroups)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID, nodeHighlightGroups)
     val edgeStr = undirectedDotEdges(g, nodeToID)
     dotGraph(nodeStr, edgeStr, isDirected = false)
   }
