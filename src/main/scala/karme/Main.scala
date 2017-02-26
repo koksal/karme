@@ -158,9 +158,6 @@ object Main {
       val labelToSynthesisResults = Synthesis.synthesizeForAllLabels(
         positiveTransitions, negativeTransitions)
 
-      // TODO for each label, plot graphs where used transitions are highlighted
-      // also print out functions with same labeling
-
       if (opts.runSimulation) {
         println("Simulating functions.")
         val initialStates = StateGraphs.initialTrajectoryStates(

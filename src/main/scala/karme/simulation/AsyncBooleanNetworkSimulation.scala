@@ -4,23 +4,52 @@ import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.MathUtil
 
 object AsyncBooleanNetworkSimulation {
 
   val SIMULATION_DEPTH_LIMIT = 100
 
+  def simulateForAllCombinations(
+    labelToSynthesisResults: Map[String, Set[SynthesisResult]],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[(Map[La])] = {
+
+  }
+
   def pickFunctionsAndSimulate(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    val chosenFunctions = labelToSynthesisResults collect {
-      case (label, res) if res.nonEmpty => (label, res.head.functions.head)
+    for (labelToFun <-
+         enumerateSynthesisResultCombinations(labelToSynthesisResults)) {
+      println("Chosen functions for simulation:")
+      for ((label, fun) <- labelToFun) {
+        println(s"${label}: ${fun}")
+      }
+      simulate(labelToFun, initialStates)
     }
-    println("Chosen functions for simulation:")
-    for ((label, fun) <- chosenFunctions) {
-      println(s"${label}: ${fun}")
+  }
+
+  /**
+    * Chooses one function expression per synthesis result and returns a
+    * set of all possible combinations.
+    */
+  def enumerateSynthesisResultCombinations(
+    labelToSynthesisResults: Map[String, Set[SynthesisResult]]
+  ): Set[Map[String, FunExpr]] = {
+    val labels = labelToSynthesisResults.collect{
+      case (label, res) if res.nonEmpty => label
+    }.toList
+
+    val orderedResultSets = labels map { l => labelToSynthesisResults(l) }
+    val product = MathUtil.cartesianProduct(orderedResultSets)
+
+    product map { synthResults =>
+      // pick an arbitrary function in each synthesis result set
+      val firstFunctionInEachResult = synthResults map (r => r.functions.head)
+      labels.zip(firstFunctionInEachResult).toMap
     }
-    simulate(chosenFunctions, initialStates)
   }
 
   def simulate(
