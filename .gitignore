@@ -1,6 +1,6 @@
-data
-evaluation
-log
+/data
+/evaluation
+/log
 target
 .idea
 .DS_Store
