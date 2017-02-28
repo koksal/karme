@@ -1,9 +1,14 @@
 package karme.evaluation
 
+import java.io.File
+
+import karme.Experiments
+import karme.graphs.StateGraphs
+import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
-import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.visualization.StateGraphVisualization
 
 /**
   * Evaluates combinations of synthesis results by simulating functions and
@@ -11,28 +16,67 @@ import karme.synthesis.Transitions.ConcreteBooleanState
   */
 object ReachabilityEvaluation {
 
-  def reachabilityPenalties(
+  def evaluate(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState],
-    observedStates: Set[ConcreteBooleanState]
-  ): Seq[(Map[String, FunExpr], Double)] = {
+    observedStates: Set[ConcreteBooleanState],
+    outFolder: File
+  ): Unit = {
     // first enumerate all combinations of synthesis results
     val combinations =
       SynthesisResultEnumeration.enumerateSynthesisResultCombinations(
         labelToSynthesisResults)
 
-    // then compute reachability for each combination
-    val combinationPenaltyPairs = for (labelToFunExpr <- combinations) yield {
+    // collect function combination, simulated states, and simulation penalty
+    val resultTuples = for (labelToResult <- combinations) yield {
+      val labelToFun = labelToResult map {
+        case (l, r) => (l, r.functions.head)
+      }
       val simulatedStates =
-        AsyncBooleanNetworkSimulation.simulate(labelToFunExpr, initialStates)
+        AsyncBooleanNetworkSimulation.simulate(labelToFun, initialStates)
 
-      (labelToFunExpr, reachabilityPenalty(observedStates, simulatedStates))
+      val penalty = simulationPenalty(observedStates, simulatedStates)
+
+      (labelToResult, simulatedStates, penalty)
     }
 
-    combinationPenaltyPairs.toSeq.sortBy(_._2)
+    // order by increasing penalty to print and plot
+    for (((labelToResult, simulated, penalty), i) <-
+         resultTuples.toSeq.sortBy(_ ._3).zipWithIndex) {
+      println(s"Combination $i:")
+      println(s"Penalty: $penalty")
+
+      // print functions into file
+      SynthesisResultLogger(labelToResult,
+        new File(outFolder, s"functions-$i.txt"))
+
+      // transfer code that plots simulated graph
+      plotSimulation(initialStates, observedStates, simulated,
+        s"simulation-${i}", outFolder)
+    }
   }
 
-  def reachabilityPenalty(
+  private def plotSimulation(
+    initialStates: Set[ConcreteBooleanState],
+    observedStates: Set[ConcreteBooleanState],
+    simulatedStates: Set[ConcreteBooleanState],
+    name: String,
+    outFolder: File
+  ): Unit = {
+    val unionExp = Experiments.booleanStatesToExperiment(
+      observedStates ++ simulatedStates)
+    // TODO carry the Hamming distance here
+    val unionGraph = StateGraphs.fromBooleanExperiment(unionExp, 1)
+
+    val missedStates = observedStates -- simulatedStates
+    val unobservedStates = simulatedStates -- observedStates
+    val highlightGroups = List(initialStates, unobservedStates, missedStates)
+
+    StateGraphVisualization.plotUndirectedGraph(unionGraph, name, outFolder,
+      nodeHighlightGroups = highlightGroups)
+  }
+
+  private def simulationPenalty(
     observedStates: Set[ConcreteBooleanState],
     simulatedStates: Set[ConcreteBooleanState]
   ): Double = {

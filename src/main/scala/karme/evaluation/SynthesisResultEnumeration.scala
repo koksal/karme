@@ -1,6 +1,5 @@
 package karme.evaluation
 
-import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.util.MathUtil
 
@@ -12,7 +11,7 @@ object SynthesisResultEnumeration {
     */
   def enumerateSynthesisResultCombinations(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]]
-  ): Set[Map[String, FunExpr]] = {
+  ): Set[Map[String, SynthesisResult]] = {
     val labels = labelToSynthesisResults.collect{
       case (label, res) if res.nonEmpty => label
     }.toList
@@ -21,9 +20,7 @@ object SynthesisResultEnumeration {
     val product = MathUtil.cartesianProduct(orderedResultSets)
 
     product map { synthResults =>
-      // pick an arbitrary function in each synthesis result set
-      val firstFunctionInEachResult = synthResults map (r => r.functions.head)
-      labels.zip(firstFunctionInEachResult).toMap
+      labels.zip(synthResults).toMap
     }
   }
 

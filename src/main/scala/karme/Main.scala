@@ -8,6 +8,7 @@ import karme.Experiments.Experiment
 import karme.clustering.HierarchicalClustering
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
+import karme.evaluation.ReachabilityEvaluation
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.BooleanExperimentParser
@@ -162,34 +163,11 @@ object Main {
         println("Simulating functions.")
         val initialStates = StateGraphs.initialTrajectoryStates(
           directedStateGraph.V, trajectories)
-        val simulatedStates =
-          AsyncBooleanNetworkSimulation.pickFunctionsAndSimulate(
-            labelToSynthesisResults, initialStates)
 
-        val actualStates = directedStateGraph.V.map(_.state)
-        val commonStates = actualStates intersect simulatedStates
-        val missedStates = actualStates -- simulatedStates
-        val unobservedStates = simulatedStates -- actualStates
+        val observedStates = directedStateGraph.V.map(_.state)
 
-        println(s"Common states: ${commonStates.size}")
-        println(s"Missed states: ${missedStates.size}")
-        println(s"Unobserved states: ${unobservedStates.size}")
-
-        if (opts.visualizationOptions.stateGraphs) {
-          // create a new experiment with simulated states for graph creation
-          val actualSimulatedUnionExp = Experiments.booleanStatesToExperiment(
-            simulatedStates ++ actualStates)
-          val unionStateGraph = StateGraphs.fromBooleanExperiment(
-            actualSimulatedUnionExp, opts.analysisOptions.maxHammingDistance)
-
-          val highlightGroups = List(initialStates, unobservedStates,
-            simulatedStates)
-          StateGraphVisualization.plotUndirectedGraph(unionStateGraph,
-            "simulated", opts.outFolder,
-            cellClustering = cellClustering,
-            nodeHighlightGroups = highlightGroups)
-        }
-
+        ReachabilityEvaluation.evaluate(labelToSynthesisResults,
+          initialStates, observedStates, opts.outFolder)
       }
     }
   }
