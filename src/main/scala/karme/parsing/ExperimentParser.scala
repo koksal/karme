@@ -8,9 +8,18 @@ import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
 
 object ExperimentParser {
-
   val ID_LABEL = "id"
 
+  def selectNames(
+    namesToPrune: Set[String], filterNames: Set[String]
+  ): Set[String] = {
+    val canonicalFilterNames = filterNames map canonicalize
+    namesToPrune filter { n =>
+      canonicalFilterNames contains canonicalize(n)
+    }
+  }
+
+  private def canonicalize(n: String): String = n.toLowerCase()
 }
 
 abstract class ExperimentParser[T] {
@@ -29,7 +38,7 @@ abstract class ExperimentParser[T] {
     val experimentNames = headers.tail
     val projectionNames = namesToFilterOpt match {
       case None => experimentNames.toSet
-      case Some(fns) => selectNames(experimentNames.toSet, fns)
+      case Some(fns) => ExperimentParser.selectNames(experimentNames.toSet, fns)
     }
     println(s"Total number of names in experiment: ${experimentNames.size}")
     println(s"Reading ${projectionNames.size} names from experiment.")
@@ -47,16 +56,6 @@ abstract class ExperimentParser[T] {
     Experiment(measurements)
   }
 
-  def selectNames(
-    namesToPrune: Set[String], filterNames: Set[String]
-  ): Set[String] = {
-    val canonicalFilterNames = filterNames map canonicalize
-    namesToPrune filter { n =>
-      canonicalFilterNames contains canonicalize(n)
-    }
-  }
-
-  def canonicalize(n: String): String = n.toLowerCase()
 }
 
 object ContinuousExperimentParser extends ExperimentParser[Double] {

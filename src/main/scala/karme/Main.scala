@@ -12,6 +12,7 @@ import karme.evaluation.ReachabilityEvaluation
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.BooleanExperimentParser
+import karme.parsing.ExperimentParser
 import karme.parsing.NamesParser
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser}
 import karme.printing.ExperimentLogger
@@ -31,11 +32,13 @@ object Main {
     opts.outFolder.mkdirs()
 
     val filterVars = NamesParser(opts.namesFiles)
-    val annotationVars = NamesParser(opts.annotationsFiles)
 
     val continuousExperiment = readContinuousExperiment(
       opts.continuousExperimentFile.getOrElse(sys.error(
         "No continuous experiment given.")), filterVars)
+
+    val annotationVars = ExperimentParser.selectNames(
+      continuousExperiment.names.toSet, NamesParser(opts.annotationsFiles))
 
     val booleanExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
