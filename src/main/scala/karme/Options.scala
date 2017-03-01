@@ -9,7 +9,7 @@ case class Options(
   mleExperimentFile: Option[File] = None,
   clusterFile: Option[File] = None,
   namesFiles: Seq[File] = Seq(),
-  annotationsFile: Option[File] = None,
+  annotationsFiles: Seq[File] = Seq(),
   trajectoryFiles: Seq[File] = Seq(),
   // output
   outFolder: File = new File("."),

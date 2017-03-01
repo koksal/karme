@@ -39,9 +39,9 @@ object ArgHandling {
         o.copy(namesFiles = vs)
       } text "names files to filter experiment with"
 
-      opt[File]("annotations") action { (v, o) =>
-        o.copy(annotationsFile = Some(v))
-      } text "file with list of variables to annotate clusters with."
+      opt[Seq[File]]("annotations") action { (vs, o) =>
+        o.copy(annotationsFiles = vs)
+      } text "files with variables to annotate clusters with."
 
       opt[Seq[File]]("trajectory") action { (vs, o) =>
         o.copy(trajectoryFiles = vs)

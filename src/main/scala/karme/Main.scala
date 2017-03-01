@@ -12,18 +12,17 @@ import karme.evaluation.ReachabilityEvaluation
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.BooleanExperimentParser
+import karme.parsing.NamesParser
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser}
 import karme.printing.ExperimentLogger
 import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
-import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.Synthesis
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
 import karme.visualization.{CurvePlot, StateGraphVisualization}
 
 import scala.collection.mutable
-import scala.io.Source
 
 object Main {
 
@@ -31,14 +30,12 @@ object Main {
     val opts = ArgHandling.parseOptions(args)
     opts.outFolder.mkdirs()
 
+    val filterVars = NamesParser(opts.namesFiles)
+    val annotationVars = NamesParser(opts.annotationsFiles)
+
     val continuousExperiment = readContinuousExperiment(
       opts.continuousExperimentFile.getOrElse(sys.error(
-        "No continuous experiment given.")), opts.namesFiles)
-
-    val annotationVars = opts.annotationsFile match {
-      case Some(f) => readNames(f)
-      case None => Set[String]()
-    }
+        "No continuous experiment given.")), filterVars)
 
     val booleanExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
@@ -186,17 +183,11 @@ object Main {
 
   private def readContinuousExperiment(
     experimentFile: File,
-    namesFiles: Seq[File]
+    filterNames: Set[String]
   ): ContinuousExperiment = {
-    val namesToFilter = if (namesFiles.isEmpty) {
-      None
-    } else {
-      Some(namesFiles.map(
-        nf => readNames(nf)).reduce(_.union(_)))
-    }
-
     println("Reading continuous experiment.")
-    val e = ContinuousExperimentParser.parse(experimentFile, namesToFilter)
+    val e = ContinuousExperimentParser.parse(experimentFile,
+      if (filterNames.isEmpty) None else Some(filterNames))
 
     println("Transforming data.")
     ExperimentTransformation.pseudoLog(e)
@@ -208,10 +199,5 @@ object Main {
     case Some(f) => ClusteringParser.parse(f)
     case None => new mutable.HashMap[String, mutable.Set[String]]
       with mutable.MultiMap[String, String]
-  }
-
-  private def readNames(f: File): Set[String] = {
-    val names = Source.fromFile(f).getLines().toSeq
-    names.toSet
   }
 }
