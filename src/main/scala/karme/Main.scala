@@ -86,6 +86,8 @@ object Main {
     if (opts.visualizationOptions.curves) {
       plotExperiment(mleExperiment, trajectories, "mle", opts.outFolder)
     }
+    // TODO histogram distribution of MLE values per variable.
+
 
     val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {

@@ -20,6 +20,7 @@ object DiscretizationHistogram {
     outFolder: File
   ): Unit = {
     val histogramsFolder = new File(outFolder, "histograms")
+    histogramsFolder.mkdirs()
 
     val clusterToContExp = contExp.partitionClusters(clustering)
     val clusterToDiscExp = discExp.partitionClusters(clustering)
@@ -57,20 +58,9 @@ object DiscretizationHistogram {
     for (((contValues, discValues), i) <-
          contValuesPerName.zip(discValuesPerName).zipWithIndex) {
       val name = contExp.names(i)
-
-      R.set("contValues", contValues.toArray)
-      R.set("discValues", discValues.toArray)
-      R.eval("data <- data.frame(continuous = contValues, discrete = " +
-        "discValues)")
-
-      R.eval("plot = ggplot(data, aes(x=continuous, fill=discrete)) + " +
-        "geom_histogram(alpha=.5, position=\"identity\")")
-
-      folder.mkdirs()
       val f = new File(folder, s"$name.pdf")
 
-      R.set("plotFname", f.getAbsolutePath())
-      R.eval("ggsave(plot, file = plotFname)")
+      Histogram.plot(contValues, discValues, f)
     }
   }
 
