@@ -21,7 +21,6 @@ import karme.printing.TransitionLogger
 import karme.synthesis.Synthesis
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
-import karme.visualization.ExperimentHistograms
 import karme.visualization.{CurvePlot, StateGraphVisualization}
 
 import scala.collection.mutable
@@ -106,11 +105,6 @@ object Main {
         mleExperiment
       }
     }
-
-    // TODO histogram distribution of MLE values per variable.
-    ExperimentHistograms
-
-
 
     println("Converting to three-valued states")
     val threeValuedExperiment =
