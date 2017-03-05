@@ -107,8 +107,10 @@ object Main {
       }
     }
 
-    ExperimentHistograms.plotHistogramsPerVariable(clusteredExperiment,
-      opts.outFolder)
+    // TODO histogram distribution of MLE values per variable.
+    ExperimentHistograms
+
+
 
     println("Converting to three-valued states")
     val threeValuedExperiment =
