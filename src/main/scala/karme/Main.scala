@@ -107,7 +107,6 @@ object Main {
       }
     }
 
-    // TODO histogram distribution of MLE values per variable.
     ExperimentHistograms.plotHistogramsPerVariable(clusteredExperiment,
       opts.outFolder)
 

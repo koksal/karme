@@ -13,11 +13,13 @@ object ExperimentHistograms {
   def plotHistogramsPerVariable(
     e: Experiment[Double], outFolder: File
   ): Unit = {
-    val plotFolder = new File(outFolder, "histograms")
+    val histogramsFolder = new File(outFolder, "histograms")
+    histogramsFolder.mkdirs()
+
     for (name <- e.names) {
       val vs = e.valuesForName(name)
       val labels = vs map (v => "none")
-      val f = new File(plotFolder, s"${name}.pdf")
+      val f = new File(histogramsFolder, s"${name}.pdf")
       Histogram.plot(vs, labels, f)
     }
   }
