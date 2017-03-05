@@ -47,9 +47,6 @@ object DiscretizationHistogram {
   ): Unit = {
     assert(contExp.names == discExp.names)
 
-    val R = RClient()
-    R.eval("library(ggplot2)")
-
     val contValuesPerName = contExp.names.map(n => contExp.valuesForName(n))
     val discValuesPerName = discExp.names.map(n => discExp.valuesForName(n))
 
