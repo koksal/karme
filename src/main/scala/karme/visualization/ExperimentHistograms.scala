@@ -4,13 +4,26 @@ import java.io.File
 
 import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
-import org.ddahl.rscala.RClient
+import karme.Experiments.Experiment
 
 import scala.collection.mutable
 
-object DiscretizationHistogram {
+object ExperimentHistograms {
 
-  /** Plots histograms of different colors for every group of cells in which
+  def plotHistogramsPerVariable(
+    e: Experiment[Double], outFolder: File
+  ): Unit = {
+    val plotFolder = new File(outFolder, "histograms")
+    for (name <- e.names) {
+      val vs = e.valuesForName(name)
+      val labels = vs map (v => "none")
+      val f = new File(plotFolder, s"${name}.pdf")
+      Histogram.plot(vs, labels, f)
+    }
+  }
+
+  /**
+    * Plots histograms of different colors for every group of cells in which
     * a gene is discretized to the same value.
     */
   def visualizeDiscretization(

@@ -21,6 +21,7 @@ import karme.printing.TransitionLogger
 import karme.synthesis.Synthesis
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
+import karme.visualization.ExperimentHistograms
 import karme.visualization.{CurvePlot, StateGraphVisualization}
 
 import scala.collection.mutable
@@ -86,8 +87,6 @@ object Main {
     if (opts.visualizationOptions.curves) {
       plotExperiment(mleExperiment, trajectories, "mle", opts.outFolder)
     }
-    // TODO histogram distribution of MLE values per variable.
-
 
     val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {
@@ -107,6 +106,10 @@ object Main {
         mleExperiment
       }
     }
+
+    // TODO histogram distribution of MLE values per variable.
+    ExperimentHistograms.plotHistogramsPerVariable(clusteredExperiment,
+      opts.outFolder)
 
     println("Converting to three-valued states")
     val threeValuedExperiment =
