@@ -1,5 +1,6 @@
 package karme
 
+import karme.discretization.MclustInterface
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ConcreteBooleanState
 
@@ -78,6 +79,49 @@ object Experiments {
       m.copy(state = threeValState)
     }
     e.copy(measurements = threeValuedMeasurements)
+  }
+
+  def threeValuedExpFromMixtureModel(
+    e: ProbabilisticExperiment,
+    uncertaintyThreshold: Double
+  ): ThreeValuedExperiment = {
+    var nameToThreeValuedSeq = Map[String, Seq[ThreeValued]]()
+
+    for (name <- e.names) {
+      val vs = e.valuesForName(name)
+      val mclustRes = MclustInterface.mclust(vs)
+
+      if (mclustRes.g != 2) {
+        sys.error(s"There are ${mclustRes.g} optimal components for ${name}.")
+      } else {
+        val threeValuedSeq =
+          mclustRes.classification.zip(mclustRes.uncertainty) map {
+            case (clss, uncertainty) => {
+              if (uncertainty > uncertaintyThreshold) {
+                Uncertain
+              } else if (clss == 1) {
+                Low
+              } else if (clss == 2) {
+                High
+              } else {
+                sys.error(s"Unexpected class: ${clss}")
+              }
+            }
+          }
+        nameToThreeValuedSeq += name -> threeValuedSeq
+      }
+    }
+
+    val threeValuedMatrix = e.names map (n => nameToThreeValuedSeq(n))
+    val threeValuedPerMeasurement = threeValuedMatrix.transpose
+
+    val threeValuedMs = e.measurements.zip(threeValuedPerMeasurement) map {
+      case (m, vs) => {
+        m.copy(state = GenericState(e.names.zip(vs).toMap))
+      }
+    }
+
+    e.copy(measurements = threeValuedMs)
   }
 
   def booleanStatesToExperiment(

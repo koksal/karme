@@ -108,8 +108,10 @@ object Main {
 
     println("Converting to three-valued states")
     val threeValuedExperiment =
-      Experiments.probabilisticExperimentToThreeValued(clusteredExperiment,
-        opts.analysisOptions.uncertaintyMargin)
+      // Experiments.probabilisticExperimentToThreeValued(clusteredExperiment,
+      //   opts.analysisOptions.uncertaintyMargin)
+      Experiments.threeValuedExpFromMixtureModel(clusteredExperiment,
+        0.4)
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"))
 

@@ -13,7 +13,7 @@ object MclustInterface {
     R.eval("library(mclust)")
 
     R.set("xs", xs.toArray)
-    R.eval("bic = mclustBIC(xs)")
+    R.eval("bic = mclustBIC(xs, G = c(1, 2))")
     R.eval("res = Mclust(xs, x = bic)")
 
     val optimalNbComponents = R.evalI0("res$G")
@@ -22,4 +22,5 @@ object MclustInterface {
 
     MClustResult(optimalNbComponents, classification, uncertainty)
   }
+
 }
