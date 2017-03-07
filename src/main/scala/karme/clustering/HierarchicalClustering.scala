@@ -10,13 +10,13 @@ import karme.visualization.ScatterPlot
 
 object HierarchicalClustering {
 
-  def clusteredExperiment(
+  def clusterVariables(
     exp: Experiment[Double],
     k: Int,
     annotationVars: Set[String],
     elbowMethod: Boolean,
     outFolder: File
-  ): Experiment[Double] = {
+  ): Map[Int, Set[String]] = {
     assert(exp.names.size >= k)
 
     println("Computing all cuts.")
@@ -26,9 +26,11 @@ object HierarchicalClustering {
       println("Computing withinss for each cut.")
       val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
 
+      val points = withinSumSquares.zipWithIndex map {
+        case (ss, i) => (i + 1, ss, "withinss")
+      }
       ScatterPlot.plot(
-        (1 to withinSumSquares.size).toArray,
-        withinSumSquares.toArray,
+        points,
         new File(outFolder, "withinSumSquares-vs-nbClusters.pdf")
       )
     }
@@ -40,8 +42,7 @@ object HierarchicalClustering {
       println(s"$annotationVar is in cluster ${kCut(annotationVar)}")
     }
 
-    experimentFromClusterAverages(exp, makeClusterToNamesMap(kCut),
-      annotationVars)
+    makeClusterToNamesMap(kCut)
   }
 
   private def makeClusterToNamesMap(
@@ -68,7 +69,7 @@ object HierarchicalClustering {
     clusterSums.sum
   }
 
-  private def experimentFromClusterAverages(
+  def experimentFromClusterAverages(
     exp: Experiment[Double],
     clusterToNames: Map[Int, Set[String]],
     annotationVars: Set[String]
@@ -76,9 +77,9 @@ object HierarchicalClustering {
     // for each measurement, compute cluster averages
     val clusterMs = exp.measurements map { m =>
       val clusterToMeanValue = clusterToNames.map{
-        case (cluster, names) => {
+        case (clusterIndex, names) => {
           val values = names.map(n => m.state.value(n))
-          val cname = clusterName(cluster, clusterToNames, annotationVars)
+          val cname = clusterName(clusterIndex, clusterToNames, annotationVars)
           cname -> MathUtil.mean(values)
         }
       }

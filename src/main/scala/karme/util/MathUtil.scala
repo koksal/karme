@@ -1,5 +1,7 @@
 package karme.util
 
+import org.ddahl.rscala.RClient
+
 object MathUtil {
 
   def median(vs: Iterable[Int]): Double = {
@@ -27,5 +29,13 @@ object MathUtil {
       }
     }
     case Nil => Set(Nil)
+  }
+
+  def stdev(vs: Iterable[Double]): Double = {
+    val avg = mean(vs)
+    val diffs = vs map (v => v - avg)
+    val sqDiffs = diffs map (v => v * v)
+    val normalized = sqDiffs.sum / (vs.size - 1)
+    scala.math.sqrt(normalized)
   }
 }

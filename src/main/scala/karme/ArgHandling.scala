@@ -89,6 +89,11 @@ object ArgHandling {
           o.visualizationOptions.copy(stateGraphs = true))
       } text "visualize state graphs"
 
+      opt[Unit]("curves") action { (_, o) =>
+        o.copy(visualizationOptions =
+          o.visualizationOptions.copy(curves = true))
+      } text "visualize trajectory curves"
+
       help("help") text "print this help message"
     }
 

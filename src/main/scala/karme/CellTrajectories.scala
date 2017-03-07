@@ -1,5 +1,7 @@
 package karme
 
+import karme.Experiments.Experiment
+
 object CellTrajectories {
 
   type CellTrajectory = Map[String, Double]
@@ -8,4 +10,11 @@ object CellTrajectories {
     trajectory.toSeq.sortBy(_._2).map(_._1)
   }
 
+  def experimentOrderedByTrajectory[T](
+    experiment: Experiment[T], trajectory: CellTrajectory
+  ): Experiment[T] = {
+    val orderedIDs = CellTrajectories.cellOrder(trajectory)
+    val orderedMs = orderedIDs map experiment.measurementFromId
+    experiment.copy(measurements = orderedMs)
+  }
 }

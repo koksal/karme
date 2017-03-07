@@ -4,24 +4,26 @@ import java.io.File
 
 import org.ddahl.rscala.RClient
 
+import scala.reflect.ClassTag
+
 object ScatterPlot {
 
-  def plot[T, U](
-    xs: Array[T],
-    ys: Array[U],
+  def plot[T: ClassTag, U: ClassTag](
+    labeledPoints: Iterable[(T, U, String)],
     file: File
   ): Unit = {
-    assert(xs.size == ys.size)
-
     val R = RClient()
     R eval "library(ggplot2)"
 
-    R.set("xs", xs)
-    R.set("ys", ys)
+    val (xs, ys, ls) = labeledPoints.unzip3
+    R.set("xs", xs.toArray)
+    R.set("ys", ys.toArray)
 
-    R.eval("data <- data.frame(x = xs, y = ys)")
+    R.set("labels", ls.toArray)
+    R.eval("data <- data.frame(x = xs, y = ys, label = labels)")
 
-    R.eval("plot = ggplot(data, aes(x = x, y = y)) + geom_point() + " +
+    val aes = "aes(x = x, y = y, color = label)"
+    R.eval(s"plot = ggplot(data, $aes) + geom_line() + " +
       "  theme(" +
       "     axis.text.y=element_blank(), " +
       "     axis.ticks.y=element_blank())")

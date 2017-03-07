@@ -2,9 +2,7 @@ package karme
 
 import java.io.File
 
-import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.ContinuousExperiment
-import karme.Experiments.Experiment
 import karme.clustering.HierarchicalClustering
 import karme.transformations.BinomialMLE
 import karme.discretization.Discretization
@@ -83,21 +81,24 @@ object Main {
         res
       }
     }
-    if (opts.visualizationOptions.curves) {
-      plotExperiment(mleExperiment, trajectories, "mle", opts.outFolder)
-    }
 
     val clusteredExperiment = opts.analysisOptions.nbClusters match {
       case Some(nbClusters) => {
         println("Clustering variables.")
-        val clusteredExp = HierarchicalClustering.clusteredExperiment(
+        val geneClustering = HierarchicalClustering.clusterVariables(
           mleExperiment, nbClusters, annotationVars, opts.runElbow,
           opts.outFolder)
+        val clusteredExp = HierarchicalClustering.experimentFromClusterAverages(
+          mleExperiment, geneClustering, annotationVars)
         ExperimentLogger.saveToFile(clusteredExp,
           new File(opts.outFolder, "experiment-clustered.csv"))
         if (opts.visualizationOptions.curves) {
-          plotExperiment(clusteredExp, trajectories, "mle-clustered",
-            opts.outFolder)
+          // plot:
+          //   - all individual gene curves within a cluster
+          CurvePlot.plotClusterGenes(mleExperiment, trajectories,
+            geneClustering, opts.outFolder)
+          //   - the cluster average with +/- stdev bands
+
         }
         clusteredExp
       }
@@ -171,18 +172,6 @@ object Main {
         ReachabilityEvaluation.evaluate(labelToSynthesisResults,
           initialStates, observedStates, opts.outFolder)
       }
-    }
-  }
-
-  private def plotExperiment[T](
-    exp: Experiment[T],
-    trajectories: Seq[CellTrajectory],
-    name: String,
-    outFolder: File
-  ): Unit = {
-    val curveFolder = new File(outFolder, "curves")
-    for ((t, i) <- trajectories.zipWithIndex) {
-      CurvePlot.plot(exp, t, new File(curveFolder, s"curve-$i-$name"))
     }
   }
 
