@@ -59,8 +59,10 @@ object CurvePlot {
         val std = MathUtil.stdev(vs)
         Seq(
           (x, avg, "mean"),
-          (x, avg + 2 * std, "+2*sd"),
-          (x, avg - 2 * std, "-2*sd")
+          (x, avg + std, "+sd"),
+          (x, avg - std, "-sd"),
+          (x, avg + 2 * std, "+2sd"),
+          (x, avg - 2 * std, "-2sd")
         )
       }
     }

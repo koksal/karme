@@ -1,7 +1,5 @@
 package karme.util
 
-import org.ddahl.rscala.RClient
-
 object MathUtil {
 
   def median(vs: Iterable[Int]): Double = {
