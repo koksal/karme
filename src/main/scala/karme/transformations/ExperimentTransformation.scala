@@ -7,8 +7,6 @@ import karme.discretization.Discretization
 
 object ExperimentTransformation {
 
-  val ARCSINH_FACTOR = 2.0
-
   def arcsinh(v: Double, factor: Double): Double = {
     // arcsinh formula
     val scaled = v / factor
@@ -17,10 +15,11 @@ object ExperimentTransformation {
   }
 
   def pseudoLog(
-    experiment: ContinuousExperiment
+    experiment: ContinuousExperiment,
+    factor: Double
   ): ContinuousExperiment = {
     val transformedMeasurements = experiment.measurements map { m =>
-      m.copy(state = m.state.mapValues(pseudoLog(_, ARCSINH_FACTOR)))
+      m.copy(state = m.state.mapValues(pseudoLog(_, factor)))
     }
     experiment.copy(measurements = transformedMeasurements)
   }

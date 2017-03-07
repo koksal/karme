@@ -71,6 +71,11 @@ object ArgHandling {
 
       // Analysis options:
 
+      opt[Double]("pseudolog-factor") action { (d, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(pseudoLogFactor =
+          Some(d)))
+      } text "pseudolog factor for transforming data"
+
       opt[Double]("activity-ratio") action { (d, o) =>
         o.copy(analysisOptions =
           o.analysisOptions.copy(cellActivityThreshold = d))

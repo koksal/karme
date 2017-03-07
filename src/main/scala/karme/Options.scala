@@ -23,6 +23,7 @@ case class Options(
 )
 
 case class AnalysisOptions(
+  pseudoLogFactor: Option[Double] = Some(2.0),
   cellActivityThreshold: Double = 0.20,
   uncertaintyMargin: Double = 0.05,
   windowRadius: Int = 20,

@@ -31,9 +31,10 @@ object Main {
 
     val namesToFilter = NamesParser(opts.namesFiles)
 
-    val continuousExperiment = readContinuousExperiment(
+    val continuousExperiment = readAndTransformContinuousExperiment(
       opts.continuousExperimentFile.getOrElse(sys.error(
-        "No continuous experiment given.")), namesToFilter)
+        "No continuous experiment given.")), namesToFilter,
+      opts.analysisOptions.pseudoLogFactor)
 
     val annotationVars = ExperimentParser.selectNames(
       continuousExperiment.names.toSet, NamesParser(opts.annotationsFiles))
@@ -175,16 +176,22 @@ object Main {
     }
   }
 
-  private def readContinuousExperiment(
+  private def readAndTransformContinuousExperiment(
     experimentFile: File,
-    filterNames: Set[String]
+    filterNames: Set[String],
+    pseudoLogFactor: Option[Double]
   ): ContinuousExperiment = {
     println("Reading continuous experiment.")
     val e = ContinuousExperimentParser.parseAndFilter(experimentFile,
       if (filterNames.isEmpty) None else Some(filterNames))
 
-    println("Transforming data.")
-    ExperimentTransformation.pseudoLog(e)
+    pseudoLogFactor match {
+      case Some(factor) => {
+        println("Transforming data.")
+        ExperimentTransformation.pseudoLog(e, factor)
+      }
+      case None => e
+    }
   }
 
   private def readClustering(
