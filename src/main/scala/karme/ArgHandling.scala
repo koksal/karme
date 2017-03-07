@@ -19,6 +19,8 @@ object ArgHandling {
     new OptionParser[Options]("karme") {
       head("karme", "1.0")
 
+      // Input files:
+
       opt[File]("contexp") action { (v, o) =>
         o.copy(continuousExperimentFile = Some(v))
       } text "continuous experiment file in CSV format"
@@ -47,9 +49,13 @@ object ArgHandling {
         o.copy(trajectoryFiles = vs)
       } text "trajectory files in CSV format"
 
+      // Output:
+
       opt[String]("outfolder") action { (v, o) =>
         o.copy(outFolder = new File(v))
       } text "output folder"
+
+      // Pipeline options:
 
       opt[Unit]("elbow") action { (_, o) =>
         o.copy(runElbow = true)
@@ -63,9 +69,12 @@ object ArgHandling {
         o.copy(runSimulation = true)
       } text "run function simulation"
 
-      opt[Int]("nbclusters") action { (i, o) =>
-        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
-      } text "number of clusters to reduce experiment"
+      // Analysis options:
+
+      opt[Double]("activity-ratio") action { (d, o) =>
+        o.copy(analysisOptions =
+          o.analysisOptions.copy(cellActivityThreshold = d))
+      } text "ratio of cells in which a gene must be active"
 
       opt[Double]("uncertainty") action { (d, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(uncertaintyMargin = d))
@@ -78,6 +87,12 @@ object ArgHandling {
       opt[Int]("hamming") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
+
+      opt[Int]("nbclusters") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
+      } text "number of clusters to reduce experiment"
+
+      // Visualization options:
 
       opt[Unit]("visualize") action { (_, o) =>
         o.copy(visualizationOptions = VisualizationOptions(true, true, true,

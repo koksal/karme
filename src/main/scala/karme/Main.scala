@@ -29,18 +29,18 @@ object Main {
     val opts = ArgHandling.parseOptions(args)
     opts.outFolder.mkdirs()
 
-    val filterVars = NamesParser(opts.namesFiles)
+    val namesToFilter = NamesParser(opts.namesFiles)
 
     val continuousExperiment = readContinuousExperiment(
       opts.continuousExperimentFile.getOrElse(sys.error(
-        "No continuous experiment given.")), filterVars)
+        "No continuous experiment given.")), namesToFilter)
 
     val annotationVars = ExperimentParser.selectNames(
       continuousExperiment.names.toSet, NamesParser(opts.annotationsFiles))
 
     val booleanExperiment = opts.discretizedExperimentFile match {
       case Some(f) => {
-        BooleanExperimentParser.parse(f, None)
+        BooleanExperimentParser.parseAndFilter(f, None)
       }
       case None => {
         println("Discretizing.")
@@ -69,7 +69,7 @@ object Main {
 
     val mleExperiment = opts.mleExperimentFile match {
       case Some(f) => {
-        ContinuousExperimentParser.parse(f, None)
+        ContinuousExperimentParser.parseAndFilter(f, None)
       }
       case None => {
         println("Computing MLE.")
@@ -180,7 +180,7 @@ object Main {
     filterNames: Set[String]
   ): ContinuousExperiment = {
     println("Reading continuous experiment.")
-    val e = ContinuousExperimentParser.parse(experimentFile,
+    val e = ContinuousExperimentParser.parseAndFilter(experimentFile,
       if (filterNames.isEmpty) None else Some(filterNames))
 
     println("Transforming data.")

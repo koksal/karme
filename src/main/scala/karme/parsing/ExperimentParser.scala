@@ -26,7 +26,9 @@ abstract class ExperimentParser[T] {
 
   def makeValue(s: String): T
 
-  def parse(f: File, namesToFilterOpt: Option[Set[String]]): Experiment[T] = {
+  def parseAndFilter(
+    f: File, namesToFilterOpt: Option[Set[String]]
+  ): Experiment[T] = {
     val reader = CSVReader.open(f)
     val allRows = reader.all()
     val headers = allRows.head
