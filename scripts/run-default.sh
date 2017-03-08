@@ -6,8 +6,8 @@ shift
 
 mkdir -p $OUTFOLDER
 
-sbt "run-main karme.Main \
+sbt -v "run-main karme.Main \
   --contexp data/measurements/continuous-experiment.csv \
-  --clusters data/cell-clustering/clustering-renamed.csv \
+  --cell-clusters data/cell-clustering/clustering-renamed.csv \
   --trajectory data/trajectories/curve1-pseudotime.csv,data/trajectories/curve2-pseudotime.csv,data/trajectories/curve3-pseudotime.csv \
   --outfolder $OUTFOLDER $*" | tee $LOGFILE

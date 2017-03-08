@@ -33,9 +33,9 @@ object ArgHandling {
         o.copy(mleExperimentFile = Some(v))
       } text "MLE experiment file in CSV format"
 
-      opt[File]("clusters") action { (v, o) =>
+      opt[File]("cell-clusters") action { (v, o) =>
         o.copy(clusterFile = Some(v))
-      } text "cluster file in CSV format"
+      } text "cell clustering file in CSV format"
 
       opt[Seq[File]]("names") action { (vs, o) =>
         o.copy(namesFiles = vs)
