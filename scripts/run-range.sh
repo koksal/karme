@@ -3,7 +3,7 @@
 set -o xtrace
 
 function run_with_args() {
-  folder="parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
+  folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
   scripts/run-default.sh $folder "$@"
 }
