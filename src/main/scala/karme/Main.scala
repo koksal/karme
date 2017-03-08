@@ -55,7 +55,10 @@ object Main {
           binarized)
         val inactiveVars = ExperimentTransformation.inactiveVariables(
           binarized, opts.analysisOptions.cellActivityThreshold)
-        val varsToDrop = variablesWithOneLevel ++ inactiveVars -- annotationVars
+        var varsToDrop = variablesWithOneLevel ++ inactiveVars
+        if (opts.analysisOptions.forceAnnotations) {
+          varsToDrop = varsToDrop -- annotationVars
+        }
         val filtered = binarized.project(binarized.names.toSet -- varsToDrop)
 
         ExperimentLogger.saveToFile(filtered,

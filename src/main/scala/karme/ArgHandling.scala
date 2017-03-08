@@ -81,6 +81,11 @@ object ArgHandling {
           o.analysisOptions.copy(cellActivityThreshold = d))
       } text "ratio of cells in which a gene must be active"
 
+      opt[Unit]("force-annotations") action { (_, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(forceAnnotations =
+          true))
+      } text "force all annotation variables to be included in analysis"
+
       opt[Double]("uncertainty") action { (d, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(uncertaintyMargin = d))
       } text "maximum distance from middle MLE value for uncertain values"

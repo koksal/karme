@@ -39,7 +39,14 @@ object HierarchicalClustering {
 
     // print membership for annotation variables
     for (annotationVar <- annotationVars.toSeq.sorted) {
-      println(s"$annotationVar is in cluster ${kCut(annotationVar)}")
+      kCut.get(annotationVar) match {
+        case Some(c) => {
+          println(s"$annotationVar is in cluster $c.")
+        }
+        case None => {
+          println(s"$annotationVar is not in any cluster.")
+        }
+      }
     }
 
     makeClusterToNamesMap(kCut)

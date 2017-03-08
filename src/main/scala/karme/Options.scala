@@ -25,6 +25,7 @@ case class Options(
 case class AnalysisOptions(
   pseudoLogFactor: Option[Double] = None,
   cellActivityThreshold: Double = 0.20,
+  forceAnnotations: Boolean = false,
   uncertaintyMargin: Double = 0.05,
   windowRadius: Int = 20,
   maxHammingDistance: Int = 1,
