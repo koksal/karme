@@ -5,7 +5,7 @@ set -o xtrace
 function run_with_args() {
   folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
-  scripts/run-default.sh $folder --annotations data/names/markers.txt --elbow --nbclusters 30 "$@"
+  scripts/run-default.sh $folder --annotations data/names/markers.txt --uncertainty 0.0 --elbow --nbclusters 30 --curves --graphs "$@"
 }
 
 # export function so parallel can access it
