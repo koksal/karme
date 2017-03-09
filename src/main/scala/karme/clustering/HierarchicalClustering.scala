@@ -22,20 +22,43 @@ object HierarchicalClustering {
     println("Computing all cuts.")
     val allCuts = HclustInterface.computeClusterCuts(exp, k, outFolder)
 
-    if (elbowMethod) {
+    val kCut = if (elbowMethod) {
       println("Computing withinss for each cut.")
       val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
 
-      val points = withinSumSquares.zipWithIndex map {
+      // within-cluster sum of squares is equal to total for k = 1
+      // we find between-cluster sum of squares by subtracting withinss from
+      // total.
+      val totalSumSquares = withinSumSquares.head
+      val betweenSumSquares = withinSumSquares map (v => totalSumSquares - v)
+
+      val n = exp.names.size
+      val chIdxs = chIndices(withinSumSquares, betweenSumSquares, n)
+      val bestK = bestKByChIndex(chIdxs)
+
+      // TODO move
+      val withinssPoints = withinSumSquares.zipWithIndex map {
         case (ss, i) => (i + 1, ss, "withinss")
       }
+      val chIndexPoints = chIdxs.zipWithIndex map {
+        case (chIdx, i) => {
+          val k = i + 2
+          if (k == bestK) {
+            (k, chIdx, "optimal-ch-index")
+          } else {
+            (k, chIdx, "ch-index")
+          }
+        }
+      }
       ScatterPlot.plot(
-        points,
-        new File(outFolder, "withinSumSquares-vs-nbClusters.pdf")
+        withinssPoints ++ chIndexPoints,
+        new File(outFolder, "clustering-metrics.pdf")
       )
-    }
 
-    val kCut = allCuts.last
+      allCuts(bestK - 1)
+    } else {
+      allCuts.last
+    }
 
     // print membership for annotation variables
     for (annotationVar <- annotationVars.toSeq.sorted) {
@@ -50,6 +73,36 @@ object HierarchicalClustering {
     }
 
     makeClusterToNamesMap(kCut)
+  }
+
+  private def bestKByChIndex(is: Seq[Double]): Int = {
+    val max = is.max
+    val i = is.indexWhere(_ == max)
+    // the ch indices start from k = 2
+    i + 2
+  }
+
+  private def chIndices(
+    withinssSeq: Seq[Double], betweenssSeq: Seq[Double], n: Int
+  ): Seq[Double] = {
+    // the index is not defined for 1, i.e. the first within/between sums
+    withinssSeq.tail.zip(betweenssSeq.tail).zipWithIndex map {
+      case ((wss, bss), i) =>
+        val k = i + 2
+        chIndex(wss, bss, k, n)
+    }
+  }
+
+  private def chIndex(
+    withinss: Double, betweenss: Double, k: Int, n: Int
+  ): Double = {
+    (betweenss / (k - 1)) / (withinss / (n - k))
+  }
+
+  private def plotChIndices(
+    is: Seq[Double], f: File
+  ): Unit = {
+
   }
 
   private def makeClusterToNamesMap(
