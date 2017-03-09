@@ -104,12 +104,6 @@ object HierarchicalClustering {
     (betweenss / (k - 1)) / (withinss / (n - k))
   }
 
-  private def plotChIndices(
-    is: Seq[Double], f: File
-  ): Unit = {
-
-  }
-
   private def makeClusterToNamesMap(
     nameToCluster: Map[String, Int]
   ): Map[Int, Set[String]] = {
