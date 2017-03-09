@@ -35,6 +35,7 @@ object HierarchicalClustering {
       val n = exp.names.size
       val chIdxs = chIndices(withinSumSquares, betweenSumSquares, n)
       val bestK = bestKByChIndex(chIdxs)
+      println(s"Best k according to ch-index: $bestK")
 
       // TODO move
       val withinssPoints = withinSumSquares.zipWithIndex map {
@@ -51,8 +52,12 @@ object HierarchicalClustering {
         }
       }
       ScatterPlot.plot(
-        withinssPoints ++ chIndexPoints,
-        new File(outFolder, "clustering-metrics.pdf")
+        withinssPoints,
+        new File(outFolder, "withinss-vs-k.pdf")
+      )
+      ScatterPlot.plot(
+        chIndexPoints,
+        new File(outFolder, "ch-index-vs-k.pdf")
       )
 
       allCuts(bestK - 1)

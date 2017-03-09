@@ -23,7 +23,7 @@ object ScatterPlot {
     R.eval("data <- data.frame(x = xs, y = ys, label = labels)")
 
     val aes = "aes(x = x, y = y, color = label)"
-    R.eval(s"plot = ggplot(data, $aes) + geom_line() + " +
+    R.eval(s"plot = ggplot(data, $aes) + geom_point() + " +
       "  theme(" +
       "     axis.text.y=element_blank(), " +
       "     axis.ticks.y=element_blank())")
