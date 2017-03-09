@@ -8,12 +8,14 @@ case class MClustResult(
 
 object MclustInterface {
 
-  def mclust(xs: Seq[Double]): MClustResult = {
+  def mclust(
+    xs: Seq[Double], minNbClust: Int, maxNbClust: Int
+  ): MClustResult = {
     val R = RClient()
     R.eval("library(mclust)")
 
     R.set("xs", xs.toArray)
-    R.eval("bic = mclustBIC(xs, G = c(1, 2))")
+    R.eval(s"bic = mclustBIC(xs, G = c(${minNbClust}, ${maxNbClust}))")
     R.eval("res = Mclust(xs, x = bic)")
 
     val optimalNbComponents = R.evalI0("res$G")

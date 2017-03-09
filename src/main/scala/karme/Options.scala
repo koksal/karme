@@ -2,6 +2,9 @@ package karme
 
 import java.io.File
 
+import karme.discretization.Ckmeans
+import karme.discretization.DiscretizationMethod
+
 case class Options(
   // input files
   continuousExperimentFile: Option[File] = None,
@@ -24,10 +27,11 @@ case class Options(
 
 case class AnalysisOptions(
   pseudoLogFactor: Option[Double] = None,
+  firstDiscretizationMethod: DiscretizationMethod = Ckmeans,
   cellActivityThreshold: Double = 0.20,
   forceAnnotations: Boolean = false,
   uncertaintyMargin: Double = 0.05,
-  windowRadius: Int = 20,
+  smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
   nbClusters: Option[Int] = None
 )

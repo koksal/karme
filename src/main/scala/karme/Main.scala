@@ -46,8 +46,9 @@ object Main {
       case None => {
         println("Discretizing.")
 
-        // first discretization pass via Ckmeans
-        val binarized = Discretization.binarize(continuousExperiment)
+        // first discretization pass
+        val binarized = Discretization.binarize(continuousExperiment,
+          opts.analysisOptions.firstDiscretizationMethod)
 
         println("Filtering.")
         // compute set of variables to filter out
@@ -79,7 +80,7 @@ object Main {
         println("Computing MLE.")
 
         val res = BinomialMLE.run(booleanExperiment, trajectories,
-          opts.analysisOptions.windowRadius)
+          opts.analysisOptions.smoothingRadius)
         ExperimentLogger.saveToFile(res,
           new File(opts.outFolder, "experiment-mle.csv"))
         res

@@ -5,7 +5,7 @@ set -o xtrace
 function run_with_args() {
   folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
-  scripts/run-default.sh $folder "$@"
+  scripts/run-default.sh $folder --annotations data/names/markers.txt --elbow "$@"
 }
 
 # export function so parallel can access it
@@ -39,15 +39,21 @@ FORCE_ANNOTATION_ARGS["no"]=""
 FORCE_ANNOTATION_ARGS["yes"]="--force-annotations"
 
 # first discretization
+declare -A FIRST_DISCRETIZATION_ARGS
+FIRST_DISCRETIZATION_ARGS["kmeans"]="--first-discretization kmeans"
+FIRST_DISCRETIZATION_ARGS["mclust"]="--first-discretization mclust"
 
 # smoothing
-
-# clustering
-
-# second discretization
+declare -A SMOOTHING_RADIUS_ARGS
+SMOOTHING_RADIUS_ARGS["none"]="--smoothing-radius 0"
+SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
+SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
+SMOOTHING_RADIUS_ARGS["30"]="--smoothing-radius 30"
 
 SHELL="/bin/bash" parallel run_with_args \
   ::: "${FILTER_NAMES_ARGS[@]}" \
   ::: "${DATA_TRANSFORM_ARGS[@]}" \
   ::: "${ACTIVITY_FILTER_ARGS[@]}" \
-  ::: "${FORCE_ANNOTATION_ARGS[@]}"
+  ::: "${FORCE_ANNOTATION_ARGS[@]}" \
+  ::: "${FIRST_DISCRETIZATION_ARGS[@]}" \
+  ::: "${SMOOTHING_RADIUS_ARGS[@]}"

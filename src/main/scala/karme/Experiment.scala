@@ -89,7 +89,7 @@ object Experiments {
 
     for (name <- e.names) {
       val vs = e.valuesForName(name)
-      val mclustRes = MclustInterface.mclust(vs)
+      val mclustRes = MclustInterface.mclust(vs, 1, 2)
 
       if (mclustRes.g != 2) {
         sys.error(s"There are ${mclustRes.g} optimal components for ${name}.")

@@ -13,7 +13,7 @@ object BinomialMLE {
   def run(
     exp: BooleanExperiment,
     trajectories: Seq[CellTrajectory],
-    windowRadius: Int
+    radius: Int
   ): ProbabilisticExperiment = {
     // order each curve
     val cellOrders = trajectories map CellTrajectories.cellOrder
@@ -22,7 +22,7 @@ object BinomialMLE {
     //   get all vicinities (cells within radius)
     val probMeasurements = for (measurement <- exp.measurements) yield {
       val vicinityCellIDs = cellIDsInVicinity(measurement.id, cellOrders,
-        windowRadius)
+        radius)
       val vicinityMeasurements = vicinityCellIDs map { id =>
         exp.measurementFromId(id)
       }
@@ -45,7 +45,7 @@ object BinomialMLE {
   private def cellIDsInVicinity(
     cellId: String,
     cellOrders: Iterable[Seq[String]],
-    windowRadius: Int
+    radius: Int
   ): Seq[String] = {
     var result = Seq[String]()
 
@@ -53,8 +53,8 @@ object BinomialMLE {
       val i = order.indexOf(cellId)
       if (i >= 0) {
         // cell is in this curve, get all cells within radius
-        val minI = math.max(0, i - windowRadius)
-        val maxI = math.min(order.size - 1, i + windowRadius)
+        val minI = math.max(0, i - radius)
+        val maxI = math.min(order.size - 1, i + radius)
 
         // upper bound is exclusive
         result = result ++ order.slice(minI, maxI + 1)

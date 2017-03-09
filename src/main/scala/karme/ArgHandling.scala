@@ -2,6 +2,8 @@ package karme
 
 import java.io.File
 
+import karme.discretization.Ckmeans
+import karme.discretization.Mclust
 import scopt.OptionParser
 
 /**
@@ -76,6 +78,16 @@ object ArgHandling {
           Some(d)))
       } text "pseudolog factor for transforming data"
 
+      opt[String]("first-discretization") action { (v, o) =>
+        val method = v match {
+          case "kmeans" => Ckmeans
+          case "mclust" => Mclust
+          case _ => sys.error(s"Unrecognized discretization method: $v")
+        }
+        o.copy(analysisOptions = o.analysisOptions.copy(
+          firstDiscretizationMethod = method))
+      } text "first discretization method"
+
       opt[Double]("activity-ratio") action { (d, o) =>
         o.copy(analysisOptions =
           o.analysisOptions.copy(cellActivityThreshold = d))
@@ -90,9 +102,9 @@ object ArgHandling {
         o.copy(analysisOptions = o.analysisOptions.copy(uncertaintyMargin = d))
       } text "maximum distance from middle MLE value for uncertain values"
 
-      opt[Int]("window-radius") action { (i, o) =>
-        o.copy(analysisOptions = o.analysisOptions.copy(windowRadius = i))
-      } text "window radius for binomial MLE pass"
+      opt[Int]("smoothing-radius") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(smoothingRadius = i))
+      } text "cell vicinity radius for binomial MLE pass"
 
       opt[Int]("hamming") action { (i, o) =>
         o.copy(analysisOptions = o.analysisOptions.copy(maxHammingDistance = i))
