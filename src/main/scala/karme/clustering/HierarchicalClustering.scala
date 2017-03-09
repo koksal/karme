@@ -17,7 +17,8 @@ object HierarchicalClustering {
     elbowMethod: Boolean,
     outFolder: File
   ): Map[Int, Set[String]] = {
-    assert(exp.names.size >= k)
+    assert(exp.names.size >= k, s"The experiment has fewer dimensions " +
+      s"(${exp.names.size}) than the number of maximum clusters ($k).")
 
     println("Computing all cuts.")
     val allCuts = HclustInterface.computeClusterCuts(exp, k, outFolder)
