@@ -12,16 +12,19 @@ object HierarchicalClustering {
 
   def clusterVariables(
     exp: Experiment[Double],
-    k: Int,
+    goalK: Int,
     annotationVars: Set[String],
     elbowMethod: Boolean,
     outFolder: File
   ): Map[Int, Set[String]] = {
-    assert(exp.names.size >= k, s"The experiment has fewer dimensions " +
-      s"(${exp.names.size}) than the number of maximum clusters ($k).")
+    if (exp.names.size < goalK) {
+      println(s"There are fewer dimensions in the experiment " +
+        s"(${exp.names.size}) than the maximum number of clusters ($goalK).")
+    }
+    val actualK = math.min(exp.names.size, goalK)
 
     println("Computing all cuts.")
-    val allCuts = HclustInterface.computeClusterCuts(exp, k, outFolder)
+    val allCuts = HclustInterface.computeClusterCuts(exp, actualK, outFolder)
 
     val kCut = if (elbowMethod) {
       println("Computing withinss for each cut.")
