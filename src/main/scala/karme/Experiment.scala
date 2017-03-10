@@ -92,7 +92,7 @@ object Experiments {
       val mclustRes = MclustInterface.mclust(vs, 1, 2)
 
       if (mclustRes.g != 2) {
-        sys.error(s"There are ${mclustRes.g} optimal components for ${name}.")
+        println(s"There are ${mclustRes.g} optimal components for ${name}.")
       } else {
         val threeValuedSeq =
           mclustRes.classification.zip(mclustRes.uncertainty) map {
@@ -112,12 +112,14 @@ object Experiments {
       }
     }
 
-    val threeValuedMatrix = e.names map (n => nameToThreeValuedSeq(n))
+    val namesWithTwoComponents = nameToThreeValuedSeq.keySet.toSeq.sorted
+    val threeValuedMatrix = namesWithTwoComponents map (
+      n => nameToThreeValuedSeq(n))
     val threeValuedPerMeasurement = threeValuedMatrix.transpose
 
     val threeValuedMs = e.measurements.zip(threeValuedPerMeasurement) map {
       case (m, vs) => {
-        m.copy(state = GenericState(e.names.zip(vs).toMap))
+        m.copy(state = GenericState(namesWithTwoComponents.zip(vs).toMap))
       }
     }
 
