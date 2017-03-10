@@ -50,7 +50,7 @@ declare -A SMOOTHING_RADIUS_ARGS
 SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 # SMOOTHING_RADIUS_ARGS["30"]="--smoothing-radius 30"
 
-SHELL="/bin/bash" parallel --jobs 2 run_with_args \
+SHELL="/bin/bash" parallel --jobs 4 --delay 30 run_with_args \
   ::: "${FILTER_NAMES_ARGS[@]}" \
   ::: "${DATA_TRANSFORM_ARGS[@]}" \
   ::: "${ACTIVITY_FILTER_ARGS[@]}" \
