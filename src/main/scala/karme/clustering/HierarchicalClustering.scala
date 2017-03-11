@@ -42,7 +42,7 @@ object HierarchicalClustering {
       println(s"Best k according to ch-index: $bestChIndex")
 
       // now send it to NbClust
-      val nbClustPartition = NbClustInterface.run(exp.valueMatrix)
+      val nbClustPartition = new NbClustInterface(exp.valueMatrix).run()
       val bestK = nbClustPartition.toSet.size
       println(s"Nb clusters according to NbClust: $bestK")
 
