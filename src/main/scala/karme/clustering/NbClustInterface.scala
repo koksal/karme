@@ -8,9 +8,10 @@ object NbClustInterface extends
 
   val libraries = Seq("NbClust")
 
-  def process(R: RClient)(xss: Seq[Seq[Double]]): Int = {
+  def process(R: RClient)(xss: Seq[Seq[Double]]): Seq[Int] = {
     R.set("xss", xss.map(_.toArray).toArray)
-    ???
+    R.eval("res = NbClust(xss)")
+    R.evalI1("res$Best.partition")
   }
 
 }
