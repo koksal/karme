@@ -44,8 +44,7 @@ object HierarchicalClustering {
       // now send it to NbClust
       val nbClustPartition = NbClustInterface.run(exp.valueMatrix)
       val bestK = nbClustPartition.toSet.size
-      println(
-        s"Nb clusters according to NbClust: ${nbClustPartition.toSet.size}")
+      println(s"Nb clusters according to NbClust: $bestK")
 
       // TODO move
       val withinssPoints = withinSumSquares.zipWithIndex map {
