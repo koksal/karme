@@ -33,6 +33,10 @@ object Experiments {
       measurements map (m => m.state.value(name))
     }
 
+    lazy val valueMatrix: Seq[Seq[T]] = {
+      this.names map (n => valuesForName(n))
+    }
+
     def partitionClusters(
       clustering: mutable.MultiMap[String, String]
     ): Map[String, Experiment[T]] = {

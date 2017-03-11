@@ -17,9 +17,7 @@ object HclustInterface {
     R eval "library(RColorBrewer)"
 
     // transform experiment to 2D array
-    val valuesPerVariable = exp.names.toArray map { n =>
-      exp.valuesForName(n).toArray
-    }
+    val valuesPerVariable = exp.valueMatrix.map(_.toArray).toArray
 
     R.set("valuesPerVariable", valuesPerVariable)
     R.eval("valuesPerCell = t(valuesPerVariable)")

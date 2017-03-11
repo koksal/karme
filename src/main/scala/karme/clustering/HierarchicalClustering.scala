@@ -38,8 +38,14 @@ object HierarchicalClustering {
 
       val n = exp.names.size
       val chIdxs = chIndices(withinSumSquares, betweenSumSquares, n)
-      val bestK = bestKByChIndex(chIdxs)
-      println(s"Best k according to ch-index: $bestK")
+      val bestChIndex = bestKByChIndex(chIdxs)
+      println(s"Best k according to ch-index: $bestChIndex")
+
+      // now send it to NbClust
+      val nbClustPartition = NbClustInterface.run(exp.valueMatrix)
+      val bestK = nbClustPartition.toSet.size
+      println(
+        s"Nb clusters according to NbClust: ${nbClustPartition.toSet.size}")
 
       // TODO move
       val withinssPoints = withinSumSquares.zipWithIndex map {

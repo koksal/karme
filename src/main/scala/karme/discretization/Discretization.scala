@@ -4,7 +4,6 @@ import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
-import karme.clustering.NbClustInterface
 import karme.synthesis.Transitions.GenericState
 
 sealed trait DiscretizationMethod

@@ -1,6 +1,5 @@
 package karme.external
 
-import karme.visualization.BoxPlot
 import org.ddahl.rscala.RClient
 
 abstract class AbstractRInterface[T, U] {

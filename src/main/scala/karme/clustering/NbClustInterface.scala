@@ -4,7 +4,7 @@ import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
 object NbClustInterface extends
-  AbstractRInterface[Seq[Seq[Double]], Int] {
+  AbstractRInterface[Seq[Seq[Double]], Seq[Int]] {
 
   val libraries = Seq("NbClust")
 
