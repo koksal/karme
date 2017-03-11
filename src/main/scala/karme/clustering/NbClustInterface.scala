@@ -1,11 +1,12 @@
 package karme.clustering
 
+import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-object NbClustInterface {
+object NbClustInterface extends
+  AbstractRInterface[Seq[Seq[Double]], Int] {
 
-  def nbClust(xss: Seq[Seq[Double]]): Int = {
-    val R = RClient()
+  def process(R: RClient)(xss: Seq[Seq[Double]]): Int = {
     R eval "library(NbClust)"
     R.set("xss", xss.map(_.toArray).toArray)
     ???
