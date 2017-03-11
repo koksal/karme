@@ -22,7 +22,7 @@ object ExperimentBoxPlots {
         cluster -> markerClusterValues
       }
       println(s"Plotting for $name")
-      BoxPlot.plot(labelToValues, name, outFolder)
+      BoxPlot.run(labelToValues, name, outFolder)
     }
   }
 

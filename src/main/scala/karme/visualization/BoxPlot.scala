@@ -2,16 +2,23 @@ package karme.visualization
 
 import java.io.File
 
+import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-object BoxPlot {
+object BoxPlot extends
+  AbstractRInterface[(Map[String, Iterable[Double]], String, File), Unit] {
 
-  def plot(
+  def process(R: RClient)(
+    arg: (Map[String, Iterable[Double]], String, File)
+  ): Unit = {
+    (processAux(R) _).tupled(arg)
+  }
+
+  def processAux(R: RClient)(
     labelToValues: Map[String, Iterable[Double]],
     outPrefix: String,
     outFolder: File
   ): Unit = {
-    val R = RClient()
     R eval "library(ggplot2)"
 
     var dataList = List[Double]()
