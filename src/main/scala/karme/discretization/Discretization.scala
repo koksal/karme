@@ -45,7 +45,7 @@ object Discretization {
         CkmeansInterface.ckmeans(vs, 1, 2)
       }
       case Mclust => {
-        MclustInterface.mclust(vs, 1, 2).classification
+        MclustInterface.run(vs, 1, 2).classification
       }
     }
     assert(intValues.forall(i => i >= 1 && i <= 2))

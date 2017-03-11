@@ -8,18 +8,20 @@ import org.ddahl.rscala.RClient
 object BoxPlot extends
   AbstractRInterface[(Map[String, Iterable[Double]], String, File), Unit] {
 
-  def process(R: RClient)(
-    arg: (Map[String, Iterable[Double]], String, File)
-  ): Unit = {
-    (processAux(R) _).tupled(arg)
-  }
+  val libraries = Seq("ggplot2")
 
-  def processAux(R: RClient)(
+  def run(
     labelToValues: Map[String, Iterable[Double]],
     outPrefix: String,
     outFolder: File
   ): Unit = {
-    R eval "library(ggplot2)"
+    run((labelToValues, outPrefix, outFolder))
+  }
+
+  def process(R: RClient)(
+    arg: (Map[String, Iterable[Double]], String, File)
+  ): Unit = {
+    val (labelToValues, outPrefix, outFolder) = arg
 
     var dataList = List[Double]()
     var labelArray = Array[String]()

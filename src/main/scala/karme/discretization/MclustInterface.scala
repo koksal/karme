@@ -10,7 +10,9 @@ case class MClustResult(
 object MclustInterface extends
   AbstractRInterface[(Seq[Double], Int, Int), MClustResult] {
 
-  def mclust(
+  val libraries = Seq("mclust")
+
+  def run(
     xs: Seq[Double], minNbClust: Int, maxNbClust: Int
   ): MClustResult = {
     run((xs, minNbClust, maxNbClust))
@@ -18,7 +20,6 @@ object MclustInterface extends
 
   def process(R: RClient)(arg: (Seq[Double], Int, Int)): MClustResult = {
     val (xs, minNbClust, maxNbClust) = arg
-    R.eval("library(mclust)")
 
     R.set("xs", xs.toArray)
     R.eval(s"bic = mclustBIC(xs, G = c(${minNbClust}, ${maxNbClust}))")
