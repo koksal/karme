@@ -15,10 +15,10 @@ export -f run_with_args
 declare -A FILTER_NAMES_ARGS
 # FILTER_NAMES_ARGS["none"]=""
 # FILTER_NAMES_ARGS["markers"]="--names data/names/markers.txt"
-FILTER_NAMES_ARGS["human-tf"]="--names data/names/human-tf.txt"
-FILTER_NAMES_ARGS["animaltfdb"]="--names data/names/animaltfdb-mus-musculus.txt"
-# FILTER_NAMES_ARGS["markers-and-human-tf"]="--names data/names/markers.txt,data/names/human-tf.txt"
-# FILTER_NAMES_ARGS["markers-and-animaltfdb"]="--names data/names/markers.txt,data/names/animaltfdb-mus-musculus.txt"
+# FILTER_NAMES_ARGS["human-tf"]="--names data/names/human-tf.txt"
+# FILTER_NAMES_ARGS["animaltfdb"]="--names data/names/animaltfdb-mus-musculus.txt"
+FILTER_NAMES_ARGS["markers-and-human-tf"]="--names data/names/markers.txt,data/names/human-tf.txt"
+FILTER_NAMES_ARGS["markers-and-animaltfdb"]="--names data/names/markers.txt,data/names/animaltfdb-mus-musculus.txt"
 
 # data transformation
 declare -A DATA_TRANSFORM_ARGS
