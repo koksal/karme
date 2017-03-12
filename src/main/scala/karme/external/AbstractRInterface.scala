@@ -16,6 +16,16 @@ abstract class AbstractRInterface[T] {
     result
   }
 
+  def call(R: RClient)(
+    method: String, resultVar: String, args: (String, _)*
+  ): Unit = {
+    val argsStr = args.map{
+      case (name, value) => s"$name = $value"
+    }.mkString(",")
+
+    R.eval(s"$resultVar = $method($argsStr)")
+  }
+
   private def importLibraries(R: RClient): Unit = {
     for (l <- libraries) {
       R eval s"library($l)"

@@ -6,11 +6,17 @@ import org.ddahl.rscala.RClient
 class NbClustInterface(matrix: Seq[Seq[Double]]) extends
   AbstractRInterface[Seq[Int]] {
 
+  val minNbClust = 10
+  val maxNbClust = 30
+
   val libraries = Seq("NbClust")
 
   def process(R: RClient): Seq[Int] = {
     R.set("matrix", matrix.map(_.toArray).toArray)
-    R.eval("res = NbClust(matrix)")
+    call(R)("NbClust", "res", "data" -> "matrix", "distance" -> "\"euclidean\"",
+      "method" -> "\"complete\"", "min.nc" -> minNbClust,
+      "max.nc" -> maxNbClust, "index" -> "\"kl\"")
+    println(R.evalS0("res$Best.nc"))
     R.evalI1("res$Best.partition")
   }
 

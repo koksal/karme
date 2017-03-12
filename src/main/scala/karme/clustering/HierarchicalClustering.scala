@@ -27,19 +27,19 @@ object HierarchicalClustering {
     val allCuts = HclustInterface.computeClusterCuts(exp, actualK, outFolder)
 
     val kCut = if (elbowMethod) {
-      println("Computing withinss for each cut.")
-      val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
+      // println("Computing withinss for each cut.")
+      // val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
 
-      // within-cluster sum of squares is equal to total for k = 1
-      // we find between-cluster sum of squares by subtracting withinss from
-      // total.
-      val totalSumSquares = withinSumSquares.head
-      val betweenSumSquares = withinSumSquares map (v => totalSumSquares - v)
+      // // within-cluster sum of squares is equal to total for k = 1
+      // // we find between-cluster sum of squares by subtracting withinss from
+      // // total.
+      // val totalSumSquares = withinSumSquares.head
+      // val betweenSumSquares = withinSumSquares map (v => totalSumSquares - v)
 
-      val n = exp.names.size
-      val chIdxs = chIndices(withinSumSquares, betweenSumSquares, n)
-      val bestChIndex = bestKByChIndex(chIdxs)
-      println(s"Best k according to ch-index: $bestChIndex")
+      // val n = exp.names.size
+      // val chIdxs = chIndices(withinSumSquares, betweenSumSquares, n)
+      // val bestChIndex = bestKByChIndex(chIdxs)
+      // println(s"Best k according to ch-index: $bestChIndex")
 
       // now send it to NbClust
       val nbClustPartition = new NbClustInterface(exp.valueMatrix).run()
@@ -47,27 +47,27 @@ object HierarchicalClustering {
       println(s"Nb clusters according to NbClust: $bestK")
 
       // TODO move
-      val withinssPoints = withinSumSquares.zipWithIndex map {
-        case (ss, i) => (i + 1, ss, "withinss")
-      }
-      val chIndexPoints = chIdxs.zipWithIndex map {
-        case (chIdx, i) => {
-          val k = i + 2
-          if (k == bestK) {
-            (k, chIdx, "optimal-ch-index")
-          } else {
-            (k, chIdx, "ch-index")
-          }
-        }
-      }
-      ScatterPlot.plot(
-        withinssPoints,
-        new File(outFolder, "withinss-vs-k.pdf")
-      )
-      ScatterPlot.plot(
-        chIndexPoints,
-        new File(outFolder, "ch-index-vs-k.pdf")
-      )
+      // val withinssPoints = withinSumSquares.zipWithIndex map {
+      //   case (ss, i) => (i + 1, ss, "withinss")
+      // }
+      // val chIndexPoints = chIdxs.zipWithIndex map {
+      //   case (chIdx, i) => {
+      //     val k = i + 2
+      //     if (k == bestK) {
+      //       (k, chIdx, "optimal-ch-index")
+      //     } else {
+      //       (k, chIdx, "ch-index")
+      //     }
+      //   }
+      // }
+      // ScatterPlot.plot(
+      //   withinssPoints,
+      //   new File(outFolder, "withinss-vs-k.pdf")
+      // )
+      // ScatterPlot.plot(
+      //   chIndexPoints,
+      //   new File(outFolder, "ch-index-vs-k.pdf")
+      // )
 
       allCuts(bestK - 1)
     } else {
