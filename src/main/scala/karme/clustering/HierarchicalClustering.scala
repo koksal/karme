@@ -12,36 +12,25 @@ object HierarchicalClustering {
 
   def clusterVariables(
     exp: Experiment[Double],
-    goalK: Int,
     annotationVars: Set[String],
-    elbowMethod: Boolean,
+    minNbClust: Int,
+    maxNbClust: Int,
     outFolder: File
   ): Map[Int, Set[String]] = {
-    val actualK = math.min(exp.names.size - 1, goalK)
-    if (actualK != goalK) {
-      println(s"Setting max k to $actualK instead of $goalK.")
+    val adjustedMaxNbClust = math.min(exp.names.size - 1, maxNbClust)
+    if (adjustedMaxNbClust != maxNbClust) {
+      println(s"Setting max k to $adjustedMaxNbClust instead of $maxNbClust.")
     }
 
-    println("Computing all cuts.")
-    val allCuts = new HclustInterface(exp, actualK, outFolder).run()
-
-    val kCut = if (elbowMethod) {
-      val nbClustPartition = new NbClustInterface(exp.valueMatrix, actualK,
-        actualK, "kl").run()
-      val nbClustMap = exp.names.zip(nbClustPartition).toMap
-      val bestK = nbClustPartition.toSet.size
-      println(s"Nb clusters according to NbClust: $bestK")
-
-      val hclustCut = allCuts(bestK - 1)
-      compareClusterings(hclustCut, nbClustMap)
-      nbClustMap
-    } else {
-      allCuts.last
-    }
+    val nbClustPartition = new NbClustInterface(exp.valueMatrix, minNbClust,
+      adjustedMaxNbClust, "kl").run()
+    val clustering = exp.names.zip(nbClustPartition).toMap
+    val bestK = nbClustPartition.toSet.size
+    println(s"Optimal nb. clusters according to NbClust: $bestK")
 
     // print membership for annotation variables
     for (annotationVar <- annotationVars.toSeq.sorted) {
-      kCut.get(annotationVar) match {
+      clustering.get(annotationVar) match {
         case Some(c) => {
           println(s"$annotationVar is in cluster $c.")
         }
@@ -51,7 +40,7 @@ object HierarchicalClustering {
       }
     }
 
-    makeClusterToNamesMap(kCut)
+    makeClusterToNamesMap(clustering)
   }
 
   private def compareClusterings(

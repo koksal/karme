@@ -17,7 +17,6 @@ case class Options(
   // output
   outFolder: File = new File("."),
   // pipeline options
-  runElbow: Boolean = false,
   runSynthesis: Boolean = false,
   runSimulation: Boolean = false,
   // sub-options
@@ -33,7 +32,9 @@ case class AnalysisOptions(
   uncertaintyMargin: Double = 0.05,
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
-  nbClusters: Option[Int] = None
+  cluster: Boolean = false,
+  minNbClusters: Int = 2,
+  maxNbClusters: Int = 30
 )
 
 case class VisualizationOptions(

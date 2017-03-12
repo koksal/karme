@@ -59,10 +59,6 @@ object ArgHandling {
 
       // Pipeline options:
 
-      opt[Unit]("elbow") action { (_, o) =>
-        o.copy(runElbow = true)
-      } text "run within-cluster sum of squares and plot results"
-
       opt[Unit]("synthesis") action { (_, o) =>
         o.copy(runSynthesis = true)
       } text "run function synthesis"
@@ -110,9 +106,16 @@ object ArgHandling {
         o.copy(analysisOptions = o.analysisOptions.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
 
-      opt[Int]("nbclusters") action { (i, o) =>
-        o.copy(analysisOptions = o.analysisOptions.copy(nbClusters = Some(i)))
-      } text "number of clusters to reduce experiment"
+      opt[Unit]("cluster") action { (_, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(cluster = true))
+      }
+      opt[Int]("minClust") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(minNbClusters = i))
+      } text "min number of gene clusters"
+
+      opt[Int]("maxClust") action { (i, o) =>
+        o.copy(analysisOptions = o.analysisOptions.copy(maxNbClusters = i))
+      } text "max number of gene clusters"
 
       // Visualization options:
 

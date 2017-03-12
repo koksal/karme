@@ -87,33 +87,30 @@ object Main {
       }
     }
 
-    val clusteredExperiment = opts.analysisOptions.nbClusters match {
-      case Some(nbClusters) => {
+    val clusteredExperiment = if (opts.analysisOptions.cluster) {
         println("Clustering variables.")
         val geneClustering = HierarchicalClustering.clusterVariables(
-          mleExperiment, nbClusters, annotationVars, opts.runElbow,
-          opts.outFolder)
+          mleExperiment, annotationVars,
+          opts.analysisOptions.minNbClusters,
+          opts.analysisOptions.maxNbClusters, opts.outFolder)
         val clusteredExp = HierarchicalClustering.experimentFromClusterAverages(
           mleExperiment, geneClustering, annotationVars)
+
         ExperimentLogger.saveToFile(clusteredExp,
           new File(opts.outFolder, "experiment-clustered.csv"))
         if (opts.visualizationOptions.curves) {
           CurvePlot.plotClusterGenes(mleExperiment, trajectories,
             geneClustering, opts.outFolder)
         }
+
         clusteredExp
-      }
-      case None => {
-        mleExperiment
-      }
+    } else {
+      mleExperiment
     }
 
     println("Converting to three-valued states")
-    val threeValuedExperiment =
-      // Experiments.probabilisticExperimentToThreeValued(clusteredExperiment,
-      //   opts.analysisOptions.uncertaintyMargin)
-      Experiments.threeValuedExpFromMixtureModel(clusteredExperiment,
-        0.4)
+    val threeValuedExperiment = Experiments.threeValuedExpFromMixtureModel(
+      clusteredExperiment, 0.4)
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"))
 
