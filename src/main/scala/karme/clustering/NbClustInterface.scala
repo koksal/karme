@@ -22,7 +22,6 @@ class NbClustInterface(
       "distance" -> s""""$distance"""", "method" -> s""""$method"""",
       "min.nc" -> minNbClust, "max.nc" -> maxNbClust,
       "index" -> s""""$index"""")
-    println(R.evalS0("res"))
     R.evalI1("res$Best.partition")
   }
 
