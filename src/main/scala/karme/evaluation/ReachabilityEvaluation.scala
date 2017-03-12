@@ -42,7 +42,7 @@ object ReachabilityEvaluation {
 
     // order by increasing penalty to print and plot
     for (((labelToResult, simulated, penalty), i) <-
-         resultTuples.toSeq.sortBy(_ ._3).zipWithIndex) {
+         resultTuples.toSeq.sortBy(_ ._3).zipWithIndex.take(10)) {
       println(s"Combination $i:")
       println(s"Penalty: $penalty")
 
