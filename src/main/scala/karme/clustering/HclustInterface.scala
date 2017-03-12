@@ -3,18 +3,17 @@ package karme.clustering
 import java.io.File
 
 import karme.Experiments.Experiment
+import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-object HclustInterface {
+class HclustInterface(
+  exp: Experiment[Double], kMax: Int, outFolder: File
+) extends AbstractRInterface[Seq[Map[String, Int]]] {
 
-  def computeClusterCuts(
-    exp: Experiment[Double], kMax: Int, outFolder: File
-  ): Seq[Map[String, Int]] = {
+  override val LIBRARIES = Seq("gplots", "RColorBrewer")
+
+  def process(R: RClient): Seq[Map[String, Int]] = {
     assert(kMax >= 1)
-
-    val R = RClient()
-    R eval "library(gplots)"
-    R eval "library(RColorBrewer)"
 
     // transform experiment to 2D array
     val valuesPerVariable = exp.valueMatrix.map(_.toArray).toArray
@@ -37,7 +36,6 @@ object HclustInterface {
 
     // TODO visualize for all k
     // visualizeClustering(R, kMax, outFolder)
-    R.exit()
 
     assignmentsPerK map { assignment =>
       assert(assignment.size == exp.names.size)

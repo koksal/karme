@@ -21,55 +21,22 @@ object HierarchicalClustering {
       println(s"There are fewer dimensions in the experiment " +
         s"(${exp.names.size}) than the maximum number of clusters ($goalK).")
     }
-    val actualK = math.min(exp.names.size, goalK)
+    val actualK = math.min(exp.names.size - 1, goalK)
 
     println("Computing all cuts.")
-    val allCuts = HclustInterface.computeClusterCuts(exp, actualK, outFolder)
+    val allCuts = new HclustInterface(exp, actualK, outFolder).run()
 
     val kCut = if (elbowMethod) {
-      // println("Computing withinss for each cut.")
-      // val withinSumSquares = allCuts map (cut => withinSumSquare(cut, exp))
-
-      // // within-cluster sum of squares is equal to total for k = 1
-      // // we find between-cluster sum of squares by subtracting withinss from
-      // // total.
-      // val totalSumSquares = withinSumSquares.head
-      // val betweenSumSquares = withinSumSquares map (v => totalSumSquares - v)
-
-      // val n = exp.names.size
-      // val chIdxs = chIndices(withinSumSquares, betweenSumSquares, n)
-      // val bestChIndex = bestKByChIndex(chIdxs)
-      // println(s"Best k according to ch-index: $bestChIndex")
-
-      // now send it to NbClust
-      val nbClustPartition = new NbClustInterface(exp.valueMatrix).run()
+      val nbClustPartition = new NbClustInterface(exp.valueMatrix, 2, actualK,
+        "gap").run()
+      val nbClustMap = exp.names.zip(nbClustPartition).toMap
       val bestK = nbClustPartition.toSet.size
       println(s"Nb clusters according to NbClust: $bestK")
 
-      // TODO move
-      // val withinssPoints = withinSumSquares.zipWithIndex map {
-      //   case (ss, i) => (i + 1, ss, "withinss")
-      // }
-      // val chIndexPoints = chIdxs.zipWithIndex map {
-      //   case (chIdx, i) => {
-      //     val k = i + 2
-      //     if (k == bestK) {
-      //       (k, chIdx, "optimal-ch-index")
-      //     } else {
-      //       (k, chIdx, "ch-index")
-      //     }
-      //   }
-      // }
-      // ScatterPlot.plot(
-      //   withinssPoints,
-      //   new File(outFolder, "withinss-vs-k.pdf")
-      // )
-      // ScatterPlot.plot(
-      //   chIndexPoints,
-      //   new File(outFolder, "ch-index-vs-k.pdf")
-      // )
-
-      allCuts(bestK - 1)
+      // TODO compare result from nbclust to bestK-cut
+      val hclustCut = allCuts(bestK - 1)
+      compareClusterings(hclustCut, nbClustMap)
+      hclustCut
     } else {
       allCuts.last
     }
@@ -87,6 +54,15 @@ object HierarchicalClustering {
     }
 
     makeClusterToNamesMap(kCut)
+  }
+
+  private def compareClusterings(
+    c1: Map[String, Int], c2: Map[String, Int]
+  ): Unit = {
+    assert(c1.keySet == c2.keySet)
+    val namesWithSameCluster = c1.keySet.count(n => c1(n) == c2(n))
+    println(s"Names with same cluster: ${namesWithSameCluster}")
+    println(s"Total names: ${c1.keySet.size}")
   }
 
   private def bestKByChIndex(is: Seq[Double]): Int = {
@@ -132,7 +108,7 @@ object HierarchicalClustering {
       val valuesPerVariable = names.toSeq map { name =>
         exp.valuesForName(name)
       }
-      KmeansInterface.withinSumOfSquares(valuesPerVariable)
+      new WithinssInterface(valuesPerVariable).run()
     }
     clusterSums.sum
   }

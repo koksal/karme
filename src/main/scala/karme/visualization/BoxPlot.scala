@@ -11,7 +11,7 @@ class BoxPlot(
   outFolder: File
 ) extends AbstractRInterface[Unit] {
 
-  val libraries = Seq("ggplot2")
+  override val LIBRARIES = Seq("ggplot2")
 
   def process(R: RClient): Unit = {
     var dataList = List[Double]()

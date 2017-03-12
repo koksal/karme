@@ -1,11 +1,13 @@
 package karme.clustering
 
+import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-object KmeansInterface {
+class WithinssInterface(
+  xss: Seq[Seq[Double]]
+) extends AbstractRInterface[Double] {
 
-  def withinSumOfSquares(xss: Seq[Seq[Double]]): Double = {
-    val R = RClient()
+  def process(R: RClient): Double = {
     R.set("xss", xss.map(_.toArray).toArray)
     R.eval("res = kmeans(xss, 1)")
     R.evalD0("res$withinss")

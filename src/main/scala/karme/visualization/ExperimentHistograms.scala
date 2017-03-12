@@ -20,7 +20,7 @@ object ExperimentHistograms {
       val vs = e.valuesForName(name)
       val labels = vs map (v => "none")
       val f = new File(histogramsFolder, s"${name}.pdf")
-      Histogram.plot(vs, labels, f)
+      new HistogramPlotInterface(vs, labels, f).run()
     }
   }
 
@@ -72,7 +72,7 @@ object ExperimentHistograms {
       val name = contExp.names(i)
       val f = new File(folder, s"$name.pdf")
 
-      Histogram.plot(contValues, discValues, f)
+      new HistogramPlotInterface(contValues, discValues, f).run()
     }
   }
 

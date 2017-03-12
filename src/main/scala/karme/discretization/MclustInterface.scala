@@ -11,7 +11,7 @@ class MclustInterface(
   xs: Seq[Double], minNbClust: Int, maxNbClust: Int
 ) extends AbstractRInterface[MClustResult] {
 
-  val libraries = Seq("mclust")
+  override val LIBRARIES = Seq("mclust")
 
   def process(R: RClient): MClustResult = {
     R.set("xs", xs.toArray)

@@ -4,7 +4,7 @@ import org.ddahl.rscala.RClient
 
 abstract class AbstractRInterface[T] {
 
-  val libraries: Seq[String]
+  val LIBRARIES: Seq[String] = Nil
 
   def process(R: RClient): T
 
@@ -27,7 +27,7 @@ abstract class AbstractRInterface[T] {
   }
 
   private def importLibraries(R: RClient): Unit = {
-    for (l <- libraries) {
+    for (l <- LIBRARIES) {
       R eval s"library($l)"
     }
   }

@@ -42,7 +42,7 @@ object Discretization {
   ): Seq[Boolean] = {
     val intValues = method match {
       case Ckmeans => {
-        CkmeansInterface.ckmeans(vs, 1, 2)
+        new CkmeansInterface(vs, 1, 2).run()
       }
       case Mclust => {
         new MclustInterface(vs, 1, 2).run().classification
