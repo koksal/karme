@@ -8,7 +8,6 @@ function run_with_args() {
   scripts/run-default.sh $folder \
     --annotations data/names/markers.txt \
     --uncertainty 0.0 \
-    --elbow \
     --cluster \
     --minClust 2 \
     --maxClust 30 \
