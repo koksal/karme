@@ -21,6 +21,7 @@ class NbClustInterface(
     call(R)("NbClust", "res", "data" -> "matrix", "distance" -> "\"euclidean\"",
       "method" -> s""""$METHOD"""", "min.nc" -> minNbClust,
       "max.nc" -> maxNbClust, "index" -> s""""$index"""")
+    println(R.evalS0("res"))
     R.evalI1("res$Best.partition")
   }
 
