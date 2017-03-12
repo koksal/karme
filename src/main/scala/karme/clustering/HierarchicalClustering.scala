@@ -17,26 +17,24 @@ object HierarchicalClustering {
     elbowMethod: Boolean,
     outFolder: File
   ): Map[Int, Set[String]] = {
-    if (exp.names.size < goalK) {
-      println(s"There are fewer dimensions in the experiment " +
-        s"(${exp.names.size}) than the maximum number of clusters ($goalK).")
-    }
     val actualK = math.min(exp.names.size - 1, goalK)
+    if (actualK != goalK) {
+      println(s"Setting max k to $actualK instead of $goalK.")
+    }
 
     println("Computing all cuts.")
     val allCuts = new HclustInterface(exp, actualK, outFolder).run()
 
     val kCut = if (elbowMethod) {
-      val nbClustPartition = new NbClustInterface(exp.valueMatrix, 2, actualK,
-        "gap").run()
+      val nbClustPartition = new NbClustInterface(exp.valueMatrix, actualK,
+        actualK, "kl").run()
       val nbClustMap = exp.names.zip(nbClustPartition).toMap
       val bestK = nbClustPartition.toSet.size
       println(s"Nb clusters according to NbClust: $bestK")
 
-      // TODO compare result from nbclust to bestK-cut
       val hclustCut = allCuts(bestK - 1)
       compareClusterings(hclustCut, nbClustMap)
-      hclustCut
+      nbClustMap
     } else {
       allCuts.last
     }
@@ -63,30 +61,6 @@ object HierarchicalClustering {
     val namesWithSameCluster = c1.keySet.count(n => c1(n) == c2(n))
     println(s"Names with same cluster: ${namesWithSameCluster}")
     println(s"Total names: ${c1.keySet.size}")
-  }
-
-  private def bestKByChIndex(is: Seq[Double]): Int = {
-    val max = is.max
-    val i = is.indexWhere(_ == max)
-    // the ch indices start from k = 2
-    i + 2
-  }
-
-  private def chIndices(
-    withinssSeq: Seq[Double], betweenssSeq: Seq[Double], n: Int
-  ): Seq[Double] = {
-    // the index is not defined for 1, i.e. the first within/between sums
-    withinssSeq.tail.zip(betweenssSeq.tail).zipWithIndex map {
-      case ((wss, bss), i) =>
-        val k = i + 2
-        chIndex(wss, bss, k, n)
-    }
-  }
-
-  private def chIndex(
-    withinss: Double, betweenss: Double, k: Int, n: Int
-  ): Double = {
-    (betweenss / (k - 1)) / (withinss / (n - k))
   }
 
   private def makeClusterToNamesMap(

@@ -98,12 +98,8 @@ object Main {
         ExperimentLogger.saveToFile(clusteredExp,
           new File(opts.outFolder, "experiment-clustered.csv"))
         if (opts.visualizationOptions.curves) {
-          // plot:
-          //   - all individual gene curves within a cluster
           CurvePlot.plotClusterGenes(mleExperiment, trajectories,
             geneClustering, opts.outFolder)
-          //   - the cluster average with +/- stdev bands
-
         }
         clusteredExp
       }
