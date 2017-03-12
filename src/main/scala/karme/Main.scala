@@ -52,7 +52,7 @@ object Main {
 
         println("Filtering.")
         // compute set of variables to filter out
-        val variablesWithOneLevel = ExperimentTransformation.namesWithOneLevel(
+        val variablesWithOneLevel = ExperimentTransformation.namesWithSingleValue(
           binarized)
         val inactiveVars = ExperimentTransformation.inactiveVariables(
           binarized, opts.analysisOptions.cellActivityThreshold)
