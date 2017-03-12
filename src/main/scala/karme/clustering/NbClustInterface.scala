@@ -7,20 +7,21 @@ class NbClustInterface(
   matrix: Seq[Seq[Double]],
   minNbClust: Int,
   maxNbClust: Int,
-  index: String
+  distance: String = "euclidean",
+  method: String = "ward.D2",
+  index: String = "kl"
 ) extends AbstractRInterface[Seq[Int]] {
 
   override val LIBRARIES = Seq("NbClust")
-
-  val METHOD = "ward.D2"
 
   def process(R: RClient): Seq[Int] = {
     println(s"Running NbClust with ($minNbClust, $maxNbClust)")
 
     R.set("matrix", matrix.map(_.toArray).toArray)
-    call(R)("NbClust", "res", "data" -> "matrix", "distance" -> "\"euclidean\"",
-      "method" -> s""""$METHOD"""", "min.nc" -> minNbClust,
-      "max.nc" -> maxNbClust, "index" -> s""""$index"""")
+    call(R)("NbClust", "res", "data" -> "matrix",
+      "distance" -> s""""$distance"""", "method" -> s""""$method"""",
+      "min.nc" -> minNbClust, "max.nc" -> maxNbClust,
+      "index" -> s""""$index"""")
     println(R.evalS0("res"))
     R.evalI1("res$Best.partition")
   }

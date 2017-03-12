@@ -88,22 +88,22 @@ object Main {
     }
 
     val clusteredExperiment = if (opts.analysisOptions.cluster) {
-        println("Clustering variables.")
-        val geneClustering = HierarchicalClustering.clusterVariables(
-          mleExperiment, annotationVars,
-          opts.analysisOptions.minNbClusters,
-          opts.analysisOptions.maxNbClusters, opts.outFolder)
-        val clusteredExp = HierarchicalClustering.experimentFromClusterAverages(
-          mleExperiment, geneClustering, annotationVars)
+      println("Clustering variables.")
+      val geneClustering = HierarchicalClustering.clusterVariables(
+        mleExperiment, annotationVars,
+        opts.analysisOptions.minNbClusters,
+        opts.analysisOptions.maxNbClusters, opts.outFolder)
+      val clusteredExp = HierarchicalClustering.experimentFromClusterAverages(
+        mleExperiment, geneClustering, annotationVars)
 
-        ExperimentLogger.saveToFile(clusteredExp,
-          new File(opts.outFolder, "experiment-clustered.csv"))
-        if (opts.visualizationOptions.curves) {
-          CurvePlot.plotClusterGenes(mleExperiment, trajectories,
-            geneClustering, opts.outFolder)
-        }
+      ExperimentLogger.saveToFile(clusteredExp,
+        new File(opts.outFolder, "experiment-clustered.csv"))
+      if (opts.visualizationOptions.curves) {
+        CurvePlot.plotClusterGenes(mleExperiment, trajectories,
+          geneClustering, opts.outFolder)
+      }
 
-        clusteredExp
+      clusteredExp
     } else {
       mleExperiment
     }

@@ -22,11 +22,20 @@ object HierarchicalClustering {
       println(s"Setting max k to $adjustedMaxNbClust instead of $maxNbClust.")
     }
 
-    val nbClustPartition = new NbClustInterface(exp.valueMatrix, minNbClust,
-      adjustedMaxNbClust, "kl").run()
-    val clustering = exp.names.zip(nbClustPartition).toMap
-    val bestK = nbClustPartition.toSet.size
-    println(s"Optimal nb. clusters according to NbClust: $bestK")
+    // TODO this is temporary, keeps the last clustering only
+    var clustering: Map[String, Int] = Map.empty
+    val indices = List("kl", "ch", "gap")
+    val methods = List("ward.D2", "complete", "average")
+    for {
+      index <- indices
+      method <- methods
+    } {
+      val nbClustPartition = new NbClustInterface(exp.valueMatrix, minNbClust,
+        adjustedMaxNbClust, method = method, index = index).run()
+      clustering = exp.names.zip(nbClustPartition).toMap
+      val bestK = nbClustPartition.toSet.size
+      println(s"Optimal nb. clusters for ($index, $method): $bestK")
+    }
 
     // print membership for annotation variables
     for (annotationVar <- annotationVars.toSeq.sorted) {
