@@ -2,19 +2,19 @@ package karme.visualization
 
 import java.io.File
 
+import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
 import scala.reflect.ClassTag
 
-object ScatterPlot {
+class ScatterPlot[T: ClassTag, U: ClassTag](
+  labeledPoints: Iterable[(T, U, String)],
+  file: File
+) extends AbstractRInterface[Unit] {
 
-  def plot[T: ClassTag, U: ClassTag](
-    labeledPoints: Iterable[(T, U, String)],
-    file: File
-  ): Unit = {
-    val R = RClient()
-    R eval "library(ggplot2)"
+  override val LIBRARIES: Seq[String] = List("ggplot2")
 
+  def process(R: RClient): Unit = {
     val (xs, ys, ls) = labeledPoints.unzip3
     R.set("xs", xs.toArray)
     R.set("ys", ys.toArray)
@@ -30,8 +30,6 @@ object ScatterPlot {
 
     R.set("fname", file.getAbsolutePath())
     R.eval("ggsave(plot, file = fname)")
-
-    R.exit()
   }
 
 }

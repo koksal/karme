@@ -66,7 +66,7 @@ object CurvePlot {
         )
       }
     }
-    ScatterPlot.plot(toPlot, f)
+    new ScatterPlot(toPlot, f).run()
   }
 
   def plot[T: ClassTag](
@@ -75,7 +75,7 @@ object CurvePlot {
     names: Seq[String],
     f: File
   ) : Unit = {
-    ScatterPlot.plot(labeledPointsForNames(exp, trajectory, names), f)
+    new ScatterPlot(labeledPointsForNames(exp, trajectory, names), f).run()
   }
 
   private def labeledPointsForNames[T](
