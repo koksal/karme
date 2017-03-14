@@ -6,6 +6,7 @@ import com.github.tototoshi.csv.CSVReader
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
+import karme.util.NamingUtil
 
 object ExperimentParser {
   val ID_LABEL = "id"
@@ -13,13 +14,12 @@ object ExperimentParser {
   def selectNames(
     namesToPrune: Set[String], filterNames: Set[String]
   ): Set[String] = {
-    val canonicalFilterNames = filterNames map canonicalize
+    val canonicalFilterNames = filterNames map NamingUtil.canonicalize
     namesToPrune filter { n =>
-      canonicalFilterNames contains canonicalize(n)
+      canonicalFilterNames contains NamingUtil.canonicalize(n)
     }
   }
 
-  private def canonicalize(n: String): String = n.toLowerCase()
 }
 
 abstract class ExperimentParser[T] {
