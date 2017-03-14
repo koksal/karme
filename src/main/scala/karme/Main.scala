@@ -19,6 +19,7 @@ import karme.printing.TransitionLogger
 import karme.synthesis.Synthesis
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
+import karme.util.NamingUtil
 import karme.visualization.{CurvePlot, StateGraphVisualization}
 
 import scala.collection.mutable
@@ -36,7 +37,7 @@ object Main {
         "No continuous experiment given.")), namesToFilter,
       opts.analysisOptions.pseudoLogFactor)
 
-    val annotationVars = ExperimentParser.selectNames(
+    val annotationVars = NamingUtil.selectNames(
       continuousExperiment.names.toSet, NamesParser(opts.annotationsFiles))
 
     val booleanExperiment = opts.discretizedExperimentFile match {

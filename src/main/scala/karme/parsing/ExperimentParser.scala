@@ -10,16 +10,6 @@ import karme.util.NamingUtil
 
 object ExperimentParser {
   val ID_LABEL = "id"
-
-  def selectNames(
-    namesToPrune: Set[String], filterNames: Set[String]
-  ): Set[String] = {
-    val canonicalFilterNames = filterNames map NamingUtil.canonicalize
-    namesToPrune filter { n =>
-      canonicalFilterNames contains NamingUtil.canonicalize(n)
-    }
-  }
-
 }
 
 abstract class ExperimentParser[T] {
@@ -40,7 +30,7 @@ abstract class ExperimentParser[T] {
     val experimentNames = headers.tail
     val projectionNames = namesToFilterOpt match {
       case None => experimentNames.toSet
-      case Some(fns) => ExperimentParser.selectNames(experimentNames.toSet, fns)
+      case Some(fns) => NamingUtil.selectNames(experimentNames.toSet, fns)
     }
     println(s"Total number of names in experiment: ${experimentNames.size}")
     println(s"Reading ${projectionNames.size} names from experiment.")
