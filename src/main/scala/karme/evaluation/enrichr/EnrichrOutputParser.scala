@@ -35,9 +35,6 @@ class EnrichrOutputParser(canonicalNames: Set[String]) {
     val matchingNames = canonicalNames filter { cn =>
       cn.equals(canonicalTermPrefix)
     }
-    assert(matchingNames.size < 2,
-      s"More than 1 matching names for $canonicalTerm: " +
-      s"${matchingNames.mkString(",")}")
     matchingNames.headOption
   }
 }
