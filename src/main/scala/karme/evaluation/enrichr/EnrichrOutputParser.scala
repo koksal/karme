@@ -21,10 +21,10 @@ class EnrichrOutputParser(canonicalNames: Set[String]) {
     tuple: Map[String, String]
   ): Option[EnrichrPrediction] = {
     val canonicalTerm = NamingUtil.canonicalize(tuple("Term"))
-    nameFromCanonicalTerm(canonicalTerm) map { matchedTermName =>
-      val target = tuple("Genes")
+    nameFromCanonicalTerm(canonicalTerm) map { matchedCanonicalTermName =>
+      val canonicalTarget = NamingUtil.canonicalize(tuple("Genes"))
       val score = tuple("Combined Score").toDouble
-      EnrichrPrediction(matchedTermName, target, score)
+      EnrichrPrediction(matchedCanonicalTermName, canonicalTarget, score)
     }
   }
 
