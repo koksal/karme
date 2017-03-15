@@ -74,16 +74,16 @@ object Trees {
     val fixedType = BooleanType
   }
 
-  case class Implies(val left: Expr, val right: Expr) 
+  case class Implies(val left: Expr, val right: Expr)
       extends Expr with FixedType {
-    val fixedType = BooleanType    
+    val fixedType = BooleanType
   }
 
   case class Not(val expr: Expr) extends Expr with FixedType {
     val fixedType = BooleanType
   }
 
-  case class Equals(val left: Expr, val right: Expr) 
+  case class Equals(val left: Expr, val right: Expr)
       extends Expr with FixedType {
     val fixedType = BooleanType
   }
