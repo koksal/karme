@@ -13,12 +13,12 @@ object EnrichrPredictionAggregator {
     val canonicalNames = names map NamingUtil.canonicalize
 
     // remaining arguments: Enrichr output files
-    val enrichrParser = new EnrichrOutputParser(canonicalNames)
     val enrichrFiles = args.tail map (new File(_))
+    println(s"Parsing ${enrichrFiles.size} files.")
+    val enrichrParser = new EnrichrOutputParser(canonicalNames)
     val predictions = enrichrFiles flatMap enrichrParser.parse
 
     println(s"Parsed ${predictions.size} predictions.")
-    println(predictions.mkString("\n"))
   }
 
 }
