@@ -29,8 +29,8 @@ class EnrichrOutputParser(canonicalNames: Set[String]) {
   }
 
   private def nameFromCanonicalTerm(canonicalTerm: String): Option[String] = {
-    val firstUnderscorePos = canonicalTerm.indexOf('_')
-    val canonicalTermPrefix = canonicalTerm.substring(0, firstUnderscorePos)
+    // split term at _ or whitespace, take first element.
+    val canonicalTermPrefix = canonicalTerm.split("[\\s_]").head
 
     val matchingNames = canonicalNames filter { cn =>
       cn.equals(canonicalTermPrefix)
