@@ -10,7 +10,6 @@ import karme.evaluation.ReachabilityEvaluation
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.parsing.BooleanExperimentParser
-import karme.parsing.ExperimentParser
 import karme.parsing.NamesParser
 import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperimentParser}
 import karme.printing.ExperimentLogger
@@ -53,8 +52,8 @@ object Main {
 
         println("Filtering.")
         // compute set of variables to filter out
-        val variablesWithOneLevel = ExperimentTransformation.namesWithSingleValue(
-          binarized)
+        val variablesWithOneLevel =
+          ExperimentTransformation.namesWithSingleValue(binarized)
         val inactiveVars = ExperimentTransformation.inactiveVariables(
           binarized, opts.analysisOptions.cellActivityThreshold)
         var varsToDrop = variablesWithOneLevel ++ inactiveVars
