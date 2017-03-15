@@ -29,12 +29,15 @@ class EnrichrOutputParser(canonicalNames: Set[String]) {
   }
 
   private def nameFromCanonicalTerm(canonicalTerm: String): Option[String] = {
+    val firstUnderscorePos = canonicalTerm.indexOf('_')
+    val canonicalTermPrefix = canonicalTerm.substring(0, firstUnderscorePos)
+
     val matchingNames = canonicalNames filter { cn =>
-      canonicalTerm.indexOf(cn) >= 0
+      cn.equals(canonicalTermPrefix)
     }
     assert(matchingNames.size < 2,
       s"More than 1 matching names for $canonicalTerm: " +
-        s"${matchingNames.mkString(",")}")
+      s"${matchingNames.mkString(",")}")
     matchingNames.headOption
   }
 }

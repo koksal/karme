@@ -18,6 +18,7 @@ object EnrichrPredictionAggregator {
     val predictions = enrichrFiles flatMap enrichrParser.parse
 
     println(s"Parsed ${predictions.size} predictions.")
+    println(predictions.mkString("\n"))
   }
 
 }
