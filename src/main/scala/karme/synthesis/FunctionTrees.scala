@@ -6,8 +6,6 @@ import karme.synthesis.traversal.BFS
 
 object FunctionTrees {
 
-  private val USE_DISTINCT_VARS = false
-
   sealed trait FunExpr
   case class FunVar(id: String) extends FunExpr
   case class FunAnd(l: FunExpr, r: FunExpr) extends FunExpr
@@ -81,22 +79,8 @@ object FunctionTrees {
     def topLevelConsistency(): Expr = {
       And(
         Not(this.isIGNORE),
-        if (USE_DISTINCT_VARS) distinctVars() else BooleanLiteral(true),
         this.recursiveConsistency()
       )
-    }
-
-    private def distinctVars(): Expr = {
-      val allNodes = this :: this.descendants
-      val distinctVars = for (
-        n1 <- allNodes; n2 <- allNodes; if n1 != n2
-      ) yield {
-        Implies(
-          And(n1.isVAR, n2.isVAR),
-          Not(Equals(n1.nodeValue, n2.nodeValue))
-        )
-      }
-      And(distinctVars: _*)
     }
 
     def recursiveConsistency(): Expr = {
@@ -179,9 +163,9 @@ object FunctionTrees {
         this.l.isVAR
       )
       And(
+        Or(andCase, orCase, notCase, ignoreCase, varCase),
         onlyVarNegations,
-        symmetryBreaking(),
-        Or(andCase, orCase, notCase, ignoreCase, varCase)
+        symmetryBreaking()
       )
     }
 
