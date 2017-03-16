@@ -80,7 +80,6 @@ object FunctionTrees {
 
     def topLevelConsistency(): Expr = {
       val allNodes = this :: this.descendants
-      // all variables are distinct
       val distinctVars = for (
         n1 <- allNodes; n2 <- allNodes; if n1 != n2
       ) yield {
@@ -182,7 +181,7 @@ object FunctionTrees {
       )
     }
 
-    def symmetryBreaking(): Expr = {
+    private def symmetryBreaking(): Expr = {
       Implies(
         Or(this.isAND, this.isOR),
         lexicographicalLTE(BFS.order(l), BFS.order(r))
