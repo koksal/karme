@@ -28,19 +28,11 @@ object FunctionTrees {
     def children: List[SymFunExpr]
     def descendants: List[SymFunExpr]
 
-    def topLevelConsistency(): Expr = {
+    def unstructuredConsistency(): Expr = {
       And(
         Not(this.isIGNORE),
-        this.recursiveConsistency()
-      )
-    }
-
-    def recursiveConsistency(): Expr = {
-      And(
         this.nodeConsistency(),
-        And(
-          this.children.map(_.recursiveConsistency()): _*
-        )
+        And(this.descendants.map(_.nodeConsistency()): _*)
       )
     }
 

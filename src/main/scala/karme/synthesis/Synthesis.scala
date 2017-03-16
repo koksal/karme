@@ -167,7 +167,7 @@ object Synthesis {
       val stepCandidateSet = candidateSet -- currentSet
       for (candidate <- stepCandidateSet; if !foundCore) {
         val toTest = currentSet + candidate
-        val isUNSAT = synthesize(
+        val isUNSAT = enumerateFunExprForMinNbVars(
           toTest, possibleVars, MAX_EXPRESSION_DEPTH).isEmpty
         if (isUNSAT) {
           foundCore = true
@@ -199,20 +199,20 @@ object Synthesis {
     var res = List[FunExpr]()
     var currDepth = 0
     while (res.isEmpty && currDepth <= MAX_EXPRESSION_DEPTH) {
-      res = synthesize(transitions, possibleVars, currDepth)
+      res = enumerateFunExprForMinNbVars(transitions, possibleVars, currDepth)
       currDepth += 1
     }
     res
   }
 
-  private def synthesize(
+  def enumerateFunExprForMinNbVars(
     transitions: Iterable[Transition],
     possibleVars: Set[String],
     depth: Int
   ): List[FunExpr] = {
     // create symbolic tree
     val symTree = mkFreshSymFunExpr(depth, possibleVars)
-    val treeConsistent = symTree.topLevelConsistency()
+    val treeConsistent = symTree.unstructuredConsistency()
 
     // applying symbolic tree to all transitions should yield output
     val transitionsValid = And(
