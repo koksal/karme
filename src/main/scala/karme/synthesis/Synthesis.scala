@@ -120,19 +120,6 @@ object Synthesis {
       currentResults += SynthesisResult(hardTransitions, fs.toSet)
     }
 
-    // val inconsistentSet = softTransitions -- consistentSoftSet
-    // val totalSoftWeightSum = softTransitions.map(_.weight).sum
-    // val inconsistentWeightSum = inconsistentSet.map(_.weight).sum
-    // println(s"There are ${inconsistentSet.size} / ${softTransitions.size} " +
-    //   "inconsistent soft constraints (weights: " +
-    //     s"${inconsistentWeightSum} / ${totalSoftWeightSum})")
-
-    // println(s"${currentExpressions.size} function(s) inferred with maximal " +
-    //   s"soft constraints:")
-    // for (expr <- currentExpressions) {
-    //   println(FunctionTrees.prettyString(expr))
-    // }
-
     currentResults
   }
 
