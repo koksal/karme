@@ -20,7 +20,7 @@ object SynthesisResultLogger {
   }
 
   private def resultStr(r: SynthesisResult): String = {
-    r.functions.map(FunctionTrees.prettyString).mkString("\n")
+    r.functions.map(FunExprPrettyPrinter.apply).mkString("\n")
   }
 
 }
