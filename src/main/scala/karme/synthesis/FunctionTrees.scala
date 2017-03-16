@@ -20,23 +20,34 @@ object FunctionTrees {
   }
 
   class EncodingMapping(variableNames: Seq[String]) {
-    // constant values
-    val AND       = 0
-    val OR        = 1
-    val NOT       = 2
-    val IGNORE    = 3
-    val VARSTART  = 4
+    sealed trait EncodingMappingValue
+    case object AndEncodingValue extends EncodingMappingValue
+    case object OrEncodingValue extends EncodingMappingValue
+    case object NotEncodingValue extends EncodingMappingValue
+    case object IgnoreEncodingValue extends EncodingMappingValue
 
-    // expressions
-    val AND_NODE                = IntLiteral(AND)
-    val OR_NODE                 = IntLiteral(OR)
-    val NOT_NODE                = IntLiteral(NOT)
-    val IGNORE_NODE             = IntLiteral(IGNORE)
-    def VAR_NODE(name: String)  = IntLiteral(
-      variableNames.indexOf(name) + VARSTART)
-    val VAR_NODE_RANGE          = variableNames map VAR_NODE
+    private val nonVariableEncodingValues = List(AndEncodingValue,
+      OrEncodingValue, NotEncodingValue, IgnoreEncodingValue)
 
-    def VAR_NAME(modelValue: Int) = variableNames(modelValue - this.VARSTART)
+    private def encodingValueConstant(emv: EncodingMappingValue): Int = {
+      assert(nonVariableEncodingValues.contains(emv))
+      nonVariableEncodingValues.indexOf(emv)
+    }
+
+    val AND_NODE = IntLiteral(encodingValueConstant(AndEncodingValue))
+    val OR_NODE = IntLiteral(encodingValueConstant(OrEncodingValue))
+    val NOT_NODE = IntLiteral(encodingValueConstant(NotEncodingValue))
+    val IGNORE_NODE = IntLiteral(encodingValueConstant(IgnoreEncodingValue))
+
+    def VAR_NODE(name: String): Expr = {
+      IntLiteral(nonVariableEncodingValues.size + variableNames.indexOf(name))
+    }
+
+    val VAR_NODE_RANGE: Seq[Expr] = variableNames map VAR_NODE
+
+    def VAR_NAME(modelValue: Int): String = {
+      variableNames(modelValue - nonVariableEncodingValues.size)
+    }
   }
 
   abstract class SymFunExpr {
