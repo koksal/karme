@@ -6,7 +6,6 @@ function run_with_args() {
   folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
   scripts/run-default.sh $folder \
-    # --annotations data/names/markers.txt \
     --synthesis \
     --simulation \
     --uncertainty 0.0 \
@@ -67,7 +66,7 @@ CLUSTERING_ARGS["16"]="--cluster --minClust 16 --maxClust 16"
 CLUSTERING_ARGS["18"]="--cluster --minClust 18 --maxClust 18"
 CLUSTERING_ARGS["20"]="--cluster --minClust 20 --maxClust 20"
 
-SHELL="/bin/bash" parallel --jobs 4 --delay 30 run_with_args \
+SHELL="/bin/bash" parallel --jobs 5 --delay 30 run_with_args \
   ::: "${FILTER_NAMES_ARGS[@]}" \
   ::: "${DATA_TRANSFORM_ARGS[@]}" \
   ::: "${ACTIVITY_FILTER_ARGS[@]}" \
