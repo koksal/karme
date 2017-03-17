@@ -1,3 +1,6 @@
 install.packages("Ckmeans.1d.dp", repos="http://cran.rstudio.com/")
 install.packages("ggplot2", repos="http://cran.rstudio.com/")
+install.packages("gplots", repos="http://cran.rstudio.com/")
+install.packages("mclust", repos="http://cran.rstudio.com/")
 install.packages("NbClust", repos="http://cran.rstudio.com/")
+install.packages("RColorBrewer", repos="http://cran.rstudio.com/")
