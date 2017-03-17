@@ -220,10 +220,6 @@ object FunctionTrees {
       )
     }
 
-    def symmetryBreaking(): Expr = {
-      BooleanLiteral(true)
-    }
-
     def nbVariables(): Expr = {
       // only used for VAR cases from parent nodes.
       IntLiteral(1)
