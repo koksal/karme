@@ -212,7 +212,7 @@ object Synthesis {
   ): List[FunExpr] = {
     // create symbolic tree
     val symTree = mkFreshSymFunExpr(depth, possibleVars)
-    val treeConsistent = symTree.unstructuredConsistency()
+    val treeConsistent = symTree.topLevelConsistencyWithFactorizedNegation()
 
     // applying symbolic tree to all transitions should yield output
     val transitionsValid = And(

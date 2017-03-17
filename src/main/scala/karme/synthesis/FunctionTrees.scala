@@ -28,15 +28,16 @@ object FunctionTrees {
     def children: List[SymFunExpr]
     def descendants: List[SymFunExpr]
 
-    def unstructuredConsistency(): Expr = {
+    def topLevelConsistencyWithArbitraryStructure(): Expr = {
       And(
         Not(this.isIGNORE),
-        this.nodeConsistency(),
-        And(this.descendants.map(_.nodeConsistency()): _*)
+        this.localNodeConsistency(canBeNegation = true),
+        And(this.descendants.map(_.localNodeConsistency(canBeNegation = true)): _*)
       )
     }
 
-    def nodeConsistency(): Expr
+    def topLevelConsistencyWithFactorizedNegation(): Expr
+    def localNodeConsistency(canBeNegation: Boolean): Expr
     def nbVariables(): Expr
 
     def isAND: Expr = Equals(this.nodeValue, encodingMapping.AND_NODE)
@@ -52,10 +53,6 @@ object FunctionTrees {
         Equals(v, vn)
       }
       Or(disj.toList: _*)
-    }
-
-    def isGate: Expr = {
-      Or(this.isAND, this.isOR, this.isNOT)
     }
   }
 
@@ -75,7 +72,48 @@ object FunctionTrees {
     def children = List(l, r)
     def descendants = l.descendants ::: r.descendants ::: List(l, r)
 
-    def nodeConsistency(): Expr = {
+    // Function of form either:
+    //    a monotonic Boolean function (no negations)
+    //    !a && b where a and b are monotonic Boolean functions
+    def topLevelConsistencyWithFactorizedNegation(): Expr = {
+      val hasFactorizedNegation = And(
+        // this node is locally consistent and is a conjunction
+        this.localNodeConsistency(canBeNegation = false),
+        this.isAND,
+        // the left child locally consistent and is a negation
+        this.l.localNodeConsistency(canBeNegation = true),
+        this.l.isNOT,
+        // the negated subexpression is monotonic
+        And(
+          this.l.descendants.map(_.localNodeConsistency(canBeNegation =
+            false)): _*
+        ),
+        // the non-negated subexpression is monotonic
+        this.r.localNodeConsistency(canBeNegation = false),
+        And(
+          this.r.descendants.map(_.localNodeConsistency(canBeNegation =
+            false)): _*
+        )
+      )
+
+      Or(
+        this.topLevelMonotonicConsistency(),
+        hasFactorizedNegation
+      )
+    }
+
+    private def topLevelMonotonicConsistency(): Expr = {
+      val descendantsConsistency = this.descendants.map { d =>
+        d.localNodeConsistency(canBeNegation = false)
+      }
+      And(
+        Not(this.isIGNORE),
+        this.localNodeConsistency(canBeNegation = false),
+        And(descendantsConsistency: _*)
+      )
+    }
+
+    def localNodeConsistency(canBeNegation: Boolean): Expr = {
       val andCase = And(
         this.isAND,
         Not(l.isIGNORE),
@@ -86,11 +124,15 @@ object FunctionTrees {
         Not(l.isIGNORE),
         Not(r.isIGNORE)
       )
-      val notCase = And(
-        this.isNOT,
-        Not(l.isIGNORE),
-        r.isIGNORE
-      )
+      val notCase = if (canBeNegation) {
+        And(
+          this.isNOT,
+          Not(l.isIGNORE),
+          r.isIGNORE
+        )
+      } else {
+        BooleanLiteral(false)
+      }
       val ignoreCase = And(
         this.isIGNORE,
         l.isIGNORE,
@@ -102,17 +144,13 @@ object FunctionTrees {
         r.isIGNORE
       )
 
-      val onlyVarNegations = Implies(
-        this.isNOT,
-        this.l.isVAR
-      )
       And(
         Or(andCase, orCase, notCase, ignoreCase, varCase),
-        onlyVarNegations,
         symmetryBreaking()
       )
     }
 
+    // TODO adapt to unbalanced symbolic tree structures if needed
     private def symmetryBreaking(): Expr = {
       Implies(
         Or(this.isAND, this.isOR),
@@ -170,7 +208,12 @@ object FunctionTrees {
     def children = List()
     def descendants = List()
 
-    def nodeConsistency(): Expr = {
+    // Only invoked at top-level, so we have a 0-depth tree
+    def topLevelConsistencyWithFactorizedNegation(): Expr = {
+      this.isVAR
+    }
+
+    def localNodeConsistency(canBeNegation: Boolean): Expr = {
       Or(
         this.isVAR,
         this.isIGNORE
