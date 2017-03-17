@@ -4,10 +4,7 @@ import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 
-object Synthesis {
-
-  val MAX_EXPRESSION_DEPTH = 3
-  val MAX_NB_MODELS = None // Some(1)
+class Synthesizer(maxExpressionDepth: Int, maxNbModels: Option[Int]) {
 
   def synthesizeForAllLabels(
     positiveTransitions: Set[Transition],
@@ -168,7 +165,7 @@ object Synthesis {
       for (candidate <- stepCandidateSet; if !foundCore) {
         val toTest = currentSet + candidate
         val isUNSAT = enumerateFunExprForMinNbVars(
-          toTest, possibleVars, MAX_EXPRESSION_DEPTH).isEmpty
+          toTest, possibleVars, maxExpressionDepth).isEmpty
         if (isUNSAT) {
           foundCore = true
           currentSet = toTest
@@ -198,7 +195,7 @@ object Synthesis {
   ): List[FunExpr] = {
     var res = List[FunExpr]()
     var currDepth = 0
-    while (res.isEmpty && currDepth <= MAX_EXPRESSION_DEPTH) {
+    while (res.isEmpty && currDepth <= maxExpressionDepth) {
       res = enumerateFunExprForMinNbVars(transitions, possibleVars, currDepth)
       currDepth += 1
     }
@@ -241,7 +238,7 @@ object Synthesis {
     def extract(model: Map[Identifier, Expr]): FunExpr =
       funExprValue(sfe, model)
     def symEq(fe: FunExpr): Expr = funExprEquals(sfe, fe)
-    Enumeration.enumerate(extract, symEq, constraints, MAX_NB_MODELS)
+    Enumeration.enumerate(extract, symEq, constraints, maxNbModels)
   }
 
   private def findMinNbVars(

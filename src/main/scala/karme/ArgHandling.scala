@@ -117,6 +117,18 @@ object ArgHandling {
         o.copy(analysisOptions = o.analysisOptions.copy(maxNbClusters = i))
       } text "max number of gene clusters"
 
+      // Synthesis options:
+
+      opt[Int]("max-expr-depth") action { (i, o) =>
+        o.copy(synthesisOptions = o.synthesisOptions.copy(
+          maxExpressionDepth = i))
+      } text "maximum expression depth for inferred functions"
+
+      opt[Int]("max-nb-models") action { (i, o) =>
+        o.copy(synthesisOptions = o.synthesisOptions.copy(
+          maxNbModels = Some(i)))
+      } text "maximum number of equivalent functions enumerated"
+
       // Visualization options:
 
       opt[Unit]("visualize") action { (_, o) =>

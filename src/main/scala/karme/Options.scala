@@ -21,6 +21,7 @@ case class Options(
   runSimulation: Boolean = false,
   // sub-options
   analysisOptions: AnalysisOptions = AnalysisOptions(),
+  synthesisOptions: SynthesisOptions = SynthesisOptions(),
   visualizationOptions: VisualizationOptions = VisualizationOptions()
 )
 
@@ -35,6 +36,11 @@ case class AnalysisOptions(
   cluster: Boolean = false,
   minNbClusters: Int = 2,
   maxNbClusters: Int = 30
+)
+
+case class SynthesisOptions(
+  maxExpressionDepth: Int = 3,
+  maxNbModels: Option[Int] = None
 )
 
 case class VisualizationOptions(

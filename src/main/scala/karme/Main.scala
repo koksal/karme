@@ -15,7 +15,7 @@ import karme.parsing.{CellTrajectoryParser, ClusteringParser, ContinuousExperime
 import karme.printing.ExperimentLogger
 import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
-import karme.synthesis.Synthesis
+import karme.synthesis.Synthesizer
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
 import karme.util.NamingUtil
@@ -157,7 +157,10 @@ object Main {
 
     if (opts.runSynthesis) {
       println("Synthesizing.")
-      val labelToSynthesisResults = Synthesis.synthesizeForAllLabels(
+      val synthesizer = new Synthesizer(
+        opts.synthesisOptions.maxExpressionDepth,
+        opts.synthesisOptions.maxNbModels)
+      val labelToSynthesisResults = synthesizer.synthesizeForAllLabels(
         positiveTransitions, negativeTransitions)
 
       if (opts.runSimulation) {

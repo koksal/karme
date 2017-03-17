@@ -24,7 +24,11 @@ class SynthesisTest extends FunSuite {
     )
     val possibleVars = Set("A", "B")
 
-    val res = Synthesis.enumerateFunExprForMinNbVars(transitions,
+    // TODO refactor Synthesizer so we don't need to instantiate here with
+    // the irrelevant maxExpressionDepth
+    val synthesizer = new Synthesizer(maxExpressionDepth = 5, maxNbModels =
+      None)
+    val res = synthesizer.enumerateFunExprForMinNbVars(transitions,
       possibleVars, 5)
 
     assertResult(List(FunVar("B")))(res)
