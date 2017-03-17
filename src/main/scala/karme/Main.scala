@@ -61,6 +61,7 @@ object Main {
           varsToDrop = varsToDrop -- annotationVars
         }
         val filtered = binarized.project(binarized.names.toSet -- varsToDrop)
+        println(s"Filtering Boolean experiment down to ${filtered.names.size}")
 
         ExperimentLogger.saveToFile(filtered,
           new File(opts.outFolder, "experiment-discretized-filtered.csv"))

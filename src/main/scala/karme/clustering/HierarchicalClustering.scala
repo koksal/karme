@@ -18,8 +18,10 @@ object HierarchicalClustering {
     outFolder: File
   ): Map[Int, Set[String]] = {
     val adjustedMaxNbClust = math.min(exp.names.size - 1, maxNbClust)
+    val adjustedMinNbClust = math.min(minNbClust, adjustedMaxNbClust)
     if (adjustedMaxNbClust != maxNbClust) {
-      println(s"Setting max k to $adjustedMaxNbClust instead of $maxNbClust.")
+      println(s"Setting boundaries for k to ($adjustedMinNbClust, " +
+        s"$adjustedMaxNbClust).")
     }
 
     // TODO this is temporary, keeps the last clustering only
@@ -30,8 +32,9 @@ object HierarchicalClustering {
       index <- indices
       method <- methods
     } {
-      val nbClustPartition = new NbClustInterface(exp.valueMatrix, minNbClust,
-        adjustedMaxNbClust, method = method, index = index).run()
+      val nbClustPartition = new NbClustInterface(exp.valueMatrix,
+        adjustedMinNbClust, adjustedMaxNbClust, method = method,
+        index = index).run()
       clustering = exp.names.zip(nbClustPartition).toMap
       val bestK = nbClustPartition.toSet.size
       println(s"Optimal nb. clusters for ($index, $method): $bestK")
