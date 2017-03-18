@@ -29,7 +29,7 @@ FILTER_NAMES_ARGS["human-tf"]="--names data/names/human-tf.txt"
 
 # data transformation
 declare -A DATA_TRANSFORM_ARGS
-DATA_TRANSFORM_ARGS["none"]=""
+# DATA_TRANSFORM_ARGS["none"]=""
 DATA_TRANSFORM_ARGS["pseudolog-2"]="--pseudolog-factor 2"
 # DATA_TRANSFORM_ARGS["pseudolog-5"]="--pseudolog-factor 5"
 
