@@ -4,4 +4,6 @@ dependencies:
     - sudo apt-get update
     - sudo apt-get install r-base r-base-dev
     - sudo Rscript ./scripts/setup-r-packages.R
-    - wget https://github.com/epfl-lara/ScalaZ3/releases/download/v2.1.1/scalaz3-unix-64b-2.1.1.jar --directory-prefix lib
+    - git clone https://github.com/epfl-lara/ScalaZ3.git ScalaZ3
+    - cd ScalaZ3 && sbt package && cd ..
+    - cp ScalaZ3/target/scala-2.12/scalaz3_2.12-3.0.jar lib
