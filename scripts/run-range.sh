@@ -59,10 +59,10 @@ SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 
 # clustering
 declare -A CLUSTERING_ARGS
-CLUSTERING_ARGS["10"]="--cluster --minClust 10 --maxClust 10"
-CLUSTERING_ARGS["12"]="--cluster --minClust 12 --maxClust 12"
-CLUSTERING_ARGS["14"]="--cluster --minClust 14 --maxClust 14"
-CLUSTERING_ARGS["16"]="--cluster --minClust 16 --maxClust 16"
+# CLUSTERING_ARGS["10"]="--cluster --minClust 10 --maxClust 10"
+# CLUSTERING_ARGS["12"]="--cluster --minClust 12 --maxClust 12"
+# CLUSTERING_ARGS["14"]="--cluster --minClust 14 --maxClust 14"
+# CLUSTERING_ARGS["16"]="--cluster --minClust 16 --maxClust 16"
 CLUSTERING_ARGS["18"]="--cluster --minClust 18 --maxClust 18"
 CLUSTERING_ARGS["20"]="--cluster --minClust 20 --maxClust 20"
 
