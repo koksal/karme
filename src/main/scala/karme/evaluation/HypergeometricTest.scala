@@ -11,8 +11,11 @@ class HypergeometricTest(
 ) extends AbstractRInterface[Double] {
 
   def process(R: RClient): Double = {
-    call(R)("phyper", "res", "q" -> (nbSampleSuccesses - 1),
-      "m" -> nbTotalSuccesses, "n" -> nbTotalFailures, "k" -> nbSamples,
+    call(R)("phyper", "res",
+      "q" -> (nbSampleSuccesses - 1),
+      "m" -> nbTotalSuccesses,
+      "n" -> nbTotalFailures,
+      "k" -> nbSamples,
       "lower.tail" -> "FALSE")
 
     R.evalD0("res")
