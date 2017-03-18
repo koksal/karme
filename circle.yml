@@ -4,6 +4,7 @@ dependencies:
     - sudo apt-get update
     - sudo apt-get install r-base r-base-dev
     - sudo Rscript ./scripts/setup-r-packages.R
+    - rm ~/.gitconfig # the default config rewrites https to ssh, which makes cloning Z3 fail
     - git clone https://github.com/epfl-lara/ScalaZ3.git ScalaZ3
     - cd ScalaZ3 && sbt package && cd ..
     - cp ScalaZ3/target/scala-2.12/scalaz3_2.12-3.0.jar lib
