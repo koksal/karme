@@ -1,4 +1,4 @@
-package karme.clustering
+package karme.transformations.clustering
 
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient

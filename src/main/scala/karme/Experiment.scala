@@ -1,6 +1,6 @@
 package karme
 
-import karme.discretization.MclustInterface
+import karme.transformations.discretization.MclustInterface
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ConcreteBooleanState
 

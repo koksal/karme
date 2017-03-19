@@ -2,8 +2,8 @@ package karme
 
 import java.io.File
 
-import karme.discretization.Ckmeans
-import karme.discretization.Mclust
+import karme.transformations.discretization.Ckmeans
+import karme.transformations.discretization.Mclust
 import scopt.OptionParser
 
 /**
@@ -11,14 +11,14 @@ import scopt.OptionParser
   */
 object ArgHandling {
   def parseOptions(args: Array[String]) = {
-    val opts = new Options()
+    val opts = new Opts()
     ArgHandling.parser.parse(args, opts) getOrElse {
       sys.error("Bad arguments.")
     }
   }
 
   private def parser = {
-    new OptionParser[Options]("karme") {
+    new OptionParser[Opts]("karme") {
       head("karme", "1.0")
 
       // Input files:
@@ -36,7 +36,7 @@ object ArgHandling {
       } text "MLE experiment file in CSV format"
 
       opt[File]("cell-clusters") action { (v, o) =>
-        o.copy(clusterFile = Some(v))
+        o.copy(cellClusteringFile = Some(v))
       } text "cell clustering file in CSV format"
 
       opt[Seq[File]]("names") action { (vs, o) =>
@@ -120,12 +120,12 @@ object ArgHandling {
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>
-        o.copy(synthesisOptions = o.synthesisOptions.copy(
+        o.copy(synthOpts = o.synthOpts.copy(
           maxExpressionDepth = i))
       } text "maximum expression depth for inferred functions"
 
       opt[Int]("max-nb-models") action { (i, o) =>
-        o.copy(synthesisOptions = o.synthesisOptions.copy(
+        o.copy(synthOpts = o.synthOpts.copy(
           maxNbModels = Some(i)))
       } text "maximum number of equivalent functions enumerated"
 

@@ -1,4 +1,4 @@
-package karme.transformations
+package karme.analysis
 
 import karme.Experiments.DiscreteExperiment
 import karme.Experiments.DiscreteMeasurement
@@ -64,6 +64,7 @@ object DiscreteStateAnalysis {
     diffs.sum
   }
 
+  // TODO move
   def hammingDistance(
     s1: ConcreteBooleanState, s2: ConcreteBooleanState
   ): Int = {
@@ -73,14 +74,7 @@ object DiscreteStateAnalysis {
     }
   }
 
-  def nonIdenticalNames(
-    exp: DiscreteExperiment,
-    vs1: Seq[Boolean],
-    vs2: Seq[Boolean]
-  ): Seq[String] = {
-    nonIdenticalNames(exp.names, vs1, vs2)
-  }
-
+  // TODO move and parameterize/change arguments
   def nonIdenticalNames(
     names: Seq[String],
     vs1: Seq[Boolean],
@@ -89,6 +83,7 @@ object DiscreteStateAnalysis {
     nonIdenticalIndices(vs1, vs2) map { i => names(i) }
   }
 
+  // TODO move
   def nonIdenticalIndices[T](vs1: Seq[T], vs2: Seq[T]): Seq[Int] = {
     assert(vs1.size == vs2.size)
     vs1.indices filter { i =>

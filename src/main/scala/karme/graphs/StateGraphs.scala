@@ -11,8 +11,8 @@ import karme.Experiments.ThreeValued
 import karme.Experiments.ThreeValuedMeasurement
 import karme.Experiments.ThreeValuedExperiment
 import karme.Experiments.Uncertain
+import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.Graphs._
-import karme.transformations.DiscreteStateAnalysis
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState

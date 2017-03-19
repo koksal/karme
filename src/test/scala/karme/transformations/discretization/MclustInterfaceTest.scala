@@ -1,4 +1,4 @@
-package karme.discretization
+package karme.transformations.discretization
 
 import org.scalatest.FunSuite
 

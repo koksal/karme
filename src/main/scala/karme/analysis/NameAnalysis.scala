@@ -1,12 +1,9 @@
-package karme
+package karme.analysis
 
 import karme.util.NamingUtil
 
 import scala.io.Source
 
-/**
-  * Created by ask on 1/16/17.
-  */
 object NameAnalysis {
 
   def main(args: Array[String]): Unit = {

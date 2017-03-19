@@ -1,6 +1,7 @@
 package karme.transformations
 
 import karme.Experiments.Measurement
+import karme.analysis.DiscreteStateAnalysis
 import karme.synthesis.Transitions.GenericState
 import org.scalatest.FunSuite
 

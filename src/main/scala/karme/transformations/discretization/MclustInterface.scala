@@ -1,4 +1,4 @@
-package karme.discretization
+package karme.transformations.discretization
 
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient

@@ -3,9 +3,8 @@ package karme
 import java.io.File
 
 import karme.Experiments.ContinuousExperiment
-import karme.clustering.HierarchicalClustering
-import karme.transformations.BinomialMLE
-import karme.discretization.Discretization
+import karme.transformations.clustering.HierarchicalClustering
+import karme.transformations.discretization.Discretization
 import karme.evaluation.ReachabilityEvaluation
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
@@ -18,12 +17,21 @@ import karme.printing.TransitionLogger
 import karme.synthesis.Synthesizer
 import karme.transformations.ExperimentTransformation
 import karme.transformations.TransitionProducer
+import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.{CurvePlot, StateGraphVisualization}
 
 import scala.collection.mutable
 
 object Main {
+
+  def main2(args: Array[String]): Unit = {
+    val opts = ArgHandling.parseOptions(args)
+
+    val reporter = new Reporter(opts.outFolder)
+
+    val synthesisInputBuilder = new SynthesisInputBuilder()
+  }
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
@@ -115,7 +123,7 @@ object Main {
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"))
 
-    val cellClustering = readClustering(opts.clusterFile)
+    val cellClustering = readClustering(opts.cellClusteringFile)
 
     println("Expanding three-valued experiment to Boolean combinations.")
     val booleanExpFromCombinations = StateGraphs.expandWithBooleanCombinations(
@@ -159,8 +167,8 @@ object Main {
     if (opts.runSynthesis) {
       println("Synthesizing.")
       val synthesizer = new Synthesizer(
-        opts.synthesisOptions.maxExpressionDepth,
-        opts.synthesisOptions.maxNbModels)
+        opts.synthOpts.maxExpressionDepth,
+        opts.synthOpts.maxNbModels)
       val labelToSynthesisResults = synthesizer.synthesizeForAllLabels(
         positiveTransitions, negativeTransitions)
 

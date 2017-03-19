@@ -1,4 +1,4 @@
-package karme.transformations
+package karme.transformations.smoothing
 
 import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
