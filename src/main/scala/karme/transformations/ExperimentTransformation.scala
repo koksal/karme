@@ -29,7 +29,6 @@ object ExperimentTransformation {
   def namesWithSingleValue(exp: BooleanExperiment): Set[String] = {
     val nameSeq = exp.names filter { n =>
       val nvs = exp.valuesForName(n)
-      // uses implicit Boolean ordering
       nvs.toSet.size == 1
     }
     nameSeq.toSet
