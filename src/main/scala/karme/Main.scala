@@ -118,7 +118,7 @@ object Main {
     }
 
     println("Converting to three-valued states")
-    val threeValuedExperiment = Experiments.threeValuedExpFromMixtureModel(
+    val threeValuedExperiment = Experiments.continuousExperimentToThreeValued(
       clusteredExperiment, 0.4)
     ExperimentLogger.saveToFile(threeValuedExperiment,
       new File(opts.outFolder, "experiment-three-valued.csv"))

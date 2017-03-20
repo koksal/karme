@@ -17,7 +17,7 @@ case class SynthInputBuilderOpts(
   pseudoLogFactor: Option[Double] = None,
   firstDiscretizationMethod: DiscretizationMethod = Ckmeans,
   cellActivityThreshold: Double = 0.20,
-  uncertaintyMargin: Double = 0.05,
+  uncertaintyThreshold: Double = 0.4,
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
   clusteringOpts: ClusteringOpts = ClusteringOpts()
