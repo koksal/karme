@@ -2,7 +2,6 @@ package karme
 
 import java.io.File
 
-import karme.Experiments.ContinuousExperiment
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
 import karme.evaluation.ReachabilityEvaluation
@@ -15,8 +14,7 @@ import karme.printing.ExperimentLogger
 import karme.printing.StatePseudotimeLogger
 import karme.printing.TransitionLogger
 import karme.synthesis.Synthesizer
-import karme.transformations.ExperimentTransformation
-import karme.transformations.TransitionProducer
+import karme.transformations.{ExperimentTransformation, SynthesisInputBuilder, TransitionProducer}
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.{CurvePlot, StateGraphVisualization}
@@ -30,7 +28,8 @@ object Main {
 
     val reporter = new Reporter(opts.outFolder)
 
-    val synthesisInputBuilder = new SynthesisInputBuilder()
+    val synthesisInputBuilder = new SynthesisInputBuilder(
+      opts.synthInputBuilderOpts)
   }
 
   def main(args: Array[String]): Unit = {
@@ -182,24 +181,6 @@ object Main {
         ReachabilityEvaluation.evaluate(labelToSynthesisResults,
           initialStates, observedStates, opts.outFolder)
       }
-    }
-  }
-
-  private def readAndTransformContinuousExperiment(
-    experimentFile: File,
-    filterNames: Set[String],
-    pseudoLogFactor: Option[Double]
-  ): ContinuousExperiment = {
-    println("Reading continuous experiment.")
-    val e = ContinuousExperimentParser.parseAndFilter(experimentFile,
-      if (filterNames.isEmpty) None else Some(filterNames))
-
-    pseudoLogFactor match {
-      case Some(factor) => {
-        println("Transforming data.")
-        ExperimentTransformation.pseudoLog(e, factor)
-      }
-      case None => e
     }
   }
 

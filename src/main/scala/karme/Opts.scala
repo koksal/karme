@@ -15,7 +15,7 @@ case class Opts(
 case class SynthInputBuilderOpts(
   inputFileOpts: InputFileOpts = InputFileOpts(),
   pseudoLogFactor: Option[Double] = None,
-  firstDiscretizationMethod: DiscretizationMethod = Ckmeans,
+  booleanNormalizationMethod: DiscretizationMethod = Ckmeans,
   cellActivityThreshold: Double = 0.20,
   uncertaintyThreshold: Double = 0.4,
   smoothingRadius: Int = 20,
