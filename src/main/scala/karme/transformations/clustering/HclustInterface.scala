@@ -1,4 +1,4 @@
-package karme.clustering
+package karme.transformations.clustering
 
 import java.io.File
 

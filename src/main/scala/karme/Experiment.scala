@@ -1,6 +1,6 @@
 package karme
 
-import karme.discretization.MclustInterface
+import karme.transformations.discretization.MclustInterface
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ConcreteBooleanState
 
@@ -63,29 +63,7 @@ object Experiments {
     def measurementFromId(id: String): Measurement[T] = idToMeasurement(id)
   }
 
-  def probabilisticExperimentToThreeValued(
-    e: ProbabilisticExperiment,
-    uncertaintyMargin: Double
-  ): ThreeValuedExperiment = {
-    val MID_VALUE = 0.5
-
-    val threeValuedMeasurements = e.measurements map { m =>
-      val threeValState = m.state.mapValues[ThreeValued] { v =>
-        assert(v >= 0 && v <= 1)
-        if (math.abs(MID_VALUE - v) <= uncertaintyMargin) {
-          Uncertain
-        } else if (v < MID_VALUE) {
-          Low
-        } else {
-          High
-        }
-      }
-      m.copy(state = threeValState)
-    }
-    e.copy(measurements = threeValuedMeasurements)
-  }
-
-  def threeValuedExpFromMixtureModel(
+  def continuousExperimentToThreeValued(
     e: ProbabilisticExperiment,
     uncertaintyThreshold: Double
   ): ThreeValuedExperiment = {

@@ -3,11 +3,13 @@ package karme.parsing
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
+import karme.util.MapUtil
 
 import scala.collection.mutable
 
 object ClusteringParser {
-  def parse(f: File): mutable.MultiMap[String, String] = {
+
+  def apply(f: File): Map[String, Set[String]] = {
     val clustering = new mutable.HashMap[String, mutable.Set[String]]()
       with mutable.MultiMap[String, String]
 
@@ -22,6 +24,7 @@ object ClusteringParser {
       clustering.addBinding(cluster, id)
     }
 
-    clustering
+    MapUtil.multiMapToMap(clustering)
   }
+
 }

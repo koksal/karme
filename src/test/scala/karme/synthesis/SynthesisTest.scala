@@ -1,5 +1,7 @@
 package karme.synthesis
 
+import karme.Reporter
+import karme.SynthOpts
 import karme.synthesis.FunctionTrees.FunVar
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.Transition
@@ -26,8 +28,8 @@ class SynthesisTest extends FunSuite {
 
     // TODO refactor Synthesizer so we don't need to instantiate here with
     // the irrelevant maxExpressionDepth
-    val synthesizer = new Synthesizer(maxExpressionDepth = 5, maxNbModels =
-      None)
+    val synthesizer = new Synthesizer(SynthOpts(maxExpressionDepth = 5,
+      maxNbModels = None), Reporter.defaultReporter())
     val res = synthesizer.enumerateFunExprForMinNbVars(transitions,
       possibleVars, 5)
 
