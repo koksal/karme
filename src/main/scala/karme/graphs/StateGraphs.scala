@@ -25,6 +25,13 @@ object StateGraphs {
   type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
+  def namesFromStateGraph(g: GraphLike[StateGraphVertex, _, _]): Seq[String] = {
+    g.V.headOption match {
+      case Some(v) => v.names
+      case None => sys.error("Names in empty graph.")
+    }
+  }
+
   /**
     * Builds a state graph by adding all edges within maximum Hamming distance.
     */
@@ -130,6 +137,10 @@ object StateGraphs {
       } else {
         1
       }
+    }
+
+    def names: Seq[String] = {
+      state.orderedKeys
     }
   }
 

@@ -8,8 +8,9 @@ import karme.transformations.discretization.DiscretizationMethod
 case class Opts(
   outFolder: File = new File("."),
   synthInputBuilderOpts: SynthInputBuilderOpts = SynthInputBuilderOpts(),
-  runSynthesis: Boolean = false,
-  synthOpts: SynthOpts = SynthOpts()
+  synthOpts: SynthOpts = SynthOpts(),
+  annotationOpts: AnnotationOpts = AnnotationOpts(),
+  runSynthesis: Boolean = false
 )
 
 case class SynthInputBuilderOpts(
@@ -26,7 +27,7 @@ case class SynthInputBuilderOpts(
 case class InputFileOpts(
   continuousExperimentFile: Option[File] = None,
   discretizedExperimentFile: Option[File] = None,
-  mleExperimentFile: Option[File] = None,
+  smoothedExperimentFile: Option[File] = None,
   namesFiles: Seq[File] = Seq(),
   trajectoryFiles: Seq[File] = Seq()
 )

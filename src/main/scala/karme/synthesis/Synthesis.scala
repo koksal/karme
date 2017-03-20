@@ -1,12 +1,55 @@
 package karme.synthesis
 
+import karme.Reporter
+import karme.SynthOpts
+import karme.evaluation.ReachabilityEvaluation
+import karme.graphs.StateGraphs
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
+import karme.transformations.TransitionProducer
 
-class Synthesizer(maxExpressionDepth: Int, maxNbModels: Option[Int]) {
+class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
-  def synthesizeForAllLabels(
+  def synthesizeForOptimalReachability(
+    directedStateGraph: DirectedBooleanStateGraph,
+    initialStates: Set[ConcreteBooleanState]
+  ): Map[String, SynthesisResult] = {
+    val (posTransitions, negTransitions) =
+      producePositiveAndNegativeTransitions(directedStateGraph)
+
+    val allResults = synthesizeFunctionsForAllTransitionSubsets(
+      posTransitions, negTransitions)
+
+    chooseSynthesisResultsForOptimalReachability(directedStateGraph,
+      initialStates, allResults)
+  }
+
+  def producePositiveAndNegativeTransitions(
+    directedStateGraph: DirectedBooleanStateGraph
+  ): (Set[Transition], Set[Transition]) = {
+    val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
+    val positiveTransitions = TransitionProducer.positiveTransitions(
+      directedStateGraph)
+    val negativeTransitions = TransitionProducer.negativeTransitions(
+      directedStateGraph, stateNames)
+    (positiveTransitions, negativeTransitions)
+  }
+
+  def chooseSynthesisResultsForOptimalReachability(
+    g: DirectedBooleanStateGraph,
+    initialStates: Set[ConcreteBooleanState],
+    allResults: Map[String, Set[SynthesisResult]]
+  ): Map[String, SynthesisResult] = {
+    val observedStates = g.V.map(_.state)
+    val reachabilityResult =
+      ReachabilityEvaluation.chooseOptimalReachabilityResult(allResults,
+      initialStates, observedStates, reporter)
+    reachabilityResult.labelToResult
+  }
+
+  def synthesizeFunctionsForAllTransitionSubsets(
     positiveTransitions: Set[Transition],
     negativeTransitions: Set[Transition]
   ): Map[String, Set[SynthesisResult]] = {
@@ -165,7 +208,7 @@ class Synthesizer(maxExpressionDepth: Int, maxNbModels: Option[Int]) {
       for (candidate <- stepCandidateSet; if !foundCore) {
         val toTest = currentSet + candidate
         val isUNSAT = enumerateFunExprForMinNbVars(
-          toTest, possibleVars, maxExpressionDepth).isEmpty
+          toTest, possibleVars, opts.maxExpressionDepth).isEmpty
         if (isUNSAT) {
           foundCore = true
           currentSet = toTest
@@ -195,7 +238,7 @@ class Synthesizer(maxExpressionDepth: Int, maxNbModels: Option[Int]) {
   ): List[FunExpr] = {
     var res = List[FunExpr]()
     var currDepth = 0
-    while (res.isEmpty && currDepth <= maxExpressionDepth) {
+    while (res.isEmpty && currDepth <= opts.maxExpressionDepth) {
       res = enumerateFunExprForMinNbVars(transitions, possibleVars, currDepth)
       currDepth += 1
     }
@@ -238,7 +281,7 @@ class Synthesizer(maxExpressionDepth: Int, maxNbModels: Option[Int]) {
     def extract(model: Map[Identifier, Expr]): FunExpr =
       funExprValue(sfe, model)
     def symEq(fe: FunExpr): Expr = funExprEquals(sfe, fe)
-    Enumeration.enumerate(extract, symEq, constraints, maxNbModels)
+    Enumeration.enumerate(extract, symEq, constraints, opts.maxNbModels)
   }
 
   private def findMinNbVars(
@@ -401,4 +444,8 @@ class Synthesizer(maxExpressionDepth: Int, maxNbModels: Option[Int]) {
     And(conj: _*)
   }
 
+}
+
+object Synthesizer {
+  // TODO move methods that do not access state here for testability
 }

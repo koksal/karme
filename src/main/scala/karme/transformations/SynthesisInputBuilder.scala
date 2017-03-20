@@ -55,7 +55,7 @@ class SynthesisInputBuilder(opts: SynthInputBuilderOpts) {
   }
 
   def getSmoothedExperiment(): ContinuousExperiment = {
-    opts.inputFileOpts.mleExperimentFile match {
+    opts.inputFileOpts.smoothedExperimentFile match {
       case Some(f) => ContinuousExperimentParser.parseAndFilter(f, None)
       case None => buildSmoothedExperiment()
     }

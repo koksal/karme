@@ -3,8 +3,8 @@ package karme.evaluation
 import java.io.File
 
 import karme.Experiments
+import karme.Reporter
 import karme.graphs.StateGraphs
-import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
@@ -16,19 +16,36 @@ import karme.visualization.StateGraphVisualization
   */
 object ReachabilityEvaluation {
 
-  def evaluate(
+  case class ReachabilityEvaluationResult(
+    labelToResult: Map[String, SynthesisResult],
+    reachableStates: Set[ConcreteBooleanState],
+    simulationPenalty: Double
+  )
+
+  def chooseOptimalReachabilityResult(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState],
     observedStates: Set[ConcreteBooleanState],
-    outFolder: File
-  ): Unit = {
+    reporter: Reporter
+  ): ReachabilityEvaluationResult = {
+    val results = computeReachabilityEvaluationResults(labelToSynthesisResults,
+      initialStates, observedStates)
+
+    results.minBy(_.simulationPenalty)
+  }
+
+  def computeReachabilityEvaluationResults(
+    labelToSynthesisResults: Map[String, Set[SynthesisResult]],
+    initialStates: Set[ConcreteBooleanState],
+    observedStates: Set[ConcreteBooleanState]
+  ): Seq[ReachabilityEvaluationResult] = {
     // first enumerate all combinations of synthesis results
     val combinations =
       SynthesisResultEnumeration.enumerateSynthesisResultCombinations(
         labelToSynthesisResults)
 
-    // collect function combination, simulated states, and simulation penalty
-    val resultTuples = for (labelToResult <- combinations) yield {
+    // Build results
+    for (labelToResult <- combinations.toSeq) yield {
       val labelToFun = labelToResult map {
         case (l, r) => (l, r.functions.head)
       }
@@ -37,22 +54,7 @@ object ReachabilityEvaluation {
 
       val penalty = simulationPenalty(observedStates, simulatedStates)
 
-      (labelToResult, simulatedStates, penalty)
-    }
-
-    // order by increasing penalty to print and plot
-    for (((labelToResult, simulated, penalty), i) <-
-         resultTuples.toSeq.sortBy(_ ._3).zipWithIndex.take(10)) {
-      println(s"Combination $i:")
-      println(s"Penalty: $penalty")
-
-      // print functions into file
-      SynthesisResultLogger(labelToResult,
-        new File(outFolder, s"functions-$i.txt"))
-
-      // transfer code that plots simulated graph
-      plotSimulation(initialStates, observedStates, simulated,
-        s"simulation-${i}", outFolder)
+      ReachabilityEvaluationResult(labelToResult, simulatedStates, penalty)
     }
   }
 

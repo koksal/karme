@@ -15,3 +15,9 @@ class Reporter(outputFolder: File) {
   }
 
 }
+
+object Reporter {
+
+  def defaultReporter(): Reporter = new Reporter(new File("."))
+
+}
