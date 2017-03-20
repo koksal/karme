@@ -36,4 +36,9 @@ object MathUtil {
     val normalized = sqDiffs.sum / (vs.size - 1)
     scala.math.sqrt(normalized)
   }
+
+  def approxEquals(precision: Double)(d1: Double, d2: Double): Boolean = {
+    math.abs(d1 - d2) <= precision
+  }
+
 }

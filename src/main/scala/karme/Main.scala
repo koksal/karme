@@ -21,7 +21,7 @@ object Main {
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, synthesisInputBuilder.trajectories)
 
-    val synthesisResults = synthesizer.synthesizeForOptimalReachability(
+    val optimalResults = synthesizer.synthesizeForOptimalReachability(
       directedStateGraph, initialStates)
   }
 

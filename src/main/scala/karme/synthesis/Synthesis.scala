@@ -15,7 +15,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
   def synthesizeForOptimalReachability(
     directedStateGraph: DirectedBooleanStateGraph,
     initialStates: Set[ConcreteBooleanState]
-  ): Map[String, SynthesisResult] = {
+  ): Seq[Map[String, SynthesisResult]] = {
     val (posTransitions, negTransitions) =
       producePositiveAndNegativeTransitions(directedStateGraph)
 
@@ -41,12 +41,12 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     g: DirectedBooleanStateGraph,
     initialStates: Set[ConcreteBooleanState],
     allResults: Map[String, Set[SynthesisResult]]
-  ): Map[String, SynthesisResult] = {
+  ): Seq[Map[String, SynthesisResult]] = {
     val observedStates = g.V.map(_.state)
-    val reachabilityResult =
-      ReachabilityEvaluation.chooseOptimalReachabilityResult(allResults,
+    val optimalReachabilityResults =
+      ReachabilityEvaluation.findAllResultsWithOptimalReachability(allResults,
       initialStates, observedStates, reporter)
-    reachabilityResult.labelToResult
+    optimalReachabilityResults map (_.labelToResult)
   }
 
   def synthesizeFunctionsForAllTransitionSubsets(

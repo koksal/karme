@@ -8,6 +8,7 @@ import karme.graphs.StateGraphs
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.MathUtil
 import karme.visualization.StateGraphVisualization
 
 /**
@@ -22,17 +23,20 @@ object ReachabilityEvaluation {
     simulationPenalty: Double
   )
 
-  def chooseOptimalReachabilityResult(
+  def findAllResultsWithOptimalReachability(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState],
     observedStates: Set[ConcreteBooleanState],
     reporter: Reporter
-  ): ReachabilityEvaluationResult = {
+  ): Seq[ReachabilityEvaluationResult] = {
     val results = computeReachabilityEvaluationResults(labelToSynthesisResults,
       initialStates, observedStates)
 
-    // TODO be aware of the arbitrary tie-break between equal-penalty cases
-    results.minBy(_.simulationPenalty)
+    // return all results with minimum penalty
+    val minScore = results.map(_.simulationPenalty).min
+    results filter { r =>
+      MathUtil.approxEquals(precision = 0.0001)(r.simulationPenalty, minScore)
+    }
   }
 
   def computeReachabilityEvaluationResults(
