@@ -31,6 +31,7 @@ object ReachabilityEvaluation {
     val results = computeReachabilityEvaluationResults(labelToSynthesisResults,
       initialStates, observedStates)
 
+    // TODO be aware of the arbitrary tie-break between equal-penalty cases
     results.minBy(_.simulationPenalty)
   }
 
