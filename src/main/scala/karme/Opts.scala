@@ -21,6 +21,7 @@ case class SynthInputBuilderOpts(
   uncertaintyThreshold: Double = 0.4,
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
+  cluster: Boolean = false,
   clusteringOpts: ClusteringOpts = ClusteringOpts()
 )
 
@@ -33,7 +34,6 @@ case class InputFileOpts(
 )
 
 case class ClusteringOpts(
-  cluster: Boolean = false,
   minNbClusters: Int = 2,
   maxNbClusters: Int = 30
 )

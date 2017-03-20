@@ -1,5 +1,6 @@
 package karme.transformations
 
+import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment, ThreeValuedExperiment}
 import karme.{Experiments, SynthInputBuilderOpts}
@@ -10,7 +11,10 @@ import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 
-class SynthesisInputBuilder(opts: SynthInputBuilderOpts) {
+class SynthesisInputBuilder(
+  opts: SynthInputBuilderOpts,
+  annotationContext: AnnotationContext
+) {
 
   lazy val trajectories: Seq[CellTrajectory] = {
     opts.inputFileOpts.trajectoryFiles map CellTrajectoryParser.parse
@@ -42,13 +46,13 @@ class SynthesisInputBuilder(opts: SynthInputBuilderOpts) {
   def processContinuousExperimentForDiscretization(): ContinuousExperiment = {
     val smoothedExperiment = getSmoothedExperiment()
 
-    if (opts.clusteringOpts.cluster) {
+    if (opts.cluster) {
       val geneClustering = HierarchicalClustering.clusterVariables(
-        smoothedExperiment, ???, opts.clusteringOpts.minNbClusters,
-        opts.clusteringOpts.maxNbClusters, ???)
+        smoothedExperiment, annotationContext.annotationVariables,
+        opts.clusteringOpts)
 
       HierarchicalClustering.experimentFromClusterAverages(smoothedExperiment,
-        geneClustering, ???)
+        geneClustering, annotationContext.annotationVariables)
     } else {
       smoothedExperiment
     }

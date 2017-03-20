@@ -11,8 +11,9 @@ object Main {
 
     val reporter = new Reporter(opts.outFolder)
 
+    val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
     val synthesisInputBuilder = new SynthesisInputBuilder(
-      opts.synthInputBuilderOpts)
+      opts.synthInputBuilderOpts, annotationContext)
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 

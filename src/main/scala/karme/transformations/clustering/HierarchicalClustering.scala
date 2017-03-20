@@ -2,24 +2,22 @@ package karme.transformations.clustering
 
 import java.io.File
 
+import karme.ClusteringOpts
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
 import karme.util.MathUtil
-import karme.visualization.ScatterPlot
 
 object HierarchicalClustering {
 
   def clusterVariables(
     exp: Experiment[Double],
     annotationVars: Set[String],
-    minNbClust: Int,
-    maxNbClust: Int,
-    outFolder: File
+    opts: ClusteringOpts
   ): Map[Int, Set[String]] = {
-    val adjustedMaxNbClust = math.min(exp.names.size - 1, maxNbClust)
-    val adjustedMinNbClust = math.min(minNbClust, adjustedMaxNbClust)
-    if (adjustedMaxNbClust != maxNbClust) {
+    val adjustedMaxNbClust = math.min(exp.names.size - 1, opts.maxNbClusters)
+    val adjustedMinNbClust = math.min(opts.minNbClusters, adjustedMaxNbClust)
+    if (adjustedMaxNbClust != opts.maxNbClusters) {
       println(s"Setting boundaries for k to ($adjustedMinNbClust, " +
         s"$adjustedMaxNbClust).")
     }

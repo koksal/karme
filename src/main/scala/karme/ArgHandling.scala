@@ -120,8 +120,7 @@ object ArgHandling {
 
       opt[Unit]("cluster") action { (_, o) =>
         o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(clusteringOpts =
-            o.synthInputBuilderOpts.clusteringOpts.copy(cluster = true)))
+          o.synthInputBuilderOpts.copy(cluster = true))
       }
 
       opt[Int]("min-clusters") action { (i, o) =>
