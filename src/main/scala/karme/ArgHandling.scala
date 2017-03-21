@@ -31,36 +31,36 @@ object ArgHandling {
 
       opt[File]("continuous-experiment") action { (v, o) =>
         o.copy(
-          synthInputBuilderOpts = o.synthInputBuilderOpts.copy(
-            inputFileOpts = o.synthInputBuilderOpts.inputFileOpts.copy(
+          inputTransformerOpts = o.inputTransformerOpts.copy(
+            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
               continuousExperimentFile = Some(v))))
       } text "continuous experiment file in CSV format"
 
       opt[File]("discretized-experiment") action { (v, o) =>
         o.copy(
-          synthInputBuilderOpts = o.synthInputBuilderOpts.copy(
-            inputFileOpts = o.synthInputBuilderOpts.inputFileOpts.copy(
+          inputTransformerOpts = o.inputTransformerOpts.copy(
+            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
               discretizedExperimentFile = Some(v))))
       } text "discretized experiment file in CSV format"
 
       opt[File]("smoothed-experiment") action { (v, o) =>
         o.copy(
-          synthInputBuilderOpts = o.synthInputBuilderOpts.copy(
-            inputFileOpts = o.synthInputBuilderOpts.inputFileOpts.copy(
+          inputTransformerOpts = o.inputTransformerOpts.copy(
+            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
               smoothedExperimentFile = Some(v))))
       } text "Smoothed experiment file in CSV format"
 
       opt[Seq[File]]("names") action { (vs, o) =>
         o.copy(
-          synthInputBuilderOpts = o.synthInputBuilderOpts.copy(
-            inputFileOpts = o.synthInputBuilderOpts.inputFileOpts.copy(
+          inputTransformerOpts = o.inputTransformerOpts.copy(
+            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
               namesFiles = vs)))
       } text "names files to filter experiment with"
 
       opt[Seq[File]]("trajectories") action { (vs, o) =>
         o.copy(
-          synthInputBuilderOpts = o.synthInputBuilderOpts.copy(
-            inputFileOpts = o.synthInputBuilderOpts.inputFileOpts.copy(
+          inputTransformerOpts = o.inputTransformerOpts.copy(
+            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
               trajectoryFiles = vs)))
       } text "trajectory files in CSV format"
 
@@ -83,8 +83,8 @@ object ArgHandling {
       // Analysis options:
 
       opt[Double]("pseudolog-factor") action { (d, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(pseudoLogFactor = Some(d)))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(pseudoLogFactor = Some(d)))
       } text "pseudolog factor for transforming data"
 
       opt[String]("boolean-normalization") action { (v, o) =>
@@ -93,46 +93,46 @@ object ArgHandling {
           case "mclust" => Mclust
           case _ => sys.error(s"Unrecognized discretization method: $v")
         }
-        o.copy(synthInputBuilderOpts = o.synthInputBuilderOpts.copy(
+        o.copy(inputTransformerOpts = o.inputTransformerOpts.copy(
           booleanNormalizationMethod = method))
       } text "discretization method for Boolean normalization"
 
       opt[Double]("cell-activity-threshold") action { (d, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(cellActivityThreshold = d))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(cellActivityThreshold = d))
       } text "ratio of cells in which a gene must be active"
 
       opt[Double]("uncertainty-threshold") action { (d, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(uncertaintyThreshold = d))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(uncertaintyThreshold = d))
       } text "uncertainty threshold for considering a discretized value as " +
         "uncertain"
 
       opt[Int]("smoothing-radius") action { (i, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(smoothingRadius = i))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(smoothingRadius = i))
       } text "cell vicinity radius for binomial MLE pass"
 
       opt[Int]("max-hamming") action { (i, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(maxHammingDistance = i))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
 
       opt[Unit]("cluster") action { (_, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(cluster = true))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(cluster = true))
       }
 
       opt[Int]("min-clusters") action { (i, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(clusteringOpts =
-            o.synthInputBuilderOpts.clusteringOpts.copy(minNbClusters = i)))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(minNbClusters = i)))
       } text "min number of gene clusters"
 
       opt[Int]("max-clusters") action { (i, o) =>
-        o.copy(synthInputBuilderOpts =
-          o.synthInputBuilderOpts.copy(clusteringOpts =
-            o.synthInputBuilderOpts.clusteringOpts.copy(maxNbClusters = i)))
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(maxNbClusters = i)))
       } text "max number of gene clusters"
 
       // Synthesis options:

@@ -2,7 +2,7 @@ package karme
 
 import karme.graphs.StateGraphs
 import karme.synthesis.Synthesizer
-import karme.transformations.SynthesisInputBuilder
+import karme.transformations.InputTransformer
 
 object Main {
 
@@ -12,8 +12,8 @@ object Main {
     val reporter = new Reporter(opts.outFolder)
 
     val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
-    val synthesisInputBuilder = new SynthesisInputBuilder(
-      opts.synthInputBuilderOpts, annotationContext)
+    val synthesisInputBuilder = new InputTransformer(
+      opts.inputTransformerOpts, annotationContext)
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 

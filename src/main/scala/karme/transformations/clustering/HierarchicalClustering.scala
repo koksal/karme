@@ -14,7 +14,7 @@ object HierarchicalClustering {
     exp: Experiment[Double],
     annotationVars: Set[String],
     opts: ClusteringOpts
-  ): Map[Int, Set[String]] = {
+  ): Map[String, Set[String]] = {
     val adjustedMaxNbClust = math.min(exp.names.size - 1, opts.maxNbClusters)
     val adjustedMinNbClust = math.min(opts.minNbClusters, adjustedMaxNbClust)
     if (adjustedMaxNbClust != opts.maxNbClusters) {
@@ -63,12 +63,12 @@ object HierarchicalClustering {
   }
 
   private def makeClusterToNamesMap(
-    nameToCluster: Map[String, Int]
-  ): Map[Int, Set[String]] = {
-    nameToCluster.groupBy{
-      case (_, cluster) => cluster
+    nameToClusterIndex: Map[String, Int]
+  ): Map[String, Set[String]] = {
+    nameToClusterIndex.groupBy{
+      case (_, i) => i
     }.map{
-      case (cluster, map) => cluster -> map.keySet
+      case (i, map) => clusterName(i) -> map.keySet
     }
   }
 
@@ -88,16 +88,15 @@ object HierarchicalClustering {
 
   def experimentFromClusterAverages(
     exp: Experiment[Double],
-    clusterToNames: Map[Int, Set[String]],
+    clusterToNames: Map[String, Set[String]],
     annotationVars: Set[String]
   ): Experiment[Double] = {
     // for each measurement, compute cluster averages
     val clusterMs = exp.measurements map { m =>
       val clusterToMeanValue = clusterToNames.map{
-        case (clusterIndex, names) => {
+        case (clusterName, names) => {
           val values = names.map(n => m.state.value(n))
-          val cname = clusterName(clusterIndex, clusterToNames, annotationVars)
-          cname -> MathUtil.mean(values)
+          clusterName -> MathUtil.mean(values)
         }
       }
       Measurement(m.id, GenericState(clusterToMeanValue))
@@ -106,7 +105,11 @@ object HierarchicalClustering {
     Experiment(clusterMs)
   }
 
-  private def clusterName(
+  private def clusterName(index: Int): String = {
+    s"cluster_$index"
+  }
+
+  private def annotatedClusterName(
     index: Int,
     clusterToNames: Map[Int, Set[String]],
     annotationVars: Set[String]

@@ -7,14 +7,14 @@ import karme.transformations.discretization.DiscretizationMethod
 
 case class Opts(
   outFolder: File = new File("."),
-  synthInputBuilderOpts: SynthInputBuilderOpts = SynthInputBuilderOpts(),
+  inputTransformerOpts: InputTransformerOpts = InputTransformerOpts(),
   synthOpts: SynthOpts = SynthOpts(),
   evalOpts: EvalOpts = EvalOpts(),
   annotationOpts: AnnotationOpts = AnnotationOpts(),
   runSynthesis: Boolean = false
 )
 
-case class SynthInputBuilderOpts(
+case class InputTransformerOpts(
   inputFileOpts: InputFileOpts = InputFileOpts(),
   pseudoLogFactor: Option[Double] = None,
   booleanNormalizationMethod: DiscretizationMethod = Ckmeans,

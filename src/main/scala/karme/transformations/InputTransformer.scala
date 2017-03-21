@@ -3,7 +3,7 @@ package karme.transformations
 import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment, ThreeValuedExperiment}
-import karme.{Experiments, SynthInputBuilderOpts}
+import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanStateGraph, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
@@ -11,13 +11,22 @@ import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 
-class SynthesisInputBuilder(
-  opts: SynthInputBuilderOpts,
+class InputTransformer(
+  opts: InputTransformerOpts,
   annotationContext: AnnotationContext
 ) {
 
   lazy val trajectories: Seq[CellTrajectory] = {
     opts.inputFileOpts.trajectoryFiles map CellTrajectoryParser.parse
+  }
+
+  private var _clustering: Option[Map[String, Set[String]]] = None
+
+  def getClustering(): Option[Map[String, Set[String]]] = {
+    _clustering match {
+      case Some(_) => _clustering
+      case None => assert(!opts.cluster); None
+    }
   }
 
   def buildDirectedStateGraph(): DirectedBooleanStateGraph = {
@@ -50,6 +59,7 @@ class SynthesisInputBuilder(
       val geneClustering = HierarchicalClustering.clusterVariables(
         smoothedExperiment, annotationContext.annotationVariables,
         opts.clusteringOpts)
+      _clustering = Some(geneClustering)
 
       HierarchicalClustering.experimentFromClusterAverages(smoothedExperiment,
         geneClustering, annotationContext.annotationVariables)
