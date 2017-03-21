@@ -4,12 +4,16 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
 
-object EnrichrPredictionsLogger {
+object EnrichrPredictionLogger {
+
+  val SOURCE_FIELD = "source"
+  val TARGET_FIELD = "target"
+  val COMBINED_SCORE_FIELD = "Combined Score"
 
   def saveToFile(predictions: Seq[EnrichrPrediction], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
-    val headerRow = List("source", "target", "Combined Score")
+    val headerRow = List(SOURCE_FIELD, TARGET_FIELD, COMBINED_SCORE_FIELD)
 
     val dataRows = predictions map {
       case EnrichrPrediction(term, target, combinedScore) => {
