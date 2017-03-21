@@ -15,4 +15,5 @@ OUTFOLDER=$1
   --cluster \
   --min-clusters 10 \
   --max-clusters 20 \
-  --max-expr-depth 5
+  --max-expr-depth 5 \
+  --evaluation-libraries data/reference/enrichr/human-tf/ENCODE_and_ChEA_Consensus_TFs_from_ChIP-X-enrichr-predictions.csv

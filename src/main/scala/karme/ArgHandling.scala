@@ -147,6 +147,12 @@ object ArgHandling {
           maxNbModels = Some(i)))
       } text "maximum number of equivalent functions enumerated"
 
+      // Evaluation options:
+
+      opt[Seq[File]]("evaluation-libraries") action { (fs, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(predictionFiles = fs))
+      } text "Prediction libraries to evaluate against"
+
       help("help") text "print this help message"
     }
 
