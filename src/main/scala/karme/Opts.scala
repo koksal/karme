@@ -9,6 +9,7 @@ case class Opts(
   outFolder: File = new File("."),
   synthInputBuilderOpts: SynthInputBuilderOpts = SynthInputBuilderOpts(),
   synthOpts: SynthOpts = SynthOpts(),
+  evalOpts: EvalOpts = EvalOpts(),
   annotationOpts: AnnotationOpts = AnnotationOpts(),
   runSynthesis: Boolean = false
 )
@@ -46,4 +47,8 @@ case class AnnotationOpts(
 case class SynthOpts(
   maxExpressionDepth: Int = 5,
   maxNbModels: Option[Int] = None
+)
+
+case class EvalOpts(
+  predictionFiles: Seq[File] = Seq()
 )
