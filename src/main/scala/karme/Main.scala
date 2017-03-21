@@ -25,7 +25,7 @@ object Main {
     val optimalResults = synthesizer.synthesizeForOptimalReachability(
       directedStateGraph, initialStates)
 
-    val predictionEvaluator = new PredictionEvaluator(opts.evalOpts)
+    val predictionEvaluator = new PredictionEvaluator(opts.evalOpts, ???)
     predictionEvaluator.compareToReferences(optimalResults,
       inputTransformer.getClustering())
   }

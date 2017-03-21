@@ -2,11 +2,12 @@ package karme.evaluation.enrichr
 
 import karme.EvalOpts
 import karme.evaluation.EvaluationContext
+import karme.evaluation.PredictionSignificanceTest
 import karme.synthesis.FunctionTrees
 import karme.synthesis.SynthesisResult
 import karme.util.MathUtil
 
-class PredictionEvaluator(opts: EvalOpts) {
+class PredictionEvaluator(opts: EvalOpts, nameUniverse: Set[String]) {
 
   lazy val evalContext = EvaluationContext.fromOptions(opts)
 
@@ -18,7 +19,7 @@ class PredictionEvaluator(opts: EvalOpts) {
       compareToReference(results, clustering, reference)
     }
 
-    // Check against randomized data
+    // TODO Check against randomized data
   }
 
   def compareToReference(
@@ -38,11 +39,24 @@ class PredictionEvaluator(opts: EvalOpts) {
     reference: EnrichrPredictionLibrary
   ): Unit = {
     // For each target, gather possible sources
-    val unmappedPairs = sourceTargetPairs(result)
+    val unmappedPredictedPairs = sourceTargetPairs(result)
 
     // Map cluster-level pairs to gene level
-    val mappedPairs = processPairsWithClustering(unmappedPairs, clustering)
-    println(mappedPairs.mkString("\n"))
+    val mappedPredictedPairs = processPairsWithClustering(
+      unmappedPredictedPairs, clustering)
+    println(mappedPredictedPairs.mkString("\n"))
+
+    // perform significance test between predictions and reference
+    PredictionSignificanceTest.computeSignificance(mappedPredictedPairs,
+      referencePairs(reference), nameUniverse)
+  }
+
+  def referencePairs(
+    reference: EnrichrPredictionLibrary
+  ): Set[(String, String)] = {
+    reference.predictions.map{
+      case EnrichrPrediction(term, target, score) => (term, target)
+    }.toSet
   }
 
   def sourceTargetPairs(
