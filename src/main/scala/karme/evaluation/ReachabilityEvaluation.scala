@@ -34,8 +34,10 @@ object ReachabilityEvaluation {
 
     // return all results with minimum penalty
     val minScore = results.map(_.simulationPenalty).min
+    val scoreEpsilon = 0.1
     results filter { r =>
-      MathUtil.approxEquals(precision = 0.0001)(r.simulationPenalty, minScore)
+      MathUtil.approxEquals(precision = scoreEpsilon)(r.simulationPenalty,
+        minScore)
     }
   }
 
