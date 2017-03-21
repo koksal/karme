@@ -1,5 +1,6 @@
 package karme
 
+import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
@@ -12,17 +13,22 @@ object Main {
     val reporter = new Reporter(opts.outFolder)
 
     val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
-    val synthesisInputBuilder = new InputTransformer(
+    val inputTransformer = new InputTransformer(
       opts.inputTransformerOpts, annotationContext)
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
-    val directedStateGraph = synthesisInputBuilder.buildDirectedStateGraph()
+    val directedStateGraph = inputTransformer.buildDirectedStateGraph()
     val initialStates = StateGraphs.initialTrajectoryStates(
-      directedStateGraph.V, synthesisInputBuilder.trajectories)
+      directedStateGraph.V, inputTransformer.trajectories)
 
     val optimalResults = synthesizer.synthesizeForOptimalReachability(
       directedStateGraph, initialStates)
+
+    // TODO handle reference parsing in evaluation module.
+    val predictionEvaluator = new PredictionEvaluator(???)
+    predictionEvaluator.compareToReferences(optimalResults,
+      inputTransformer.getClustering())
   }
 
 }
