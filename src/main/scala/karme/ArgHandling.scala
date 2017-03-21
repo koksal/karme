@@ -150,7 +150,7 @@ object ArgHandling {
       // Evaluation options:
 
       opt[Seq[File]]("evaluation-libraries") action { (fs, o) =>
-        o.copy(evalOpts = o.evalOpts.copy(predictionFiles = fs))
+        o.copy(evalOpts = o.evalOpts.copy(referenceFiles = fs))
       } text "Prediction libraries to evaluate against"
 
       help("help") text "print this help message"

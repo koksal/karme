@@ -50,5 +50,5 @@ case class SynthOpts(
 )
 
 case class EvalOpts(
-  predictionFiles: Seq[File] = Seq()
+  referenceFiles: Seq[File] = Seq()
 )

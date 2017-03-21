@@ -4,7 +4,7 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
 
-object EnrichrPredictionParser {
+object EnrichrPredictionLibraryParser {
 
   def apply(f: File): EnrichrPredictionLibrary = {
     EnrichrPredictionLibrary(f.getPath, parsePredictions(f))

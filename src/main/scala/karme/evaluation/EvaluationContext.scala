@@ -2,18 +2,18 @@ package karme.evaluation
 
 import karme.EvalOpts
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
-import karme.evaluation.enrichr.EnrichrPredictionParser
+import karme.evaluation.enrichr.EnrichrPredictionLibraryParser
 
 case class EvaluationContext(
-  predictionLibraries: Seq[EnrichrPredictionLibrary]
+  references: Seq[EnrichrPredictionLibrary]
 )
 
 object EvaluationContext {
 
   def fromOptions(opts: EvalOpts): EvaluationContext = {
-    val parsedLibraries = opts.predictionFiles.map(
-      EnrichrPredictionParser.apply)
-    EvaluationContext(predictionLibraries = parsedLibraries)
+    val parsedLibraries = opts.referenceFiles.map(
+      EnrichrPredictionLibraryParser.apply)
+    EvaluationContext(references = parsedLibraries)
   }
 
 }
