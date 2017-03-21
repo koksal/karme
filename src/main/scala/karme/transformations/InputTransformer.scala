@@ -25,7 +25,11 @@ class InputTransformer(
   def getClustering(): Option[Map[String, Set[String]]] = {
     _clustering match {
       case Some(_) => _clustering
-      case None => assert(!opts.cluster); None
+      case None => {
+        assert(!opts.cluster,
+          "Attempting to use clustering before it has been computed.")
+        None
+      }
     }
   }
 
