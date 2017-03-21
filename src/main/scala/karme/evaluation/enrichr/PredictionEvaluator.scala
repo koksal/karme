@@ -7,7 +7,7 @@ import karme.synthesis.FunctionTrees
 import karme.synthesis.SynthesisResult
 import karme.util.MathUtil
 
-class PredictionEvaluator(opts: EvalOpts, nameUniverse: Set[String]) {
+class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
 
   lazy val evalContext = EvaluationContext.fromOptions(opts)
 
@@ -29,7 +29,8 @@ class PredictionEvaluator(opts: EvalOpts, nameUniverse: Set[String]) {
   ): Unit = {
     // TODO alternative: aggregating all results for comparison
     for (result <- results) {
-      compareToReference(result, clustering, reference)
+      val score = compareToReference(result, clustering, reference)
+      println(s"Score: $score")
     }
   }
 
@@ -37,7 +38,7 @@ class PredictionEvaluator(opts: EvalOpts, nameUniverse: Set[String]) {
     result: Map[String, SynthesisResult],
     clustering: Option[Map[String, Set[String]]],
     reference: EnrichrPredictionLibrary
-  ): Unit = {
+  ): Double = {
     // For each target, gather possible sources
     val unmappedPredictedPairs = sourceTargetPairs(result)
 
@@ -47,8 +48,9 @@ class PredictionEvaluator(opts: EvalOpts, nameUniverse: Set[String]) {
     println(mappedPredictedPairs.mkString("\n"))
 
     // perform significance test between predictions and reference
-    PredictionSignificanceTest.computeSignificance(mappedPredictedPairs,
-      referencePairs(reference), nameUniverse)
+    PredictionSignificanceTest.computeSignificanceWithoutSelfEdges(
+      mappedPredictedPairs, referencePairs(reference),
+      getNameUniverse(clustering))
   }
 
   def referencePairs(
@@ -105,4 +107,10 @@ class PredictionEvaluator(opts: EvalOpts, nameUniverse: Set[String]) {
     }
   }
 
+  def getNameUniverse(
+    clusteringOpt: Option[Map[String, Set[String]]]
+  ): Set[String] = clusteringOpt match {
+    case Some(clustering) => clustering.values.toSet.flatten
+    case None => allLabels
+  }
 }
