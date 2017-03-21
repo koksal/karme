@@ -19,6 +19,13 @@ object FunctionTrees {
     case FunNot(e) => !eval(e, in)
   }
 
+  def collectIdentifiers(fe: FunExpr): Set[String] = fe match {
+    case FunVar(id) => Set(id)
+    case FunAnd(l, r) => collectIdentifiers(l) ++ collectIdentifiers(r)
+    case FunOr(l, r) => collectIdentifiers(l) ++ collectIdentifiers(r)
+    case FunNot(e) => collectIdentifiers(e)
+  }
+
   abstract class SymFunExpr {
     val possibleVars: Set[String]
     val orderedVariableOptions: List[String] = possibleVars.toList.sorted

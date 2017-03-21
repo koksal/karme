@@ -25,8 +25,7 @@ object Main {
     val optimalResults = synthesizer.synthesizeForOptimalReachability(
       directedStateGraph, initialStates)
 
-    // TODO handle reference parsing in evaluation module.
-    val predictionEvaluator = new PredictionEvaluator(???)
+    val predictionEvaluator = new PredictionEvaluator(opts.evalOpts)
     predictionEvaluator.compareToReferences(optimalResults,
       inputTransformer.getClustering())
   }

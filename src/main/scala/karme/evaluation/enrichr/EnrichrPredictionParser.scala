@@ -6,7 +6,11 @@ import com.github.tototoshi.csv.CSVReader
 
 object EnrichrPredictionParser {
 
-  def apply(f: File): Seq[EnrichrPrediction] = {
+  def apply(f: File): EnrichrPredictionLibrary = {
+    EnrichrPredictionLibrary(f.getPath, parsePredictions(f))
+  }
+
+  private def parsePredictions(f: File): Seq[EnrichrPrediction] = {
     val reader = CSVReader.open(f)
     val tuples = reader.allWithHeaders()
 
