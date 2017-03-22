@@ -35,7 +35,7 @@ ACTIVITY_FILTER_ARGS["20-percent"]="--cell-activity-threshold 0.2"
 # boolean normalization
 declare -A BOOLEAN_NORMALIZATION_ARGS
 BOOLEAN_NORMALIZATION_ARGS["kmeans"]="--boolean-normalization kmeans"
-BOOLEAN_NORMALIZATION_ARGS["mclust"]="--boolean-normalization mclust"
+# BOOLEAN_NORMALIZATION_ARGS["mclust"]="--boolean-normalization mclust"
 
 # smoothing
 declare -A SMOOTHING_RADIUS_ARGS
@@ -47,9 +47,9 @@ SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 # clustering
 declare -A CLUSTERING_ARGS
 # CLUSTERING_ARGS["10"]="--cluster --min-clusters 10 --max-clusters 10"
-# CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
+CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
 CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
-# CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
+CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
 # CLUSTERING_ARGS["18"]="--cluster --min-clusters 18 --max-clusters 18"
 # CLUSTERING_ARGS["20"]="--cluster --min-clusters 20 --max-clusters 20"
 
