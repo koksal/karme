@@ -38,8 +38,8 @@ class ReferenceAnalysis(evalContext: EvaluationContext) {
     println(s"Reference pairs with clustered vars: " +
       s"${referencePairsInClustering.size}")
 
-    val clusterPairToReferencePairs = groupPairsByClusterPairs(referencePairs,
-      clustering)
+    val clusterPairToReferencePairs = groupPairsByClusterPairs(
+      referencePairsInClustering, clustering)
 
     // How many predictions are within cluster?
     printWithinClusterPairs(clusterPairToReferencePairs)
