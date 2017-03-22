@@ -5,7 +5,7 @@ set -o xtrace
 function run_with_args() {
   folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
-  scripts/run-default.sh $folder \
+  scripts/run-with-base-args.sh $folder \
     --annotations data/names/markers.txt \
     --synthesis \
     --uncertainty-threshold 0.4 \
