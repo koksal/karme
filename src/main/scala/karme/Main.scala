@@ -1,5 +1,6 @@
 package karme
 
+import karme.analysis.ReferenceAnalysis
 import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
 import karme.synthesis.Synthesizer
@@ -30,6 +31,9 @@ object Main {
 
     predictionEvaluator.compareToReferences(optimalResults,
       inputTransformer.getClustering())
+
+    val refAnalysis = new ReferenceAnalysis(predictionEvaluator.evalContext)
+    refAnalysis.analyzeReferencesForClustering(inputTransformer.getClustering())
   }
 
 }

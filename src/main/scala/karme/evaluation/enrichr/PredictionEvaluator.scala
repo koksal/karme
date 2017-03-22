@@ -40,18 +40,28 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
     reference: EnrichrPredictionLibrary
   ): Double = {
     // For each target, gather possible sources
-    val unmappedPredictedPairs = sourceTargetPairs(result)
+    val unmappedPredictedPairs = PredictionEvaluator.sourceTargetPairs(result)
 
     // Map cluster-level pairs to gene level
-    val mappedPredictedPairs = processPairsWithClustering(
+    val mappedPredictedPairs = PredictionEvaluator.processPairsWithClustering(
       unmappedPredictedPairs, clustering)
     println(mappedPredictedPairs.mkString("\n"))
 
     // perform significance test between predictions and reference
     PredictionSignificanceTest.computeSignificanceWithoutSelfEdges(
-      mappedPredictedPairs, referencePairs(reference),
+      mappedPredictedPairs, PredictionEvaluator.referencePairs(reference),
       getNameUniverse(clustering))
   }
+
+  def getNameUniverse(
+    clusteringOpt: Option[Map[String, Set[String]]]
+  ): Set[String] = clusteringOpt match {
+    case Some(clustering) => clustering.values.toSet.flatten
+    case None => allLabels
+  }
+}
+
+object PredictionEvaluator {
 
   def referencePairs(
     reference: EnrichrPredictionLibrary
@@ -107,10 +117,4 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
     }
   }
 
-  def getNameUniverse(
-    clusteringOpt: Option[Map[String, Set[String]]]
-  ): Set[String] = clusteringOpt match {
-    case Some(clustering) => clustering.values.toSet.flatten
-    case None => allLabels
-  }
 }
