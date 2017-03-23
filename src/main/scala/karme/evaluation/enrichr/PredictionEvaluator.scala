@@ -39,8 +39,14 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
   ): Unit = {
     // aggregate reference to cluster edges with # reference edges
     val predictedClusterPairs = PredictionEvaluator.sourceTargetPairs(result)
+
+    // only take reference predictions that mention clustered genes
+    val referencePairsWithClusteredGenes =
+      PredictionEvaluator.pairsInClustering(
+        PredictionEvaluator.referencePairs(reference), clustering.get)
+    
     val clusterToReferencePairs = PredictionEvaluator.groupPairsByClusterPairs(
-      PredictionEvaluator.referencePairs(reference), clustering.get)
+      referencePairsWithClusteredGenes, clustering.get)
 
     val predictedReferencePairs = predictedClusterPairs.intersect(
       clusterToReferencePairs.keySet)
@@ -167,6 +173,18 @@ object PredictionEvaluator {
   ): Map[String, String] = {
     clustering flatMap {
       case (k, vs) => vs map (v => (v, k))
+    }
+  }
+
+  def pairsInClustering(
+    pairs: Set[(String, String)],
+    clustering: Map[String, Set[String]]
+  ): Set[(String, String)] = {
+    val namesInClustering = clustering.values.toSet.flatten
+
+    pairs filter {
+      case (src, tgt) =>
+        namesInClustering.contains(src) && namesInClustering.contains(tgt)
     }
   }
 
