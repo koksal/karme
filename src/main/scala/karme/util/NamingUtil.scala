@@ -6,7 +6,7 @@ import karme.Experiments.Measurement
 object NamingUtil {
 
   def canonicalizeNames[T](e: Experiment[T]): Experiment[T] = {
-    e.copy(measurements = e.measurements.map(canonicalizeNames))
+    e.copy(measurements = e.measurements.map(m => canonicalizeNames(m)))
   }
 
   def canonicalizeNames[T](m: Measurement[T]): Measurement[T] = {
