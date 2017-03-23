@@ -3,6 +3,7 @@ package karme.transformations
 import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment, ThreeValuedExperiment}
+import karme.Reporter
 import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanStateGraph, UndirectedStateGraphOps}
@@ -11,10 +12,12 @@ import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
+import karme.visualization.CurvePlot
 
 class InputTransformer(
   opts: InputTransformerOpts,
-  annotationContext: AnnotationContext
+  annotationContext: AnnotationContext,
+  reporter: Reporter
 ) {
 
   lazy val trajectories: Seq[CellTrajectory] = {
@@ -65,6 +68,10 @@ class InputTransformer(
         smoothedExperiment, annotationContext.annotationVariables,
         opts.clusteringOpts)
       _clustering = Some(geneClustering)
+
+      // TODO move this to visualization phase
+      new CurvePlot(reporter).plotClusterCurves(smoothedExperiment,
+        trajectories, geneClustering, "smoothed-experiment")
 
       HierarchicalClustering.experimentFromClusterAverages(smoothedExperiment,
         geneClustering, annotationContext.annotationVariables)

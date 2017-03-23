@@ -5,6 +5,7 @@ import java.io.File
 import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
+import karme.Reporter
 import karme.util.MathUtil
 
 import scala.reflect.ClassTag
@@ -13,32 +14,31 @@ import scala.reflect.ClassTag
   * Plots pseudotime-ordered scatter plots for each dimension (name) in the
   * experiment.
   */
-object CurvePlot {
+class CurvePlot(reporter: Reporter) {
 
-  def plotClusterGenes(
+  def plotClusterCurves(
     exp: Experiment[Double],
     trajectories: Seq[CellTrajectory],
-    geneClustering: Map[Int, Set[String]],
-    outFolder: File
+    geneClustering: Map[String, Set[String]],
+    name: String
   ): Unit = {
-    for ((clusterIndex, clusterGenes) <- geneClustering) {
-      plotAllTrajectories(exp, trajectories, clusterGenes.toSeq,
-        s"cluster-${clusterIndex}-genes", outFolder)
+    for ((clusterName, clusterGenes) <- geneClustering) {
+      plotAveragesWithBands(exp, trajectories, clusterGenes.toSeq,
+        s"$name-cluster-$clusterName")
     }
   }
 
-  def plotAllTrajectories(
+  def plotAveragesWithBands(
     exp: Experiment[Double],
     trajectories: Seq[CellTrajectory],
     namesToPlot: Seq[String],
-    plotName: String,
-    outFolder: File
+    plotName: String
   ): Unit = {
-    val curveFolder = new File(outFolder, "curves")
+    val curveFolder = reporter.file("curves")
     curveFolder.mkdirs()
 
     for ((t, i) <- trajectories.zipWithIndex) {
-      CurvePlot.plotAverageAndStdev(exp, t, namesToPlot,
+      plotAverageAndStdev(exp, t, namesToPlot,
         new File(curveFolder, s"$plotName-curve-$i.pdf"))
     }
   }

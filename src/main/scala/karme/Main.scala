@@ -2,6 +2,7 @@ package karme
 
 import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
+import karme.printing.SynthesisResultLogger
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
 import karme.visualization.StateGraphPlotter
@@ -15,7 +16,7 @@ object Main {
 
     val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
     val inputTransformer = new InputTransformer(
-      opts.inputTransformerOpts, annotationContext)
+      opts.inputTransformerOpts, annotationContext, reporter)
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
@@ -38,9 +39,10 @@ object Main {
     graphPlotter.plotDirectedGraph(directedStateGraph, "directed-state-graph",
       annotationContext.cellClustering, List(initialStates))
 
-    // TODO plot curves
-
     // TODO log synthesized functions
+    for ((result, i) <- optimalResults.zipWithIndex) {
+      SynthesisResultLogger(result, reporter.file(s"functions-$i.txt"))
+    }
   }
 
 }
