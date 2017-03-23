@@ -12,6 +12,12 @@ object Transitions {
     val orderedValues: Seq[T] = orderedKeys map (k => mapping(k))
     def value(name: String): T = mapping(name)
     def size: Int = orderedKeys.size
+    def mapKeys(f: String => String): GenericState[T] = {
+      val newMapping = mapping map {
+        case (k, v) => f(k) -> v
+      }
+      GenericState(newMapping)
+    }
     def mapValues[U](f: T => U): GenericState[U] = {
       val newMapping = mapping map {
         case (k, v) => k -> f(v)

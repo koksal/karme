@@ -10,6 +10,7 @@ import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousE
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
+import karme.util.NamingUtil
 
 class InputTransformer(
   opts: InputTransformerOpts,
@@ -123,7 +124,7 @@ class InputTransformer(
       sys.error("no continuous experiment given"))
     val parsedExperiment = ContinuousExperimentParser.parseAndFilter(file,
       getNamesToFilter())
-    transformExperiment(parsedExperiment)
+    transformExperiment(NamingUtil.canonicalizeNames(parsedExperiment))
   }
 
   def getNamesToFilter(): Option[Set[String]] = {
