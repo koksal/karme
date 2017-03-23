@@ -1,7 +1,5 @@
 package karme.evaluation
 
-import java.io.File
-
 import karme.Experiments
 import karme.Reporter
 import karme.graphs.StateGraphs
@@ -9,7 +7,7 @@ import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
-import karme.visualization.StateGraphVisualization
+import karme.visualization.StateGraphPlotter
 
 /**
   * Evaluates combinations of synthesis results by simulating functions and
@@ -69,8 +67,7 @@ object ReachabilityEvaluation {
     initialStates: Set[ConcreteBooleanState],
     observedStates: Set[ConcreteBooleanState],
     simulatedStates: Set[ConcreteBooleanState],
-    name: String,
-    outFolder: File
+    name: String
   ): Unit = {
     val unionExp = Experiments.booleanStatesToExperiment(
       observedStates ++ simulatedStates)
@@ -81,7 +78,8 @@ object ReachabilityEvaluation {
     val unobservedStates = simulatedStates -- observedStates
     val highlightGroups = List(initialStates, unobservedStates, missedStates)
 
-    StateGraphVisualization.plotUndirectedGraph(unionGraph, name, outFolder,
+    val plotter = new StateGraphPlotter(???)
+    plotter.plotUndirectedGraph(unionGraph, name,
       nodeHighlightGroups = highlightGroups)
   }
 

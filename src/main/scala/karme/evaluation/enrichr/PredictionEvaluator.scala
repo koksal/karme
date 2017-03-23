@@ -44,7 +44,7 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
     val referencePairsWithClusteredGenes =
       PredictionEvaluator.pairsInClustering(
         PredictionEvaluator.referencePairs(reference), clustering.get)
-    
+
     val clusterToReferencePairs = PredictionEvaluator.groupPairsByClusterPairs(
       referencePairsWithClusteredGenes, clustering.get)
 

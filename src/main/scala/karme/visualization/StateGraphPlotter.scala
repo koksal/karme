@@ -3,6 +3,7 @@ package karme.visualization
 import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
+import karme.Reporter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.Graphs.UnlabeledEdge
@@ -20,12 +21,11 @@ import scala.collection.mutable
 import scala.language.postfixOps
 import scala.sys.process._
 
-object StateGraphVisualization {
+class StateGraphPlotter(reporter: Reporter) {
 
   def plotUndirectedGraph(
     g: UndirectedBooleanStateGraph,
     name: String,
-    outFolder: File,
     cellClustering: mutable.MultiMap[String, String] = MapUtil.emptyMultiMap,
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
@@ -33,13 +33,12 @@ object StateGraphVisualization {
     val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
     val dotString = undirectedDotString(g, cellClustering, nodeToID,
       nodeHighlightGroups)
-    plotGraph(dotString, s"undirected-state-graph-${name}.png", outFolder)
-    printCellsPerNodeID(nodeToID, outFolder)
+    plotGraph(dotString, name)
   }
 
   def plotDirectedGraph(
     g: DirectedBooleanStateGraph,
-    outFolder: File,
+    name: String,
     cellClustering: mutable.MultiMap[String, String] = MapUtil.emptyMultiMap,
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
@@ -47,8 +46,7 @@ object StateGraphVisualization {
     val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
     val dotString = directedDotString(g, cellClustering, nodeToID,
       nodeHighlightGroups)
-    plotGraph(dotString, "directed-state-graph.png", outFolder)
-    printCellsPerNodeID(nodeToID, outFolder)
+    plotGraph(dotString, name)
   }
 
   def plotTransitions(
@@ -56,19 +54,18 @@ object StateGraphVisualization {
     clustering: mutable.MultiMap[String, String],
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String],
-    outFolder: File
+    name: String
   ): Unit = {
     val dotString = transitionDotString(g, clustering, transitions, nodeToID)
-    plotGraph(dotString, "transition-graph.png", outFolder)
+    plotGraph(dotString, name)
   }
 
   private def plotGraph(
     dotString: String,
-    fname: String,
-    outFolder: File
+    name: String
   ): Unit = {
-    val dotFile = new File(outFolder, "state-graph.dot")
-    val pngFile = new File(outFolder, fname)
+    val dotFile = File.createTempFile("state-graph", ".dot")
+    val pngFile = reporter.file(s"$name.png")
     FileUtil.writeToFile(dotFile, dotString)
     s"dot -Tpng ${dotFile.getAbsolutePath}" #> pngFile !
   }
