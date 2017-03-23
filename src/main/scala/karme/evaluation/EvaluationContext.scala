@@ -11,8 +11,8 @@ case class EvaluationContext(
 object EvaluationContext {
 
   def fromOptions(opts: EvalOpts): EvaluationContext = {
-    val parsedLibraries = opts.referenceFiles.map(
-      EnrichrPredictionLibraryParser.apply)
+    val parsedLibraries = opts.referenceFiles.map(f =>
+      EnrichrPredictionLibraryParser.apply(f, opts.maxNbReferencePredictions))
     EvaluationContext(references = parsedLibraries)
   }
 

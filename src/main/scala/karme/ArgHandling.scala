@@ -153,6 +153,10 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(referenceFiles = fs))
       } text "Prediction libraries to evaluate against"
 
+      opt[Int]("max-library-predictions") action { (v, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(maxNbReferencePredictions = Some(v)))
+      } text "Maximum number of library predictions to use."
+
       help("help") text "print this help message"
     }
 

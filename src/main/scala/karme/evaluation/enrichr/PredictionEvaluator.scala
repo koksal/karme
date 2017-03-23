@@ -34,6 +34,42 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
     }
   }
 
+  def compareToReferenceAtClusterLevel(
+    result: Map[String, SynthesisResult],
+    clustering: Option[Map[String, Set[String]]],
+    reference: EnrichrPredictionLibrary
+  ): Unit = {
+    // aggregate reference to cluster edges with # reference edges
+    val predictedClusterPairs = PredictionEvaluator.sourceTargetPairs(result)
+    val clusterToReferencePairs = PredictionEvaluator.groupPairsByClusterPairs(
+      PredictionEvaluator.referencePairs(reference), clustering.get)
+
+    val predictedReferencePairs = predictedClusterPairs.intersect(
+      clusterToReferencePairs.keySet)
+    val missedReferencePairs = clusterToReferencePairs.keySet --
+      predictedClusterPairs
+
+    println("Predicted pairs:")
+    printClusterPairsWithNbReferenceEdges(predictedReferencePairs,
+      clusterToReferencePairs)
+
+    println("Missed pairs:")
+    printClusterPairsWithNbReferenceEdges(missedReferencePairs,
+      clusterToReferencePairs)
+  }
+
+  def printClusterPairsWithNbReferenceEdges(
+    pairs: Set[(String, String)],
+    clusterToReferencePairs: Map[(String, String), Set[(String, String)]]
+  ): Unit = {
+    val pairsSortedByReference = pairs.toSeq.sortBy(
+      clusterToReferencePairs(_).size).reverse
+
+    for (e @ (src, tgt) <- pairsSortedByReference) {
+      println(List(src, tgt, clusterToReferencePairs(e).size).mkString(","))
+    }
+  }
+
   def compareToReference(
     result: Map[String, SynthesisResult],
     clustering: Option[Map[String, Set[String]]],
@@ -114,6 +150,25 @@ object PredictionEvaluator {
     // convert two-element lists to pairs
     lists map {
       case List(src, tgt) => (src, tgt)
+    }
+  }
+
+  def groupPairsByClusterPairs(
+    pairs: Set[(String, String)],
+    clustering: Map[String, Set[String]]
+  ): Map[(String, String), Set[(String, String)]] = {
+    val memberToCluster = memberToClusterMap(clustering)
+
+    pairs groupBy {
+      case (src, tgt) => (memberToCluster(src), memberToCluster(tgt))
+    }
+  }
+
+  def memberToClusterMap(
+    clustering: Map[String, Set[String]]
+  ): Map[String, String] = {
+    clustering flatMap {
+      case (k, vs) => vs map (v => (v, k))
     }
   }
 

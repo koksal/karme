@@ -38,8 +38,9 @@ class ReferenceAnalysis(evalContext: EvaluationContext) {
     println(s"Reference pairs with clustered vars: " +
       s"${referencePairsInClustering.size}")
 
-    val clusterPairToReferencePairs = groupPairsByClusterPairs(
-      referencePairsInClustering, clustering)
+    val clusterPairToReferencePairs =
+      PredictionEvaluator.groupPairsByClusterPairs(referencePairsInClustering,
+        clustering)
 
     // How many predictions are within cluster?
     printWithinClusterPairs(clusterPairToReferencePairs)
@@ -68,25 +69,6 @@ class ReferenceAnalysis(evalContext: EvaluationContext) {
   ): Unit = {
     for ((clusterPair, refPairs) <- clusterPairToReferencePairs) {
       println(s"# Reference edges for ${clusterPair}: ${refPairs.size}")
-    }
-  }
-
-  def groupPairsByClusterPairs(
-    pairs: Set[(String, String)],
-    clustering: Map[String, Set[String]]
-  ): Map[(String, String), Set[(String, String)]] = {
-    val memberToCluster = memberToClusterMap(clustering)
-
-    pairs groupBy {
-      case (src, tgt) => (memberToCluster(src), memberToCluster(tgt))
-    }
-  }
-
-  def memberToClusterMap(
-    clustering: Map[String, Set[String]]
-  ): Map[String, String] = {
-    clustering flatMap {
-      case (k, vs) => vs map (v => (v, k))
     }
   }
 

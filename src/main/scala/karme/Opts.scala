@@ -50,5 +50,6 @@ case class SynthOpts(
 )
 
 case class EvalOpts(
-  referenceFiles: Seq[File] = Seq()
+  referenceFiles: Seq[File] = Seq(),
+  maxNbReferencePredictions: Option[Int] = None
 )
