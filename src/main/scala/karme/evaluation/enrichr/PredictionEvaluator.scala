@@ -27,10 +27,8 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
     clustering: Option[Map[String, Set[String]]],
     reference: EnrichrPredictionLibrary
   ): Unit = {
-    // TODO alternative: aggregating all results for comparison
     for (result <- results) {
-      val score = compareToReference(result, clustering, reference)
-      println(s"Score: $score")
+      compareToReferenceAtClusterLevel(result, clustering, reference)
     }
   }
 

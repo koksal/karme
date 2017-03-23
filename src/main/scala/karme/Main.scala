@@ -33,7 +33,6 @@ object Main {
       inputTransformer.getClustering())
 
     val refAnalysis = new ReferenceAnalysis(predictionEvaluator.evalContext)
-    refAnalysis.analyzeReferencesForClustering(inputTransformer.getClustering())
   }
 
 }
