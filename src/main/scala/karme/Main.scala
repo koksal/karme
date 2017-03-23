@@ -1,10 +1,10 @@
 package karme
 
-import karme.analysis.ReferenceAnalysis
 import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
+import karme.visualization.StateGraphPlotter
 
 object Main {
 
@@ -32,7 +32,15 @@ object Main {
     predictionEvaluator.compareToReferences(optimalResults,
       inputTransformer.getClustering())
 
-    val refAnalysis = new ReferenceAnalysis(predictionEvaluator.evalContext)
+
+    // TODO move to visualization phase module
+    val graphPlotter = new StateGraphPlotter(reporter)
+    graphPlotter.plotDirectedGraph(directedStateGraph, "directed-state-graph",
+      annotationContext.cellClustering, List(initialStates))
+
+    // TODO plot curves
+
+    // TODO log synthesized functions
   }
 
 }

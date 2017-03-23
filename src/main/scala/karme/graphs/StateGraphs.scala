@@ -267,7 +267,7 @@ object StateGraphs {
 
 
   def nodeMeasurementsPerCluster(
-    n: StateGraphVertex, clustering: mutable.MultiMap[String, String]
+    n: StateGraphVertex, clustering: Map[String, Set[String]]
   ): mutable.MultiMap[String, String] = {
     val result = new mutable.HashMap[String, mutable.Set[String]]()
       with mutable.MultiMap[String, String]

@@ -15,9 +15,7 @@ import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
-import karme.util.MapUtil
 
-import scala.collection.mutable
 import scala.language.postfixOps
 import scala.sys.process._
 
@@ -26,7 +24,7 @@ class StateGraphPlotter(reporter: Reporter) {
   def plotUndirectedGraph(
     g: UndirectedBooleanStateGraph,
     name: String,
-    cellClustering: mutable.MultiMap[String, String] = MapUtil.emptyMultiMap,
+    cellClustering: Map[String, Set[String]] = Map.empty,
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
@@ -39,7 +37,7 @@ class StateGraphPlotter(reporter: Reporter) {
   def plotDirectedGraph(
     g: DirectedBooleanStateGraph,
     name: String,
-    cellClustering: mutable.MultiMap[String, String] = MapUtil.emptyMultiMap,
+    cellClustering: Map[String, Set[String]] = Map.empty,
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
@@ -51,7 +49,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
   def plotTransitions(
     g: DirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
+    clustering: Map[String, Set[String]],
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String],
     name: String
@@ -72,7 +70,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
   private def undirectedDotString(
     g: UndirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
+    clustering: Map[String, Set[String]],
     nodeToID: Map[StateGraphVertex, String],
     nodeHighlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
@@ -83,7 +81,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
   private def directedDotString(
     g: DirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
+    clustering: Map[String, Set[String]],
     nodeToID: Map[StateGraphVertex, String],
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
@@ -94,7 +92,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
   private def transitionDotString(
     g: DirectedBooleanStateGraph,
-    clustering: mutable.MultiMap[String, String],
+    clustering: Map[String, Set[String]],
     transitions: Iterable[Transition],
     nodeToID: Map[StateGraphVertex, String]
   ): String = {
@@ -120,7 +118,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
   private def dotNodes(
     V: Iterable[StateGraphVertex],
-    clustering: mutable.MultiMap[String, String],
+    clustering: Map[String, Set[String]],
     nodeToId: Map[StateGraphVertex, String],
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
