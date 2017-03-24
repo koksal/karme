@@ -16,4 +16,5 @@ lazy val root = (project in file(".")).
     )
   )
 
+// Show test times
 testOptions in Test += Tests.Argument("-oD")
