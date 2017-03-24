@@ -15,3 +15,5 @@ lazy val root = (project in file(".")).
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     )
   )
+
+testOptions in Test += Tests.Argument("-oD")
