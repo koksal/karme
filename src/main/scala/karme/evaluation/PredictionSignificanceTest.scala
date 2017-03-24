@@ -2,16 +2,25 @@ package karme.evaluation
 
 object PredictionSignificanceTest {
 
-  def computeSignificanceWithoutSelfEdges(
+  def computeSignificanceForNameUniverse(
     predictedPairs: Set[(String, String)],
     referencePairs: Set[(String, String)],
     nameUniverse: Set[String]
   ): Double = {
     computeSignificance(
-      filterOutSelfPairs(predictedPairs),
-      filterOutSelfPairs(referencePairs),
+      filterForNameUniverse(predictedPairs, nameUniverse),
+      filterForNameUniverse(referencePairs, nameUniverse),
       nameUniverse
     )
+  }
+
+  def filterForNameUniverse(
+    pairs: Set[(String, String)],
+    nameUniverse: Set[String]
+  ): Set[(String, String)] = {
+    pairs filter {
+      case (p1, p2) => nameUniverse.contains(p1) && nameUniverse.contains(p2)
+    }
   }
 
   def filterOutSelfPairs(
@@ -37,7 +46,7 @@ object PredictionSignificanceTest {
     val nbTotalSuccesses = referencePairs.size
 
     // total failures: all possible pairs - reference
-    val nbTotalFailures = nbTotalPairsWithoutSelfEdges(nameUniverse) -
+    val nbTotalFailures = nbTotalPairs(nameUniverse) -
       nbTotalSuccesses
 
     new HypergeometricTest(
@@ -48,9 +57,9 @@ object PredictionSignificanceTest {
     ).run()
   }
 
-  def nbTotalPairsWithoutSelfEdges(nameUniverse: Set[String]): Int = {
+  def nbTotalPairs(nameUniverse: Set[String]): Int = {
     val n = nameUniverse.size
-    n * (n - 1)
+    n * n
   }
 
 }

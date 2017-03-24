@@ -2,6 +2,7 @@ package karme.transformations
 
 import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
+import karme.Experiments.Experiment
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment, ThreeValuedExperiment}
 import karme.Reporter
 import karme.{Experiments, InputTransformerOpts}
@@ -25,6 +26,7 @@ class InputTransformer(
   }
 
   private var _clustering: Option[Map[String, Set[String]]] = None
+  private var _continuousExperiment: Option[Experiment[Double]] = None
 
   def getClustering(): Option[Map[String, Set[String]]] = {
     _clustering match {
@@ -34,6 +36,13 @@ class InputTransformer(
           "Attempting to use clustering before it has been computed.")
         None
       }
+    }
+  }
+
+  def getNamesBeforeFiltering(): Set[String] = {
+    _continuousExperiment match {
+      case None => sys.error("No continuous experiment found.")
+      case Some(e) => e.names.toSet
     }
   }
 
@@ -102,6 +111,8 @@ class InputTransformer(
 
   def buildNormalizedFilteredExperiment(): BooleanExperiment = {
     val continuousExperiment = getTransformedContinuousExperiment()
+    _continuousExperiment = Some(continuousExperiment)
+
     val booleanNormalizedExp = Discretization.binarize(continuousExperiment,
       opts.booleanNormalizationMethod)
     val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)

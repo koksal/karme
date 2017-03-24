@@ -7,7 +7,9 @@ import karme.synthesis.FunctionTrees
 import karme.synthesis.SynthesisResult
 import karme.util.MathUtil
 
-class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
+class PredictionEvaluator(
+  opts: EvalOpts, experimentNamesBeforeFiltering: Set[String]
+) {
 
   lazy val evalContext = EvaluationContext.fromOptions(opts)
 
@@ -88,20 +90,30 @@ class PredictionEvaluator(opts: EvalOpts, allLabels: Set[String]) {
     println(mappedPredictedPairs.mkString("\n"))
 
     // perform significance test between predictions and reference
-    PredictionSignificanceTest.computeSignificanceWithoutSelfEdges(
+    PredictionSignificanceTest.computeSignificanceForNameUniverse(
       mappedPredictedPairs, PredictionEvaluator.referencePairs(reference),
-      getNameUniverse(clustering))
+      getUnfilteredNamesInReference(reference))
   }
 
-  def getNameUniverse(
-    clusteringOpt: Option[Map[String, Set[String]]]
-  ): Set[String] = clusteringOpt match {
-    case Some(clustering) => clustering.values.toSet.flatten
-    case None => allLabels
+  def getUnfilteredNamesInReference(
+    reference: EnrichrPredictionLibrary
+  ): Set[String] = {
+    experimentNamesBeforeFiltering.intersect(
+      PredictionEvaluator.referenceNames(reference))
   }
 }
 
 object PredictionEvaluator {
+
+  def referenceNames(
+    reference: EnrichrPredictionLibrary
+  ): Set[String] = {
+    def predictionNames(p: EnrichrPrediction): Set[String] = p match {
+      case EnrichrPrediction(term, target, _) => Set(term, target)
+    }
+
+    reference.predictions.toSet.flatMap(predictionNames)
+  }
 
   def referencePairs(
     reference: EnrichrPredictionLibrary

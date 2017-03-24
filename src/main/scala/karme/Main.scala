@@ -28,7 +28,7 @@ object Main {
       directedStateGraph, initialStates)
 
     val predictionEvaluator = new PredictionEvaluator(opts.evalOpts,
-      StateGraphs.namesFromStateGraph(directedStateGraph).toSet)
+      inputTransformer.getNamesBeforeFiltering())
 
     predictionEvaluator.compareToReferences(optimalResults,
       inputTransformer.getClustering())
