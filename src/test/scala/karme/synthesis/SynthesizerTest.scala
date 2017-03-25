@@ -7,7 +7,7 @@ import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.Transition
 import org.scalatest.FunSuite
 
-class SynthesisTest extends FunSuite {
+class SynthesizerTest extends FunSuite {
 
   test("Function expression enumeration for minimum number of variables") {
     val transitions = List(
@@ -25,13 +25,14 @@ class SynthesisTest extends FunSuite {
       )
     )
     val possibleVars = Set("A", "B")
+    val exprDepth = 0
 
     // TODO refactor Synthesizer so we don't need to instantiate here with
     // the irrelevant maxExpressionDepth
-    val synthesizer = new Synthesizer(SynthOpts(maxExpressionDepth = 5,
+    val synthesizer = new Synthesizer(SynthOpts(maxExpressionDepth = exprDepth,
       maxNbModels = None), Reporter.defaultReporter())
     val res = synthesizer.enumerateFunExprForMinNbVars(transitions,
-      possibleVars, 5)
+      possibleVars, exprDepth)
 
     assertResult(List(FunVar("B")))(res)
   }
