@@ -20,8 +20,6 @@ class PredictionEvaluator(
     for (reference <- evalContext.references) {
       compareToReference(results, clustering, reference)
     }
-
-    // TODO Check against randomized data
   }
 
   def compareToReference(
@@ -39,29 +37,19 @@ class PredictionEvaluator(
     clustering: Option[Map[String, Set[String]]],
     reference: EnrichrPredictionLibrary
   ): Unit = {
-    // aggregate reference to cluster edges with # reference edges
-    val predictedClusterPairs = PredictionEvaluator.sourceTargetPairs(result)
+    val predictedClusterPairs = PredictionEvaluator.sourceTargetPairsFromFunctions(result)
 
-    // only take reference predictions that mention clustered genes
-    val referencePairsWithClusteredGenes =
-      PredictionEvaluator.pairsInClustering(
-        PredictionEvaluator.referencePairs(reference), clustering.get)
+    // TODO generate all cluster pairs, and gather reference evidence for
+    // each of them. Reference edges outside of clustered variables will be
+    // discarded.
 
-    val clusterToReferencePairs = PredictionEvaluator.groupPairsByClusterPairs(
-      referencePairsWithClusteredGenes, clustering.get)
+    val referenceGenePairs = PredictionEvaluator.referencePairs(reference)
 
-    val predictedReferencePairs = predictedClusterPairs.intersect(
-      clusterToReferencePairs.keySet)
-    val missedReferencePairs = clusterToReferencePairs.keySet --
-      predictedClusterPairs
+    val allClusterPairs = ???
+    val clusterPairToEvidenceRatio = ???
 
-    println("Predicted pairs:")
-    printClusterPairsWithNbReferenceEdges(predictedReferencePairs,
-      clusterToReferencePairs)
-
-    println("Missed pairs:")
-    printClusterPairsWithNbReferenceEdges(missedReferencePairs,
-      clusterToReferencePairs)
+    // TODO compare predicted cluster pair ratios to all cluster pair ratios
+    // Use rank sum
   }
 
   def printClusterPairsWithNbReferenceEdges(
@@ -82,7 +70,7 @@ class PredictionEvaluator(
     reference: EnrichrPredictionLibrary
   ): Double = {
     // For each target, gather possible sources
-    val unmappedPredictedPairs = PredictionEvaluator.sourceTargetPairs(result)
+    val unmappedPredictedPairs = PredictionEvaluator.sourceTargetPairsFromFunctions(result)
 
     // Map cluster-level pairs to gene level
     val mappedPredictedPairs = PredictionEvaluator.processPairsWithClustering(
@@ -92,10 +80,10 @@ class PredictionEvaluator(
     // perform significance test between predictions and reference
     PredictionSignificanceTest.computeSignificanceForNameUniverse(
       mappedPredictedPairs, PredictionEvaluator.referencePairs(reference),
-      getUnfilteredNamesInReference(reference))
+      referenceNamesInOriginalExperiment(reference))
   }
 
-  def getUnfilteredNamesInReference(
+  def referenceNamesInOriginalExperiment(
     reference: EnrichrPredictionLibrary
   ): Set[String] = {
     experimentNamesBeforeFiltering.intersect(
@@ -123,7 +111,7 @@ object PredictionEvaluator {
     }.toSet
   }
 
-  def sourceTargetPairs(
+  def sourceTargetPairsFromFunctions(
     labelToResult: Map[String, SynthesisResult]
   ): Set[(String, String)] = {
     val pairs = for {
