@@ -34,7 +34,10 @@ class PredictionEvaluator(
     reference: EnrichrPredictionLibrary
   ): Unit = {
     for (result <- results) {
-      compareToReferenceAtClusterLevel(result, reference)
+      println("Evaluating synthesis result.")
+      println(reference.id)
+      val pVal = compareToReferenceAtClusterLevel(result, reference)
+      println(s"p-value: $pVal")
     }
   }
 
