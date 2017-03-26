@@ -29,11 +29,9 @@ object Main {
 
     val predictionEvaluator = new PredictionEvaluator(opts.evalOpts,
       inputTransformer.getNamesBeforeFiltering(),
-      inputTransformer.getClustering())
+      inputTransformer.getClustering().get)
 
-    predictionEvaluator.compareToReferences(optimalResults,
-      inputTransformer.getClustering())
-
+    predictionEvaluator.compareToReferences(optimalResults)
 
     // TODO move to visualization phase module
     val graphPlotter = new StateGraphPlotter(reporter)
