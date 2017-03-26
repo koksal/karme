@@ -12,7 +12,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
 
-    val reporter = new Reporter(opts.outFolder)
+    val reporter = new Reporter(opts.reporterOpts)
 
     val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
     val inputTransformer = new InputTransformer(

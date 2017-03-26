@@ -2,22 +2,28 @@ package karme
 
 import java.io.File
 
-class Reporter(outputFolder: File) {
+class Reporter(opts: ReporterOpts) {
 
-  outputFolder.mkdirs()
+  opts.outFolder.mkdirs()
 
   def file(name: String): File = {
-    new File(outputFolder, name)
+    new File(opts.outFolder, name)
   }
 
-  def emit(message: Any): Unit = {
+  def log(message: Any): Unit = {
     println(message)
+  }
+
+  def debug(message: Any): Unit = {
+    if (opts.verbose) {
+      log(message)
+    }
   }
 
 }
 
 object Reporter {
 
-  def defaultReporter(): Reporter = new Reporter(new File("."))
+  def defaultReporter(): Reporter = new Reporter(ReporterOpts())
 
 }

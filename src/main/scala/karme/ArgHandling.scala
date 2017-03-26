@@ -21,12 +21,16 @@ object ArgHandling {
     new OptionParser[Opts]("karme") {
       head("karme", "1.0")
 
-      // Output:
+      // Reporter:
 
       opt[String]("outfolder") action { (v, o) =>
-        o.copy(outFolder = new File(v))
+        o.copy(reporterOpts = o.reporterOpts.copy(outFolder = new File(v)))
       } text "output folder"
 
+      opt[Unit]("verbose") action { (_, o) =>
+        o.copy(reporterOpts = o.reporterOpts.copy(verbose = true))
+      } text "verbose output"
+      
       // Input files:
 
       opt[File]("continuous-experiment") action { (v, o) =>

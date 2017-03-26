@@ -6,11 +6,11 @@ import karme.transformations.discretization.Ckmeans
 import karme.transformations.discretization.DiscretizationMethod
 
 case class Opts(
-  outFolder: File = new File("."),
   inputTransformerOpts: InputTransformerOpts = InputTransformerOpts(),
   synthOpts: SynthOpts = SynthOpts(),
   evalOpts: EvalOpts = EvalOpts(),
   annotationOpts: AnnotationOpts = AnnotationOpts(),
+  reporterOpts: ReporterOpts = ReporterOpts(),
   runSynthesis: Boolean = false
 )
 
@@ -52,4 +52,9 @@ case class SynthOpts(
 case class EvalOpts(
   referenceFiles: Seq[File] = Seq(),
   maxNbReferencePredictions: Option[Int] = None
+)
+
+case class ReporterOpts(
+  outFolder: File = new File("."),
+  verbose: Boolean = false
 )
