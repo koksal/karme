@@ -38,7 +38,6 @@ object Main {
     graphPlotter.plotDirectedGraph(directedStateGraph, "directed-state-graph",
       annotationContext.cellClustering, List(initialStates))
 
-    // TODO log synthesized functions
     for ((result, i) <- optimalResults.zipWithIndex) {
       SynthesisResultLogger(result, reporter.file(s"functions-$i.txt"))
     }
