@@ -10,9 +10,12 @@ class RankSumTest(
 ) extends AbstractRInterface[RankSumTestResult] {
 
   def process(R: RClient): RankSumTestResult = {
+    R.set("xs", xs.toArray)
+    R.set("ys", ys.toArray)
+
     call(R)("wilcox.test", "res",
-      "x" -> xs.toArray,
-      "y" -> ys.toArray,
+      "x" -> "xs",
+      "y" -> "ys",
       "alternative" -> "\"greater\""
     )
 
