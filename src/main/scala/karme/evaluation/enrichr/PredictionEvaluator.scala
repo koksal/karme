@@ -8,48 +8,65 @@ import karme.synthesis.SynthesisResult
 import karme.util.MathUtil
 
 class PredictionEvaluator(
-  opts: EvalOpts, experimentNamesBeforeFiltering: Set[String]
+  opts: EvalOpts,
+  experimentNamesBeforeFiltering: Set[String],
+  clustering: Map[String, Set[String]]
 ) {
 
   lazy val evalContext = EvaluationContext.fromOptions(opts)
 
+  lazy val memberToCluster: Map[String, String] = {
+    PredictionEvaluator.memberToClusterMap(clustering)
+  }
+
   def compareToReferences(
-    results: Seq[Map[String, SynthesisResult]],
-    clustering: Option[Map[String, Set[String]]]
+    results: Seq[Map[String, SynthesisResult]]
   ): Unit = {
     for (reference <- evalContext.references) {
-      compareToReference(results, clustering, reference)
+      compareToReference(results, reference)
     }
   }
 
   def compareToReference(
     results: Seq[Map[String, SynthesisResult]],
-    clustering: Option[Map[String, Set[String]]],
     reference: EnrichrPredictionLibrary
   ): Unit = {
     for (result <- results) {
-      compareToReferenceAtClusterLevel(result, clustering, reference)
+      compareToReferenceAtClusterLevel(result, reference)
     }
   }
 
   def compareToReferenceAtClusterLevel(
     result: Map[String, SynthesisResult],
-    clustering: Option[Map[String, Set[String]]],
     reference: EnrichrPredictionLibrary
-  ): Unit = {
+  ): Double = {
     val predictedClusterPairs = PredictionEvaluator.sourceTargetPairsFromFunctions(result)
 
-    // TODO generate all cluster pairs, and gather reference evidence for
-    // each of them. Reference edges outside of clustered variables will be
-    // discarded.
+    val refPairs = PredictionEvaluator.referencePairs(reference)
 
-    val referenceGenePairs = PredictionEvaluator.referencePairs(reference)
+    var clusterPairToEvidenceRatio: Map[(String, String), Double] = Map.empty
+    for {
+      c1 <- clustering.keySet
+      c2 <- clustering.keySet
+    } {
+      clusterPairToEvidenceRatio += (c1, c2) ->
+        pairEvidenceRatio(refPairs, c1, c2)
+    }
 
-    val allClusterPairs = ???
-    val clusterPairToEvidenceRatio = ???
+    testPredictionSignificance(clusterPairToEvidenceRatio,
+      predictedClusterPairs)
+  }
 
-    // TODO compare predicted cluster pair ratios to all cluster pair ratios
-    // Use rank sum
+  def testPredictionSignificance(
+    clusterPairToEvidenceRatio: Map[(String, String), Double],
+    predictedClusterPairs: Set[(String, String)]
+  ): Double = {
+    val allRatios = clusterPairToEvidenceRatio.values.toSeq
+    val predictionRatios = predictedClusterPairs.toSeq map { pair =>
+      clusterPairToEvidenceRatio(pair)
+    }
+    // TODO rank sum invocation
+    ???
   }
 
   def printClusterPairsWithNbReferenceEdges(
@@ -89,6 +106,26 @@ class PredictionEvaluator(
     experimentNamesBeforeFiltering.intersect(
       PredictionEvaluator.referenceNames(reference))
   }
+
+  def pairEvidenceRatio(
+    referencePairs: Set[(String, String)],
+    srcCluster: String,
+    tgtCluster: String
+  ): Double = {
+    val matchingPairs = referencePairs filter {
+      case (src, tgt) => {
+        (memberToCluster.get(src), memberToCluster.get(tgt)) match {
+          case (Some(srcMemberClust), Some(tgtMemberClust)) => {
+            srcMemberClust == srcCluster && tgtMemberClust == tgtCluster
+          }
+        }
+      }
+    }
+    val clusterProductSize = clustering(srcCluster).size *
+      clustering(tgtCluster).size
+    matchingPairs.size.toDouble / clusterProductSize
+  }
+
 }
 
 object PredictionEvaluator {
