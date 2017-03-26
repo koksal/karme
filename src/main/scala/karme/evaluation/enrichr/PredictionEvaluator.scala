@@ -3,6 +3,8 @@ package karme.evaluation.enrichr
 import karme.EvalOpts
 import karme.evaluation.EvaluationContext
 import karme.evaluation.PredictionSignificanceTest
+import karme.evaluation.RankSumTest
+import karme.evaluation.RankSumTestResult
 import karme.synthesis.FunctionTrees
 import karme.synthesis.SynthesisResult
 import karme.util.MathUtil
@@ -65,8 +67,8 @@ class PredictionEvaluator(
     val predictionRatios = predictedClusterPairs.toSeq map { pair =>
       clusterPairToEvidenceRatio(pair)
     }
-    // TODO rank sum invocation
-    ???
+    val res = new RankSumTest(predictionRatios, allRatios).run()
+    res.pValue
   }
 
   def printClusterPairsWithNbReferenceEdges(
