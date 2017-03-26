@@ -6,9 +6,6 @@ import karme.transformations.discretization.Ckmeans
 import karme.transformations.discretization.Mclust
 import scopt.OptionParser
 
-/**
-  * Created by ask on 10/17/16.
-  */
 object ArgHandling {
   def parseOptions(args: Array[String]) = {
     val opts = new Opts()
@@ -30,7 +27,7 @@ object ArgHandling {
       opt[Unit]("verbose") action { (_, o) =>
         o.copy(reporterOpts = o.reporterOpts.copy(verbose = true))
       } text "verbose output"
-      
+
       // Input files:
 
       opt[File]("continuous-experiment") action { (v, o) =>
