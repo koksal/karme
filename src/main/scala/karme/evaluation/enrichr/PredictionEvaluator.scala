@@ -46,11 +46,11 @@ class PredictionEvaluator(
 
     var clusterPairToEvidenceRatio: Map[(String, String), Double] = Map.empty
     for {
-      c1 <- clustering.keySet
-      c2 <- clustering.keySet
+      srcClust <- clustering.keySet
+      tgtClust <- clustering.keySet
     } {
-      clusterPairToEvidenceRatio += (c1, c2) ->
-        pairEvidenceRatio(refPairs, c1, c2)
+      clusterPairToEvidenceRatio += (srcClust, tgtClust) ->
+        pairEvidenceRatio(refPairs, srcClust, tgtClust)
     }
 
     testPredictionSignificance(clusterPairToEvidenceRatio,
