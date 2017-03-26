@@ -61,9 +61,9 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
     var labelToSynthesisResults = Map[String, Set[SynthesisResult]]()
     for (label <- allLabels) {
-      println()
-      println(s"Synthesizing for ${label}")
-      println("==========================")
+      reporter.debug(s"Synthesizing for ${label}")
+      reporter.debug("==========================")
+
       val resultsForLabel = synthesizeForSingleLabel(
         hardTransitions = labelToNegTrans.getOrElse(label, Set.empty),
         softTransitions = labelToPosTrans.getOrElse(label, Set.empty),
@@ -85,10 +85,13 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     val partition = findGreedyTransitionPartition(hardTransitions,
       possibleVars)
     if (partition.size > 1) {
-      println("Warning: Hard constraints are not consistent.")
-      println(s"Partitioned hard examples into ${partition.size} set(s).")
-      println(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
+      reporter.log("Warning: Hard constraints are not consistent.")
+      reporter.log(s"Partitioned hard examples into ${partition.size} set(s).")
+      reporter.log(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
     }
+
+    reporter.debug(s"# hard transitions: ${hardTransitions.size}")
+    reporter.debug(s"# soft transitions: ${softTransitions.size}")
 
     var allResults = Set.empty[SynthesisResult]
     for (subset <- partition) {
@@ -133,6 +136,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     var currentResults = Set.empty[SynthesisResult]
 
     while (unusedTransitions.nonEmpty) {
+      reporter.debug(s"Remaining unused transitions: ${unusedTransitions.size}")
+
       val nextBestUnused =
         transitionsByDescendingWeight(unusedTransitions).head
 
@@ -236,9 +241,13 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): List[FunExpr] = {
+    reporter debug "Synthesizing for minimum depth."
+
     var res = List[FunExpr]()
     var currDepth = 0
     while (res.isEmpty && currDepth <= opts.maxExpressionDepth) {
+      reporter debug s"Current depth: $currDepth"
+
       res = enumerateFunExprForMinNbVars(transitions, possibleVars, currDepth)
       currDepth += 1
     }
