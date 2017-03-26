@@ -118,6 +118,7 @@ class PredictionEvaluator(
           case (Some(srcMemberClust), Some(tgtMemberClust)) => {
             srcMemberClust == srcCluster && tgtMemberClust == tgtCluster
           }
+          case _ => false
         }
       }
     }
