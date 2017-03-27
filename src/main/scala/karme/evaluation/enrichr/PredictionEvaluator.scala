@@ -4,7 +4,6 @@ import karme.EvalOpts
 import karme.evaluation.EvaluationContext
 import karme.evaluation.PredictionSignificanceTest
 import karme.evaluation.RankSumTest
-import karme.evaluation.RankSumTestResult
 import karme.synthesis.FunctionTrees
 import karme.synthesis.SynthesisResult
 import karme.util.MathUtil

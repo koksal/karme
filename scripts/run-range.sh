@@ -18,9 +18,9 @@ export -f run_with_args
 
 # filtering genes by name
 declare -A FILTER_NAMES_ARGS
-FILTER_NAMES_ARGS["markers"]="--names data/names/markers.txt"
+# FILTER_NAMES_ARGS["markers"]="--names data/names/markers.txt"
 FILTER_NAMES_ARGS["human-tf"]="--names data/names/human-tf.txt"
-FILTER_NAMES_ARGS["human-tf-and-markers"]="--names data/names/markers.txt,data/names/human-tf.txt"
+# FILTER_NAMES_ARGS["human-tf-and-markers"]="--names data/names/markers.txt,data/names/human-tf.txt"
 
 # data transformation
 declare -A DATA_TRANSFORM_ARGS
