@@ -51,7 +51,7 @@ declare -A CLUSTERING_ARGS
 CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
 CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
 CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
-CLUSTERING_ARGS["range"]="--cluster --min-clusters 10 --max-clusters 20"
+# CLUSTERING_ARGS["range"]="--cluster --min-clusters 10 --max-clusters 20"
 
 # uncertainty
 declare -A UNCERTAINTY_ARGS
