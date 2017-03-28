@@ -5,7 +5,7 @@ LOGFILE=$OUTFOLDER/log.txt
 mkdir -p $OUTFOLDER
 
 sbt "run-main karme.Main \
-  --continuous-experiment data/measurement/t-cell-measurements.csv \
+  --continuous-experiment data/measurements/t-cell-measurements.csv \
   --trajectories data/trajectories/t-cell-pc1-values.csv \
   --names data/names/t-cell-transcription-regulators.txt \
   --synthesis \
