@@ -1,13 +1,10 @@
 package karme.evaluation
 
-import karme.Experiments
 import karme.Reporter
-import karme.graphs.StateGraphs
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
-import karme.visualization.StateGraphPlotter
 
 /**
   * Evaluates combinations of synthesis results by simulating functions and
