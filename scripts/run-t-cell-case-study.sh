@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OUTFOLDER="t-cell-run"
+OUTFOLDER="log/t-cell-run"
 LOGFILE=$OUTFOLDER/log.txt
 mkdir -p $OUTFOLDER
 
