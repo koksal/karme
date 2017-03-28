@@ -32,7 +32,7 @@ declare -A ACTIVITY_FILTER_ARGS
 # ACTIVITY_FILTER_ARGS["none"]=""
 ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
 ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
-ACTIVITY_FILTER_ARGS["30"]="--cell-activity-threshold 0.3"
+# ACTIVITY_FILTER_ARGS["30"]="--cell-activity-threshold 0.3"
 
 # boolean normalization
 declare -A BOOLEAN_NORMALIZATION_ARGS
