@@ -9,6 +9,7 @@ import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 import karme.transformations.TransitionProducer
+import karme.visualization.StateGraphPlotter
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
@@ -46,6 +47,13 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     val optimalReachabilityResults =
       ReachabilityEvaluation.findAllResultsWithOptimalReachability(allResults,
       initialStates, observedStates, reporter)
+
+    val plotter = new StateGraphPlotter(reporter)
+    for ((result, i) <- optimalReachabilityResults.zipWithIndex) {
+      plotter.plotSimulation(initialStates, observedStates,
+        result.reachableStates, s"simulation-$i")
+    }
+
     optimalReachabilityResults map (_.labelToResult)
   }
 

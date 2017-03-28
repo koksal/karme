@@ -3,7 +3,7 @@ package karme.visualization
 import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
-import karme.Reporter
+import karme.{Experiments, Reporter}
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.Graphs.UnlabeledEdge
@@ -56,6 +56,27 @@ class StateGraphPlotter(reporter: Reporter) {
   ): Unit = {
     val dotString = transitionDotString(g, clustering, transitions, nodeToID)
     plotGraph(dotString, name)
+  }
+
+  def plotSimulation(
+    initialStates: Set[ConcreteBooleanState],
+    observedStates: Set[ConcreteBooleanState],
+    simulatedStates: Set[ConcreteBooleanState],
+    name: String
+  ): Unit = {
+    assert(initialStates.subsetOf(observedStates))
+    assert(initialStates.subsetOf(simulatedStates))
+
+    val unionExp = Experiments.booleanStatesToExperiment(
+      observedStates ++ simulatedStates)
+    // TODO carry the Hamming distance here
+    val unionGraph = StateGraphs.fromBooleanExperiment(unionExp, 1)
+
+    val missedStates = observedStates -- simulatedStates
+    val unobservedStates = simulatedStates -- observedStates
+    val highlightGroups = List(initialStates, unobservedStates, missedStates)
+
+    plotUndirectedGraph(unionGraph, name, nodeHighlightGroups = highlightGroups)
   }
 
   private def plotGraph(

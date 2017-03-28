@@ -63,26 +63,6 @@ object ReachabilityEvaluation {
     }
   }
 
-  private def plotSimulation(
-    initialStates: Set[ConcreteBooleanState],
-    observedStates: Set[ConcreteBooleanState],
-    simulatedStates: Set[ConcreteBooleanState],
-    name: String
-  ): Unit = {
-    val unionExp = Experiments.booleanStatesToExperiment(
-      observedStates ++ simulatedStates)
-    // TODO carry the Hamming distance here
-    val unionGraph = StateGraphs.fromBooleanExperiment(unionExp, 1)
-
-    val missedStates = observedStates -- simulatedStates
-    val unobservedStates = simulatedStates -- observedStates
-    val highlightGroups = List(initialStates, unobservedStates, missedStates)
-
-    val plotter = new StateGraphPlotter(???)
-    plotter.plotUndirectedGraph(unionGraph, name,
-      nodeHighlightGroups = highlightGroups)
-  }
-
   private def simulationPenalty(
     observedStates: Set[ConcreteBooleanState],
     simulatedStates: Set[ConcreteBooleanState]
