@@ -212,7 +212,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     assert(initialSet.nonEmpty)
     assert(candidateSet.nonEmpty)
 
-    println("searching for unsat core.")
+    reporter.debug("searching for unsat core.")
 
     var currentSet = initialSet
     var foundCore = false
@@ -230,10 +230,9 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       if (!foundCore) {
         // add one (consistent) candidate to current set and repeat
         currentSet += stepCandidateSet.head
-        println(s"No core with ${currentSet.size} transitions, adding one " +
-          s"candidate to current set:")
-        println(currentSet.mkString("\n"))
-        println()
+        reporter.debug(s"No core with ${currentSet.size} transitions, adding " +
+          "one candidate to current set:")
+        reporter.debug(currentSet.mkString("\n"))
       }
     }
 
@@ -249,7 +248,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): List[FunExpr] = {
-    reporter debug "Synthesizing for minimum depth."
+    reporter.debug("Synthesizing for minimum depth.")
 
     var res = List[FunExpr]()
     var currDepth = 0
