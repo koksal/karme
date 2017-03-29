@@ -55,12 +55,14 @@ object ExperimentHistograms {
     visualizeDiscretization(contExp, discExp, new File(histogramsFolder, "all"))
   }
 
-  private def visualizeDiscretization(
+  def visualizeDiscretization(
     contExp: ContinuousExperiment,
     discExp: BooleanExperiment,
     folder: File
   ): Unit = {
     assert(contExp.names == discExp.names)
+
+    folder.mkdirs()
 
     val contValuesPerName = contExp.names.map(n => contExp.valuesForName(n))
     val discValuesPerName = discExp.names.map(n => discExp.valuesForName(n))

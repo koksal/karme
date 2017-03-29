@@ -14,6 +14,7 @@ import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
+import karme.visualization.ExperimentHistograms
 
 class InputTransformer(
   opts: InputTransformerOpts,
@@ -115,6 +116,10 @@ class InputTransformer(
 
     val booleanNormalizedExp = Discretization.binarize(continuousExperiment,
       opts.booleanNormalizationMethod)
+
+    ExperimentHistograms.visualizeDiscretization(continuousExperiment,
+      booleanNormalizedExp, reporter.file("boolean-normalization-histograms"))
+
     val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)
     filterByActivity(filteredByNbLevels)
   }
