@@ -32,19 +32,18 @@ class PredictionEvaluator(
     results: Seq[Map[String, SynthesisResult]],
     reference: EnrichrPredictionLibrary
   ): Unit = {
-    for (result <- results) {
-      println("Evaluating synthesis result.")
-      println(reference.id)
-      val pVal = compareToReferenceAtClusterLevel(result, reference)
-      println(s"p-value: $pVal")
-    }
+    println("Evaluating union of synthesis results.")
+    println(reference.id)
+    val pVal = compareToReferenceAtClusterLevel(results, reference)
+    println(s"p-value: $pVal")
   }
 
   def compareToReferenceAtClusterLevel(
-    result: Map[String, SynthesisResult],
+    results: Seq[Map[String, SynthesisResult]],
     reference: EnrichrPredictionLibrary
   ): Double = {
-    val predictedClusterPairs = PredictionEvaluator.sourceTargetPairsFromFunctions(result)
+    val predictedClusterPairs =
+      PredictionEvaluator.sourceTargetPairsFromFunctions(results)
 
     val refPairs = PredictionEvaluator.referencePairs(reference)
 
@@ -151,6 +150,12 @@ object PredictionEvaluator {
     reference.predictions.map{
       case EnrichrPrediction(term, target, score) => (term, target)
     }.toSet
+  }
+
+  def sourceTargetPairsFromFunctions(
+    results: Seq[Map[String, SynthesisResult]]
+  ): Set[(String, String)] = {
+    results.flatMap(sourceTargetPairsFromFunctions).toSet
   }
 
   def sourceTargetPairsFromFunctions(

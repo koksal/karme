@@ -1,7 +1,5 @@
 package karme.transformations.clustering
 
-import java.io.File
-
 import karme.ClusteringOpts
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
