@@ -248,13 +248,9 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): List[FunExpr] = {
-    reporter.debug("Synthesizing for minimum depth.")
-
     var res = List[FunExpr]()
     var currDepth = 0
     while (res.isEmpty && currDepth <= opts.maxExpressionDepth) {
-      reporter.debug(s"Current depth: $currDepth")
-
       res = enumerateFunExprForMinNbVars(transitions, possibleVars, currDepth)
       currDepth += 1
     }
