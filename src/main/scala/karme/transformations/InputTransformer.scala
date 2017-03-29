@@ -65,9 +65,14 @@ class InputTransformer(
   }
 
   def buildThreeValuedExperiment(): ThreeValuedExperiment = {
-    Experiments.continuousExperimentToThreeValued(
-      processContinuousExperimentForDiscretization(),
-      opts.uncertaintyThreshold)
+    val contExp = processContinuousExperimentForDiscretization()
+    val threeValuedExp = Experiments.continuousExperimentToThreeValued(
+      contExp, opts.uncertaintyThreshold)
+
+    ExperimentHistograms.visualizeDiscretization(contExp, threeValuedExp,
+      reporter.file("three-valued-histograms"))
+
+    threeValuedExp
   }
 
   def processContinuousExperimentForDiscretization(): ContinuousExperiment = {
