@@ -22,26 +22,26 @@ object ExperimentHistograms {
     }
   }
 
-  def visualizeDiscretization[T: ClassTag, U: ClassTag](
-    contExp: Experiment[T],
-    discExp: Experiment[U],
+  def plotLabeledHistograms[T: ClassTag, U: ClassTag](
+    expToPlot: Experiment[T],
+    expToLabel: Experiment[U],
     folder: File
   ): Unit = {
-    assert(contExp.names == discExp.names)
-
     folder.mkdirs()
 
-    val contValuesPerName = contExp.names.map(n => contExp.valuesForName(n))
-    val discValuesPerName = discExp.names.map(n => discExp.valuesForName(n))
+    val namesToPlot = expToPlot.names
 
-    assert(contValuesPerName.size == discValuesPerName.size)
+    for (name <- namesToPlot) {
+      val values = expToPlot.valuesForName(name)
+      val labels = if (expToLabel.names.contains(name)) {
+        expToLabel.valuesForName(name)
+      } else {
+        values.map(_ => "none")
+      }
+      assert(values.size == labels.size)
 
-    for (((contValues, discValues), i) <-
-         contValuesPerName.zip(discValuesPerName).zipWithIndex) {
-      val name = contExp.names(i)
       val f = new File(folder, s"$name.pdf")
-
-      new HistogramPlotInterface(contValues, discValues, f).run()
+      new HistogramPlotInterface(values, labels, f).run()
     }
   }
 

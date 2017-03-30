@@ -69,7 +69,7 @@ class InputTransformer(
     val threeValuedExp = Experiments.continuousExperimentToThreeValued(
       contExp, opts.uncertaintyThreshold)
 
-    ExperimentHistograms.visualizeDiscretization(contExp, threeValuedExp,
+    ExperimentHistograms.plotLabeledHistograms(contExp, threeValuedExp,
       reporter.file("three-valued-histograms"))
 
     threeValuedExp
@@ -122,7 +122,7 @@ class InputTransformer(
     val booleanNormalizedExp = Discretization.binarize(continuousExperiment,
       opts.booleanNormalizationMethod)
 
-    ExperimentHistograms.visualizeDiscretization(continuousExperiment,
+    ExperimentHistograms.plotLabeledHistograms(continuousExperiment,
       booleanNormalizedExp, reporter.file("boolean-normalization-histograms"))
 
     val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)
