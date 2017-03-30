@@ -20,25 +20,15 @@ class PredictionEvaluator(
     PredictionEvaluator.memberToClusterMap(clustering)
   }
 
-  def compareToReferences(
+  def computeReferencePValues(
     results: Seq[Map[String, SynthesisResult]]
-  ): Unit = {
-    for (reference <- evalContext.references) {
-      compareToReference(results, reference)
+  ): Seq[(EnrichrPredictionLibrary, Double)] = {
+    for (reference <- evalContext.references) yield {
+      reference -> computeReferencePValues(results, reference)
     }
   }
 
-  def compareToReference(
-    results: Seq[Map[String, SynthesisResult]],
-    reference: EnrichrPredictionLibrary
-  ): Unit = {
-    println("Evaluating union of synthesis results.")
-    println(reference.id)
-    val pVal = compareToReferenceAtClusterLevel(results, reference)
-    println(s"p-value: $pVal")
-  }
-
-  def compareToReferenceAtClusterLevel(
+  def computeReferencePValues(
     results: Seq[Map[String, SynthesisResult]],
     reference: EnrichrPredictionLibrary
   ): Double = {
