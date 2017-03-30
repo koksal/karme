@@ -3,6 +3,7 @@ package karme.synthesis
 import karme.Reporter
 import karme.SynthOpts
 import karme.evaluation.ReachabilityEvaluation
+import karme.evaluation.ReachabilityEvaluation.ReachabilityEvaluationResult
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.synthesis.FunctionTrees._
@@ -16,14 +17,14 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
   def synthesizeForOptimalReachability(
     directedStateGraph: DirectedBooleanStateGraph,
     initialStates: Set[ConcreteBooleanState]
-  ): Seq[Map[String, SynthesisResult]] = {
+  ): Seq[ReachabilityEvaluationResult] = {
     val (posTransitions, negTransitions) =
       producePositiveAndNegativeTransitions(directedStateGraph)
 
     val allResults = synthesizeFunctionsForAllTransitionSubsets(
       posTransitions, negTransitions)
 
-    chooseSynthesisResultsForOptimalReachability(directedStateGraph,
+    findOptimalReachabilityResults(directedStateGraph,
       initialStates, allResults)
   }
 
@@ -38,15 +39,15 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     (positiveTransitions, negativeTransitions)
   }
 
-  def chooseSynthesisResultsForOptimalReachability(
+  def findOptimalReachabilityResults(
     g: DirectedBooleanStateGraph,
     initialStates: Set[ConcreteBooleanState],
     allResults: Map[String, Set[SynthesisResult]]
-  ): Seq[Map[String, SynthesisResult]] = {
+  ): Seq[ReachabilityEvaluationResult] = {
     val observedStates = g.V.map(_.state)
     val optimalReachabilityResults =
       ReachabilityEvaluation.findAllResultsWithOptimalReachability(allResults,
-      initialStates, observedStates, reporter)
+      initialStates, observedStates)
 
     val plotter = new StateGraphPlotter(reporter)
     for ((result, i) <- optimalReachabilityResults.zipWithIndex) {
@@ -54,7 +55,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         result.reachableStates, s"simulation-$i")
     }
 
-    optimalReachabilityResults map (_.labelToResult)
+    optimalReachabilityResults
   }
 
   def synthesizeFunctionsForAllTransitionSubsets(

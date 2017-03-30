@@ -1,10 +1,8 @@
 package karme
 
-import java.io.File
-
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
+import karme.printing.SummaryLogger
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
@@ -32,12 +30,13 @@ object Main {
 
     val predictionEvaluator = new PredictionEvaluator(opts.evalOpts,
       inputTransformer.getNamesBeforeFiltering(),
-      inputTransformer.getClustering().get)
+      inputTransformer.getClustering().get, reporter)
 
     val referencePValuePairs = predictionEvaluator.computeReferencePValues(
-      optimalResults)
+      optimalResults.map(_.labelToResult))
 
-    printRunSummary(opts, referencePValuePairs, reporter.file("summary.tsv"))
+    SummaryLogger(opts, optimalResults, referencePValuePairs,
+      reporter.file("summary.tsv"))
 
     // TODO move to visualization phase module
     val graphPlotter = new StateGraphPlotter(reporter)
@@ -45,29 +44,9 @@ object Main {
       annotationContext.cellClustering, List(initialStates))
 
     for ((result, i) <- optimalResults.zipWithIndex) {
-      SynthesisResultLogger(result, reporter.file(s"functions-$i.txt"))
+      SynthesisResultLogger(result.labelToResult,
+        reporter.file(s"functions-$i.txt"))
     }
-  }
-
-  def printRunSummary(
-    opts: Opts, refPValues: Seq[(EnrichrPredictionLibrary, Double)], f: File
-  ): Unit = {
-    val optHeaderToValue = Seq(
-      "pseudolog" -> opts.inputTransformerOpts.pseudoLogFactor,
-      "bool-norm" -> opts.inputTransformerOpts.booleanNormalizationMethod,
-      "cell-activity" -> opts.inputTransformerOpts.cellActivityThreshold,
-      "uncertainty" -> opts.inputTransformerOpts.uncertaintyThreshold,
-      "smoothing" -> opts.inputTransformerOpts.smoothingRadius,
-      "minClust" -> opts.inputTransformerOpts.clusteringOpts.minNbClusters,
-      "maxClust" -> opts.inputTransformerOpts.clusteringOpts.maxNbClusters
-    )
-    val refHeaderToValue = refPValues map {
-      case (library, pValue) => library.id -> pValue
-    }
-    val allValues = optHeaderToValue ++ refHeaderToValue
-
-    println(allValues.map(_._1).mkString("\t"))
-    println(allValues.map(_._2).mkString("\t"))
   }
 
 }

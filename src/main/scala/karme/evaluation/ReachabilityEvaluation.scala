@@ -15,14 +15,14 @@ object ReachabilityEvaluation {
   case class ReachabilityEvaluationResult(
     labelToResult: Map[String, SynthesisResult],
     reachableStates: Set[ConcreteBooleanState],
-    simulationPenalty: Double
+    simulationPenalty: Double,
+    observedStateReachabilityRatio: Double
   )
 
   def findAllResultsWithOptimalReachability(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState],
-    observedStates: Set[ConcreteBooleanState],
-    reporter: Reporter
+    observedStates: Set[ConcreteBooleanState]
   ): Seq[ReachabilityEvaluationResult] = {
     val results = computeReachabilityEvaluationResults(labelToSynthesisResults,
       initialStates, observedStates)
@@ -56,8 +56,16 @@ object ReachabilityEvaluation {
 
       val penalty = simulationPenalty(observedStates, simulatedStates)
 
-      ReachabilityEvaluationResult(labelToResult, simulatedStates, penalty)
+      ReachabilityEvaluationResult(labelToResult, simulatedStates, penalty,
+        ratioOfReachedObservedStates(observedStates, simulatedStates))
     }
+  }
+
+  private def ratioOfReachedObservedStates(
+    observed: Set[ConcreteBooleanState],
+    simulated: Set[ConcreteBooleanState]
+  ): Double = {
+    observed.intersect(simulated).size.toDouble / observed.size
   }
 
   private def simulationPenalty(

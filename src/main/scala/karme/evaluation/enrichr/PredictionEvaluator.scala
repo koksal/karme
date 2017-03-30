@@ -1,6 +1,7 @@
 package karme.evaluation.enrichr
 
 import karme.EvalOpts
+import karme.Reporter
 import karme.evaluation.EvaluationContext
 import karme.evaluation.PredictionSignificanceTest
 import karme.evaluation.RankSumTest
@@ -11,7 +12,8 @@ import karme.util.MathUtil
 class PredictionEvaluator(
   opts: EvalOpts,
   experimentNamesBeforeFiltering: Set[String],
-  clustering: Map[String, Set[String]]
+  clustering: Map[String, Set[String]],
+  reporter: Reporter
 ) {
 
   lazy val evalContext = EvaluationContext.fromOptions(opts)
@@ -58,6 +60,13 @@ class PredictionEvaluator(
     val predictionRatios = predictedClusterPairs.toSeq map { pair =>
       clusterPairToEvidenceRatio(pair)
     }
+
+    reporter.debug("Invoking rank sum:")
+    reporter.debug(s"# predictions: ${predictionRatios.size}")
+    reporter.debug(s"# total ratio: ${allRatios.size}")
+    reporter.debug(predictionRatios.sorted.reverse)
+    reporter.debug(allRatios.sorted.reverse)
+
     val res = new RankSumTest(predictionRatios, allRatios).run()
     res.pValue
   }
