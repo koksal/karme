@@ -39,7 +39,9 @@ object SummaryLogger {
 
     val sb = new StringBuilder()
     sb.append(allValues.map(_._1).mkString("\t"))
+    sb.append("\n")
     sb.append(allValues.map(_._2).mkString("\t"))
+    sb.append("\n")
     FileUtil.writeToFile(f, sb.toString())
   }
 
