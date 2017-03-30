@@ -38,7 +38,7 @@ ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
 
 # boolean normalization
 declare -A BOOLEAN_NORMALIZATION_ARGS
-BOOLEAN_NORMALIZATION_ARGS["kmeans"]="--boolean-normalization kmeans"
+# BOOLEAN_NORMALIZATION_ARGS["kmeans"]="--boolean-normalization kmeans"
 BOOLEAN_NORMALIZATION_ARGS["mclust"]="--boolean-normalization mclust"
 
 # smoothing
