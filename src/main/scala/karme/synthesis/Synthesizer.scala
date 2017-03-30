@@ -49,8 +49,9 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       ReachabilityEvaluation.findAllResultsWithOptimalReachability(allResults,
       initialStates, observedStates)
 
+    // plot top simulations
     val plotter = new StateGraphPlotter(reporter)
-    for ((result, i) <- optimalReachabilityResults.zipWithIndex) {
+    for ((result, i) <- optimalReachabilityResults.zipWithIndex.take(5)) {
       plotter.plotSimulation(initialStates, observedStates,
         result.reachableStates, s"simulation-$i")
     }
