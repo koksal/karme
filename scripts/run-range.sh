@@ -1,5 +1,7 @@
 #!/bin/bash
 
+NB_JOBS=12
+
 set -o xtrace
 
 function run_with_args() {
@@ -59,7 +61,7 @@ UNCERTAINTY_ARGS["0.3"]="--uncertainty-threshold 0.3"
 UNCERTAINTY_ARGS["0.4"]="--uncertainty-threshold 0.4"
 UNCERTAINTY_ARGS["0.5"]="--uncertainty-threshold 0.5"
 
-SHELL="/bin/bash" parallel --jobs 8 --delay 30 run_with_args \
+SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 30 run_with_args \
   ::: "${FILTER_NAMES_ARGS[@]}" \
   ::: "${DATA_TRANSFORM_ARGS[@]}" \
   ::: "${ACTIVITY_FILTER_ARGS[@]}" \
