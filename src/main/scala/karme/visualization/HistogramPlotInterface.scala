@@ -18,7 +18,7 @@ class HistogramPlotInterface[T: ClassTag, U: ClassTag](
   def process(R: RClient): Unit = {
     assert(values.size == labels.size)
 
-    R.set("values", values.toArray.map(_.toString))
+    R.set("values", values.toArray)
     R.set("labels", labels.toArray.map(_.toString))
 
     R.eval("data <- data.frame(value = values, label = labels)")
