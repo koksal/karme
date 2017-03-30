@@ -61,7 +61,10 @@ object Main {
       "minClust" -> opts.inputTransformerOpts.clusteringOpts.minNbClusters,
       "maxClust" -> opts.inputTransformerOpts.clusteringOpts.maxNbClusters
     )
-    val allValues = optHeaderToValue ++ refPValues
+    val refHeaderToValue = refPValues map {
+      case (library, pValue) => library.id -> pValue
+    }
+    val allValues = optHeaderToValue ++ refHeaderToValue
 
     println(allValues.map(_._1).mkString("\t"))
     println(allValues.map(_._2).mkString("\t"))
