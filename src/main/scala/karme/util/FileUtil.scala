@@ -4,6 +4,7 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
+import java.nio.file.FileSystems
 
 object FileUtil {
 
@@ -20,6 +21,10 @@ object FileUtil {
     } finally {
       out.close
     }
+  }
+
+  def getFileName(path: String): String = {
+    FileSystems.getDefault().getPath(path).getFileName().toString()
   }
 
 }

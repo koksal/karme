@@ -3,6 +3,7 @@ package karme.evaluation.enrichr
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
+import karme.util.FileUtil
 
 object EnrichrPredictionLibraryParser {
 
@@ -19,7 +20,8 @@ object EnrichrPredictionLibraryParser {
       case None => predictionsWithDescendingScore
     }
 
-    EnrichrPredictionLibrary(f.getPath, sizeLimitedPredictions)
+    EnrichrPredictionLibrary(FileUtil.getFileName(f.getPath),
+      sizeLimitedPredictions)
   }
 
   private def parsePredictions(f: File): Seq[EnrichrPrediction] = {
