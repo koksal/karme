@@ -23,7 +23,8 @@ object SummaryLogger {
       "uncertainty" -> opts.inputTransformerOpts.uncertaintyThreshold,
       "smoothing" -> opts.inputTransformerOpts.smoothingRadius,
       "minClust" -> opts.inputTransformerOpts.clusteringOpts.minNbClusters,
-      "maxClust" -> opts.inputTransformerOpts.clusteringOpts.maxNbClusters
+      "maxClust" -> opts.inputTransformerOpts.clusteringOpts.maxNbClusters,
+      "libraryPreds" -> opts.evalOpts.maxNbReferencePredictions
     )
 
     val statToValue = Seq(
