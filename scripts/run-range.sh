@@ -32,7 +32,7 @@ DATA_TRANSFORM_ARGS["pseudolog-2"]="--pseudolog-factor 2"
 # filtering genes by active cell ratio
 declare -A ACTIVITY_FILTER_ARGS
 # ACTIVITY_FILTER_ARGS["none"]=""
-ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
+# ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
 ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
 # ACTIVITY_FILTER_ARGS["30"]="--cell-activity-threshold 0.3"
 
@@ -51,15 +51,21 @@ SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 # clustering
 declare -A CLUSTERING_ARGS
 CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
-CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
-CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
+# CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
+# CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
 # CLUSTERING_ARGS["range"]="--cluster --min-clusters 10 --max-clusters 20"
 
 # uncertainty
 declare -A UNCERTAINTY_ARGS
-UNCERTAINTY_ARGS["0.3"]="--uncertainty-threshold 0.3"
+# UNCERTAINTY_ARGS["0.3"]="--uncertainty-threshold 0.3"
 UNCERTAINTY_ARGS["0.4"]="--uncertainty-threshold 0.4"
-UNCERTAINTY_ARGS["0.5"]="--uncertainty-threshold 0.5"
+# UNCERTAINTY_ARGS["0.5"]="--uncertainty-threshold 0.5"
+
+# library thresholding
+declare -A LIBRARY_ARGS
+LIBRARY_ARGS["1000"]="--max-library-predictions 1000"
+LIBRARY_ARGS["2000"]="--max-library-predictions 2000"
+LIBRARY_ARGS["5000"]="--max-library-predictions 5000"
 
 SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 30 run_with_args \
   ::: "${FILTER_NAMES_ARGS[@]}" \
@@ -68,4 +74,5 @@ SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 30 run_with_args \
   ::: "${BOOLEAN_NORMALIZATION_ARGS[@]}" \
   ::: "${SMOOTHING_RADIUS_ARGS[@]}" \
   ::: "${CLUSTERING_ARGS[@]}" \
-  ::: "${UNCERTAINTY_ARGS[@]}"
+  ::: "${UNCERTAINTY_ARGS[@]}" \
+  ::: "${LIBRARY_ARGS[@]}"
