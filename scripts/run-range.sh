@@ -63,9 +63,12 @@ UNCERTAINTY_ARGS["0.4"]="--uncertainty-threshold 0.4"
 
 # library thresholding
 declare -A LIBRARY_ARGS
-LIBRARY_ARGS["1000"]="--max-library-predictions 1000"
-LIBRARY_ARGS["2000"]="--max-library-predictions 2000"
-LIBRARY_ARGS["5000"]="--max-library-predictions 5000"
+LIBRARY_ARGS["100"]="--max-library-predictions 100"
+LIBRARY_ARGS["200"]="--max-library-predictions 200"
+LIBRARY_ARGS["500"]="--max-library-predictions 500"
+# LIBRARY_ARGS["1000"]="--max-library-predictions 1000"
+# LIBRARY_ARGS["2000"]="--max-library-predictions 2000"
+# LIBRARY_ARGS["5000"]="--max-library-predictions 5000"
 
 SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 30 run_with_args \
   ::: "${FILTER_NAMES_ARGS[@]}" \
