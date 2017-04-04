@@ -24,6 +24,7 @@ object SummaryLogger {
       "smoothing" -> opts.inputTransformerOpts.smoothingRadius,
       "minClust" -> opts.inputTransformerOpts.clusteringOpts.minNbClusters,
       "maxClust" -> opts.inputTransformerOpts.clusteringOpts.maxNbClusters,
+      "expr-depth" -> opts.synthOpts.maxExpressionDepth,
       "libraryPreds" -> opts.evalOpts.maxNbReferencePredictions
     )
 
