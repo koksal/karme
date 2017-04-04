@@ -3,6 +3,8 @@ package karme.evaluation
 import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 
+import scala.util.Random
+
 class RankSumTestTest extends FunSuite {
 
   test("rank sum test") {
@@ -21,4 +23,15 @@ class RankSumTestTest extends FunSuite {
     assert(testYsGreater.pValue < 0.01)
   }
 
+  test("rank sum test on subsample") {
+    val rand = new Random(0)
+    val dist = (1 to 100) map (_ => rand.nextDouble())
+    val subsample = dist.sorted.reverse.take(20)
+
+    val testSampleGreater = new RankSumTest(subsample, dist).run()
+    val testDistGreater = new RankSumTest(dist, subsample).run()
+
+    assert(testSampleGreater.statistic > testDistGreater.statistic)
+    assert(testSampleGreater.pValue < testDistGreater.pValue)
+  }
 }
