@@ -22,8 +22,8 @@ object HierarchicalClustering {
 
     // TODO this is temporary, keeps the last clustering only
     var clustering: Map[String, Int] = Map.empty
-    val indices = List("kl", "ch", "gap")
-    val methods = List("ward.D2", "average", "complete")
+    val indices = List("kl")
+    val methods = List("ward.D2")
     for {
       index <- indices
       method <- methods
