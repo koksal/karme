@@ -38,20 +38,20 @@ ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
 
 # boolean normalization
 declare -A BOOLEAN_NORMALIZATION_ARGS
-# BOOLEAN_NORMALIZATION_ARGS["kmeans"]="--boolean-normalization kmeans"
+BOOLEAN_NORMALIZATION_ARGS["kmeans"]="--boolean-normalization kmeans"
 BOOLEAN_NORMALIZATION_ARGS["mclust"]="--boolean-normalization mclust"
 
 # smoothing
 declare -A SMOOTHING_RADIUS_ARGS
 # SMOOTHING_RADIUS_ARGS["none"]="--smoothing-radius 0"
-# SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
+SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
 SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 # SMOOTHING_RADIUS_ARGS["30"]="--smoothing-radius 30"
 
 # clustering
 declare -A CLUSTERING_ARGS
 CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
-# CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
+CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
 # CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
 # CLUSTERING_ARGS["range"]="--cluster --min-clusters 10 --max-clusters 20"
 
@@ -63,9 +63,10 @@ UNCERTAINTY_ARGS["0.4"]="--uncertainty-threshold 0.4"
 
 # library thresholding
 declare -A LIBRARY_ARGS
-LIBRARY_ARGS["100"]="--max-library-predictions 100"
-LIBRARY_ARGS["200"]="--max-library-predictions 200"
-LIBRARY_ARGS["500"]="--max-library-predictions 500"
+LIBRARY_ARGS["none"]=""
+# LIBRARY_ARGS["100"]="--max-library-predictions 100"
+# LIBRARY_ARGS["200"]="--max-library-predictions 200"
+# LIBRARY_ARGS["500"]="--max-library-predictions 500"
 # LIBRARY_ARGS["1000"]="--max-library-predictions 1000"
 # LIBRARY_ARGS["2000"]="--max-library-predictions 2000"
 # LIBRARY_ARGS["5000"]="--max-library-predictions 5000"
