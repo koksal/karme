@@ -32,7 +32,7 @@ DATA_TRANSFORM_ARGS["pseudolog-2"]="--pseudolog-factor 2"
 # filtering genes by active cell ratio
 declare -A ACTIVITY_FILTER_ARGS
 # ACTIVITY_FILTER_ARGS["none"]=""
-# ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
+ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
 ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
 # ACTIVITY_FILTER_ARGS["30"]="--cell-activity-threshold 0.3"
 
@@ -44,14 +44,15 @@ BOOLEAN_NORMALIZATION_ARGS["mclust"]="--boolean-normalization mclust"
 # smoothing
 declare -A SMOOTHING_RADIUS_ARGS
 # SMOOTHING_RADIUS_ARGS["none"]="--smoothing-radius 0"
-SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
+# SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
 SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 # SMOOTHING_RADIUS_ARGS["30"]="--smoothing-radius 30"
 
 # clustering
 declare -A CLUSTERING_ARGS
+CLUSTERING_ARGS["10"]="--cluster --min-clusters 10 --max-clusters 10"
 CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
-CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
+# CLUSTERING_ARGS["14"]="--cluster --min-clusters 14 --max-clusters 14"
 # CLUSTERING_ARGS["16"]="--cluster --min-clusters 16 --max-clusters 16"
 # CLUSTERING_ARGS["range"]="--cluster --min-clusters 10 --max-clusters 20"
 
