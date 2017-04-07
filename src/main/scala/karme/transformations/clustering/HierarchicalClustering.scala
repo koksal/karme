@@ -8,6 +8,13 @@ import karme.util.MathUtil
 
 object HierarchicalClustering {
 
+  def getAllClusteringResults(
+    exp: Experiment[Double],
+    opts: ClusteringOpts
+  ): Seq[Map[String, Set[String]]] = {
+
+  }
+
   def clusterVariables(
     exp: Experiment[Double],
     annotationVars: Set[String],
@@ -15,6 +22,7 @@ object HierarchicalClustering {
   ): Map[String, Set[String]] = {
     val adjustedMaxNbClust = math.min(exp.names.size - 1, opts.maxNbClusters)
     val adjustedMinNbClust = math.min(opts.minNbClusters, adjustedMaxNbClust)
+
     if (adjustedMaxNbClust != opts.maxNbClusters) {
       println(s"Setting boundaries for k to ($adjustedMinNbClust, " +
         s"$adjustedMaxNbClust).")
