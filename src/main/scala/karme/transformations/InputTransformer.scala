@@ -79,7 +79,7 @@ class InputTransformer(
     val smoothedExperiment = getSmoothedExperiment()
 
     if (opts.cluster) {
-      val geneClustering = HierarchicalClustering.clusterVariables(
+      val geneClustering = HierarchicalClustering.computeBestClustering(
         smoothedExperiment, annotationContext.annotationVariables,
         opts.clusteringOpts)
       _clustering = Some(geneClustering)

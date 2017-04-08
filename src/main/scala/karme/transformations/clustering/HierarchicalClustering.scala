@@ -8,14 +8,18 @@ import karme.util.MathUtil
 
 object HierarchicalClustering {
 
-  def getAllClusteringResults(
+  def computeHierarchicalClustering(
     exp: Experiment[Double],
     opts: ClusteringOpts
   ): Seq[Map[String, Set[String]]] = {
-    ???
+    val kMax = math.min(exp.names.size - 1, opts.maxNbClusters)
+
+    val clusterAssignments = new HclustInterface(exp, kMax).run()
+
+    clusterAssignments map makeClusterToNamesMap
   }
 
-  def clusterVariables(
+  def computeBestClustering(
     exp: Experiment[Double],
     annotationVars: Set[String],
     opts: ClusteringOpts
@@ -28,33 +32,14 @@ object HierarchicalClustering {
         s"$adjustedMaxNbClust).")
     }
 
-    // TODO this is temporary, keeps the last clustering only
-    var clustering: Map[String, Int] = Map.empty
-    val indices = List("kl")
-    val methods = List("ward.D2")
-    for {
-      index <- indices
-      method <- methods
-    } {
-      val nbClustPartition = new NbClustInterface(exp.valueMatrix,
-        adjustedMinNbClust, adjustedMaxNbClust, method = method,
-        index = index).run()
-      clustering = exp.names.zip(nbClustPartition).toMap
-      val bestK = nbClustPartition.toSet.size
-      println(s"Optimal nb. clusters for ($index, $method): $bestK")
-    }
+    val index = "gap"
+    val method = "ward.D2"
 
-    // print membership for annotation variables
-    for (annotationVar <- annotationVars.toSeq.sorted) {
-      clustering.get(annotationVar) match {
-        case Some(c) => {
-          println(s"$annotationVar is in cluster $c.")
-        }
-        case None => {
-          println(s"$annotationVar is not in any cluster.")
-        }
-      }
-    }
+    val clusterIndices = new NbClustInterface(exp.valueMatrix,
+      adjustedMinNbClust, adjustedMaxNbClust, method = method,
+      index = index).run()
+    val clustering = exp.names.zip(clusterIndices).toMap
+    val bestK = clusterIndices.toSet.size
 
     makeClusterToNamesMap(clustering)
   }
@@ -78,20 +63,6 @@ object HierarchicalClustering {
     }
   }
 
-  private def withinSumSquare(
-    cut: Map[String, Int],
-    exp: Experiment[Double]
-  ): Double = {
-    val clusterToNames = makeClusterToNamesMap(cut)
-    val clusterSums = for ((clusterIndex, names) <- clusterToNames) yield {
-      val valuesPerVariable = names.toSeq map { name =>
-        exp.valuesForName(name)
-      }
-      new WithinssInterface(valuesPerVariable).run()
-    }
-    clusterSums.sum
-  }
-
   def experimentFromClusterAverages(
     exp: Experiment[Double],
     clusterToNames: Map[String, Set[String]],
@@ -113,20 +84,6 @@ object HierarchicalClustering {
 
   private def clusterName(index: Int): String = {
     s"cluster_$index"
-  }
-
-  private def annotatedClusterName(
-    index: Int,
-    clusterToNames: Map[Int, Set[String]],
-    annotationVars: Set[String]
-  ): String = {
-    val annotationsInCluster = annotationVars.intersect(clusterToNames(index))
-    val annotationStr = if (annotationsInCluster.isEmpty) {
-      ""
-    } else {
-      "_" + annotationsInCluster.mkString(",")
-    }
-    s"c_${index}${annotationStr}"
   }
 
 }
