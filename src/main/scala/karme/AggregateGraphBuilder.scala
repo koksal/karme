@@ -4,9 +4,17 @@ import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 
 object AggregateGraphBuilder {
 
-  def apply(
-    baseOpts: Opts,
-    paramRangeExpanders: Seq[OptParameterRangeExpander[_]]
+  // create range expanders for:
+  // - pseudolog factor?
+  // - cell activity threshold
+  // - uncertainty threshold
+  // - smoothing radius
+  // - # clusters
+
+
+  def apply[U](
+    baseOpts: InputTransformerOpts,
+    paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
   ): DirectedBooleanStateGraph = {
     val allOpts = expandOpts(baseOpts, paramRangeExpanders)
 
@@ -16,12 +24,16 @@ object AggregateGraphBuilder {
   }
 
   def expandOpts(
-    baseOpts: Opts,
-    paramRangeExpanders: Seq[OptParameterRangeExpander[_]]
-  ): Seq[Opts] = {
-    def step(acc: List[Opts], pre: OptParameterRangeExpander[_]): List[Opts] = {
+    baseOpts: InputTransformerOpts,
+    paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
+  ): Seq[InputTransformerOpts] = {
+    def step(
+      acc: List[InputTransformerOpts],
+      pre: OptParameterRangeExpander[_, InputTransformerOpts]
+    ): List[InputTransformerOpts] = {
       acc.flatMap(opts => pre.expand(opts))
     }
+
     paramRangeExpanders.foldLeft(List(baseOpts))(step)
   }
 }

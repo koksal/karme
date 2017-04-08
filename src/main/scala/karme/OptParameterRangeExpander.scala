@@ -1,12 +1,12 @@
 package karme
 
-class OptParameterRangeExpander[T](
+class OptParameterRangeExpander[T, U](
   id: String,
   values: Seq[T],
-  modifier: (Opts, T) => Opts
+  modifier: (U, T) => U
 ) {
 
-  def expand(opts: Opts): Seq[Opts] = {
+  def expand(opts: U): Seq[U] = {
     values map { v => modifier(opts, v) }
   }
 
