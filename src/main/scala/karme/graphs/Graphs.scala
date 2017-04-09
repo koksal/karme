@@ -40,7 +40,7 @@ object Graphs {
 
     def edgeDirections: mutable.MultiMap[Edge, EdgeDirection]
 
-    override def neighbors(v: Vertex): Set[Vertex] = {
+    def targets(v: Vertex): Set[Vertex] = {
       var vs = Set[Vertex]()
       for (e <- E) {
         for (d <- edgeDirections(e)) {

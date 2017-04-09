@@ -232,7 +232,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
     for (transition <- transitions) {
       val inputVertex = graph.V.find(_.state == transition.input).get
-      val neighbors = graph.neighbors(inputVertex)
+      val neighbors = graph.targets(inputVertex)
       for (neighbor <- neighbors) {
         if (neighbor.state.value(transition.label) == transition.output) {
           val lhs = nodeToID(inputVertex)

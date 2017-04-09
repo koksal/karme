@@ -1,45 +1,30 @@
 package karme
 
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.transformations.InputTransformer
 
 object AggregateGraphBuilder {
 
-  val rangeExpanders = List(
-    new OptParameterRangeExpander[Option[Double], InputTransformerOpts](
-      id = "pseudolog",
-      values = List(None, Some(2), Some(5), Some(10)),
-      modifier = (opts, value) => opts.copy(pseudoLogFactor = value)
-    ),
-
-    new OptParameterRangeExpander[Double, InputTransformerOpts](
-      id = "cell-activity",
-      values = List(0.1, 0.2, 0.3),
-      modifier = (opts, value) => opts.copy(cellActivityThreshold = value)
-    ),
-
-    new OptParameterRangeExpander[Double, InputTransformerOpts](
-      id = "uncertainty",
-      values = List(0.1, 0.2, 0.3, 0.4, 0.5),
-      modifier = (opts, value) => opts.copy(uncertaintyThreshold = value)
-    ),
-
-    new OptParameterRangeExpander[Int, InputTransformerOpts](
-      id = "smoothing-radius",
-      values = List(5, 10, 20, 30),
-      modifier = (opts, value) => opts.copy(smoothingRadius = value)
-    )
-  )
-
   def apply[U](
-    baseOpts: InputTransformerOpts,
+    baseOpts: Opts,
     paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
   ): DirectedBooleanStateGraph = {
-    val allOpts = expandOpts(baseOpts, paramRangeExpanders)
+    val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
 
-    // obtain all clustering results
-    // generate graph for each clustering
+    val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
+
+    val clusteringGraphPairs = allOpts flatMap { opt =>
+      val transformer = new InputTransformer(opt, annotCtx,
+        Reporter.defaultReporter())
+      transformer.buildDirectedStateGraphsForAllClusterings()
+    }
+
     // build n-gram model for each graph
     // expand each n-gram model to gene level with its respective clustering
+    val bigrams = for ((clustering, graph) <- clusteringGraphPairs) yield {
+      expandBigrams(buildBigrams(graph), clustering)
+    }
+
     ???
   }
 
@@ -55,5 +40,35 @@ object AggregateGraphBuilder {
     }
 
     paramRangeExpanders.foldLeft(List(baseOpts))(step)
+  }
+
+  def buildBigrams(graph: DirectedBooleanStateGraph): Seq[(String, String)] = {
+    // 1-edge paths (simply edges)
+    graph.V.toSeq flatMap { v =>
+      graph.targets(v).toSeq map (t => (v, t))
+    }
+
+    // flatmap paths to extend each by 1 edge
+    ???
+
+    // for each 2-edge path, pair of first and second labels
+    ???
+  }
+
+  def expandBigrams(
+    bigrams: Seq[(String, String)], clustering: Map[String, Set[String]]
+  ): Seq[(String, String)] = {
+    bigrams flatMap (b => expandBigram(b, clustering))
+  }
+
+  def expandBigram(
+    bigram: (String, String), clustering: Map[String, Set[String]]
+  ): Seq[(String, String)] = {
+    for {
+      src <- clustering(bigram._1).toSeq
+      tgt <- clustering(bigram._2).toSeq
+    } yield {
+      (src, tgt)
+    }
   }
 }
