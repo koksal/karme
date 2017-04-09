@@ -21,7 +21,8 @@ object Main {
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
-    val directedStateGraph = inputTransformer.buildDirectedStateGraph()
+    val directedStateGraph =
+      inputTransformer.buildDirectedStateGraph()
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, inputTransformer.trajectories)
 

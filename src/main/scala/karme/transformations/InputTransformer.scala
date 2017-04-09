@@ -47,8 +47,8 @@ class InputTransformer(
     }
   }
 
-  def buildDirectedStateGraphsForAllClusterings(): Seq[(Map[String,
-    Set[String]], DirectedBooleanStateGraph)] = {
+  def buildDirectedStateGraphsForAllClusterings():
+      Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
 
     val smoothedExperiment = getSmoothedExperiment()
 
@@ -56,19 +56,53 @@ class InputTransformer(
       smoothedExperiment, opts.clusteringOpts)
 
     clusterings map { clustering =>
-      (clustering, buildDirectedStateGraph(smoothedExperiment, clustering))
+      (clustering,
+        buildStateGraphForClusterAverages(smoothedExperiment, clustering))
     }
   }
 
-  def buildDirectedStateGraph(
+  def buildDirectedStateGraph(): DirectedBooleanStateGraph = {
+    val exp = getSmoothedExperiment()
+    if (opts.cluster) {
+      buildDirectedStateGraphForBestClustering(exp)
+    } else {
+      buildDirectedStateGraph(exp)
+    }
+  }
+
+  def buildDirectedStateGraphForBestClustering(
+    exp: Experiment[Double]
+  ): DirectedBooleanStateGraph = {
+    val geneClustering = HierarchicalClustering.computeBestClustering(
+      exp, annotationContext.annotationVariables,
+      opts.clusteringOpts)
+    _clustering = Some(geneClustering)
+
+    // TODO move this to visualization phase
+    new CurvePlot(reporter).plotClusterCurves(exp,
+      trajectories, geneClustering, "smoothed-experiment")
+
+    buildStateGraphForClusterAverages(exp, geneClustering)
+  }
+
+  def buildStateGraphForClusterAverages(
     nonClusteredExperiment: Experiment[Double],
     clustering: Map[String, Set[String]]
   ): DirectedBooleanStateGraph = {
     val avgExp = HierarchicalClustering.experimentFromClusterAverages(
       nonClusteredExperiment, clustering, annotationContext.annotationVariables)
 
-    val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
+    buildDirectedStateGraph(avgExp)
+  }
+
+  def buildDirectedStateGraph(
+    exp: Experiment[Double]
+  ): DirectedBooleanStateGraph = {
+    // TODO group into a method
+    val threeValExp = Experiments.continuousExperimentToThreeValued(exp,
       opts.uncertaintyThreshold)
+    ExperimentHistograms.plotLabeledHistograms(exp, threeValExp,
+      reporter.file("three-valued-histograms"))
 
     val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
       threeValExp)
@@ -82,34 +116,6 @@ class InputTransformer(
     dirGraph
   }
 
-  def buildDirectedStateGraph(): DirectedBooleanStateGraph = {
-    val undirectedStateGraph = buildUndirectedStateGraph()
-    UndirectedStateGraphOps.orientByTrajectories(undirectedStateGraph,
-      trajectories)
-  }
-
-  def buildUndirectedStateGraph(): UndirectedBooleanStateGraph = {
-    val booleanExperiment = buildBooleanExpWithStateGraphStates()
-    StateGraphs.fromBooleanExperiment(booleanExperiment,
-      opts.maxHammingDistance)
-  }
-
-  def buildBooleanExpWithStateGraphStates(): BooleanExperiment = {
-    val threeValuedExperiment = buildThreeValuedExperiment()
-    StateGraphs.expandWithBooleanCombinations(threeValuedExperiment)
-  }
-
-  def buildThreeValuedExperiment(): ThreeValuedExperiment = {
-    val contExp = processContinuousExperimentForDiscretization()
-    val threeValuedExp = Experiments.continuousExperimentToThreeValued(
-      contExp, opts.uncertaintyThreshold)
-
-    ExperimentHistograms.plotLabeledHistograms(contExp, threeValuedExp,
-      reporter.file("three-valued-histograms"))
-
-    threeValuedExp
-  }
-
   def processContinuousExperimentForDiscretization(): ContinuousExperiment = {
     val smoothedExperiment = getSmoothedExperiment()
 
@@ -117,12 +123,6 @@ class InputTransformer(
       val geneClustering = HierarchicalClustering.computeBestClustering(
         smoothedExperiment, annotationContext.annotationVariables,
         opts.clusteringOpts)
-      _clustering = Some(geneClustering)
-
-      // TODO move this to visualization phase
-      new CurvePlot(reporter).plotClusterCurves(smoothedExperiment,
-        trajectories, geneClustering, "smoothed-experiment")
-
       HierarchicalClustering.experimentFromClusterAverages(smoothedExperiment,
         geneClustering, annotationContext.annotationVariables)
     } else {
