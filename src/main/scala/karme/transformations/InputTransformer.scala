@@ -56,23 +56,30 @@ class InputTransformer(
       smoothedExperiment, opts.clusteringOpts)
 
     clusterings map { clustering =>
-      val avgExp = HierarchicalClustering.experimentFromClusterAverages(
-        smoothedExperiment, clustering, annotationContext.annotationVariables)
-
-      val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
-        opts.uncertaintyThreshold)
-
-      val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
-        threeValExp)
-
-      val undirGraph = StateGraphs.fromBooleanExperiment(expandedBoolExp,
-        opts.maxHammingDistance)
-
-      val dirGraph = UndirectedStateGraphOps.orientByTrajectories(undirGraph,
-        trajectories)
-
-      (clustering, dirGraph)
+      (clustering, buildDirectedStateGraph(smoothedExperiment, clustering))
     }
+  }
+
+  def buildDirectedStateGraph(
+    nonClusteredExperiment: Experiment[Double],
+    clustering: Map[String, Set[String]]
+  ): DirectedBooleanStateGraph = {
+    val avgExp = HierarchicalClustering.experimentFromClusterAverages(
+      nonClusteredExperiment, clustering, annotationContext.annotationVariables)
+
+    val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
+      opts.uncertaintyThreshold)
+
+    val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
+      threeValExp)
+
+    val undirGraph = StateGraphs.fromBooleanExperiment(expandedBoolExp,
+      opts.maxHammingDistance)
+
+    val dirGraph = UndirectedStateGraphOps.orientByTrajectories(undirGraph,
+      trajectories)
+
+    dirGraph
   }
 
   def buildDirectedStateGraph(): DirectedBooleanStateGraph = {
