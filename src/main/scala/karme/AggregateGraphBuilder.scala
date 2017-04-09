@@ -4,13 +4,31 @@ import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 
 object AggregateGraphBuilder {
 
-  // create range expanders for:
-  // - pseudolog factor?
-  // - cell activity threshold
-  // - uncertainty threshold
-  // - smoothing radius
-  // - # clusters
+  val rangeExpanders = List(
+    new OptParameterRangeExpander[Option[Double], InputTransformerOpts](
+      id = "pseudolog",
+      values = List(None, Some(2), Some(5), Some(10)),
+      modifier = (opts, value) => opts.copy(pseudoLogFactor = value)
+    ),
 
+    new OptParameterRangeExpander[Double, InputTransformerOpts](
+      id = "cell-activity",
+      values = List(0.1, 0.2, 0.3),
+      modifier = (opts, value) => opts.copy(cellActivityThreshold = value)
+    ),
+
+    new OptParameterRangeExpander[Double, InputTransformerOpts](
+      id = "uncertainty",
+      values = List(0.1, 0.2, 0.3, 0.4, 0.5),
+      modifier = (opts, value) => opts.copy(uncertaintyThreshold = value)
+    ),
+
+    new OptParameterRangeExpander[Int, InputTransformerOpts](
+      id = "smoothing-radius",
+      values = List(5, 10, 20, 30),
+      modifier = (opts, value) => opts.copy(smoothingRadius = value)
+    )
+  )
 
   def apply[U](
     baseOpts: InputTransformerOpts,
@@ -18,8 +36,10 @@ object AggregateGraphBuilder {
   ): DirectedBooleanStateGraph = {
     val allOpts = expandOpts(baseOpts, paramRangeExpanders)
 
-    // obtain collection of graphs for different nb clusters
-    // flatmap graphs
+    // obtain all clustering results
+    // generate graph for each clustering
+    // build n-gram model for each graph
+    // expand each n-gram model to gene level with its respective clustering
     ???
   }
 
