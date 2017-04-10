@@ -1,6 +1,9 @@
 package karme
 
+import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.transformations.InputTransformer
 
 object AggregateGraphBuilder {
@@ -8,7 +11,7 @@ object AggregateGraphBuilder {
   def apply[U](
     baseOpts: Opts,
     paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
-  ): DirectedBooleanStateGraph = {
+  ): Unit = {
     val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
 
     val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
@@ -19,13 +22,20 @@ object AggregateGraphBuilder {
       transformer.buildDirectedStateGraphsForAllClusterings()
     }
 
-    // build n-gram model for each graph
-    // expand each n-gram model to gene level with its respective clustering
-    val bigrams = for ((clustering, graph) <- clusteringGraphPairs) yield {
-      expandBigrams(buildBigrams(graph), clustering)
+    val expandedBigrams = clusteringGraphPairs flatMap {
+      case (clustering, graph) => {
+        expandBigrams(buildBigrams(graph), clustering)
+      }
     }
 
-    ???
+    val bigramCounts = orderByCount(expandedBigrams)
+
+    for ((bigram, count) <- bigramCounts) {
+      println(s"$bigram: $count")
+    }
+
+    // TODO merge bigrams into a graph?
+    // or evaluate directly against reference libraries
   }
 
   def expandOpts(
@@ -43,16 +53,21 @@ object AggregateGraphBuilder {
   }
 
   def buildBigrams(graph: DirectedBooleanStateGraph): Seq[(String, String)] = {
-    // 1-edge paths (simply edges)
-    graph.V.toSeq flatMap { v =>
-      graph.targets(v).toSeq map (t => (v, t))
+    graph.pathNodeSequences(3) map labelPair
+  }
+
+  def labelPair(
+    nodeSeq: IndexedSeq[StateGraphVertex]
+  ): (String, String) = nodeSeq match {
+    case IndexedSeq(v1, v2, v3) => {
+      val l1 = UndirectedStateGraphOps.edgeLabels(UnlabeledEdge(v1, v2))
+      val l2 = UndirectedStateGraphOps.edgeLabels(UnlabeledEdge(v2, v3))
+
+      assert(l1.size == 1 && l2.size == 1, "Multiple labels for edge.")
+
+      (l1.head, l2.head)
     }
-
-    // flatmap paths to extend each by 1 edge
-    ???
-
-    // for each 2-edge path, pair of first and second labels
-    ???
+    case _ => sys.error(s"Expected 3-node path, received: $nodeSeq")
   }
 
   def expandBigrams(
@@ -70,5 +85,12 @@ object AggregateGraphBuilder {
     } yield {
       (src, tgt)
     }
+  }
+
+  def orderByCount[T](xs: Seq[T]): Seq[(T, Int)] = {
+    val elemCountPairs = xs.toSet map { x: T =>
+      x -> xs.count(_ == x)
+    }
+    elemCountPairs.toSeq.sortBy(_._2).reverse
   }
 }

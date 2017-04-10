@@ -40,16 +40,41 @@ object Graphs {
 
     def edgeDirections: mutable.MultiMap[Edge, EdgeDirection]
 
-    def targets(v: Vertex): Set[Vertex] = {
-      var vs = Set[Vertex]()
-      for (e <- E) {
-        for (d <- edgeDirections(e)) {
-          if (source(e, d) == v) {
-            vs += target(e, d)
+    // target cache
+    private lazy val vertexToTargets: Map[Vertex, Set[Vertex]] = {
+      def computeTargets(v: Vertex): Set[Vertex] = {
+        var vs = Set[Vertex]()
+        for (e <- E) {
+          for (d <- edgeDirections(e)) {
+            if (source(e, d) == v) {
+              vs += target(e, d)
+            }
           }
         }
+        vs
       }
-      vs
+
+      (V map (v => v -> computeTargets(v))).toMap
+    }
+
+    def targets(v: Vertex): Set[Vertex] = {
+      vertexToTargets(v)
+    }
+
+    def pathNodeSequences(len: Int): Seq[IndexedSeq[Vertex]] = {
+      require(len >= 0)
+
+      if (len > 0) {
+        val pathsToExtend = pathNodeSequences(len - 1)
+
+        pathsToExtend flatMap { vs =>
+          targets(vs.last) map { target =>
+            vs :+ target
+          }
+        }
+      } else {
+        this.V.toSeq map (v => IndexedSeq(v))
+      }
     }
 
     def source(edge: Edge, direction: EdgeDirection): Vertex = direction match {
