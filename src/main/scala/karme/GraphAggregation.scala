@@ -62,7 +62,7 @@ object GraphAggregation {
   }
 
   def buildBigrams(graph: DirectedBooleanStateGraph): Seq[(String, String)] = {
-    graph.pathNodeSequences(3) map labelPair
+    graph.pathNodeSequences(2) map labelPair
   }
 
   def labelPair(
