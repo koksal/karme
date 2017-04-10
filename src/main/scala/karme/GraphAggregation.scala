@@ -35,7 +35,7 @@ object GraphAggregation {
         expandBigrams(buildBigrams(graph), clustering)
       }
     }
-    println("Computed expanded bigrams.")
+    println(s"Computed expanded bigrams (${expandedBigrams.size}.")
 
     val bigramCounts = orderByCount(expandedBigrams.seq)
 
