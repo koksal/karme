@@ -97,9 +97,11 @@ object GraphAggregation {
   }
 
   def orderByCount[T](xs: Seq[T]): Seq[(T, Int)] = {
-    val elemCountPairs = xs.toSet map { x: T =>
-      x -> xs.count(_ == x)
+    val grouped = xs.groupBy(x => x)
+    val elemCountPairs = grouped.toSeq map {
+      case (x, duplicates) => x -> duplicates.size
     }
-    elemCountPairs.toSeq.sortBy(_._2).reverse
+
+    elemCountPairs.sortBy(_._2).reverse
   }
 }
