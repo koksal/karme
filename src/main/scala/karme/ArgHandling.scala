@@ -158,6 +158,18 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(maxNbReferencePredictions = Some(v)))
       } text "Maximum number of library predictions to use."
 
+      opt[File]("bigrams") action { (f, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(bigramFile = Some(f)))
+      } text "File with bigrams to evaluate"
+
+      opt[Int]("min-bigram-score") action { (v, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(minBigramScore = v))
+      } text "Minimum bigram score for evaluation"
+
+      opt[File]("name-universe") action { (f, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(nameUniverseFile = Some(f)))
+      } text "Name universe file for evaluation"
+
       help("help") text "print this help message"
     }
 

@@ -40,11 +40,8 @@ object GraphAggregation {
     val bigramCounts = orderByCount(expandedBigrams.seq)
 
     for ((bigram, count) <- bigramCounts) {
-      println(s"$bigram: $count")
+      println(List(bigram._1, bigram._2, count).mkString(","))
     }
-
-    // TODO merge bigrams into a graph?
-    // or evaluate directly against reference libraries
   }
 
   def expandOpts(

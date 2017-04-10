@@ -51,7 +51,10 @@ case class SynthOpts(
 
 case class EvalOpts(
   referenceFiles: Seq[File] = Seq(),
-  maxNbReferencePredictions: Option[Int] = None
+  maxNbReferencePredictions: Option[Int] = None,
+  bigramFile: Option[File] = None,
+  minBigramScore: Int = 0,
+  nameUniverseFile: Option[File] = None
 )
 
 case class ReporterOpts(
