@@ -21,7 +21,7 @@ object OptParameterRangeExpander {
   val RANGE_EXPANDERS = List(
     new OptParameterRangeExpander[Option[Double], InputTransformerOpts](
       id = "pseudolog-factor",
-      values = List(None, Some(2), Some(5), Some(10)),
+      values = List(Some(2)),
       modifier = (opts, value) => opts.copy(pseudoLogFactor = value)
     ),
 
@@ -33,13 +33,13 @@ object OptParameterRangeExpander {
 
     new OptParameterRangeExpander[Double, InputTransformerOpts](
       id = "uncertainty-threshold",
-      values = List(0.1, 0.2, 0.3, 0.4, 0.5),
+      values = List(0.3, 0.4, 0.5),
       modifier = (opts, value) => opts.copy(uncertaintyThreshold = value)
     ),
 
     new OptParameterRangeExpander[Int, InputTransformerOpts](
       id = "smoothing-radius",
-      values = List(5, 10, 20, 30),
+      values = List(20),
       modifier = (opts, value) => opts.copy(smoothingRadius = value)
     )
   )
