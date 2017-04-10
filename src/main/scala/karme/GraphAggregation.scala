@@ -6,7 +6,13 @@ import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.transformations.InputTransformer
 
-object AggregateGraphBuilder {
+object GraphAggregation {
+
+  def main(args: Array[String]): Unit = {
+    val opts = ArgHandling.parseOptions(args)
+
+    apply(opts, OptParameterRangeExpander.RANGE_EXPANDERS)
+  }
 
   def apply[U](
     baseOpts: Opts,
@@ -15,20 +21,23 @@ object AggregateGraphBuilder {
     val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
 
     val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
+    println(s"Expanded to ${allOpts.size} options.")
 
-    val clusteringGraphPairs = allOpts flatMap { opt =>
+    val clusteringGraphPairs = allOpts.par flatMap { opt =>
       val transformer = new InputTransformer(opt, annotCtx,
         Reporter.defaultReporter())
       transformer.buildDirectedStateGraphsForAllClusterings()
     }
+    println("Computed clustering results.")
 
     val expandedBigrams = clusteringGraphPairs flatMap {
       case (clustering, graph) => {
         expandBigrams(buildBigrams(graph), clustering)
       }
     }
+    println("Computed expanded bigrams.")
 
-    val bigramCounts = orderByCount(expandedBigrams)
+    val bigramCounts = orderByCount(expandedBigrams.seq)
 
     for ((bigram, count) <- bigramCounts) {
       println(s"$bigram: $count")
