@@ -13,7 +13,7 @@ import scala.util.Random
 
 object BigramEvaluation {
 
-  val NB_RUNS = 7
+  val NB_RUNS = 5
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
@@ -66,19 +66,19 @@ object BigramEvaluation {
     val evalCtx = EvaluationContext.fromOptions(evalOpts)
 
     for (library <- evalCtx.references) {
-      evaluate(bigrams, library, nameUniverse)
+      evaluate(bigrams.toSet, library, nameUniverse)
     }
   }
 
   def evaluate(
-    bigrams: Seq[(String, String)],
+    bigrams: Set[(String, String)],
     library: EnrichrPredictionLibrary,
     nameUniverse: Set[String]
   ): Unit = {
     val libraryPairs = PredictionEvaluator.referencePairs(library)
 
-    val score = PredictionSignificanceTest.computeSignificance(
-      bigrams.toSet, libraryPairs, nameUniverse)
+    val score = PredictionSignificanceTest.computeSignificance(bigrams,
+      libraryPairs, nameUniverse)
 
     println(s"Testing ${bigrams.size} predictions: ${library.id}, $score")
   }
