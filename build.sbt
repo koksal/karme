@@ -17,7 +17,7 @@ lazy val root = (project in file(".")).
   )
 
 fork in run := true
-javaOptions in run += "-Xmx8G"
+javaOptions in run += "-Xmx32G"
 
 // Show test times
 testOptions in Test += Tests.Argument("-oD")
