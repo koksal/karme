@@ -21,3 +21,5 @@ javaOptions in run += "-Xmx32G"
 
 // Show test times
 testOptions in Test += Tests.Argument("-oD")
+
+logLevel in run := Level.Warn
