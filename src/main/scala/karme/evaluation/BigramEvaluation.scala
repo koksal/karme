@@ -91,8 +91,9 @@ object BigramEvaluation {
 
     val random = new Random()
 
-    val newSources = random.shuffle(allNames).take(originalBigrams.size)
-    val newTargets = random.shuffle(allNames).take(originalBigrams.size)
+    val shuffled = random.shuffle(allNames)
+    val newSources = shuffled.take(originalBigrams.size)
+    val newTargets = shuffled.drop(originalBigrams.size)
 
     newSources zip newTargets
   }
