@@ -2,52 +2,52 @@ package karme.evaluation
 
 object PredictionSignificanceTest {
 
-  def computeSignificanceForNameUniverse(
-    predictedPairs: Set[(String, String)],
-    referencePairs: Set[(String, String)],
-    nameUniverse: Set[String]
-  ): Double = {
-    computeSignificance(
-      filterForNameUniverse(predictedPairs, nameUniverse),
-      filterForNameUniverse(referencePairs, nameUniverse),
-      nameUniverse
-    )
-  }
-
-  def filterForNameUniverse(
-    pairs: Set[(String, String)],
-    nameUniverse: Set[String]
-  ): Set[(String, String)] = {
-    pairs filter {
-      case (p1, p2) => nameUniverse.contains(p1) && nameUniverse.contains(p2)
-    }
-  }
-
-  def filterOutSelfPairs(
-    pairs: Set[(String, String)]
-  ): Set[(String, String)] = {
-    pairs filter {
-      case (p1, p2) => p1 != p2
-    }
-  }
-
   def computeSignificance(
     predictedPairs: Set[(String, String)],
     referencePairs: Set[(String, String)],
-    nameUniverse: Set[String]
+    backgroundSources: Set[String],
+    backgroundTargets: Set[String]
+  ): Double = {
+    computeSignificance(
+      filterForNameUniverse(predictedPairs, backgroundSources,
+        backgroundTargets),
+      filterForNameUniverse(referencePairs, backgroundSources,
+        backgroundTargets),
+      backgroundSources.size * backgroundTargets.size
+    )
+  }
+
+  private def filterForNameUniverse(
+    pairs: Set[(String, String)],
+    possibleSources: Set[String],
+    possibleTargets: Set[String]
+  ): Set[(String, String)] = {
+    pairs filter {
+      case (src, tgt) =>
+        possibleSources.contains(src) && possibleTargets.contains(tgt)
+    }
+  }
+
+  private def computeSignificance(
+    predictedPairs: Set[(String, String)],
+    referencePairs: Set[(String, String)],
+    totalNbElements: Int
   ): Double = {
     // nb samples: prediction size
     val nbSamples = predictedPairs.size
+    println(s"Nb samples: $nbSamples")
 
     // nb sample successes: intersection of pairs
     val nbSampleSuccesses = predictedPairs.intersect(referencePairs).size
+    println(s"Nb sample successes: $nbSampleSuccesses")
 
     // total successes: reference size
     val nbTotalSuccesses = referencePairs.size
+    println(s"Nb total successes: $nbTotalSuccesses")
 
     // total failures: all possible pairs - reference
-    val nbTotalFailures = nbTotalPairs(nameUniverse) -
-      nbTotalSuccesses
+    val nbTotalFailures = totalNbElements - nbTotalSuccesses
+    println(s"Nb total failures: $nbTotalFailures")
 
     new HypergeometricTest(
       nbSamples = nbSamples,
@@ -55,11 +55,6 @@ object PredictionSignificanceTest {
       nbTotalSuccesses = nbTotalSuccesses,
       nbTotalFailures = nbTotalFailures
     ).run()
-  }
-
-  def nbTotalPairs(nameUniverse: Set[String]): Int = {
-    val n = nameUniverse.size
-    n * n
   }
 
 }

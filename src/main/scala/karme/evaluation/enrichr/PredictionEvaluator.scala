@@ -97,9 +97,7 @@ class PredictionEvaluator(
     println(mappedPredictedPairs.mkString("\n"))
 
     // perform significance test between predictions and reference
-    PredictionSignificanceTest.computeSignificanceForNameUniverse(
-      mappedPredictedPairs, PredictionEvaluator.referencePairs(reference),
-      referenceNamesInOriginalExperiment(reference))
+    ???
   }
 
   def referenceNamesInOriginalExperiment(

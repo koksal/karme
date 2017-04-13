@@ -12,7 +12,7 @@ object EvaluationContext {
 
   def fromOptions(opts: EvalOpts): EvaluationContext = {
     val parsedLibraries = opts.referenceFiles.map(f =>
-      EnrichrPredictionLibraryParser.apply(f, opts.maxNbReferencePredictions))
+      EnrichrPredictionLibraryParser.apply(f))
     EvaluationContext(references = parsedLibraries)
   }
 

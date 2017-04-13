@@ -4,83 +4,99 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
 import karme.ArgHandling
-import karme.EvalOpts
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
-import karme.evaluation.enrichr.PredictionEvaluator
-import karme.parsing.NamesParser
+import karme.evaluation.enrichr.{EnrichrPrediction, EnrichrPredictionLibrary}
 
 import scala.util.Random
 
 object BigramEvaluation {
 
-  val NB_RUNS = 5
+  val NB_RUNS = 3
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
+    val evalCtx = EvaluationContext.fromOptions(opts.evalOpts)
 
-    val bigrams = parseBigrams(opts.evalOpts.bigramFile.get,
-      opts.evalOpts.minBigramScore)
-
-    val nameUniverse = NamesParser(opts.evalOpts.nameUniverseFile.get)
-    val bigramNameUniverse = bigrams.flatMap(b => Set(b._1, b._2)).toSet
-    println(s"Bigram universe size: ${bigramNameUniverse.size}")
-
-    evaluate(bigrams, nameUniverse, opts.evalOpts)
-
-    println("Shuffled bigrams:")
-    for (i <- 1 to NB_RUNS) {
-      println(s"Run $i:")
-      evaluate(shuffleBigrams(bigrams), nameUniverse, opts.evalOpts)
-    }
-
-    println("Random bigrams from bigram name universe:")
-    for (i <- 1 to NB_RUNS) {
-      println(s"Run $i:")
-      evaluate(randomBigrams(bigramNameUniverse, bigrams.size),
-        nameUniverse, opts.evalOpts)
-    }
-
-    println("Random bigrams from full universe:")
-    for (i <- 1 to NB_RUNS) {
-      println(s"Run $i:")
-      evaluate(randomBigrams(nameUniverse, bigrams.size), nameUniverse,
-        opts.evalOpts)
-    }
-
-  }
-
-  def parseBigrams(f: File, minScore: Int): Seq[(String, String)] = {
-    val reader = CSVReader.open(f)
-    reader.all() collect {
-      case List(src, tgt, score) if score.toInt >= minScore => {
-        (src, tgt)
-      }
-    }
-  }
-
-  def evaluate(
-    bigrams: Seq[(String, String)],
-    nameUniverse: Set[String],
-    evalOpts: EvalOpts
-  ): Unit = {
-    val evalCtx = EvaluationContext.fromOptions(evalOpts)
+    val predictions = parsePredictions(opts.evalOpts.bigramFile.get)
 
     for (library <- evalCtx.references) {
-      evaluate(bigrams.toSet, library, nameUniverse)
+      evaluate(predictions, library)
+    }
+  }
+
+  def parsePredictions(f: File): Seq[(String, String, Int)] = {
+    val reader = CSVReader.open(f)
+    reader.all() map {
+      case List(src, tgt, score) => (src, tgt, score.toInt)
     }
   }
 
   def evaluate(
-    bigrams: Set[(String, String)],
-    library: EnrichrPredictionLibrary,
-    nameUniverse: Set[String]
+    predictedPairs: Seq[(String, String, Int)],
+    library: EnrichrPredictionLibrary
   ): Unit = {
-    val libraryPairs = PredictionEvaluator.referencePairs(library)
+    val thresholdRange = (1 to 10) map (_ / 10.0)
 
-    val score = PredictionSignificanceTest.computeSignificance(bigrams,
-      libraryPairs, nameUniverse)
+    val orderedPreds = predictionPairsByDescendingScore(predictedPairs)
+    val orderedLibraryPreds = libraryPairsByDescendingScore(library)
 
-    println(s"Testing ${bigrams.size} predictions: ${library.id}, $score")
+    for {
+      predictionThreshold <- thresholdRange
+      libraryPredictionThreshold <- thresholdRange
+    } {
+      val score = evaluateForCommonSourcesAndTargets(
+        filterByThreshold(orderedPreds, predictionThreshold).toSet,
+        filterByThreshold(orderedLibraryPreds, libraryPredictionThreshold).toSet
+      )
+
+      val row = List(library.id, predictionThreshold,
+        libraryPredictionThreshold, score)
+      println(row.mkString(","))
+    }
+  }
+
+  def predictionPairsByDescendingScore(
+    predictedPairs: Seq[(String, String, Int)]
+  ): Seq[(String, String)] = {
+    val sortedPreds = predictedPairs.sortBy(_._3).reverse
+    sortedPreds map {
+      case (src, tgt, _) => (src, tgt)
+    }
+  }
+
+  def libraryPairsByDescendingScore(
+    library: EnrichrPredictionLibrary
+  ): Seq[(String, String)] = {
+    val sortedPreds = library.predictions.sortBy(_.combinedScore).reverse
+    sortedPreds map {
+      case EnrichrPrediction(term, target, score) => (term, target)
+    }
+  }
+
+  def filterByThreshold(
+    pairs: Seq[(String, String)], threshold: Double
+  ): Seq[(String, String)] = {
+    require(threshold >= 0 && threshold <= 1)
+    val toTake = (pairs.size * threshold).toInt
+    pairs take toTake
+  }
+
+  def evaluateForCommonSourcesAndTargets(
+    predictedPairs: Set[(String, String)],
+    libraryPairs: Set[(String, String)]
+  ): Double = {
+    val predictedNames = namesInPairs(predictedPairs)
+    val libraryNames = namesInPairs(libraryPairs)
+
+    val commonNames = predictedNames.intersect(libraryNames)
+
+    PredictionSignificanceTest.computeSignificance(predictedPairs, libraryPairs,
+      commonNames, commonNames)
+  }
+
+  def namesInPairs(pairs: Set[(String, String)]): Set[String] = {
+    pairs flatMap {
+      case (src, tgt) => Set(src, tgt)
+    }
   }
 
   def shuffleBigrams(

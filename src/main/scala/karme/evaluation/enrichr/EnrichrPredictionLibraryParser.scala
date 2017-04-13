@@ -7,21 +7,14 @@ import karme.util.FileUtil
 
 object EnrichrPredictionLibraryParser {
 
-  def apply(
-    f: File, maxNbPredictions: Option[Int]
-  ): EnrichrPredictionLibrary = {
+  def apply(f: File): EnrichrPredictionLibrary = {
     val parsedPredictions = parsePredictions(f)
 
     val predictionsWithDescendingScore =
       parsedPredictions.sortBy(_.combinedScore).reverse
 
-    val sizeLimitedPredictions = maxNbPredictions match {
-      case Some(maxNb) => predictionsWithDescendingScore take maxNb
-      case None => predictionsWithDescendingScore
-    }
-
     EnrichrPredictionLibrary(FileUtil.getFileName(f.getPath),
-      sizeLimitedPredictions)
+      predictionsWithDescendingScore)
   }
 
   private def parsePredictions(f: File): Seq[EnrichrPrediction] = {
