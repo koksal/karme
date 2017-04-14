@@ -35,23 +35,34 @@ object BigramEvaluation {
     predictedPairs: Seq[(String, String, Int)],
     library: EnrichrPredictionLibrary
   ): Unit = {
+
+    val orderedPredictions = predictionPairsByDescendingScore(predictedPairs)
+    val orderedRefPairs = libraryPairsByDescendingScore(library)
+
+    // get names from both sets. filter accordingly. then threshold.
+    val namesInPredictions = namesInPairs(orderedPredictions)
+    val namesInReference = namesInPairs(orderedRefPairs)
+
+    val commonNames = namesInPredictions intersect namesInReference
+
+    val filteredPredictions = filterForNameUniverse(orderedPredictions,
+      commonNames, commonNames)
+    val filteredRefPairs = filterForNameUniverse(orderedRefPairs,
+      commonNames, commonNames)
+
+    println(s"Evaluating ${library.id}")
+
     val nbThresholdSteps = 10
     val thresholdRange =
       (1 to nbThresholdSteps) map (_ / nbThresholdSteps.toDouble)
 
-    val orderedPreds = predictionPairsByDescendingScore(predictedPairs)
-    val randomPreds = randomBigrams(namesInPairs(orderedPreds.toSet),
-      orderedPreds.size)
-    val orderedLibraryPreds = libraryPairsByDescendingScore(library)
-
-    println(s"Evaluating ${library.id}")
-
     val scoreMatrix = for (predictionThreshold <- thresholdRange) yield {
       for (libraryPredictionThreshold <- thresholdRange) yield {
-        val score = evaluateForCommonSourcesAndTargets(
-          filterByThreshold(randomPreds, predictionThreshold).toSet,
-          filterByThreshold(orderedLibraryPreds,
-            libraryPredictionThreshold).toSet
+        val score = PredictionSignificanceTest.computeSignificance(
+          filterByThreshold(filteredPredictions, predictionThreshold).toSet,
+          filterByThreshold(filteredRefPairs, libraryPredictionThreshold).toSet,
+          commonNames,
+          commonNames
         )
 
         println(s"Pred t: ${predictionThreshold}, library t: " +
@@ -60,12 +71,22 @@ object BigramEvaluation {
       }
     }
 
-    println(library.id)
     println(scoreMatrix.map(_.mkString(",")).mkString("\n"))
 
     val f = new File(s"${library.id}-heatmap.pdf")
     val labels = thresholdRange.map(_.toString)
     new Heatmap(scoreMatrix, "DB", "Predictions", labels, labels, f).run()
+  }
+
+  private def filterForNameUniverse(
+    pairs: Seq[(String, String)],
+    possibleSources: Set[String],
+    possibleTargets: Set[String]
+  ): Seq[(String, String)] = {
+    pairs filter {
+      case (src, tgt) =>
+        possibleSources.contains(src) && possibleTargets.contains(tgt)
+    }
   }
 
   def predictionPairsByDescendingScore(
@@ -94,21 +115,8 @@ object BigramEvaluation {
     pairs take toTake
   }
 
-  def evaluateForCommonSourcesAndTargets(
-    predictedPairs: Set[(String, String)],
-    libraryPairs: Set[(String, String)]
-  ): Double = {
-    val predictedNames = namesInPairs(predictedPairs)
-    val libraryNames = namesInPairs(libraryPairs)
-
-    val commonNames = predictedNames.intersect(libraryNames)
-
-    PredictionSignificanceTest.computeSignificance(predictedPairs, libraryPairs,
-      predictedNames, predictedNames)
-  }
-
-  def namesInPairs(pairs: Set[(String, String)]): Set[String] = {
-    pairs flatMap {
+  def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {
+    pairs.toSet[(String, String)] flatMap {
       case (src, tgt) => Set(src, tgt)
     }
   }

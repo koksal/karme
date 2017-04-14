@@ -8,24 +8,24 @@ object PredictionSignificanceTest {
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
   ): Double = {
+    require(predictedPairs.forall(p => checkBackground(p, backgroundSources,
+      backgroundTargets)))
+    require(referencePairs.forall(p => checkBackground(p, backgroundSources,
+      backgroundTargets)))
+
     computeSignificance(
-      filterForNameUniverse(predictedPairs, backgroundSources,
-        backgroundTargets),
-      filterForNameUniverse(referencePairs, backgroundSources,
-        backgroundTargets),
+      predictedPairs,
+      referencePairs,
       backgroundSources.size * backgroundTargets.size
     )
   }
 
-  private def filterForNameUniverse(
-    pairs: Set[(String, String)],
-    possibleSources: Set[String],
-    possibleTargets: Set[String]
-  ): Set[(String, String)] = {
-    pairs filter {
-      case (src, tgt) =>
-        possibleSources.contains(src) && possibleTargets.contains(tgt)
-    }
+  private def checkBackground(
+    pair: (String, String),
+    backgroundSources: Set[String],
+    backgroundTargets: Set[String]
+  ): Boolean = {
+    backgroundSources.contains(pair._1) && backgroundTargets.contains(pair._2)
   }
 
   private def computeSignificance(
