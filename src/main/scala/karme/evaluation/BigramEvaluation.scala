@@ -5,6 +5,7 @@ import java.io.File
 import com.github.tototoshi.csv.CSVReader
 import karme.ArgHandling
 import karme.evaluation.enrichr.{EnrichrPrediction, EnrichrPredictionLibrary}
+import karme.visualization.Heatmap
 
 import scala.util.Random
 
@@ -34,24 +35,37 @@ object BigramEvaluation {
     predictedPairs: Seq[(String, String, Int)],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    val thresholdRange = (1 to 10) map (_ / 10.0)
+    val nbThresholdSteps = 10
+    val thresholdRange =
+      (1 to nbThresholdSteps) map (_ / nbThresholdSteps.toDouble)
 
     val orderedPreds = predictionPairsByDescendingScore(predictedPairs)
+    val randomPreds = randomBigrams(namesInPairs(orderedPreds.toSet),
+      orderedPreds.size)
     val orderedLibraryPreds = libraryPairsByDescendingScore(library)
 
-    for {
-      predictionThreshold <- thresholdRange
-      libraryPredictionThreshold <- thresholdRange
-    } {
-      val score = evaluateForCommonSourcesAndTargets(
-        filterByThreshold(orderedPreds, predictionThreshold).toSet,
-        filterByThreshold(orderedLibraryPreds, libraryPredictionThreshold).toSet
-      )
+    println(s"Evaluating ${library.id}")
 
-      val row = List(library.id, predictionThreshold,
-        libraryPredictionThreshold, score)
-      println(row.mkString(","))
+    val scoreMatrix = for (predictionThreshold <- thresholdRange) yield {
+      for (libraryPredictionThreshold <- thresholdRange) yield {
+        val score = evaluateForCommonSourcesAndTargets(
+          filterByThreshold(randomPreds, predictionThreshold).toSet,
+          filterByThreshold(orderedLibraryPreds,
+            libraryPredictionThreshold).toSet
+        )
+
+        println(s"Pred t: ${predictionThreshold}, library t: " +
+          s"${libraryPredictionThreshold}, score: $score")
+        score
+      }
     }
+
+    println(library.id)
+    println(scoreMatrix.map(_.mkString(",")).mkString("\n"))
+
+    val f = new File(s"${library.id}-heatmap.pdf")
+    val labels = thresholdRange.map(_.toString)
+    new Heatmap(scoreMatrix, "DB", "Predictions", labels, labels, f).run()
   }
 
   def predictionPairsByDescendingScore(
@@ -90,7 +104,7 @@ object BigramEvaluation {
     val commonNames = predictedNames.intersect(libraryNames)
 
     PredictionSignificanceTest.computeSignificance(predictedPairs, libraryPairs,
-      commonNames, commonNames)
+      predictedNames, predictedNames)
   }
 
   def namesInPairs(pairs: Set[(String, String)]): Set[String] = {
