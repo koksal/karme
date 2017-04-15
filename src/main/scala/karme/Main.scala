@@ -16,13 +16,12 @@ object Main {
     val reporter = new Reporter(opts.reporterOpts)
 
     val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
-    val inputTransformer = new InputTransformer(
-      opts.inputTransformerOpts, annotationContext, reporter)
+    val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
+      annotationContext, reporter)
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
-    val directedStateGraph =
-      inputTransformer.buildDirectedStateGraph()
+    val directedStateGraph = inputTransformer.buildDirectedStateGraph()
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, inputTransformer.trajectories)
 
