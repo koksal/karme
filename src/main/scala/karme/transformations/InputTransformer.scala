@@ -70,7 +70,7 @@ class InputTransformer(
     }
   }
 
-  def buildDirectedStateGraphForBestClustering(
+  private def buildDirectedStateGraphForBestClustering(
     exp: Experiment[Double]
   ): DirectedBooleanStateGraph = {
     val geneClustering = HierarchicalClustering.computeBestClustering(
@@ -85,7 +85,7 @@ class InputTransformer(
     buildStateGraphForClusterAverages(exp, geneClustering)
   }
 
-  def buildStateGraphForClusterAverages(
+  private def buildStateGraphForClusterAverages(
     nonClusteredExperiment: Experiment[Double],
     clustering: Map[String, Set[String]]
   ): DirectedBooleanStateGraph = {
@@ -95,7 +95,7 @@ class InputTransformer(
     buildDirectedStateGraph(avgExp)
   }
 
-  def buildDirectedStateGraph(
+  private def buildDirectedStateGraph(
     exp: Experiment[Double]
   ): DirectedBooleanStateGraph = {
     // TODO group into a method

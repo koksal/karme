@@ -7,7 +7,7 @@ mkdir -p $OUTFOLDER
 sbt "run-main karme.Main \
   --continuous-experiment data/measurements/t-cell-measurements.csv \
   --trajectories data/trajectories/t-cell-pc1-values.csv \
-  --names data/names/t-cell-transcription-regulators.txt \
+  --names data/names/t-cell-transcription-regulators.txt,data/names/t-cell-receptors.txt \
   --synthesis \
   --pseudolog-factor 2 \
   --boolean-normalization mclust \
