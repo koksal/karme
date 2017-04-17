@@ -22,7 +22,7 @@ object Discretization {
     // discretize all values per name
     println("Running initial discretization.")
     val discreteCellValues =
-      valuesPerName.map(vs => binarizeSeq(vs, method)).transpose
+      valuesPerName.par.map(vs => binarizeSeq(vs, method)).seq.transpose
 
     assert(discreteCellValues.size == experiment.measurements.size)
 

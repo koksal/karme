@@ -2,8 +2,8 @@ package karme
 
 import java.io.File
 
-import karme.transformations.discretization.Ckmeans
 import karme.transformations.discretization.DiscretizationMethod
+import karme.transformations.discretization.Mclust
 
 case class Opts(
   inputTransformerOpts: InputTransformerOpts = InputTransformerOpts(),
@@ -17,7 +17,7 @@ case class Opts(
 case class InputTransformerOpts(
   inputFileOpts: InputFileOpts = InputFileOpts(),
   pseudoLogFactor: Option[Double] = None,
-  booleanNormalizationMethod: DiscretizationMethod = Ckmeans,
+  booleanNormalizationMethod: DiscretizationMethod = Mclust,
   cellActivityThreshold: Double = 0.20,
   uncertaintyThreshold: Double = 0.4,
   smoothingRadius: Int = 20,

@@ -2,9 +2,11 @@ package karme
 
 import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.printing.SummaryLogger
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.Synthesizer
+import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.InputTransformer
 import karme.visualization.StateGraphPlotter
 
@@ -19,11 +21,29 @@ object Main {
     val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
       annotationContext, reporter)
 
-    val synthesizer = new Synthesizer(opts.synthOpts, reporter)
-
     val directedStateGraph = inputTransformer.buildDirectedStateGraph()
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, inputTransformer.trajectories)
+
+    new StateGraphPlotter(reporter).plotDirectedGraph(directedStateGraph,
+      "directed-state-graph", annotationContext.cellClustering,
+      List(initialStates))
+
+    if (opts.runSynthesis) {
+      runSynthesis(opts, inputTransformer, directedStateGraph, initialStates,
+        reporter)
+    }
+  }
+
+  def runSynthesis(
+    opts: Opts,
+    inputTransformer: InputTransformer,
+    directedStateGraph: DirectedBooleanStateGraph,
+    initialStates: Set[ConcreteBooleanState],
+    reporter: Reporter
+  ): Unit = {
+
+    val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
     val optimalResults = synthesizer.synthesizeForOptimalReachability(
       directedStateGraph, initialStates)
@@ -38,15 +58,9 @@ object Main {
     SummaryLogger(opts, optimalResults, referencePValuePairs,
       reporter.file("summary.tsv"))
 
-    // TODO move to visualization phase module
-    val graphPlotter = new StateGraphPlotter(reporter)
-    graphPlotter.plotDirectedGraph(directedStateGraph, "directed-state-graph",
-      annotationContext.cellClustering, List(initialStates))
-
     for ((result, i) <- optimalResults.zipWithIndex) {
       SynthesisResultLogger(result.labelToResult,
         reporter.file(s"functions-$i.txt"))
     }
   }
-
 }

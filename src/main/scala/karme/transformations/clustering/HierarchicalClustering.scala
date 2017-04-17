@@ -39,7 +39,9 @@ object HierarchicalClustering {
       adjustedMinNbClust, adjustedMaxNbClust, method = method,
       index = index).run()
     val clustering = exp.names.zip(clusterIndices).toMap
+
     val bestK = clusterIndices.toSet.size
+    println(s"Best k: $bestK")
 
     makeClusterToNamesMap(clustering)
   }
