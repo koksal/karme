@@ -23,7 +23,7 @@ ACTIVITY_FILTER_ARGS["none"]=""
 ACTIVITY_FILTER_ARGS["pseudolog-2"]="--pseudolog-factor 2"
 
 declare -A ACTIVITY_FILTER_ARGS
-ACTIVITY_FILTER_ARGS["5"]="--cell-activity-threshold 0.1"
+ACTIVITY_FILTER_ARGS["05"]="--cell-activity-threshold 0.05"
 ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
 ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
 
