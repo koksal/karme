@@ -100,7 +100,7 @@ object ArgHandling {
 
       opt[Double]("cell-activity-threshold") action { (d, o) =>
         o.copy(inputTransformerOpts =
-          o.inputTransformerOpts.copy(cellActivityThreshold = d))
+          o.inputTransformerOpts.copy(minDifferentialThreshold = d))
       } text "ratio of cells in which a gene must be active"
 
       opt[Double]("uncertainty-threshold") action { (d, o) =>

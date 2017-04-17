@@ -18,7 +18,7 @@ case class InputTransformerOpts(
   inputFileOpts: InputFileOpts = InputFileOpts(),
   pseudoLogFactor: Option[Double] = None,
   booleanNormalizationMethod: DiscretizationMethod = Mclust,
-  cellActivityThreshold: Double = 0.20,
+  minDifferentialThreshold: Double = 0.20,
   uncertaintyThreshold: Double = 0.4,
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,

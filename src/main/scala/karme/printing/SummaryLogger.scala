@@ -19,7 +19,7 @@ object SummaryLogger {
     val optHeaderToValue = Seq(
       "pseudolog" -> opts.inputTransformerOpts.pseudoLogFactor,
       "bool-norm" -> opts.inputTransformerOpts.booleanNormalizationMethod,
-      "cell-activity" -> opts.inputTransformerOpts.cellActivityThreshold,
+      "cell-activity" -> opts.inputTransformerOpts.minDifferentialThreshold,
       "uncertainty" -> opts.inputTransformerOpts.uncertaintyThreshold,
       "smoothing" -> opts.inputTransformerOpts.smoothingRadius,
       "minClust" -> opts.inputTransformerOpts.clusteringOpts.minNbClusters,

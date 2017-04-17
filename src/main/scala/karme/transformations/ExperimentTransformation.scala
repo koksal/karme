@@ -34,15 +34,19 @@ object ExperimentTransformation {
     nameSeq.toSet
   }
 
-  def inactiveVariables(
-    exp: BooleanExperiment, minCellActivityRatio: Double
+  def differentialNames(
+    exp: BooleanExperiment, minDifferentialRatio: Double
   ): Set[String] = {
-    val inactiveSeq = exp.names filter { name =>
+    val differentialNs = exp.names filter { name =>
       val vs = exp.valuesForName(name)
       val nbHigh = vs.count(v => v)
+      val nbLow = vs.count(v => !v)
+
       val highRatio = nbHigh.toDouble / vs.size
-      highRatio < minCellActivityRatio
+      val lowRatio = nbLow.toDouble / vs.size
+
+      highRatio >= minDifferentialRatio && lowRatio >= minDifferentialRatio
     }
-    inactiveSeq.toSet
+    differentialNs.toSet
   }
 }

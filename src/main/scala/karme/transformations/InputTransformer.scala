@@ -161,7 +161,7 @@ class InputTransformer(
       booleanNormalizedExp, reporter.file("boolean-normalization-histograms"))
 
     val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)
-    filterByActivity(filteredByNbLevels)
+    filterDifferentialVars(filteredByNbLevels)
   }
 
   def filterOutNamesWithSingleValue(
@@ -174,12 +174,11 @@ class InputTransformer(
     experiment.project(namesWithMultipleValues)
   }
 
-  def filterByActivity(experiment: BooleanExperiment): BooleanExperiment = {
+  def filterDifferentialVars(experiment: BooleanExperiment): BooleanExperiment = {
     // TODO this is not a transformation any more, move code
-    val inactiveNames = ExperimentTransformation.inactiveVariables(experiment,
-      opts.cellActivityThreshold)
-    val activeNames = experiment.names.toSet -- inactiveNames
-    experiment.project(activeNames)
+    val differentialNames = ExperimentTransformation.differentialNames(
+      experiment, opts.minDifferentialThreshold)
+    experiment.project(differentialNames)
   }
 
   def getTransformedContinuousExperiment(): ContinuousExperiment = {
