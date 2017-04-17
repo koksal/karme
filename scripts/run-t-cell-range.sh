@@ -1,11 +1,13 @@
 #!/bin/bash
 
+RUNLABEL=$1
+
 NB_JOBS=8
 
 set -o xtrace
 
 function run_with_args() {
-  folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
+  folder="log/$RUNLABEL/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
   scripts/run-t-cell-base-args.sh $folder \
     --pseudolog-factor 2 \
