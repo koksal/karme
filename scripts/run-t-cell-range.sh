@@ -18,7 +18,7 @@ function run_with_args() {
 export -f run_with_args
 
 declare -A TRANSFORM_ARGS
-# TRANSFORM_ARGS["none"]=""
+TRANSFORM_ARGS["none"]=""
 TRANSFORM_ARGS["pseudolog2"]="--pseudolog-factor 2"
 
 declare -A ACTIVITY_FILTER_ARGS
