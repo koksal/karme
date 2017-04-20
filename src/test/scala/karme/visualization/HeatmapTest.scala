@@ -13,7 +13,8 @@ class HeatmapTest extends FunSuite {
       List(7.0, 8.0, 9.0)
     )
 
-    val f = File.createTempFile("heatmap-test", ".pdf", new File("."))
+    val f = File.createTempFile("heatmap-test", ".pdf")
+    f.deleteOnExit()
 
     val xLabels = List("x1", "x2", "x3")
     val yLabels = List("y1", "y2", "y3")

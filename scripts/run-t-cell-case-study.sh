@@ -6,10 +6,11 @@ OUTFOLDER=$1
   --pseudolog-factor 2 \
   --boolean-normalization mclust \
   --cell-activity-threshold 0.2 \
-  --uncertainty-threshold 0.4 \
-  --smoothing-radius 20 \
+  --uncertainty-threshold 0.5 \
+  --smoothing-radius 15 \
   --max-hamming 1 \
   --cluster \
-  --min-clusters 5 \
-  --max-clusters 20 \
-  --max-expr-depth 3
+  --min-clusters 8 \
+  --max-clusters 8 \
+  --synthesis \
+  --max-expr-depth 1
