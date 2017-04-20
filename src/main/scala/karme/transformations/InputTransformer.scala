@@ -73,8 +73,7 @@ class InputTransformer(
   private def buildDirectedStateGraphForBestClustering(
     exp: Experiment[Double]
   ): DirectedBooleanStateGraph = {
-    val geneClustering = HierarchicalClustering.computeBestClustering(
-      exp, annotationContext.annotationVariables,
+    val geneClustering = HierarchicalClustering.computeBestClustering(exp,
       opts.clusteringOpts)
     _clustering = Some(geneClustering)
 
@@ -114,20 +113,6 @@ class InputTransformer(
       trajectories)
 
     dirGraph
-  }
-
-  def processContinuousExperimentForDiscretization(): ContinuousExperiment = {
-    val smoothedExperiment = getSmoothedExperiment()
-
-    if (opts.cluster) {
-      val geneClustering = HierarchicalClustering.computeBestClustering(
-        smoothedExperiment, annotationContext.annotationVariables,
-        opts.clusteringOpts)
-      HierarchicalClustering.experimentFromClusterAverages(smoothedExperiment,
-        geneClustering, annotationContext.annotationVariables)
-    } else {
-      smoothedExperiment
-    }
   }
 
   def getSmoothedExperiment(): ContinuousExperiment = {
