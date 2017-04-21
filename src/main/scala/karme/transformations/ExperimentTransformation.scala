@@ -31,8 +31,7 @@ object ExperimentTransformation {
   }
 
   def scaleToUnitStdev(exp: Experiment[Double]): Experiment[Double] = {
-    // TODO create experiment from value matrix efficiently
-    ???
+    exp.transformValuesForEachName(scaleToUnitStdev)
   }
 
   def pseudoLog(v: Double, factor: Double): Double = {

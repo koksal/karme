@@ -61,6 +61,22 @@ object Experiments {
     }
 
     def measurementFromId(id: String): Measurement[T] = idToMeasurement(id)
+
+    def transformValuesForEachName(f: (Seq[T]) => Seq[T]): Experiment[T] = {
+      val mappedValueMatrix = this.valueMatrix map (vs => f(vs))
+      val valuesByMeasurement = mappedValueMatrix.transpose
+
+      assert(valuesByMeasurement.size == this.measurements.size)
+
+      val mappedMeasurements = valuesByMeasurement.zip(this.measurements) map {
+        case (newValues, measurement) =>
+          val newState = GenericState(
+            measurement.state.orderedKeys.zip(newValues).toMap)
+          measurement.copy(state = newState)
+      }
+
+      Experiment(mappedMeasurements)
+    }
   }
 
   def continuousExperimentToThreeValued(

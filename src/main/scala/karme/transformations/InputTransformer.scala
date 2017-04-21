@@ -73,8 +73,9 @@ class InputTransformer(
   private def buildDirectedStateGraphForBestClustering(
     exp: Experiment[Double]
   ): DirectedBooleanStateGraph = {
-    val geneClustering = HierarchicalClustering.computeBestClustering(exp,
-      opts.clusteringOpts)
+    val stdevNormalizedExp = ExperimentTransformation.scaleToUnitStdev(exp)
+    val geneClustering = HierarchicalClustering.computeGapStatClustering(
+      stdevNormalizedExp, opts.clusteringOpts)
     _clustering = Some(geneClustering)
 
     // TODO move this to visualization phase
