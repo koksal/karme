@@ -1,5 +1,6 @@
 package karme.util
 
+import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 
 class MathUtilTest extends FunSuite {
@@ -10,7 +11,10 @@ class MathUtilTest extends FunSuite {
   }
 
   test("Standard deviation") {
-    assertResult(0)(MathUtil.stdev(List(1, 1, 1)))
+    val values = List[Double](10,2,38,23,38,23,21)
+
+    val equality = TolerantNumerics.tolerantDoubleEquality(0.0001)
+    assert(equality.areEqual(13.28443, MathUtil.stdev(values)))
   }
 
 }

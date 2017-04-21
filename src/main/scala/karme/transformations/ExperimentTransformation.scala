@@ -2,6 +2,8 @@ package karme.transformations
 
 import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
+import karme.Experiments.Experiment
+import karme.util.MathUtil
 
 object ExperimentTransformation {
 
@@ -20,6 +22,17 @@ object ExperimentTransformation {
       m.copy(state = m.state.mapValues(pseudoLog(_, factor)))
     }
     experiment.copy(measurements = transformedMeasurements)
+  }
+
+  def scaleToUnitStdev(xs: Seq[Double]): Seq[Double] = {
+    val sd = MathUtil.stdev(xs)
+    val scaling = 1 / sd
+    xs map (_ * scaling)
+  }
+
+  def scaleToUnitStdev(exp: Experiment[Double]): Experiment[Double] = {
+    // TODO create experiment from value matrix efficiently
+    ???
   }
 
   def pseudoLog(v: Double, factor: Double): Double = {
