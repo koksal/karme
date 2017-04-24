@@ -3,11 +3,11 @@ package karme.transformations
 import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.Experiments.{BooleanExperiment, ContinuousExperiment, ThreeValuedExperiment}
+import karme.Experiments.{BooleanExperiment, ContinuousExperiment}
 import karme.Reporter
 import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedBooleanStateGraph, UndirectedStateGraphOps}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
