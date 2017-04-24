@@ -11,4 +11,4 @@ OUTFOLDER=$1
   --max-hamming 1 \
   --cluster \
   --min-clusters 5 \
-  --max-clusters 15
+  --max-clusters 20

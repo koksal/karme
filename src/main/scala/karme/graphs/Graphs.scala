@@ -68,8 +68,8 @@ object Graphs {
         val pathsToExtend = pathNodeSequences(len - 1)
 
         pathsToExtend flatMap { vs =>
-          targets(vs.last) map { target =>
-            vs :+ target
+          targets(vs.last) collect {
+            case target if !vs.contains(target) => vs :+ target
           }
         }
       } else {

@@ -28,7 +28,7 @@ object GraphAggregation {
         Reporter.defaultReporter())
       transformer.buildDirectedStateGraphsForAllClusterings()
     }
-    println("Computed clustering results.")
+    println(s"Computed clustering results: ${clusteringGraphPairs.size}")
 
     val expandedBigrams = clusteringGraphPairs flatMap {
       case (clustering, graph) => {

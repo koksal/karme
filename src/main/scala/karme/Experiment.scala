@@ -26,7 +26,10 @@ object Experiments {
       }.toMap
 
     def names: Seq[String] = {
-      measurements.head.state.orderedKeys
+      measurements.headOption match {
+        case Some(head) => head.state.orderedKeys
+        case None => Seq()
+      }
     }
 
     def valuesForName(name: String): Seq[T] = {

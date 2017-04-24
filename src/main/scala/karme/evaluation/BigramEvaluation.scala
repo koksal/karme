@@ -45,10 +45,11 @@ object BigramEvaluation {
 
     val commonNames = namesInPredictions intersect namesInReference
     val backgroundSources = commonNames
-    val backgroundTargets = namesInPredictions
+    val backgroundTargets = commonNames
 
     val filteredPredictions = filterForNameUniverse(orderedPredictions,
       backgroundSources, backgroundTargets)
+    val shuffledPredictions = shuffleBigrams(filteredPredictions)
     val filteredRefPairs = filterForNameUniverse(orderedRefPairs,
       backgroundSources, backgroundTargets)
 
@@ -61,7 +62,7 @@ object BigramEvaluation {
     val scoreMatrix = for (predictionThreshold <- thresholdRange) yield {
       for (libraryPredictionThreshold <- thresholdRange) yield {
         val score = PredictionSignificanceTest.computeSignificance(
-          filterByThreshold(filteredPredictions, predictionThreshold).toSet,
+          filterByThreshold(shuffledPredictions, predictionThreshold).toSet,
           filterByThreshold(filteredRefPairs, libraryPredictionThreshold).toSet,
           backgroundSources,
           backgroundTargets

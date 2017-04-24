@@ -10,9 +10,9 @@ object HierarchicalClustering {
 
   def computeHierarchicalClustering(
     exp: Experiment[Double],
-    opts: ClusteringOpts
+    maxNbClusters: Int
   ): Seq[Map[String, Set[String]]] = {
-    val kMax = math.min(exp.names.size - 1, opts.maxNbClusters)
+    val kMax = math.min(exp.names.size - 1, maxNbClusters)
 
     val clusterAssignments = new HclustInterface(exp, kMax).run()
 

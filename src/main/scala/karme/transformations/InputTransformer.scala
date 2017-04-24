@@ -53,7 +53,8 @@ class InputTransformer(
     val smoothedExperiment = getSmoothedExperiment()
 
     val clusterings = HierarchicalClustering.computeHierarchicalClustering(
-      smoothedExperiment, opts.clusteringOpts)
+      smoothedExperiment, opts.clusteringOpts.maxNbClusters).drop(
+      opts.clusteringOpts.minNbClusters - 1)
 
     clusterings map { clustering =>
       (clustering,
@@ -100,8 +101,8 @@ class InputTransformer(
     // TODO group into a method
     val threeValExp = Experiments.continuousExperimentToThreeValued(exp,
       opts.uncertaintyThreshold)
-    ExperimentHistograms.plotLabeledHistograms(exp, threeValExp,
-      reporter.file("three-valued-histograms"))
+    // ExperimentHistograms.plotLabeledHistograms(exp, threeValExp,
+    //   reporter.file("three-valued-histograms"))
 
     val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
       threeValExp)
