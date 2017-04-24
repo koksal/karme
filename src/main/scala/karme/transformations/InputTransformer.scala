@@ -142,8 +142,8 @@ class InputTransformer(
     val booleanNormalizedExp = Discretization.binarize(continuousExperiment,
       opts.booleanNormalizationMethod)
 
-    ExperimentHistograms.plotLabeledHistograms(continuousExperiment,
-      booleanNormalizedExp, reporter.file("boolean-normalization-histograms"))
+    // ExperimentHistograms.plotLabeledHistograms(continuousExperiment,
+    //   booleanNormalizedExp, reporter.file("boolean-normalization-histograms"))
 
     val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)
     filterDifferentialVars(filteredByNbLevels)
