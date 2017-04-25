@@ -5,6 +5,8 @@ import java.io.File
 import com.github.tototoshi.csv.CSVReader
 import karme.ArgHandling
 import karme.evaluation.enrichr.{EnrichrPrediction, EnrichrPredictionLibrary}
+import karme.util.FileUtil
+import karme.util.MathUtil
 import karme.visualization.Heatmap
 
 import scala.util.Random
@@ -35,7 +37,6 @@ object BigramEvaluation {
     predictedPairs: Seq[(String, String, Int)],
     library: EnrichrPredictionLibrary
   ): Unit = {
-
     val orderedPredictions = predictionPairsByDescendingScore(predictedPairs)
     val orderedRefPairs = libraryPairsByDescendingScore(library)
 
@@ -54,30 +55,72 @@ object BigramEvaluation {
 
     println(s"Evaluating ${library.id}")
 
-    val nbThresholdSteps = 10
-    val thresholdRange =
-      (1 to nbThresholdSteps) map (_ / nbThresholdSteps.toDouble)
+    val scoreMatrix = computeScoreMatrix(filteredPredictions,
+      filteredRefPairs, backgroundSources, backgroundTargets)
 
-    val scoreMatrix = for (predictionThreshold <- thresholdRange) yield {
+    saveScoreMatrix(scoreMatrix, new File(s"score-matrix-${library.id}.csv"))
+    saveScoreHeatmap(scoreMatrix, new File(s"heatmap-${library.id}.pdf"))
+
+    countOrientationsPerThreshold(filteredPredictions)
+  }
+
+  private def thresholdRange: Seq[Double] = {
+    val NB_THRESHOLD_STEPS = 10
+    (1 to NB_THRESHOLD_STEPS) map (_ / NB_THRESHOLD_STEPS.toDouble)
+  }
+
+  private def computeScoreMatrix(
+    predictedPairs: Seq[(String, String)],
+    referencePairs: Seq[(String, String)],
+    backgroundSources: Set[String],
+    backgroundTargets: Set[String]
+  ): Seq[Seq[Double]] = {
+    for (predictionThreshold <- thresholdRange) yield {
       for (libraryPredictionThreshold <- thresholdRange) yield {
         val score = PredictionSignificanceTest.computeSignificance(
-          filterByThreshold(filteredPredictions, predictionThreshold).toSet,
-          filterByThreshold(filteredRefPairs, libraryPredictionThreshold).toSet,
+          filterByThreshold(predictedPairs, predictionThreshold).toSet,
+          filterByThreshold(referencePairs, libraryPredictionThreshold).toSet,
           backgroundSources,
           backgroundTargets
         )
 
-        println(s"Pred t: ${predictionThreshold}, library t: " +
-          s"${libraryPredictionThreshold}, score: $score")
+        println(s"pred: ${predictionThreshold} %, ref: " +
+          s"${libraryPredictionThreshold} %, score: $score")
         score
       }
     }
+  }
 
-    println(scoreMatrix.map(_.mkString(",")).mkString("\n"))
+  private def saveScoreMatrix(matrix: Seq[Seq[Double]], f: File): Unit = {
+    val content = matrix.map(_.mkString(",")).mkString("\n")
 
-    val f = new File(s"${library.id}-heatmap.pdf")
+    FileUtil.writeToFile(f, content)
+  }
+
+  private def saveScoreHeatmap(matrix: Seq[Seq[Double]], f: File): Unit = {
     val labels = thresholdRange.map(_.toString)
-    new Heatmap(scoreMatrix, "DB", "Predictions", labels, labels, f).run()
+    new Heatmap(matrix, "DB", "Predictions", labels, labels, f).run()
+  }
+
+  private def countOrientationsPerThreshold(
+    predictedPairs: Seq[(String, String)]
+  ): Unit = {
+    for (threshold <- thresholdRange) {
+      val meanCard = filterByThreshold(predictedPairs, threshold)
+      println(s"Threshold: $threshold, avg. cardinality: $meanCard")
+    }
+  }
+
+  private def countOrientations(pairs: Seq[(String, String)]): Double = {
+    val groupedByValueSet = pairs.groupBy {
+      case (src, tgt) => Set(src, tgt)
+    }
+    val cardinalities = groupedByValueSet.toSeq.map {
+      case (nodeSet, pairs) =>
+        assert(pairs.size == pairs.toSet.size)
+        pairs.size.toDouble
+    }
+    MathUtil.mean(cardinalities)
   }
 
   private def filterForNameUniverse(

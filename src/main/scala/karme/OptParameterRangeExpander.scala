@@ -27,13 +27,13 @@ object OptParameterRangeExpander {
 
     new OptParameterRangeExpander[Double, InputTransformerOpts](
       id = "cell-activity-threshold",
-      values = List(0.2),
+      values = List(0.1, 0.2),
       modifier = (opts, value) => opts.copy(minDifferentialThreshold = value)
     ),
 
     new OptParameterRangeExpander[Double, InputTransformerOpts](
       id = "uncertainty-threshold",
-      values = List(0.4),
+      values = List(0.3, 0.4, 0.5),
       modifier = (opts, value) => opts.copy(uncertaintyThreshold = value)
     ),
 
