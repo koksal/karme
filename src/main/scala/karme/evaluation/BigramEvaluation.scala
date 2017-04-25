@@ -84,8 +84,8 @@ object BigramEvaluation {
           backgroundTargets
         )
 
-        println(s"pred: ${predictionThreshold} %, ref: " +
-          s"${libraryPredictionThreshold} %, score: $score")
+        println(s"pred: ${predictionThreshold}, ref: " +
+          s"${libraryPredictionThreshold}, score: $score")
         score
       }
     }
@@ -106,7 +106,8 @@ object BigramEvaluation {
     predictedPairs: Seq[(String, String)]
   ): Unit = {
     for (threshold <- thresholdRange) {
-      val meanCard = filterByThreshold(predictedPairs, threshold)
+      val meanCard = countOrientations(filterByThreshold(
+        predictedPairs, threshold))
       println(s"Threshold: $threshold, avg. cardinality: $meanCard")
     }
   }
