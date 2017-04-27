@@ -5,7 +5,7 @@ import java.io.File
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.CSVWriter
 
-class KnockdownExperimentTransformer {
+object KnockdownExperimentTransformer {
 
   def main(args: Array[String]): Unit = {
     val foldChangeEffects = parseKnockdownFile(new File(args(0)))
