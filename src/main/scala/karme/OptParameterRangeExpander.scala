@@ -27,19 +27,19 @@ object OptParameterRangeExpander {
 
     new OptParameterRangeExpander[Double, InputTransformerOpts](
       id = "cell-activity-threshold",
-      values = List(0.1, 0.2),
+      values = List(0.05, 0.1, 0.2),
       modifier = (opts, value) => opts.copy(minDifferentialThreshold = value)
     ),
 
     new OptParameterRangeExpander[Double, InputTransformerOpts](
       id = "uncertainty-threshold",
-      values = List(0.3, 0.4, 0.5),
+      values = List(0.3, 0.4, 0.5, 0.6),
       modifier = (opts, value) => opts.copy(uncertaintyThreshold = value)
     ),
 
     new OptParameterRangeExpander[Int, InputTransformerOpts](
       id = "smoothing-radius",
-      values = List(20),
+      values = List(15, 20),
       modifier = (opts, value) => opts.copy(smoothingRadius = value)
     )
   )
