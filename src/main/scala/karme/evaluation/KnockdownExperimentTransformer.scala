@@ -9,13 +9,16 @@ object KnockdownExperimentTransformer {
 
   def main(args: Array[String]): Unit = {
     val foldChangeEffects = parseKnockdownFile(new File(args(0)))
+    val nonZeroFoldChangeEffects = foldChangeEffects filter {
+      case (src, tgt, fc) => math.abs(fc) > 0
+    }
 
-    val absFoldChangeEffects = foldChangeEffects map {
+    val absFoldChangeEffects = nonZeroFoldChangeEffects map {
       case (src, tgt, fc) => (src, tgt, math.abs(fc))
     }
 
     // also save a file with source, target, fold change
-    saveTriples(foldChangeEffects, new File("fold-changes.csv"))
+    saveTriples(nonZeroFoldChangeEffects, new File("fold-changes.csv"))
     saveTriples(absFoldChangeEffects, new File("abs-fold-changes.csv"))
   }
 
