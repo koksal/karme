@@ -1,10 +1,13 @@
 package karme
 
+import java.io.File
+
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.transformations.InputTransformer
+import karme.util.FileUtil
 
 object GraphAggregation {
 
@@ -23,11 +26,11 @@ object GraphAggregation {
     val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
     println(s"Expanded to ${allOpts.size} options.")
 
-    val clusteringGraphPairs = allOpts.par flatMap { opt =>
+    val clusteringGraphPairs = allOpts.par.flatMap{ opt =>
       val transformer = new InputTransformer(opt, annotCtx,
         Reporter.defaultReporter())
       transformer.buildDirectedStateGraphsForAllClusterings()
-    }
+    }.seq
     println(s"Computed clustering results: ${clusteringGraphPairs.size}")
 
     val expandedBigrams = clusteringGraphPairs flatMap {
@@ -38,10 +41,33 @@ object GraphAggregation {
     println(s"Computed expanded bigrams (${expandedBigrams.size}.")
 
     val bigramCounts = orderByCount(expandedBigrams.seq)
+    savePairsWithCounts(bigramCounts, new File("bigrams.csv"))
 
-    for ((bigram, count) <- bigramCounts) {
-      println(List(bigram._1, bigram._2, count).mkString(","))
+    val withinClustPairs = clusteringGraphPairs.flatMap{
+      case (clustering, _) => withinClusterPairs(clustering)
     }
+    println(s"Computed within-cluster pairs (${withinClustPairs.size}")
+
+    val withinClusterCounts = orderByCount(withinClustPairs)
+    savePairsWithCounts(withinClusterCounts,
+      new File("within-cluster-counts.csv"))
+  }
+
+  def withinClusterPairs(
+    clustering: Map[String, Set[String]]
+  ): Seq[(String, String)] = {
+    clustering.toSeq flatMap {
+      case (k, v) => withinClusterPairs(v)
+    }
+  }
+
+  def withinClusterPairs(cluster: Set[String]): Seq[(String, String)] = {
+    val clusterSeq = cluster.toSeq
+    for {
+      x <- clusterSeq
+      y <- clusterSeq
+      if x != y
+    } yield (x, y)
   }
 
   def expandOpts(
@@ -100,5 +126,15 @@ object GraphAggregation {
     }
 
     elemCountPairs.sortBy(_._2).reverse
+  }
+
+  def savePairsWithCounts(
+    pairs: Seq[((String, String), Int)], f: File
+  ): Unit = {
+    val lines = pairs map {
+      case (bigram, count) => List(bigram._1, bigram._2, count).mkString(",")
+    }
+    val content = lines.mkString("\n")
+    FileUtil.writeToFile(f, content)
   }
 }
