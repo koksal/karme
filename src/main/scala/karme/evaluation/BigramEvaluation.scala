@@ -13,8 +13,6 @@ import scala.util.Random
 
 object BigramEvaluation {
 
-  val NB_RUNS = 3
-
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
     val evalCtx = EvaluationContext.fromOptions(opts.evalOpts)
