@@ -8,6 +8,7 @@ import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.transformations.InputTransformer
 import karme.util.FileUtil
+import karme.util.ParUtil
 
 object GraphAggregation {
 
@@ -26,10 +27,12 @@ object GraphAggregation {
     val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
     println(s"Expanded to ${allOpts.size} options.")
 
-    val clusteringGraphPairs = allOpts.par.flatMap{ opt =>
-      val transformer = new InputTransformer(opt, annotCtx,
-        Reporter.defaultReporter())
-      transformer.buildDirectedStateGraphsForAllClusterings()
+    val clusteringGraphPairs = ParUtil.withParallelism(8, allOpts).flatMap{
+      opt => {
+        val transformer = new InputTransformer(opt, annotCtx,
+          Reporter.defaultReporter())
+        transformer.buildDirectedStateGraphsForAllClusterings()
+      }
     }.seq
     println(s"Computed clustering results: ${clusteringGraphPairs.size}")
 
