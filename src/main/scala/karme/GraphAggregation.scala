@@ -33,24 +33,29 @@ object GraphAggregation {
     }.seq
     println(s"Computed clustering results: ${clusteringGraphPairs.size}")
 
-    val expandedBigrams = clusteringGraphPairs flatMap {
+    val expandedBigrams = clusteringGraphPairs.flatMap{
       case (clustering, graph) => {
-        expandBigrams(buildBigrams(graph), clustering)
+        val bigramsWithoutRepetition =
+          buildBigramsWithRepetition(graph).distinct
+        expandBigrams(bigramsWithoutRepetition, clustering)
       }
-    }
+    }.seq
     println(s"Computed expanded bigrams (${expandedBigrams.size}.")
-
-    val bigramCounts = orderByCount(expandedBigrams.seq)
-    savePairsWithCounts(bigramCounts, new File("bigrams.csv"))
 
     val withinClustPairs = clusteringGraphPairs.flatMap{
       case (clustering, _) => withinClusterPairs(clustering)
     }
     println(s"Computed within-cluster pairs (${withinClustPairs.size}")
 
+    val bigramCounts = orderByCount(expandedBigrams)
+    savePairsWithCounts(bigramCounts, new File("bigrams.csv"))
+
     val withinClusterCounts = orderByCount(withinClustPairs)
     savePairsWithCounts(withinClusterCounts,
       new File("within-cluster-counts.csv"))
+
+    val combinedCounts = orderByCount(expandedBigrams ++ withinClustPairs)
+    savePairsWithCounts(combinedCounts, new File("combined-counts.csv"))
   }
 
   def withinClusterPairs(
@@ -84,7 +89,9 @@ object GraphAggregation {
     paramRangeExpanders.foldLeft(List(baseOpts))(step)
   }
 
-  def buildBigrams(graph: DirectedBooleanStateGraph): Seq[(String, String)] = {
+  def buildBigramsWithRepetition(
+    graph: DirectedBooleanStateGraph
+  ): Seq[(String, String)] = {
     graph.pathNodeSequences(2) map labelPair
   }
 
