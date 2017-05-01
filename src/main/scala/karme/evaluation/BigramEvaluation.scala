@@ -8,6 +8,7 @@ import karme.evaluation.enrichr.{EnrichrPrediction, EnrichrPredictionLibrary}
 import karme.util.FileUtil
 import karme.util.MathUtil
 import karme.visualization.Heatmap
+import karme.visualization.HistogramPlotInterface
 
 import scala.util.Random
 
@@ -22,6 +23,9 @@ object BigramEvaluation {
     for (library <- evalCtx.references) {
       evaluate(predictions, library)
     }
+
+    plotScoreDist(predictions.map(_._3.toDouble),
+      new File ("score-histogram-predictions.pdf"))
   }
 
   def parsePredictions(f: File): Seq[(String, String, Int)] = {
@@ -58,6 +62,7 @@ object BigramEvaluation {
 
     saveScoreMatrix(scoreMatrix, new File(s"score-matrix-${library.id}.csv"))
     saveScoreHeatmap(scoreMatrix, new File(s"heatmap-${library.id}.pdf"))
+    saveMinScore(scoreMatrix, new File(s"min-score-${library.id}.txt"))
 
     countOrientationsPerThreshold(filteredPredictions)
   }
@@ -98,6 +103,21 @@ object BigramEvaluation {
   private def saveScoreHeatmap(matrix: Seq[Seq[Double]], f: File): Unit = {
     val labels = thresholdRange.map(_.toString)
     new Heatmap(matrix, "DB", "Predictions", labels, labels, f).run()
+  }
+
+  private def saveMinScore(matrix: Seq[Seq[Double]], f: File): Unit = {
+    val minScore = matrix.map(_.min).min
+
+    FileUtil.writeToFile(f, minScore.toString)
+  }
+
+  private def plotScoreDist(
+    scores: Seq[Double],
+    f: File
+  ): Unit = {
+    val labels = scores.map(_ => "none")
+
+    new HistogramPlotInterface(scores, labels, f).run()
   }
 
   private def countOrientationsPerThreshold(
@@ -146,6 +166,10 @@ object BigramEvaluation {
     library: EnrichrPredictionLibrary
   ): Seq[(String, String)] = {
     val sortedPreds = library.predictions.sortBy(_.combinedScore).reverse
+
+    plotScoreDist(sortedPreds.map(_.combinedScore),
+      new File(s"score-histogram-${library.id}.pdf"))
+
     sortedPreds map {
       case EnrichrPrediction(term, target, score) => (term, target)
     }
