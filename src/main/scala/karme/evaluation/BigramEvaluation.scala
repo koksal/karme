@@ -4,6 +4,7 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
 import karme.ArgHandling
+import karme.Reporter
 import karme.evaluation.enrichr.{EnrichrPrediction, EnrichrPredictionLibrary}
 import karme.util.FileUtil
 import karme.util.MathUtil
@@ -14,18 +15,22 @@ import scala.util.Random
 
 object BigramEvaluation {
 
+  val P_VALUE_THRESHOLD = 0.05
+
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
+    val reporter = new Reporter(opts.reporterOpts)
+
     val evalCtx = EvaluationContext.fromOptions(opts.evalOpts)
 
     val predictions = parsePredictions(opts.evalOpts.bigramFile.get)
 
     for (library <- evalCtx.references) {
-      evaluate(predictions, library)
+      evaluate(predictions, library, opts.evalOpts.randomizeBigrams, reporter)
     }
 
     plotScoreDist(predictions.map(_._3.toDouble),
-      new File ("score-histogram-predictions.pdf"))
+      reporter.file("score-histogram-predictions.pdf"))
   }
 
   def parsePredictions(f: File): Seq[(String, String, Int)] = {
@@ -37,7 +42,9 @@ object BigramEvaluation {
 
   def evaluate(
     predictedPairs: Seq[(String, String, Int)],
-    library: EnrichrPredictionLibrary
+    library: EnrichrPredictionLibrary,
+    randomizeBigrams: Boolean,
+    reporter: Reporter
   ): Unit = {
     val orderedPredictions = predictionPairsByDescendingScore(predictedPairs)
     val orderedRefPairs = libraryPairsByDescendingScore(library)
@@ -55,16 +62,28 @@ object BigramEvaluation {
     val filteredRefPairs = filterForNameUniverse(orderedRefPairs,
       backgroundSources, backgroundTargets)
 
+    val predictionsToCheck = if (randomizeBigrams) {
+      randomBigrams(commonNames, filteredPredictions.size).distinct
+    } else {
+      filteredPredictions
+    }
     println(s"Evaluating ${library.id}")
 
-    val scoreMatrix = computeScoreMatrix(filteredPredictions,
+    val scoreMatrix = computeScoreMatrix(predictionsToCheck,
       filteredRefPairs, backgroundSources, backgroundTargets)
+    val binaryScoreMatrix = binarizeScoreMatrix(scoreMatrix, P_VALUE_THRESHOLD)
 
-    saveScoreMatrix(scoreMatrix, new File(s"score-matrix-${library.id}.csv"))
-    saveScoreHeatmap(scoreMatrix, new File(s"heatmap-${library.id}.pdf"))
-    saveMinScore(scoreMatrix, new File(s"min-score-${library.id}.txt"))
+    saveScoreMatrix(scoreMatrix, reporter.file(s"score-matrix-${library.id}.csv"))
+    saveScoreHeatmap(scoreMatrix, reporter.file(s"heatmap-${library.id}.pdf"))
+    if (!matrixHasSingleValue(binaryScoreMatrix)) {
+      saveScoreHeatmap(binaryScoreMatrix,
+        reporter.file(s"binarized-heatmap-${library.id}.pdf"))
+    }
+    saveMinScore(scoreMatrix, reporter.file(s"min-score-${library.id}.txt"))
+    plotScoreDist(library.predictions.map(_.combinedScore),
+      reporter.file(s"score-histogram-${library.id}.pdf"))
 
-    countOrientationsPerThreshold(filteredPredictions)
+    countOrientationsPerThreshold(predictionsToCheck)
   }
 
   private def thresholdRange: Seq[Double] = {
@@ -92,6 +111,23 @@ object BigramEvaluation {
         score
       }
     }
+  }
+
+  private def binarizeScoreMatrix(
+    matrix: Seq[Seq[Double]], threshold: Double
+  ): Seq[Seq[Double]] = {
+    def transform(e: Double): Double = {
+      if (e < threshold) {
+        0
+      } else {
+        1
+      }
+    }
+    matrix.map(row => row.map(transform))
+  }
+
+  private def matrixHasSingleValue(matrix: Seq[Seq[Double]]): Boolean = {
+    matrix.flatten.toSet.size == 1
   }
 
   private def saveScoreMatrix(matrix: Seq[Seq[Double]], f: File): Unit = {
@@ -166,9 +202,6 @@ object BigramEvaluation {
     library: EnrichrPredictionLibrary
   ): Seq[(String, String)] = {
     val sortedPreds = library.predictions.sortBy(_.combinedScore).reverse
-
-    plotScoreDist(sortedPreds.map(_.combinedScore),
-      new File(s"score-histogram-${library.id}.pdf"))
 
     sortedPreds map {
       case EnrichrPrediction(term, target, score) => (term, target)
