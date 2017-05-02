@@ -7,14 +7,14 @@ import scala.util.Random
 
 class RankSumTestTest extends FunSuite {
 
+  val equality = TolerantNumerics.tolerantDoubleEquality(0.0001)
+
   test("rank sum test") {
     val xs = (1 to 100) map (_ => 10.0)
     val ys = (1 to 100) map (_ => 20.0)
 
     val testXsGreater = new RankSumTest(xs, ys).run()
     val testYsGreater = new RankSumTest(ys, xs).run()
-
-    val equality = TolerantNumerics.tolerantDoubleEquality(0.0001)
 
     assert(equality.areEqual(0, testXsGreater.statistic))
     assert(equality.areEqual(1, testXsGreater.pValue))
@@ -33,5 +33,16 @@ class RankSumTestTest extends FunSuite {
 
     assert(testSampleGreater.statistic > testDistGreater.statistic)
     assert(testSampleGreater.pValue < testDistGreater.pValue)
+  }
+
+  test("rank sum test with single-element samples") {
+    val xs = List(1.0)
+    val ys = List(2.0)
+
+    val testXsGreater = new RankSumTest(xs, ys).run()
+    val testYsGreater = new RankSumTest(ys, xs).run()
+
+    assert(equality.areEqual(1, testXsGreater.pValue))
+    assert(equality.areEqual(0.5, testYsGreater.pValue))
   }
 }
