@@ -37,16 +37,6 @@ object Transitions {
     onKeys.mkString(", ")
   }
 
-  // TODO adapt to scala 2.12
-  def printThreeValuedState(s: ThreeValuedState): String = {
-    // val groupedByValue = s.mapping.groupBy(_._2)
-    // val highValues = groupedByValue.getOrElse(High, Set.empty)
-    // val uncertainValues = groupedByValue.getOrElse(Uncertain, Set.empty)
-    // val strings = uncertainValues.map(x => x + "?") ++ highValues
-    // strings.mkString(", ")
-    "TODO"
-  }
-
   object ThreeValuedState {
     private def orderingIndex(tv: ThreeValued): Int = tv match {
       case Low => 0
