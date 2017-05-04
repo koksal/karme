@@ -6,12 +6,12 @@ import org.ddahl.rscala.RClient
 case class RankSumTestResult(statistic: Double, pValue: Double)
 
 class RankSumTest(
-  xs: Seq[Double], ys: Seq[Double]
+  greaterSeq: Seq[Double], lessSeq: Seq[Double]
 ) extends AbstractRInterface[RankSumTestResult] {
 
   def process(R: RClient): RankSumTestResult = {
-    R.set("xs", xs.toArray)
-    R.set("ys", ys.toArray)
+    R.set("xs", greaterSeq.toArray)
+    R.set("ys", lessSeq.toArray)
 
     call(R)("wilcox.test", "res",
       "x" -> "xs",

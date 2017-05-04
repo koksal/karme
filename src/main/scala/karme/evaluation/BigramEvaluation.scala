@@ -86,7 +86,7 @@ object BigramEvaluation {
     countOrientationsPerThreshold(predictionsToCheck)
   }
 
-  private def thresholdRange: Seq[Double] = {
+  def thresholdRange: Seq[Double] = {
     val NB_THRESHOLD_STEPS = 10
     (1 to NB_THRESHOLD_STEPS) map (_ / NB_THRESHOLD_STEPS.toDouble)
   }

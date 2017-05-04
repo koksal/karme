@@ -45,4 +45,5 @@ class RankSumTestTest extends FunSuite {
     assert(equality.areEqual(1, testXsGreater.pValue))
     assert(equality.areEqual(0.5, testYsGreater.pValue))
   }
+
 }
