@@ -16,14 +16,11 @@ object Discretization {
     experiment: ContinuousExperiment,
     method: DiscretizationMethod
   ): BooleanExperiment = {
-    // transpose values to get values per name
-    val valuesPerName = experiment.names.map(experiment.valuesForName(_))
-
-    // discretize all values per name
     println("Running initial discretization.")
-    val discreteCellValues =
-      valuesPerName.map(vs => binarizeSeq(vs, method)).transpose
-
+    val discreteValueMatrix = experiment.valueMatrix.map{
+      values => binarizeSeq(values, method)
+    }
+    val discreteCellValues = discreteValueMatrix.transpose
     assert(discreteCellValues.size == experiment.measurements.size)
 
     val discreteMeasurements =
