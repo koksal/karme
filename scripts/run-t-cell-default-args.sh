@@ -10,6 +10,5 @@ OUTFOLDER=$1
   --smoothing-radius 15 \
   --max-hamming 1 \
   --cluster \
-  --min-clusters 10 \
-  --max-clusters 10 \
-  --synthesis
+  --min-clusters 8 \
+  --max-clusters 12
