@@ -158,11 +158,17 @@ class StateGraphPlotter(reporter: Reporter) {
       }
 
       val id = nodeToId(node)
-      val clustersStr =
+      val counts = node.measurements.size
+      val clusterCountStrings =
         StateGraphs.nodeMeasurementsPerCluster(node, clustering).map{
         case (cname, ms) => s"$cname (${ms.size})"
-      }.mkString("{", ",", "}")
-      val nodeStr = s"${id} ${clustersStr}"
+      }
+      val clusterString = if (clusterCountStrings.isEmpty) {
+        ""
+      } else {
+        clusterCountStrings.mkString(" {", ", ", "}")
+      }
+      val nodeStr = s"${id} / $counts${clusterString}"
       sb append (
         s"""${id} [label="${nodeStr}", fillcolor="${color}", style="filled"];
            |""".stripMargin)
