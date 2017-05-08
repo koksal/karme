@@ -8,7 +8,6 @@ OUTFOLDER=$1
   --cell-activity-threshold 0.2 \
   --uncertainty-threshold 1 \
   --smoothing-radius 15 \
-  --max-hamming 1 \
   --cluster \
   --min-clusters 8 \
   --max-clusters 12

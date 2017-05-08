@@ -9,8 +9,6 @@ function run_with_args() {
   echo $folder
   scripts/run-t-cell-base-args.sh $folder \
     --boolean-normalization mclust \
-    --max-hamming 1 \
-    --max-expr-depth 3 \
     "$@"
 }
 
@@ -18,21 +16,19 @@ function run_with_args() {
 export -f run_with_args
 
 declare -A TRANSFORM_ARGS
-TRANSFORM_ARGS["none"]=""
 TRANSFORM_ARGS["pseudolog2"]="--pseudolog-factor 2"
 
 declare -A ACTIVITY_FILTER_ARGS
-ACTIVITY_FILTER_ARGS["05"]="--cell-activity-threshold 0.05"
-ACTIVITY_FILTER_ARGS["10"]="--cell-activity-threshold 0.1"
+ACTIVITY_FILTER_ARGS["none"]="--cell-activity-threshold 0"
 ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
 
 declare -A UNCERTAINTY_ARGS
-UNCERTAINTY_ARGS["0.3"]="--uncertainty-threshold 0.3"
-UNCERTAINTY_ARGS["0.4"]="--uncertainty-threshold 0.4"
 UNCERTAINTY_ARGS["0.5"]="--uncertainty-threshold 0.5"
+UNCERTAINTY_ARGS["1.0"]="--uncertainty-threshold 1"
 
 declare -A SMOOTHING_RADIUS_ARGS
-SMOOTHING_RADIUS_ARGS["15"]="--smoothing-radius 15"
+SMOOTHING_RADIUS_ARGS["0"]="--smoothing-radius 0"
+SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
 SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
 
 # clustering
