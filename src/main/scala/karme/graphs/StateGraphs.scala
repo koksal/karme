@@ -232,9 +232,9 @@ object StateGraphs {
         None
       } else {
         val forwardPVal = new RankSumTest(
-          leftPseudotimes, rightPseudotimes).run().pValue
-        val backwardPVal = new RankSumTest(
           rightPseudotimes, leftPseudotimes).run().pValue
+        val backwardPVal = new RankSumTest(
+          leftPseudotimes, rightPseudotimes).run().pValue
 
         if (forwardPVal <= P_VALUE_THRESHOLD) {
           assert(backwardPVal > P_VALUE_THRESHOLD)
