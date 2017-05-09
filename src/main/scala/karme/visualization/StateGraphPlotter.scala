@@ -5,6 +5,7 @@ import java.io.File
 import com.github.tototoshi.csv.CSVWriter
 import karme.{Experiments, Reporter}
 import karme.graphs.Graphs.Backward
+import karme.graphs.Graphs.EdgeDirection
 import karme.graphs.Graphs.Forward
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs
@@ -204,7 +205,7 @@ class StateGraphPlotter(reporter: Reporter) {
       val labels = UndirectedStateGraphOps.edgeLabels(e)
       val lhsID = nodeToID(e.v1)
       val rhsID = nodeToID(e.v2)
-      val edgeDirections = g.edgeDirections(e).toSet
+      val edgeDirections = g.edgeDirections.getOrElse(e, Set[EdgeDirection]())
       if (edgeDirections contains Forward) {
         for (label <- labels) {
           val labelSuffix = if (e.v1.state.value(label)) "-" else "+"
