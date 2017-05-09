@@ -12,10 +12,12 @@ import karme.Experiments.ThreeValuedMeasurement
 import karme.Experiments.ThreeValuedExperiment
 import karme.Experiments.Uncertain
 import karme.analysis.DiscreteStateAnalysis
+import karme.evaluation.RankSumTest
 import karme.graphs.Graphs._
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState
+import karme.util.MapUtil
 import karme.util.MathUtil
 
 import scala.collection.mutable
@@ -185,7 +187,8 @@ object StateGraphs {
         mutable.MultiMap[UnlabeledEdge[StateGraphVertex], EdgeDirection]
 
       // compute all directions that can be assigned with trajectories
-      val directionMaps = trajectories map (t => trajectoryDirections(g, t))
+      val directionMaps = trajectories map (t =>
+        orientByTrajectoryRankSum(g, t))
 
       // merge directions
       for (edge <- g.E) {
@@ -201,7 +204,50 @@ object StateGraphs {
       new DirectedBooleanStateGraph(g.V, directions.keySet.toSet, directions)
     }
 
-    private def trajectoryDirections(
+    private def orientByTrajectoryRankSum(
+      g: UndirectedBooleanStateGraph,
+      trajectory: CellTrajectory
+    ): Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]] = {
+      var res = Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]]()
+
+      for (e @ UnlabeledEdge(v1, v2) <- g.E) {
+        val dirOpt = orientByRankSum(
+          nodePseudotimes(v1, trajectory),
+          nodePseudotimes(v2, trajectory)
+        )
+        dirOpt foreach {
+          res += e -> Set(_)
+        }
+      }
+
+      res
+    }
+
+    private def orientByRankSum(
+      leftPseudotimes: Seq[Double], rightPseudotimes: Seq[Double]
+    ): Option[EdgeDirection] = {
+      val P_VALUE_THRESHOLD = 0.05
+
+      if (leftPseudotimes.isEmpty || rightPseudotimes.isEmpty) {
+        None
+      } else {
+        val forwardPVal = new RankSumTest(
+          leftPseudotimes, rightPseudotimes).run().pValue
+        val backwardPVal = new RankSumTest(
+          rightPseudotimes, leftPseudotimes).run().pValue
+
+        if (forwardPVal <= P_VALUE_THRESHOLD) {
+          assert(backwardPVal > P_VALUE_THRESHOLD)
+          Some(Forward)
+        } else if (backwardPVal <= P_VALUE_THRESHOLD) {
+          Some(Backward)
+        } else {
+          None
+        }
+      }
+    }
+
+    private def orientByTrajectoryAvg(
       g: UndirectedBooleanStateGraph,
       trajectory: CellTrajectory
     ): Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]] = {
@@ -261,10 +307,7 @@ object StateGraphs {
   def avgNodePseudotime(
     node: StateGraphVertex, trajectory: CellTrajectory
   ): Option[Double] = {
-    val nodeCellIDs = node.measurements.map(_.id)
-    val pseudotimes = nodeCellIDs collect {
-      case id if trajectory.isDefinedAt(id) => trajectory(id)
-    }
+    val pseudotimes = nodePseudotimes(node, trajectory)
     if (pseudotimes.isEmpty) {
       None
     } else {
@@ -272,6 +315,14 @@ object StateGraphs {
     }
   }
 
+  def nodePseudotimes(
+    node: StateGraphVertex, trajectory: CellTrajectory
+  ): Seq[Double] = {
+    val nodeCellIDs = node.measurements.map(_.id)
+    nodeCellIDs collect {
+      case id if trajectory.isDefinedAt(id) => trajectory(id)
+    }
+  }
 
   def nodeMeasurementsPerCluster(
     n: StateGraphVertex, clustering: Map[String, Set[String]]
