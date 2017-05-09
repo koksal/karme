@@ -99,7 +99,7 @@ object HierarchicalClustering {
   }
 
   private def clusterName(index: Int): String = {
-    s"cluster_$index"
+    s"c$index"
   }
 
 }
