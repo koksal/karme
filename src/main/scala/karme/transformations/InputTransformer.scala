@@ -99,7 +99,7 @@ class InputTransformer(
       threeValExp)
 
     new IncrementalStateGraphBuilder(expandedBoolExp, clustering,
-      trajectories).buildGraph
+      trajectories, reporter).buildGraph
   }
 
   private def buildDirectedStateGraph(

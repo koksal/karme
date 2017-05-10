@@ -25,10 +25,6 @@ object Main {
     val initialStates = StateGraphs.initialTrajectoryStates(
       directedStateGraph.V, inputTransformer.trajectories)
 
-    new StateGraphPlotter(reporter).plotDirectedGraph(directedStateGraph,
-      "directed-state-graph", annotationContext.cellClustering,
-      List(initialStates))
-
     if (opts.runSynthesis) {
       runSynthesis(opts, inputTransformer, directedStateGraph, initialStates,
         reporter)

@@ -2,16 +2,20 @@ package karme.transformations
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
+import karme.Reporter
 import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.util.MathUtil
+import karme.util.TimingUtil
+import karme.visualization.StateGraphPlotter
 
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],
   clustering: Map[String, Set[String]],
-  trajectories: Seq[CellTrajectory]
+  trajectories: Seq[CellTrajectory],
+  reporter: Reporter
 ) {
 
   val MAX_HAMMING_DISTANCE = 3
@@ -22,24 +26,28 @@ class IncrementalStateGraphBuilder(
     trajectories).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
-    var reachableNodes = initialNodes
-
     var graph = new DirectedBooleanStateGraph()
-    for (n <- reachableNodes) {
+    for (n <- initialNodes) {
       graph = graph.addVertex(n)
     }
 
     var keepSearching = true
     while (keepSearching) {
-      chooseMinimalHammingNeighbor(reachableNodes) match {
+      chooseMinimalHammingNeighbor(graph.V) match {
         case Some((source, neighbor)) => {
+          println("found new neighbor to add...")
           graph = graph.addEdge(source, neighbor)
         }
         case None => {
+          println("No new neighbors")
           keepSearching = false
         }
       }
     }
+
+    new StateGraphPlotter(reporter).plotDirectedGraph(graph,
+      "directed-state-graph",
+      nodeHighlightGroups = List(initialNodes.map(_.state)))
 
     graph
   }
@@ -69,17 +77,21 @@ class IncrementalStateGraphBuilder(
     sources: Set[StateGraphVertex],
     targets: Set[StateGraphVertex]
   ): Set[(StateGraphVertex, StateGraphVertex, Int)] = {
-    MathUtil.cartesianProduct(List(sources, targets)) map {
-      case List(source, target) => {
-        (source, target,
-          DiscreteStateAnalysis.hammingDistance(source.state, target.state))
+    TimingUtil.time("Hamming distances to targets") {
+      MathUtil.cartesianProduct(List(sources, targets)) map {
+        case List(source, target) => {
+          (source, target,
+            DiscreteStateAnalysis.hammingDistance(source.state, target.state))
+        }
       }
     }
   }
 
   def initialNodes: Set[StateGraphVertex] = {
-    V filter { candidateV =>
-      !V.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
+    TimingUtil.time("finding initial nodes using PO") {
+      V filter { candidateV =>
+        !V.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
+      }
     }
   }
 

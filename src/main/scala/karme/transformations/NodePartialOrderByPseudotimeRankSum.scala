@@ -4,6 +4,7 @@ import karme.CellTrajectories.CellTrajectory
 import karme.evaluation.RankSumTest
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{StateGraphVertex, UndirectedStateGraphOps}
+import karme.util.TimingUtil
 
 class NodePartialOrderByPseudotimeRankSum(
   V: Seq[StateGraphVertex],
@@ -15,7 +16,9 @@ class NodePartialOrderByPseudotimeRankSum(
   private val trajectoryToGTPValues: Map[
     CellTrajectory, Seq[Seq[Option[Double]]]] = {
     val pairs = trajectories map { t =>
-      t -> trajectoryPValues(t)
+      TimingUtil.time("p-value computation for trajectory") {
+        t -> trajectoryPValues(t)
+      }
     }
 
     pairs.toMap
