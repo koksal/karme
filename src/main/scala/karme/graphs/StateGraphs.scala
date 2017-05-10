@@ -223,7 +223,7 @@ object StateGraphs {
       res
     }
 
-    private def orientByRankSum(
+    def orientByRankSum(
       leftPseudotimes: Seq[Double], rightPseudotimes: Seq[Double]
     ): Option[EdgeDirection] = {
       val P_VALUE_THRESHOLD = 0.05
