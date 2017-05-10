@@ -5,7 +5,7 @@ import karme.evaluation.RankSumTest
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{StateGraphVertex, UndirectedStateGraphOps}
 
-class NodeComparisonByPseudotimeRankSum(
+class NodePartialOrderByPseudotimeRankSum(
   V: Seq[StateGraphVertex],
   trajectories: Seq[CellTrajectory]
 ) {
@@ -44,6 +44,7 @@ class NodeComparisonByPseudotimeRankSum(
         nodesShareTrajectory(x, y) &&
           trajectories.forall(t => !significantGT(x, y, t))
       }
+
     }
   }
 

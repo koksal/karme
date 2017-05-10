@@ -4,6 +4,7 @@ import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
 
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],
@@ -13,7 +14,7 @@ class IncrementalStateGraphBuilder(
 
   val V = StateGraphs.nodesFromExperiment(exp)
 
-  val nodePartialOrdering = new NodeComparisonByPseudotimeRankSum(V.toSeq,
+  val nodePartialOrdering = new NodePartialOrderByPseudotimeRankSum(V.toSeq,
     trajectories).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
@@ -22,6 +23,12 @@ class IncrementalStateGraphBuilder(
     // edge
 
     ???
+  }
+
+  def initialStates: Set[StateGraphVertex] = {
+    V filter { candidateV =>
+      !V.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
+    }
   }
 
 }
