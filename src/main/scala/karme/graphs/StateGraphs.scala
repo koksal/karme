@@ -17,7 +17,6 @@ import karme.graphs.Graphs._
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState
-import karme.util.MapUtil
 import karme.util.MathUtil
 
 import scala.collection.mutable
@@ -41,12 +40,7 @@ object StateGraphs {
     booleanExperiment: BooleanExperiment,
     maxHammingDistance: Int
   ): UndirectedBooleanStateGraph = {
-    val stateToMeasurements = booleanExperiment.measurements.groupBy(_.state)
-
-    val V = stateToMeasurements map {
-      case (state, ms) =>
-        StateGraphVertex(state, ms)
-    }
+    val V = nodesFromExperiment(booleanExperiment)
 
     var g = new UndirectedBooleanStateGraph(V = V.toSet)
 
@@ -66,6 +60,19 @@ object StateGraphs {
     }
 
     g
+  }
+
+  def nodesFromExperiment(
+    booleanExperiment: BooleanExperiment
+  ): Set[StateGraphVertex] = {
+    val stateToMeasurements = booleanExperiment.measurements.groupBy(_.state)
+
+    val V = stateToMeasurements map {
+      case (state, ms) =>
+        StateGraphVertex(state, ms)
+    }
+
+    V.toSet
   }
 
   /**
