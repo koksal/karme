@@ -1,5 +1,7 @@
 package karme.graphs
 
+import karme.util.MapUtil
+
 import scala.collection.mutable
 
 object Graphs {
@@ -106,9 +108,11 @@ object Graphs {
   }
 
   class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
-    val V: Set[Vertex] = Set.empty,
+    val V: Set[Vertex] = Set.empty[Vertex],
     val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
-    val edgeDirections: mutable.MultiMap[UnlabeledEdge[Vertex], EdgeDirection]
+    val edgeDirections: mutable.MultiMap[UnlabeledEdge[Vertex],
+      EdgeDirection] =
+    MapUtil.emptyMultiMap[UnlabeledEdge[Vertex], EdgeDirection]
   ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]]
     with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]] {
 

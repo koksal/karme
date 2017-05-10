@@ -92,7 +92,14 @@ class InputTransformer(
     val avgExp = HierarchicalClustering.experimentFromClusterAverages(
       nonClusteredExperiment, clustering, annotationContext.annotationVariables)
 
-    buildDirectedStateGraph(avgExp)
+    val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
+      opts.uncertaintyThreshold)
+
+    val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
+      threeValExp)
+
+    new IncrementalStateGraphBuilder(expandedBoolExp, clustering,
+      trajectories).buildGraph
   }
 
   private def buildDirectedStateGraph(
@@ -101,8 +108,6 @@ class InputTransformer(
     // TODO group into a method
     val threeValExp = Experiments.continuousExperimentToThreeValued(exp,
       opts.uncertaintyThreshold)
-    // ExperimentHistograms.plotLabeledHistograms(exp, threeValExp,
-    //   reporter.file("three-valued-histograms"))
 
     val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
       threeValExp)
