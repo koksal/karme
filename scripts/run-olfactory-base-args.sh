@@ -6,7 +6,7 @@ shift
 
 mkdir -p $OUTFOLDER
 
-sbt "run-main karme.GraphAggregation \
+sbt "run-main karme.ParameterSweep \
   --continuous-experiment data/measurements/continuous-experiment.csv \
   --trajectories data/trajectories/curve1-pseudotime.csv,data/trajectories/curve2-pseudotime.csv,data/trajectories/curve3-pseudotime.csv \
   --names data/names/human-tf.txt \

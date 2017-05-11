@@ -6,7 +6,7 @@ shift
 
 mkdir -p $OUTFOLDER
 
-sbt "run-main karme.GraphAggregation \
+sbt "run-main karme.ParameterSweep \
   --continuous-experiment data/measurements/t-cell-measurements.csv \
   --trajectories data/trajectories/t-cell-pc1-values.csv \
   --names data/names/t-cell-transcription-regulators.txt,data/names/t-cell-receptors.txt \

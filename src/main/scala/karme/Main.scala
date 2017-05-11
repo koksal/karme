@@ -1,14 +1,11 @@
 package karme
 
-import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.printing.SummaryLogger
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.InputTransformer
-import karme.visualization.StateGraphPlotter
 
 object Main {
 

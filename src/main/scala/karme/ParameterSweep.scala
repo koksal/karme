@@ -13,7 +13,7 @@ import karme.transformations.InputTransformer
 import karme.util.FileUtil
 import karme.util.ParUtil
 
-object GraphAggregation {
+object ParameterSweep {
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
