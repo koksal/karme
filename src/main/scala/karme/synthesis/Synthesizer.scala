@@ -14,6 +14,15 @@ import karme.visualization.StateGraphPlotter
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
+  def synthesizeForPositiveHardConstraints(
+    graph: DirectedBooleanStateGraph
+  ): Map[String, Set[SynthesisResult]] = {
+    val (posTransitions, negTransitions) =
+      producePositiveAndNegativeTransitions(graph)
+
+    synthesizeFunctionsForAllTransitionSubsets(posTransitions, negTransitions)
+  }
+
   def synthesizeForOptimalReachability(
     directedStateGraph: DirectedBooleanStateGraph,
     initialStates: Set[ConcreteBooleanState]
@@ -75,8 +84,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       reporter.debug("==========================")
 
       val resultsForLabel = synthesizeForSingleLabel(
-        hardTransitions = labelToNegTrans.getOrElse(label, Set.empty),
-        softTransitions = labelToPosTrans.getOrElse(label, Set.empty),
+        hardTransitions = labelToPosTrans.getOrElse(label, Set.empty),
+        softTransitions = labelToNegTrans.getOrElse(label, Set.empty),
         possibleVars = allLabels.toSet
       )
       labelToSynthesisResults += label -> resultsForLabel

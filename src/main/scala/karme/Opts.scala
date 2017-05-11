@@ -45,7 +45,7 @@ case class AnnotationOpts(
 )
 
 case class SynthOpts(
-  maxExpressionDepth: Int = 3,
+  maxExpressionDepth: Int = 2,
   maxNbModels: Option[Int] = None
 )
 

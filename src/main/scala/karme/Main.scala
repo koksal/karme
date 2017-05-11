@@ -41,9 +41,10 @@ object Main {
 
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
-    val optimalResults = synthesizer.synthesizeForOptimalReachability(
-      directedStateGraph, initialStates)
+    val results = synthesizer.synthesizeForPositiveHardConstraints(
+      directedStateGraph)
 
+    /**
     val predictionEvaluator = new PredictionEvaluator(opts.evalOpts,
       inputTransformer.getNamesBeforeFiltering(),
       inputTransformer.getClustering().get, reporter)
@@ -53,10 +54,8 @@ object Main {
 
     SummaryLogger(opts, optimalResults, referencePValuePairs,
       reporter.file("summary.tsv"))
+      */
 
-    for ((result, i) <- optimalResults.zipWithIndex) {
-      SynthesisResultLogger(result.labelToResult,
-        reporter.file(s"functions-$i.txt"))
-    }
+    SynthesisResultLogger(results, reporter.file("functions.txt"))
   }
 }

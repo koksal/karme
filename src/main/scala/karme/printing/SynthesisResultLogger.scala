@@ -8,11 +8,14 @@ import karme.util.FileUtil
 
 object SynthesisResultLogger {
 
-  def apply(labelToResult: Map[String, SynthesisResult], f: File): Unit = {
-    val contentPerLabel = labelToResult map {
-      case (label, result) => {
+  def apply(
+    labelToResults: Map[String, Set[SynthesisResult]], f: File
+  ): Unit = {
+    val contentPerLabel = labelToResults map {
+      case (label, results) => {
+        val resStr = results.map(resultStr).mkString("\n\n")
         s"""Label: $label
-           |${resultStr(result)}
+           |$resStr
          """.stripMargin
       }
     }
