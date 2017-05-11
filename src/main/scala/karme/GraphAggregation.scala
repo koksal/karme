@@ -2,10 +2,13 @@ package karme
 
 import java.io.File
 
+import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.printing.SynthesisResultLogger
+import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
 import karme.util.FileUtil
 import karme.util.ParUtil
@@ -19,6 +22,46 @@ object GraphAggregation {
   }
 
   def apply[U](
+    baseOpts: Opts,
+    paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
+  ): Unit = {
+    val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
+
+    val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
+    println(s"Expanded to ${allOpts.size} options.")
+
+    val graphResults =
+      ParUtil.withParallelism(8, allOpts).zipWithIndex.flatMap {
+        case (opt, i) => {
+          val runFolder = new File(baseOpts.reporterOpts.outFolder, s"run-$i")
+          val runReporter = new Reporter(baseOpts.reporterOpts.copy(
+            outFolder = runFolder))
+
+          val transformer = new InputTransformer(opt, annotCtx, runReporter)
+          transformer.buildDirectedStateGraphsForAllClusterings()
+        }
+      }.seq
+    println(s"Computed clustering results.")
+
+    // invoke synthesis and keep pairing with clustering
+    val clusteringSynthesisPairs = graphResults.zipWithIndex map {
+      case ((clustering, graph), i) => {
+        val runFolder = new File(baseOpts.reporterOpts.outFolder, s"run-$i")
+        val runReporter = new Reporter(baseOpts.reporterOpts.copy(
+          outFolder = runFolder))
+
+        val synthesizer = new Synthesizer(baseOpts.synthOpts, runReporter)
+        val results = synthesizer.synthesizeForPositiveHardConstraints(graph)
+
+        SynthesisResultLogger(results, runReporter.file("functions.txt"))
+
+        (clustering, results)
+      }
+    }
+
+  }
+
+  def apply2[U](
     baseOpts: Opts,
     paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
   ): Unit = {

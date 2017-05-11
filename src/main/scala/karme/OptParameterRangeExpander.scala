@@ -33,7 +33,7 @@ object OptParameterRangeExpander {
 
     new OptParameterRangeExpander[Double, InputTransformerOpts](
       id = "uncertainty-threshold",
-      values = List(0.5, 1.0),
+      values = List(1.0),
       modifier = (opts, value) => opts.copy(uncertaintyThreshold = value)
     ),
 

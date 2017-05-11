@@ -10,4 +10,6 @@ OUTFOLDER=$1
   --smoothing-radius 15 \
   --cluster \
   --min-clusters 8 \
-  --max-clusters 12
+  --max-clusters 14 \
+  --synthesis \
+  --max-expr-depth 1
