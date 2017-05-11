@@ -40,11 +40,12 @@ class StateGraphPlotter(reporter: Reporter) {
     name: String,
     cellClustering: Map[String, Set[String]] = Map.empty,
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
-    edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
+    edgeHighlightGroups:
+      List[Set[(UnlabeledEdge[StateGraphVertex], EdgeDirection)]] = Nil
   ): Unit = {
     val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
     val dotString = directedDotString(g, cellClustering, nodeToID,
-      nodeHighlightGroups)
+      nodeHighlightGroups, edgeHighlightGroups)
     plotGraph(dotString, name)
   }
 
@@ -105,10 +106,12 @@ class StateGraphPlotter(reporter: Reporter) {
     g: DirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
     nodeToID: Map[StateGraphVertex, String],
-    highlightGroups: List[Set[ConcreteBooleanState]]
+    nodeHighlightGroups: List[Set[ConcreteBooleanState]],
+    edgeHighlightGroups: List[
+      Set[(UnlabeledEdge[StateGraphVertex], EdgeDirection)]] = Nil
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID, highlightGroups)
-    val edgeStr = directedDotEdges(g, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, nodeToID, nodeHighlightGroups)
+    val edgeStr = directedDotEdges(g, nodeToID, edgeHighlightGroups)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
 
@@ -198,10 +201,17 @@ class StateGraphPlotter(reporter: Reporter) {
 
   private def directedDotEdges(
     g: DirectedBooleanStateGraph,
-    nodeToID: Map[StateGraphVertex, String]
+    nodeToID: Map[StateGraphVertex, String],
+    edgeHighlightGroups: List[
+      Set[(UnlabeledEdge[StateGraphVertex], EdgeDirection)]] = Nil
   ): String = {
+    val DEFAULT_EDGE_COLOR = "black"
+    val GROUP_COLORS = List("tomato", "green")
+
     val sb = new StringBuilder()
+
     for (e <- g.E) {
+
       val labels = UndirectedStateGraphOps.edgeLabels(e)
       val lhsID = nodeToID(e.v1)
       val rhsID = nodeToID(e.v2)
@@ -209,13 +219,31 @@ class StateGraphPlotter(reporter: Reporter) {
       if (edgeDirections contains Forward) {
         for (label <- labels) {
           val labelSuffix = if (e.v1.state.value(label)) "-" else "+"
-          sb append directedDotEdge(lhsID, rhsID, Set(label + labelSuffix))
+          val highlightGroupIndex = edgeHighlightGroups.indexWhere { group =>
+            group.contains((e, Forward))
+          }
+          val color = if (highlightGroupIndex < 0) {
+            DEFAULT_EDGE_COLOR
+          } else {
+            GROUP_COLORS(highlightGroupIndex)
+          }
+          sb append directedDotEdge(lhsID, rhsID, Set(label + labelSuffix),
+            color)
         }
       }
       if (edgeDirections contains Backward) {
         for (label <- labels) {
           val labelSuffix = if (e.v2.state.value(label)) "-" else "+"
-          sb append directedDotEdge(rhsID, lhsID, Set(label + labelSuffix))
+          val highlightGroupIndex = edgeHighlightGroups.indexWhere { group =>
+            group.contains((e, Backward))
+          }
+          val color = if (highlightGroupIndex < 0) {
+            DEFAULT_EDGE_COLOR
+          } else {
+            GROUP_COLORS(highlightGroupIndex)
+          }
+          sb append directedDotEdge(rhsID, lhsID, Set(label + labelSuffix),
+            color)
         }
       }
     }
@@ -224,9 +252,12 @@ class StateGraphPlotter(reporter: Reporter) {
   }
 
   private def directedDotEdge(
-    lhsID: String, rhsID: String, labels: Iterable[String]
+    lhsID: String,
+    rhsID: String,
+    labels: Iterable[String],
+    color: String = "black"
   ): String = {
-    s"""${lhsID} -> ${rhsID} [label="${labels.mkString(",")}"]
+    s"""${lhsID} -> ${rhsID} [label="${labels.mkString(",")}" color="$color"]
        |""".stripMargin
   }
 

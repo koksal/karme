@@ -9,6 +9,7 @@ import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
+import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
@@ -58,22 +59,23 @@ class InputTransformer(
 
     clusterings map { clustering =>
       (clustering,
-        buildStateGraphForClusterAverages(smoothedExperiment, clustering))
+        buildStateGraphForClusterAverages(smoothedExperiment, clustering)._1)
     }
   }
 
-  def buildDirectedStateGraph(): DirectedBooleanStateGraph = {
+  def buildDirectedStateGraph():
+      (DirectedBooleanStateGraph, Set[ConcreteBooleanState]) = {
     val exp = getSmoothedExperiment()
     if (opts.cluster) {
       buildDirectedStateGraphForBestClustering(exp)
     } else {
-      buildDirectedStateGraph(exp)
+      ???
     }
   }
 
   private def buildDirectedStateGraphForBestClustering(
     exp: Experiment[Double]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, Set[ConcreteBooleanState]) = {
     val geneClustering = HierarchicalClustering.computeBestClustering(exp,
       opts.clusteringOpts)
     _clustering = Some(geneClustering)
@@ -88,7 +90,7 @@ class InputTransformer(
   private def buildStateGraphForClusterAverages(
     nonClusteredExperiment: Experiment[Double],
     clustering: Map[String, Set[String]]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, Set[ConcreteBooleanState]) = {
     val avgExp = HierarchicalClustering.experimentFromClusterAverages(
       nonClusteredExperiment, clustering, annotationContext.annotationVariables)
 
@@ -98,27 +100,10 @@ class InputTransformer(
     val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
       threeValExp)
 
-    new IncrementalStateGraphBuilder(expandedBoolExp, clustering,
-      trajectories, reporter).buildGraph
-  }
+    val graphBuilder = new IncrementalStateGraphBuilder(expandedBoolExp,
+      trajectories, reporter)
 
-  private def buildDirectedStateGraph(
-    exp: Experiment[Double]
-  ): DirectedBooleanStateGraph = {
-    // TODO group into a method
-    val threeValExp = Experiments.continuousExperimentToThreeValued(exp,
-      opts.uncertaintyThreshold)
-
-    val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
-      threeValExp)
-
-    val undirGraph = StateGraphs.fromBooleanExperiment(expandedBoolExp,
-      opts.maxHammingDistance)
-
-    val dirGraph = UndirectedStateGraphOps.orientByTrajectories(undirGraph,
-      trajectories)
-
-    dirGraph
+    (graphBuilder.buildGraph, graphBuilder.initialNodes.map(_.state))
   }
 
   def getSmoothedExperiment(): ContinuousExperiment = {

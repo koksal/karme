@@ -79,6 +79,14 @@ object Graphs {
       }
     }
 
+    def sources(edge: Edge): Set[Vertex] = {
+      this.edgeDirections(edge).toSet[EdgeDirection] map (d => source(edge, d))
+    }
+
+    def targets(edge: Edge): Set[Vertex] = {
+      this.edgeDirections(edge).toSet[EdgeDirection] map (d => target(edge, d))
+    }
+
     def source(edge: Edge, direction: EdgeDirection): Vertex = direction match {
       case Forward => edge.v1
       case Backward => edge.v2

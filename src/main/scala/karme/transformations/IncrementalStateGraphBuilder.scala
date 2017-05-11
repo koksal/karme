@@ -13,7 +13,6 @@ import karme.visualization.StateGraphPlotter
 
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],
-  clustering: Map[String, Set[String]],
   trajectories: Seq[CellTrajectory],
   reporter: Reporter
 ) {
@@ -22,10 +21,18 @@ class IncrementalStateGraphBuilder(
 
   val V = StateGraphs.nodesFromExperiment(exp)
 
-  val nodePartialOrdering = new NodePartialOrderByPseudotimeRankSum(V.toSeq,
-    trajectories).partialOrdering
+  lazy val nodePartialOrdering = new NodePartialOrderByPseudotimeRankSum(
+    V.toSeq, trajectories).partialOrdering
 
-  def buildGraph: DirectedBooleanStateGraph = {
+  lazy val initialNodes: Set[StateGraphVertex] = {
+    TimingUtil.time("finding initial nodes using PO") {
+      V filter { candidateV =>
+        !V.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
+      }
+    }
+  }
+
+  lazy val buildGraph: DirectedBooleanStateGraph = {
     var graph = new DirectedBooleanStateGraph()
     for (n <- initialNodes) {
       graph = graph.addVertex(n)
@@ -45,14 +52,10 @@ class IncrementalStateGraphBuilder(
       }
     }
 
-    new StateGraphPlotter(reporter).plotDirectedGraph(graph,
-      "directed-state-graph",
-      nodeHighlightGroups = List(initialNodes.map(_.state)))
-
     graph
   }
 
-  def chooseMinimalHammingNeighbor(
+  private def chooseMinimalHammingNeighbor(
     reachableNodes: Set[StateGraphVertex]
   ): Option[(StateGraphVertex, StateGraphVertex)] = {
     val distancesToNeighbors = hammingDistancesToTargets(
@@ -73,7 +76,7 @@ class IncrementalStateGraphBuilder(
     }
   }
 
-  def hammingDistancesToTargets(
+  private def hammingDistancesToTargets(
     sources: Set[StateGraphVertex],
     targets: Set[StateGraphVertex]
   ): Set[(StateGraphVertex, StateGraphVertex, Int)] = {
@@ -83,14 +86,6 @@ class IncrementalStateGraphBuilder(
           (source, target,
             DiscreteStateAnalysis.hammingDistance(source.state, target.state))
         }
-      }
-    }
-  }
-
-  def initialNodes: Set[StateGraphVertex] = {
-    TimingUtil.time("finding initial nodes using PO") {
-      V filter { candidateV =>
-        !V.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
       }
     }
   }
