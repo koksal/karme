@@ -39,7 +39,7 @@ object OptParameterRangeExpander {
 
     new OptParameterRangeExpander[Int, InputTransformerOpts](
       id = "smoothing-radius",
-      values = List(0, 10, 20),
+      values = List(10, 20),
       modifier = (opts, value) => opts.copy(smoothingRadius = value)
     )
   )

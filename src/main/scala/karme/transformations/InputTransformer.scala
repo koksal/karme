@@ -7,7 +7,7 @@ import karme.Experiments.{BooleanExperiment, ContinuousExperiment}
 import karme.Reporter
 import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedStateGraphOps}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
@@ -37,7 +37,6 @@ class InputTransformer(
 
   def buildDirectedStateGraphsForAllClusterings():
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
-
     val smoothedExperiment = getSmoothedExperiment()
 
     val clusterings = HierarchicalClustering.computeHierarchicalClustering(
@@ -86,7 +85,7 @@ class InputTransformer(
       threeValExp)
 
     new IncrementalStateGraphBuilder(expandedBoolExp, clustering,
-      trajectories, reporter).buildGraph
+      trajectories).buildGraph
   }
 
   def getSmoothedExperiment(): ContinuousExperiment = {

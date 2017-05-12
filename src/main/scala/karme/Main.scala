@@ -1,10 +1,8 @@
 package karme
 
-import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.Synthesizer
-import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.InputTransformer
 
 object Main {
@@ -22,8 +20,7 @@ object Main {
     val directedStateGraph = inputTransformer.buildDirectedStateGraph()
 
     if (opts.runSynthesis) {
-      runSynthesis(opts, inputTransformer, directedStateGraph, ???,
-        reporter)
+      runSynthesis(opts, inputTransformer, directedStateGraph, reporter)
     }
   }
 
@@ -31,26 +28,12 @@ object Main {
     opts: Opts,
     inputTransformer: InputTransformer,
     directedStateGraph: DirectedBooleanStateGraph,
-    initialStates: Set[ConcreteBooleanState],
     reporter: Reporter
   ): Unit = {
-
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
     val results = synthesizer.synthesizeForPositiveHardConstraints(
       directedStateGraph)
-
-    /**
-    val predictionEvaluator = new PredictionEvaluator(opts.evalOpts,
-      inputTransformer.getNamesBeforeFiltering(),
-      inputTransformer.getClustering().get, reporter)
-
-    val referencePValuePairs = predictionEvaluator.computeReferencePValues(
-      optimalResults.map(_.labelToResult))
-
-    SummaryLogger(opts, optimalResults, referencePValuePairs,
-      reporter.file("summary.tsv"))
-      */
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
   }

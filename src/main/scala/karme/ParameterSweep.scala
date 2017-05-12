@@ -2,65 +2,73 @@ package karme
 
 import java.io.File
 
-import karme.evaluation.enrichr.PredictionEvaluator
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.printing.SynthesisResultLogger
+import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
 import karme.util.FileUtil
 import karme.util.ParUtil
+import karme.util.TimingUtil
 
 object ParameterSweep {
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
 
-    apply(opts, OptParameterRangeExpander.RANGE_EXPANDERS)
+    val inputTransformerOptsRange = expandOpts(opts.inputTransformerOpts,
+      OptParameterRangeExpander.RANGE_EXPANDERS)
+    println(s"Expanded to ${inputTransformerOptsRange.size} options.")
+
+    synthesizeForRange(opts, inputTransformerOptsRange)
   }
 
-  def apply[U](
+  def synthesizeForRange[U](
     baseOpts: Opts,
-    paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
-  ): Unit = {
+    inputTransOptRange: Seq[InputTransformerOpts]
+  ): Seq[(Map[String, Set[String]], Map[String, Set[SynthesisResult]])] = {
     val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
 
-    val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
-    println(s"Expanded to ${allOpts.size} options.")
-
-    val graphResults =
-      ParUtil.withParallelism(8, allOpts).zipWithIndex.flatMap {
+    val clustGraphPairs =
+      ParUtil.withParallelism(8, inputTransOptRange).zipWithIndex.flatMap {
         case (opt, i) => {
-          val runFolder = new File(baseOpts.reporterOpts.outFolder, s"run-$i")
+          val runFolder = new File(baseOpts.reporterOpts.outFolder,
+            s"graph-creation-$i")
           val runReporter = new Reporter(baseOpts.reporterOpts.copy(
             outFolder = runFolder))
 
           val transformer = new InputTransformer(opt, annotCtx, runReporter)
-          transformer.buildDirectedStateGraphsForAllClusterings()
+          TimingUtil.time(s"Building graphs for cluster range ($i)") {
+            transformer.buildDirectedStateGraphsForAllClusterings()
+          }
         }
       }.seq
+
     println(s"Computed clustering results.")
 
-    // invoke synthesis and keep pairing with clustering
-    val clusteringSynthesisPairs = graphResults.zipWithIndex map {
+    clustGraphPairs.zipWithIndex.map {
       case ((clustering, graph), i) => {
-        val runFolder = new File(baseOpts.reporterOpts.outFolder, s"run-$i")
+        val runFolder = new File(baseOpts.reporterOpts.outFolder,
+          s"synthesis-run-$i")
         val runReporter = new Reporter(baseOpts.reporterOpts.copy(
           outFolder = runFolder))
 
         val synthesizer = new Synthesizer(baseOpts.synthOpts, runReporter)
-        val results = synthesizer.synthesizeForPositiveHardConstraints(graph)
+        val results = TimingUtil.time(s"Synthesizing ($i)") {
+          synthesizer.synthesizeForPositiveHardConstraints(graph)
+        }
 
         SynthesisResultLogger(results, runReporter.file("functions.txt"))
 
         (clustering, results)
       }
     }
-
   }
 
+  // TODO prune this
   def apply2[U](
     baseOpts: Opts,
     paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
