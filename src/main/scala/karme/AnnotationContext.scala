@@ -10,8 +10,11 @@ case class AnnotationContext(
 
 object AnnotationContext {
   def fromOptions(annotationOpts: AnnotationOpts): AnnotationContext = {
+    val annotVars = new NamesParser(
+      annotationOpts.annotationsFiles).names.getOrElse(Set.empty)
+
     AnnotationContext(
-      annotationVariables = NamesParser(annotationOpts.annotationsFiles),
+      annotationVariables = annotVars,
       cellClustering = getClustering(annotationOpts)
     )
   }

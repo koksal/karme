@@ -4,13 +4,18 @@ import java.io.File
 
 import scala.io.Source
 
-object NamesParser {
+class NamesParser(fs: Seq[File]) {
 
-  def apply(fs: Seq[File]): Set[String] = {
-    (fs map apply).foldLeft(Set.empty[String])(_ union _)
+  val names: Option[Set[String]] = {
+    if (fs.isEmpty) {
+      None
+    } else {
+      val nameUnion = (fs map apply).foldLeft(Set.empty[String])(_ union _)
+      Some(nameUnion)
+    }
   }
 
-  def apply(f: File): Set[String] = {
+  private def apply(f: File): Set[String] = {
     val names = Source.fromFile(f).getLines().toSeq
     names.toSet
   }

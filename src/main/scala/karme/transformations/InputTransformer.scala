@@ -14,7 +14,6 @@ import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
-import karme.visualization.ExperimentHistograms
 
 class InputTransformer(
   opts: InputTransformerOpts,
@@ -22,29 +21,18 @@ class InputTransformer(
   reporter: Reporter
 ) {
 
-  lazy val trajectories: Seq[CellTrajectory] = {
+  val trajectories: Seq[CellTrajectory] = {
     opts.inputFileOpts.trajectoryFiles map CellTrajectoryParser.parse
   }
 
-  private var _clustering: Option[Map[String, Set[String]]] = None
-  private var _continuousExperiment: Option[Experiment[Double]] = None
-
-  def getClustering(): Option[Map[String, Set[String]]] = {
-    _clustering match {
-      case Some(_) => _clustering
-      case None => {
-        assert(!opts.cluster,
-          "Attempting to use clustering before it has been computed.")
-        None
-      }
-    }
+  val geneNamesToFilter: Option[Set[String]] = {
+    new NamesParser(opts.inputFileOpts.namesFiles).names
   }
 
-  def getNamesBeforeFiltering(): Set[String] = {
-    _continuousExperiment match {
-      case None => sys.error("No continuous experiment found.")
-      case Some(e) => e.names.toSet
-    }
+  val inputExperiment: Experiment[Double] = {
+    val file = opts.inputFileOpts.continuousExperimentFile.getOrElse(
+      sys.error("No continuous experiment given."))
+    ContinuousExperimentParser.parseAndFilter(file, geneNamesToFilter)
   }
 
   def buildDirectedStateGraphsForAllClusterings():
@@ -67,7 +55,7 @@ class InputTransformer(
     if (opts.cluster) {
       buildDirectedStateGraphForBestClustering(exp)
     } else {
-      buildDirectedStateGraph(exp)
+      ???
     }
   }
 
@@ -76,7 +64,6 @@ class InputTransformer(
   ): DirectedBooleanStateGraph = {
     val geneClustering = HierarchicalClustering.computeBestClustering(exp,
       opts.clusteringOpts)
-    _clustering = Some(geneClustering)
 
     // TODO move this to visualization phase
     new CurvePlot(reporter).plotClusterCurves(exp,
@@ -90,7 +77,7 @@ class InputTransformer(
     clustering: Map[String, Set[String]]
   ): DirectedBooleanStateGraph = {
     val avgExp = HierarchicalClustering.experimentFromClusterAverages(
-      nonClusteredExperiment, clustering, annotationContext.annotationVariables)
+      nonClusteredExperiment, clustering)
 
     val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
       opts.uncertaintyThreshold)
@@ -100,25 +87,6 @@ class InputTransformer(
 
     new IncrementalStateGraphBuilder(expandedBoolExp, clustering,
       trajectories, reporter).buildGraph
-  }
-
-  private def buildDirectedStateGraph(
-    exp: Experiment[Double]
-  ): DirectedBooleanStateGraph = {
-    // TODO group into a method
-    val threeValExp = Experiments.continuousExperimentToThreeValued(exp,
-      opts.uncertaintyThreshold)
-
-    val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
-      threeValExp)
-
-    val undirGraph = StateGraphs.fromBooleanExperiment(expandedBoolExp,
-      opts.maxHammingDistance)
-
-    val dirGraph = UndirectedStateGraphOps.orientByTrajectories(undirGraph,
-      trajectories)
-
-    dirGraph
   }
 
   def getSmoothedExperiment(): ContinuousExperiment = {
@@ -143,7 +111,6 @@ class InputTransformer(
 
   def buildNormalizedFilteredExperiment(): BooleanExperiment = {
     val continuousExperiment = getTransformedContinuousExperiment()
-    _continuousExperiment = Some(continuousExperiment)
 
     val booleanNormalizedExp = Discretization.binarize(continuousExperiment,
       opts.booleanNormalizationMethod)
@@ -176,17 +143,8 @@ class InputTransformer(
     val file = opts.inputFileOpts.continuousExperimentFile.getOrElse(
       sys.error("no continuous experiment given"))
     val parsedExperiment = ContinuousExperimentParser.parseAndFilter(file,
-      getNamesToFilter())
+      geneNamesToFilter)
     transformExperiment(NamingUtil.canonicalizeNames(parsedExperiment))
-  }
-
-  def getNamesToFilter(): Option[Set[String]] = {
-    val parsedFilterNames = NamesParser(opts.inputFileOpts.namesFiles)
-    if (parsedFilterNames.isEmpty) {
-      None
-    } else {
-      Some(parsedFilterNames)
-    }
   }
 
   def transformExperiment(exp: ContinuousExperiment): ContinuousExperiment = {

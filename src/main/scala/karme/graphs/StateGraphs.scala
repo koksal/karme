@@ -254,61 +254,6 @@ object StateGraphs {
       }
     }
 
-    private def orientByTrajectoryAvg(
-      g: UndirectedBooleanStateGraph,
-      trajectory: CellTrajectory
-    ): Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]] = {
-      var res = Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]]()
-
-      // for each state, compute average pseudotime for given trajectory
-      var nodeToPseudotime = Map[StateGraphVertex, Double]()
-      for (node <- g.V) {
-        avgNodePseudotime(node, trajectory) match {
-          case Some(pt) => nodeToPseudotime += node -> pt
-          case None =>
-        }
-      }
-
-      // for each edge, assign a direction if possible.
-      for (e <- g.E) {
-        (nodeToPseudotime.get(e.v1), nodeToPseudotime.get(e.v2)) match {
-          case (Some(pt1), Some(pt2)) => {
-            if (pt1 < pt2) {
-              res += e -> Set(Forward)
-            } else if (pt1 > pt2) {
-              res += e -> Set(Backward)
-            } else {
-              println("Average pseudotime equal between nodes.")
-              res += e -> Set(Forward, Backward)
-            }
-          }
-          case _ =>
-        }
-      }
-
-      res
-    }
-
-  }
-
-  def initialTrajectoryStates(
-    vertices: Set[StateGraphVertex],
-    trajectories: Iterable[CellTrajectory]
-  ): Set[ConcreteBooleanState] = {
-    val initialStateOpts = trajectories map (t =>
-      initialTrajectoryState(vertices, t))
-
-    initialStateOpts.flatten.toSet
-  }
-
-  def initialTrajectoryState(
-    vertices: Set[StateGraphVertex],
-    trajectory: CellTrajectory
-  ): Option[ConcreteBooleanState] = {
-    val nodePseudotimePairs = vertices.map{ v =>
-      v -> avgNodePseudotime(v, trajectory)
-    }.filter(_._2.isDefined)
-    nodePseudotimePairs.toList.sortBy(_._2).headOption.map(_._1.state)
   }
 
   def avgNodePseudotime(

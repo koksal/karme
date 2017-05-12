@@ -81,8 +81,7 @@ object HierarchicalClustering {
 
   def experimentFromClusterAverages(
     exp: Experiment[Double],
-    clusterToNames: Map[String, Set[String]],
-    annotationVars: Set[String]
+    clusterToNames: Map[String, Set[String]]
   ): Experiment[Double] = {
     // for each measurement, compute cluster averages
     val clusterMs = exp.measurements map { m =>
