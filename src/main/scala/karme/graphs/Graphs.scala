@@ -34,13 +34,14 @@ object Graphs {
 
     def addVertex(v: Vertex): G
     def addEdge(v1: Vertex, v2: Vertex): G
+
   }
 
   trait DigraphLike[Vertex <: Ordered[Vertex], Edge <: EdgeLike[Vertex],
     G <: GraphLike[Vertex, Edge, G]] {
     this: G =>
 
-    def edgeDirections: mutable.MultiMap[Edge, EdgeDirection]
+    def edgeDirections: Map[Edge, Set[EdgeDirection]]
 
     // target cache
     private lazy val vertexToTargets: Map[Vertex, Set[Vertex]] = {
@@ -98,21 +99,27 @@ object Graphs {
     def addVertex(v: Vertex) = new UnlabeledGraph(V + v, E)
 
     def addEdge(v1: Vertex, v2: Vertex) = {
-      val newEdge = if (v1 < v2) {
-        UnlabeledEdge(v1, v2)
-      } else {
-        UnlabeledEdge(v2, v1)
-      }
-      new UnlabeledGraph(V + v1 + v2, E + newEdge)
+      new UnlabeledGraph(V + v1 + v2, E + lexicographicEdge(v1, v2))
     }
+
+    def removeVertex(v: Vertex) = {
+      val edgesWithoutVertexToRemove = E filter {
+        case UnlabeledEdge(v1, v2) => v != v1 && v != v2
+      }
+      new UnlabeledGraph(V - v, edgesWithoutVertexToRemove)
+    }
+
+    def removeEdge(v1: Vertex, v2: Vertex) = {
+      new UnlabeledGraph(V, E - lexicographicEdge(v1, v2))
+    }
+
   }
 
   class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
     val V: Set[Vertex] = Set.empty[Vertex],
     val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
-    val edgeDirections: mutable.MultiMap[UnlabeledEdge[Vertex],
-      EdgeDirection] =
-    MapUtil.emptyMultiMap[UnlabeledEdge[Vertex], EdgeDirection]
+    val edgeDirections: Map[UnlabeledEdge[Vertex], Set[EdgeDirection]] =
+      Map.empty[UnlabeledEdge[Vertex], Set[EdgeDirection]]
   ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]]
     with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]] {
 
@@ -129,11 +136,31 @@ object Graphs {
       new UnlabeledDiGraph(
         V + v1 + v2,
         E + newEdge,
-        edgeDirections.addBinding(newEdge, dir))
+        MapUtil.addBinding(edgeDirections, newEdge, dir))
+    }
+
+    def removeVertex(v: Vertex) = {
+      val edgesToRemove = E filter {
+        case UnlabeledEdge(v1, v2) => v == v1 || v == v2
+      }
+      val filteredEdgeDirs = edgeDirections filter {
+        case (e, ds) => !edgesToRemove.contains(e)
+      }
+      new UnlabeledDiGraph(V - v, E -- edgesToRemove, filteredEdgeDirs)
     }
   }
 
   sealed trait EdgeDirection
   case object Forward extends EdgeDirection
   case object Backward extends EdgeDirection
+
+  def lexicographicEdge[Vertex <: Ordered[Vertex]](
+    v1: Vertex, v2: Vertex
+  ): UnlabeledEdge[Vertex] = {
+    if (v1 < v2) {
+      UnlabeledEdge(v1, v2)
+    } else {
+      UnlabeledEdge(v2, v1)
+    }
+  }
 }

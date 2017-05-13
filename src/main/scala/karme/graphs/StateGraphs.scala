@@ -17,6 +17,7 @@ import karme.graphs.Graphs._
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState
+import karme.util.MapUtil
 import karme.util.MathUtil
 
 import scala.collection.mutable
@@ -26,10 +27,10 @@ object StateGraphs {
   type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
-  def namesFromStateGraph(g: GraphLike[StateGraphVertex, _, _]): Seq[String] = {
+  def namesFromStateGraph(g: GraphLike[StateGraphVertex, _, _]): Set[String] = {
     g.V.headOption match {
-      case Some(v) => v.names
-      case None => sys.error("Names in empty graph.")
+      case Some(v) => v.names.toSet
+      case None => Set.empty
     }
   }
 
@@ -189,9 +190,8 @@ object StateGraphs {
       g: UndirectedBooleanStateGraph,
       trajectories: Seq[CellTrajectory]
     ): DirectedBooleanStateGraph = {
-      val directions = new mutable.HashMap[UnlabeledEdge[StateGraphVertex],
-        mutable.Set[EdgeDirection]]() with
-        mutable.MultiMap[UnlabeledEdge[StateGraphVertex], EdgeDirection]
+      var directions =
+        Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]]()
 
       // compute all directions that can be assigned with trajectories
       val directionMaps = trajectories map (t =>
@@ -203,7 +203,7 @@ object StateGraphs {
           case dm if dm.isDefinedAt(edge) => dm(edge)
         }
         for (ds <- directionSets; d <- ds) {
-          directions.addBinding(edge, d)
+          directions = MapUtil.addBinding(directions, edge, d)
         }
       }
 

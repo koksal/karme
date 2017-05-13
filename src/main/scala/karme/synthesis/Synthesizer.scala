@@ -17,24 +17,16 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
   def synthesizeForPositiveHardConstraints(
     graph: DirectedBooleanStateGraph
   ): Map[String, Set[SynthesisResult]] = {
-    val (posTransitions, negTransitions) =
-      producePositiveAndNegativeTransitions(graph)
+    if (graph.V.isEmpty) {
+      reporter.log("Graph is empty, skipping synthesis.")
+      Map.empty
+    } else {
+      val (posTransitions, negTransitions) =
+        producePositiveAndNegativeTransitions(graph)
 
-    synthesizeFunctionsForAllTransitionSubsets(posTransitions, negTransitions)
-  }
-
-  def synthesizeForOptimalReachability(
-    directedStateGraph: DirectedBooleanStateGraph,
-    initialStates: Set[ConcreteBooleanState]
-  ): Seq[ReachabilityEvaluationResult] = {
-    val (posTransitions, negTransitions) =
-      producePositiveAndNegativeTransitions(directedStateGraph)
-
-    val allResults = synthesizeFunctionsForAllTransitionSubsets(
-      posTransitions, negTransitions)
-
-    findOptimalReachabilityResults(directedStateGraph,
-      initialStates, allResults)
+      synthesizeFunctionsForAllTransitionSubsets(posTransitions,
+        negTransitions, StateGraphs.namesFromStateGraph(graph))
+    }
   }
 
   def producePositiveAndNegativeTransitions(
@@ -48,45 +40,24 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     (positiveTransitions, negativeTransitions)
   }
 
-  def findOptimalReachabilityResults(
-    g: DirectedBooleanStateGraph,
-    initialStates: Set[ConcreteBooleanState],
-    allResults: Map[String, Set[SynthesisResult]]
-  ): Seq[ReachabilityEvaluationResult] = {
-    val observedStates = g.V.map(_.state)
-    val optimalReachabilityResults =
-      ReachabilityEvaluation.findAllResultsWithOptimalReachability(allResults,
-      initialStates, observedStates)
-
-    // plot top simulations
-    val plotter = new StateGraphPlotter(reporter)
-    for ((result, i) <- optimalReachabilityResults.zipWithIndex.take(5)) {
-      plotter.plotSimulation(initialStates, observedStates,
-        result.reachableStates, s"simulation-$i")
-    }
-
-    optimalReachabilityResults
-  }
-
   def synthesizeFunctionsForAllTransitionSubsets(
     positiveTransitions: Set[Transition],
-    negativeTransitions: Set[Transition]
+    negativeTransitions: Set[Transition],
+    labels: Set[String]
   ): Map[String, Set[SynthesisResult]] = {
-    val allLabels = positiveTransitions.head.input.orderedKeys
-
     // group both type of transitions by label
     val labelToPosTrans = positiveTransitions.groupBy(_.label)
     val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
     var labelToSynthesisResults = Map[String, Set[SynthesisResult]]()
-    for (label <- allLabels) {
+    for (label <- labels) {
       reporter.debug(s"Synthesizing for ${label}")
       reporter.debug("==========================")
 
       val resultsForLabel = synthesizeForSingleLabel(
         hardTransitions = labelToPosTrans.getOrElse(label, Set.empty),
         softTransitions = labelToNegTrans.getOrElse(label, Set.empty),
-        possibleVars = allLabels.toSet
+        possibleVars = labels
       )
       labelToSynthesisResults += label -> resultsForLabel
     }

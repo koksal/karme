@@ -25,8 +25,25 @@ class IncrementalStateGraphBuilder(
     trajectories).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
+    removeNodesWithoutNeighbors(buildGraphFromEarliestNodes)
+  }
+
+  private def removeNodesWithoutNeighbors(
+    g: DirectedBooleanStateGraph
+  ): DirectedBooleanStateGraph = {
+    val nodesWithoutNeighbors = g.V filter (v => g.neighbors(v).isEmpty)
+
+    var newG = g
+    for (v <- nodesWithoutNeighbors) {
+      newG = newG.removeVertex(v)
+    }
+
+    newG
+  }
+
+  private def buildGraphFromEarliestNodes: DirectedBooleanStateGraph = {
     var graph = new DirectedBooleanStateGraph()
-    for (n <- initialNodes) {
+    for (n <- nodesWithoutPredecessor(V)) {
       graph = graph.addVertex(n)
     }
 
@@ -45,7 +62,7 @@ class IncrementalStateGraphBuilder(
     graph
   }
 
-  def chooseMinimalHammingNeighbor(
+  private def chooseMinimalHammingNeighbor(
     reachableNodes: Set[StateGraphVertex]
   ): Option[(StateGraphVertex, StateGraphVertex)] = {
     val distancesToNeighbors = hammingDistancesToTargets(
@@ -66,7 +83,7 @@ class IncrementalStateGraphBuilder(
     }
   }
 
-  def hammingDistancesToTargets(
+  private def hammingDistancesToTargets(
     sources: Set[StateGraphVertex],
     targets: Set[StateGraphVertex]
   ): Set[(StateGraphVertex, StateGraphVertex, Int)] = {
@@ -78,9 +95,11 @@ class IncrementalStateGraphBuilder(
     }
   }
 
-  def initialNodes: Set[StateGraphVertex] = {
-    V filter { candidateV =>
-      !V.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
+  private def nodesWithoutPredecessor(
+    vs: Set[StateGraphVertex]
+  ) : Set[StateGraphVertex] = {
+    vs filter { candidateV =>
+      !vs.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
     }
   }
 

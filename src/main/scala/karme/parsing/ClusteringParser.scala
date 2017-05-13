@@ -10,8 +10,7 @@ import scala.collection.mutable
 object ClusteringParser {
 
   def apply(f: File): Map[String, Set[String]] = {
-    val clustering = new mutable.HashMap[String, mutable.Set[String]]()
-      with mutable.MultiMap[String, String]
+    var clustering = Map[String, Set[String]]()
 
     val reader = CSVReader.open(f)
     val allRows = reader.all()
@@ -21,10 +20,10 @@ object ClusteringParser {
     assert(headers == List("id", "cluster"))
 
     for (List(id, cluster) <- tuples) {
-      clustering.addBinding(cluster, id)
+      clustering = MapUtil.addBinding(clustering, cluster, id)
     }
 
-    MapUtil.multiMapToMap(clustering)
+    clustering
   }
 
 }

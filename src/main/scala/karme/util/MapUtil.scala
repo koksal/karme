@@ -3,13 +3,15 @@ package karme.util
 import scala.collection.mutable
 
 object MapUtil {
-  def emptyMultiMap[A, B]: mutable.MultiMap[A, B] = {
-    new mutable.HashMap[A, mutable.Set[B]]() with mutable.MultiMap[A, B]
+  def addBinding[A, B](map: Map[A, Set[B]], k: A, v: B): Map[A, Set[B]] = {
+    map + (k -> (map.getOrElse(k, Set.empty[B]) + v))
   }
 
-  def multiMapToMap[A, B](multiMap: mutable.MultiMap[A, B]): Map[A, Set[B]] = {
-    multiMap.toMap map {
-      case (k, vs) => k -> vs.toSet
+  def removeBinding[A, B](map: Map[A, Set[B]], k: A, v: B): Map[A, Set[B]] = {
+    map.get(k) match {
+      case None => map
+      case Some(vs) if vs == Set(v) => map - k
+      case Some(vs) => map + (k -> (vs - v))
     }
   }
 }
