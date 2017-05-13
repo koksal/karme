@@ -7,7 +7,8 @@ import karme.Experiments.{BooleanExperiment, ContinuousExperiment}
 import karme.Reporter
 import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph}
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
@@ -45,22 +46,22 @@ class InputTransformer(
 
     clusterings map { clustering =>
       (clustering,
-        buildStateGraphForClusterAverages(smoothedExperiment, clustering))
+        graphAndSourcesFromClusterAverages(smoothedExperiment, clustering)._1)
     }
   }
 
-  def buildDirectedStateGraph(): DirectedBooleanStateGraph = {
-    val exp = getSmoothedExperiment()
+  def buildStateGraphAndSources:
+      (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
     if (opts.cluster) {
-      buildDirectedStateGraphForBestClustering(exp)
+      stateGraphAndSourcesForBestClustering(getSmoothedExperiment())
     } else {
       ???
     }
   }
 
-  private def buildDirectedStateGraphForBestClustering(
+  private def stateGraphAndSourcesForBestClustering(
     exp: Experiment[Double]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
     val geneClustering = HierarchicalClustering.computeBestClustering(exp,
       opts.clusteringOpts)
 
@@ -68,13 +69,13 @@ class InputTransformer(
     new CurvePlot(reporter).plotClusterCurves(exp,
       trajectories, geneClustering, "smoothed-experiment")
 
-    buildStateGraphForClusterAverages(exp, geneClustering)
+    graphAndSourcesFromClusterAverages(exp, geneClustering)
   }
 
-  private def buildStateGraphForClusterAverages(
+  private def graphAndSourcesFromClusterAverages(
     nonClusteredExperiment: Experiment[Double],
     clustering: Map[String, Set[String]]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
     val avgExp = HierarchicalClustering.experimentFromClusterAverages(
       nonClusteredExperiment, clustering)
 
@@ -84,8 +85,12 @@ class InputTransformer(
     val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
       threeValExp)
 
-    new IncrementalStateGraphBuilder(expandedBoolExp, clustering,
-      trajectories).buildGraph
+    val graphBuilder = new IncrementalStateGraphBuilder(expandedBoolExp,
+      clustering, trajectories)
+
+    val g = graphBuilder.buildGraph
+
+    (g, graphBuilder.initialNodes(g))
   }
 
   def getSmoothedExperiment(): ContinuousExperiment = {

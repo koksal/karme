@@ -95,6 +95,10 @@ class IncrementalStateGraphBuilder(
     }
   }
 
+  def initialNodes(g: DirectedBooleanStateGraph): Set[StateGraphVertex] = {
+    nodesWithoutPredecessor(g.V)
+  }
+
   private def nodesWithoutPredecessor(
     vs: Set[StateGraphVertex]
   ) : Set[StateGraphVertex] = {

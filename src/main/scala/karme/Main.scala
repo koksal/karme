@@ -4,6 +4,7 @@ import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
+import karme.visualization.StateGraphPlotter
 
 object Main {
 
@@ -17,12 +18,14 @@ object Main {
     val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
       annotationContext, reporter)
 
-    val directedStateGraph = inputTransformer.buildDirectedStateGraph()
+    val (graph, sources) = inputTransformer.buildStateGraphAndSources
 
     // TODO get initial graph states and print graph
+    new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
+      nodeHighlightGroups = List(sources.map(_.state)))
 
     if (opts.runSynthesis) {
-      runSynthesis(opts, inputTransformer, directedStateGraph, reporter)
+      runSynthesis(opts, inputTransformer, graph, reporter)
     }
   }
 
