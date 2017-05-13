@@ -9,6 +9,8 @@ function run_with_args() {
   echo $folder
   scripts/run-t-cell-base-args.sh $folder \
     --boolean-normalization mclust \
+    --synthesis \
+    --max-expr-depth 1 \
     "$@"
 }
 
