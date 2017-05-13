@@ -19,6 +19,8 @@ object Main {
 
     val directedStateGraph = inputTransformer.buildDirectedStateGraph()
 
+    // TODO get initial graph states and print graph
+
     if (opts.runSynthesis) {
       runSynthesis(opts, inputTransformer, directedStateGraph, reporter)
     }
