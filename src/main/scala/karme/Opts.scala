@@ -51,7 +51,7 @@ case class SynthOpts(
 
 case class EvalOpts(
   referenceFiles: Seq[File] = Seq(),
-  bigramFile: Option[File] = None,
+  predictionPairsFile: Option[File] = None,
   randomizeBigrams: Boolean = false
 )
 

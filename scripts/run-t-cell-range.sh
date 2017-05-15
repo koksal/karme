@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NB_JOBS=8
+NB_JOBS=12
 
 set -o xtrace
 
@@ -9,6 +9,7 @@ function run_with_args() {
   echo $folder
   scripts/run-t-cell-base-args.sh $folder \
     --boolean-normalization mclust \
+    --uncertainty-threshold 1 \
     --synthesis \
     --max-expr-depth 1 \
     "$@"
@@ -18,31 +19,32 @@ function run_with_args() {
 export -f run_with_args
 
 declare -A TRANSFORM_ARGS
-TRANSFORM_ARGS["pseudolog2"]="--pseudolog-factor 2"
+for i in 2 5 10
+do
+  TRANSFORM_ARGS["pseudolog-$i"]="--pseudolog-factor $i"
+done
 
 declare -A ACTIVITY_FILTER_ARGS
-ACTIVITY_FILTER_ARGS["none"]="--cell-activity-threshold 0"
-ACTIVITY_FILTER_ARGS["20"]="--cell-activity-threshold 0.2"
-
-declare -A UNCERTAINTY_ARGS
-UNCERTAINTY_ARGS["1.0"]="--uncertainty-threshold 1"
+for i in 0 0.1 0.2
+do
+  ACTIVITY_FILTER_ARGS["$i"]="--cell-activity-threshold $i"
+done
 
 declare -A SMOOTHING_RADIUS_ARGS
-SMOOTHING_RADIUS_ARGS["0"]="--smoothing-radius 0"
-SMOOTHING_RADIUS_ARGS["10"]="--smoothing-radius 10"
-SMOOTHING_RADIUS_ARGS["20"]="--smoothing-radius 20"
+for i in 0 10 20
+do
+  SMOOTHING_RADIUS_ARGS["$i"]="--smoothing-radius $i"
+done
 
 # clustering
 declare -A CLUSTERING_ARGS
-CLUSTERING_ARGS["8"]="--cluster --min-clusters 8 --max-clusters 8"
-CLUSTERING_ARGS["9"]="--cluster --min-clusters 9 --max-clusters 9"
-CLUSTERING_ARGS["10"]="--cluster --min-clusters 10 --max-clusters 10"
-CLUSTERING_ARGS["11"]="--cluster --min-clusters 11 --max-clusters 11"
-CLUSTERING_ARGS["12"]="--cluster --min-clusters 12 --max-clusters 12"
+for i in {5..15}
+do 
+  CLUSTERING_ARGS["$i"]="--cluster --min-clusters $i --max-clusters $i"
+done
 
 SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 10 run_with_args \
   ::: "${TRANSFORM_ARGS[@]}" \
   ::: "${ACTIVITY_FILTER_ARGS[@]}" \
-  ::: "${UNCERTAINTY_ARGS[@]}" \
   ::: "${SMOOTHING_RADIUS_ARGS[@]}" \
   ::: "${CLUSTERING_ARGS[@]}"

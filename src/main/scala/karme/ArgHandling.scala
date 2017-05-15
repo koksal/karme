@@ -154,9 +154,9 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(referenceFiles = fs))
       } text "Prediction libraries to evaluate against"
 
-      opt[File]("bigrams") action { (f, o) =>
-        o.copy(evalOpts = o.evalOpts.copy(bigramFile = Some(f)))
-      } text "File with bigrams to evaluate"
+      opt[File]("predictions") action { (f, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(predictionPairsFile = Some(f)))
+      } text "File with predictions to evaluate"
 
       opt[Unit]("randomize-bigrams") action { (v, o) =>
         o.copy(evalOpts = o.evalOpts.copy(randomizeBigrams = true))

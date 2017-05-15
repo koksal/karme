@@ -2,10 +2,10 @@ package karme.evaluation
 
 import java.io.File
 
-import com.github.tototoshi.csv.CSVReader
 import karme.ArgHandling
 import karme.Reporter
 import karme.evaluation.enrichr.{EnrichrPrediction, EnrichrPredictionLibrary}
+import karme.parsing.IOPairParser
 import karme.util.FileUtil
 import karme.util.MathUtil
 import karme.visualization.Heatmap
@@ -15,6 +15,7 @@ import scala.util.Random
 
 object IOPairEvaluation {
 
+  // TODO this goes into hypergeom test class
   val P_VALUE_THRESHOLD = 0.05
 
   def main(args: Array[String]): Unit = {
@@ -23,27 +24,24 @@ object IOPairEvaluation {
 
     val evalCtx = EvaluationContext.fromOptions(opts.evalOpts)
 
-    val predictions = parsePredictions(opts.evalOpts.bigramFile.get)
+    val predictions = IOPairParser(opts.evalOpts.predictionPairsFile.get)
 
     for (library <- evalCtx.references) {
-      evaluate(predictions, library, opts.evalOpts.randomizeBigrams, reporter)
-    }
-
-    plotScoreDist(predictions.map(_._3.toDouble),
-      reporter.file("score-histogram-predictions.pdf"))
-  }
-
-  def parsePredictions(f: File): Seq[(String, String, Int)] = {
-    val reader = CSVReader.open(f)
-    reader.all() map {
-      case List(src, tgt, score) => (src, tgt, score.toInt)
+      evaluate(predictions, library, reporter)
     }
   }
 
   def evaluate(
+    predictedPairs: Seq[((String, String), Int)],
+    library: EnrichrPredictionLibrary,
+    reporter: Reporter
+  ): Unit = {
+    ???
+  }
+
+  def evalHypergeom(
     predictedPairs: Seq[(String, String, Int)],
     library: EnrichrPredictionLibrary,
-    randomizeBigrams: Boolean,
     reporter: Reporter
   ): Unit = {
     val orderedPredictions = predictionPairsByDescendingScore(predictedPairs)
@@ -62,14 +60,9 @@ object IOPairEvaluation {
     val filteredRefPairs = filterForNameUniverse(orderedRefPairs,
       backgroundSources, backgroundTargets)
 
-    val predictionsToCheck = if (randomizeBigrams) {
-      randomBigrams(commonNames, filteredPredictions.size).distinct
-    } else {
-      filteredPredictions
-    }
     println(s"Evaluating ${library.id}")
 
-    val scoreMatrix = computeScoreMatrix(predictionsToCheck,
+    val scoreMatrix = computeScoreMatrix(filteredPredictions,
       filteredRefPairs, backgroundSources, backgroundTargets)
     val binaryScoreMatrix = binarizeScoreMatrix(scoreMatrix, P_VALUE_THRESHOLD)
 
@@ -80,10 +73,8 @@ object IOPairEvaluation {
         reporter.file(s"binarized-heatmap-${library.id}.pdf"))
     }
     saveMinScore(scoreMatrix, reporter.file(s"min-score-${library.id}.txt"))
-    plotScoreDist(library.predictions.map(_.combinedScore),
-      reporter.file(s"score-histogram-${library.id}.pdf"))
 
-    countOrientationsPerThreshold(predictionsToCheck)
+    countOrientationsPerThreshold(filteredPredictions)
   }
 
   def thresholdRange: Seq[Double] = {
