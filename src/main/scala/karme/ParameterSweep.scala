@@ -10,6 +10,7 @@ import karme.printing.SynthesisResultLogger
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
+import karme.util.CollectionUtil
 import karme.util.FileUtil
 import karme.util.ParUtil
 import karme.util.TimingUtil
@@ -101,14 +102,15 @@ object ParameterSweep {
     }
     println(s"Computed within-cluster pairs (${withinClustPairs.size}")
 
-    val bigramCounts = orderByCount(expandedBigrams)
+    val bigramCounts = CollectionUtil.orderByCount(expandedBigrams)
     savePairsWithCounts(bigramCounts, new File("bigrams.csv"))
 
-    val withinClusterCounts = orderByCount(withinClustPairs)
+    val withinClusterCounts = CollectionUtil.orderByCount(withinClustPairs)
     savePairsWithCounts(withinClusterCounts,
       new File("within-cluster-counts.csv"))
 
-    val combinedCounts = orderByCount(expandedBigrams ++ withinClustPairs)
+    val combinedCounts = CollectionUtil.orderByCount(expandedBigrams ++
+      withinClustPairs)
     savePairsWithCounts(combinedCounts, new File("combined-counts.csv"))
   }
 
@@ -178,15 +180,6 @@ object ParameterSweep {
     } yield {
       (src, tgt)
     }
-  }
-
-  def orderByCount[T](xs: Seq[T]): Seq[(T, Int)] = {
-    val grouped = xs.groupBy(x => x)
-    val elemCountPairs = grouped.toSeq map {
-      case (x, duplicates) => x -> duplicates.size
-    }
-
-    elemCountPairs.sortBy(_._2).reverse
   }
 
   def savePairsWithCounts(

@@ -3,16 +3,19 @@ package karme.printing
 import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
+import karme.util.CollectionUtil
 
 object IOPairLogger {
 
-  def apply(pairs: Set[(String, String)], f: File): Unit = {
+  def apply(pairs: Seq[(String, String)], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
-    val headerRow = List("source", "target")
+    val headerRow = List("source", "target", "count")
 
-    val tuples = pairs.toSeq map {
-      case (s, t) => List(s, t)
+    val pairsWithCounts = CollectionUtil.orderByCount(pairs)
+
+    val tuples = pairsWithCounts.map {
+      case ((s, t), count) => List(s, t, count.toString)
     }
 
     writer.writeAll(headerRow +: tuples)

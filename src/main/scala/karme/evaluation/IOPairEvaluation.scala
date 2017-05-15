@@ -13,7 +13,7 @@ import karme.visualization.HistogramPlotInterface
 
 import scala.util.Random
 
-object BigramEvaluation {
+object IOPairEvaluation {
 
   val P_VALUE_THRESHOLD = 0.05
 

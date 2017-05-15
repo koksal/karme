@@ -6,8 +6,8 @@ object FunctionIOPairs {
 
   def funInputOutputPairs(
     label: String, result: SynthesisResult
-  ): Set[(String, String)] = {
-    for (idInFunction <- namesInSynthesisResult(result)) yield {
+  ): Seq[(String, String)] = {
+    namesInSynthesisResult(result).toSeq map { idInFunction =>
       (idInFunction, label)
     }
   }

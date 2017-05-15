@@ -56,7 +56,7 @@ object Main {
     clustering: Map[String, Set[String]],
     reporter: Reporter
   ): Unit = {
-    var clusterIOPairs = Set[(String, String)]()
+    var clusterIOPairs = Seq[(String, String)]()
     for ((label, labelResults) <- results) {
       for (res <- labelResults) {
         clusterIOPairs ++= FunctionIOPairs.funInputOutputPairs(label, res)
