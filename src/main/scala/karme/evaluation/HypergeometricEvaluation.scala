@@ -25,13 +25,13 @@ class HypergeometricEvaluation(reporter: Reporter) {
 
     val filteredPredictions = filterTriplesForNameUniverse(predictedPairs,
       backgroundSources, backgroundTargets)
-    val filteredRefPairs = filterPairsForNameUniverse(referencePairs.toSeq,
+    val filteredRefPairs = filterPairsForNameUniverse(referencePairs,
       backgroundSources, backgroundTargets)
 
     println(s"Evaluating ${library.id}")
 
-    val scores = computeScoreByDiscrimination(predictedPairs, referencePairs,
-      backgroundSources, backgroundTargets)
+    val scores = computeScoreByDiscrimination(filteredPredictions,
+      filteredRefPairs, backgroundSources, backgroundTargets)
 
     println("Scores:")
     println(scores.mkString("\n"))
@@ -55,10 +55,10 @@ class HypergeometricEvaluation(reporter: Reporter) {
   }
 
   private def filterPairsForNameUniverse(
-    pairs: Seq[(String, String)],
+    pairs: Set[(String, String)],
     possibleSources: Set[String],
     possibleTargets: Set[String]
-  ): Seq[(String, String)] = {
+  ): Set[(String, String)] = {
     pairs filter {
       case (src, tgt) =>
         possibleSources.contains(src) && possibleTargets.contains(tgt)
