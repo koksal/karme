@@ -135,12 +135,16 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       synthesizeWithMaximalSoftTransitions(hardTransitions + nextBestUnused,
         softTransitions - nextBestUnused, possibleVars) match {
         case Some(result @ SynthesisResult(ts, _)) => {
+          reporter.debug(s"Found a maximal transition set of size ${ts.size}.")
+
           // remove used ts from transitions to check
           unusedTransitions = unusedTransitions -- ts
           // add to current results
           currentResults += result
         }
         case None => {
+          reporter.debug("Soft transition incompatible with hard set.")
+
           // the next best is not compatible with hard transitions
           unusedTransitions = unusedTransitions - nextBestUnused
         }
@@ -150,6 +154,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     // If no soft transition is consistent with hard set (or there are none),
     // compute functions for the hard set
     if (currentResults.isEmpty) {
+      reporter.debug("No soft transition is compatible with hard set.")
+
       val fs = synthesizeForMinDepth(hardTransitions, possibleVars)
       assert(fs.nonEmpty)
       currentResults += SynthesisResult(hardTransitions, fs.toSet)
