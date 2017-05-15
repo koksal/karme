@@ -7,18 +7,22 @@ import karme.util.CollectionUtil
 
 object IOPairLogger {
 
-  def apply(pairs: Seq[(String, String)], f: File): Unit = {
+  def logPairs(pairs: Seq[(String, String)], f: File): Unit = {
+    val pairsWithCounts = CollectionUtil.orderByCount(pairs)
+
+    logPairsWithCounts(pairsWithCounts, f)
+  }
+
+  def logPairsWithCounts(pairs: Seq[((String, String), Int)], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
     val headerRow = List("source", "target", "count")
 
-    val pairsWithCounts = CollectionUtil.orderByCount(pairs)
-
-    val tuples = pairsWithCounts.map {
+    val tuples = pairs.map {
       case ((s, t), count) => List(s, t, count.toString)
     }
 
     writer.writeAll(headerRow +: tuples)
+    writer.close()
   }
-
 }

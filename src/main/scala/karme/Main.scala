@@ -66,7 +66,7 @@ object Main {
     val geneIOPairs = new ClusterPairExpansion(
       clustering).clusterMemberPairs(clusterIOPairs)
 
-    IOPairLogger(clusterIOPairs, reporter.file("cluster-io-pairs.csv"))
-    IOPairLogger(geneIOPairs, reporter.file("gene-io-pairs.csv"))
+    IOPairLogger.logPairs(clusterIOPairs, reporter.file("cluster-io-pairs.csv"))
+    IOPairLogger.logPairs(geneIOPairs, reporter.file("gene-io-pairs.csv"))
   }
 }
