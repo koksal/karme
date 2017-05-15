@@ -20,7 +20,6 @@ object Main {
 
     val (graph, sources) = inputTransformer.buildStateGraphAndSources
 
-    // TODO get initial graph states and print graph
     new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
       nodeHighlightGroups = List(sources.map(_.state)))
 
@@ -41,5 +40,7 @@ object Main {
       directedStateGraph)
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
+
+    // TODO log cluster-level and member-level pairs
   }
 }

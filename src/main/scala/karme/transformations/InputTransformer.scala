@@ -62,6 +62,8 @@ class InputTransformer(
   private def stateGraphAndSourcesForBestClustering(
     exp: Experiment[Double]
   ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
+    // TODO clustering should be a val that can be reaccessed
+
     val geneClustering = HierarchicalClustering.computeBestClustering(exp,
       opts.clusteringOpts)
 
