@@ -11,6 +11,12 @@ case class EnrichrPredictionLibrary(
     }).toSet
   }
 
+  def ioPairs: Set[(String, String)] = {
+    predictions.map{
+      case EnrichrPrediction(term, target, _) => (term, target)
+    }.toSet
+  }
+
 }
 
 case class EnrichrPrediction(

@@ -158,10 +158,6 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(predictionPairsFile = Some(f)))
       } text "File with predictions to evaluate"
 
-      opt[Unit]("randomize-bigrams") action { (v, o) =>
-        o.copy(evalOpts = o.evalOpts.copy(randomizeBigrams = true))
-      } text "Randomly pick bigrams from background for evaluation"
-
       help("help") text "print this help message"
     }
 
