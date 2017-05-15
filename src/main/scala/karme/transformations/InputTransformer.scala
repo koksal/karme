@@ -16,6 +16,12 @@ import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
 
+case class TransformResult(
+  graph: DirectedBooleanStateGraph,
+  sources: Set[StateGraphVertex],
+  clustering: Map[String, Set[String]]
+)
+
 class InputTransformer(
   opts: InputTransformerOpts,
   annotationContext: AnnotationContext,
@@ -36,6 +42,22 @@ class InputTransformer(
     ContinuousExperimentParser.parseAndFilter(file, geneNamesToFilter)
   }
 
+  def transform(): TransformResult = {
+
+    val smoothedExp = getSmoothedExperiment()
+
+    val geneClustering = HierarchicalClustering.computeBestClustering(
+      smoothedExp, opts.clusteringOpts)
+
+    new CurvePlot(reporter).plotClusterCurves(smoothedExp, trajectories,
+      geneClustering, "smoothed-experiment")
+
+    val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
+      geneClustering)
+
+    TransformResult(graph, sources, geneClustering)
+  }
+
   def buildDirectedStateGraphsForAllClusterings():
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
     val smoothedExperiment = getSmoothedExperiment()
@@ -48,30 +70,6 @@ class InputTransformer(
       (clustering,
         graphAndSourcesFromClusterAverages(smoothedExperiment, clustering)._1)
     }
-  }
-
-  def buildStateGraphAndSources:
-      (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
-    if (opts.cluster) {
-      stateGraphAndSourcesForBestClustering(getSmoothedExperiment())
-    } else {
-      ???
-    }
-  }
-
-  private def stateGraphAndSourcesForBestClustering(
-    exp: Experiment[Double]
-  ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
-    // TODO clustering should be a val that can be reaccessed
-
-    val geneClustering = HierarchicalClustering.computeBestClustering(exp,
-      opts.clusteringOpts)
-
-    // TODO move this to visualization phase
-    new CurvePlot(reporter).plotClusterCurves(exp,
-      trajectories, geneClustering, "smoothed-experiment")
-
-    graphAndSourcesFromClusterAverages(exp, geneClustering)
   }
 
   private def graphAndSourcesFromClusterAverages(

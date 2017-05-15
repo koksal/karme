@@ -1,9 +1,14 @@
 package karme
 
+import karme.evaluation.ClusterPairExpansion
+import karme.evaluation.FunctionIOPairs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.printing.IOPairLogger
 import karme.printing.SynthesisResultLogger
+import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
+import karme.transformations.TransformResult
 import karme.visualization.StateGraphPlotter
 
 object Main {
@@ -18,13 +23,14 @@ object Main {
     val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
       annotationContext, reporter)
 
-    val (graph, sources) = inputTransformer.buildStateGraphAndSources
+    val TransformResult(graph, sources, clustering) =
+      inputTransformer.transform()
 
     new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
       nodeHighlightGroups = List(sources.map(_.state)))
 
     if (opts.runSynthesis) {
-      runSynthesis(opts, inputTransformer, graph, reporter)
+      runSynthesis(opts, inputTransformer, graph, clustering, reporter)
     }
   }
 
@@ -32,6 +38,7 @@ object Main {
     opts: Opts,
     inputTransformer: InputTransformer,
     directedStateGraph: DirectedBooleanStateGraph,
+    clustering: Map[String, Set[String]],
     reporter: Reporter
   ): Unit = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
@@ -41,6 +48,25 @@ object Main {
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 
-    // TODO log cluster-level and member-level pairs
+    logIOPairs(results, clustering, reporter)
+  }
+
+  def logIOPairs(
+    results: Map[String, Set[SynthesisResult]],
+    clustering: Map[String, Set[String]],
+    reporter: Reporter
+  ): Unit = {
+    var clusterIOPairs = Set[(String, String)]()
+    for ((label, labelResults) <- results) {
+      for (res <- labelResults) {
+        clusterIOPairs ++= FunctionIOPairs.funInputOutputPairs(label, res)
+      }
+    }
+
+    val geneIOPairs = new ClusterPairExpansion(
+      clustering).clusterMemberPairs(clusterIOPairs)
+
+    IOPairLogger(clusterIOPairs, reporter.file("cluster-io-pairs.csv"))
+    IOPairLogger(geneIOPairs, reporter.file("gene-io-pairs.csv"))
   }
 }

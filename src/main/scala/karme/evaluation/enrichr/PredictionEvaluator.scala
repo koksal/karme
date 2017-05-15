@@ -30,8 +30,7 @@ class PredictionEvaluator(
     results: Seq[Map[String, SynthesisResult]],
     reference: EnrichrPredictionLibrary
   ): Double = {
-    val predictedClusterPairs =
-      FunctionIOPairs.funInputOutputPairs(results)
+    val predictedClusterPairs = ???
 
     val refPairs = PredictionEvaluator.referencePairs(reference)
 
@@ -85,13 +84,10 @@ class PredictionEvaluator(
     reference: EnrichrPredictionLibrary
   ): Double = {
     // For each target, gather possible sources
-    var inputOutputPairs = FunctionIOPairs.funInputOutputPairs(result)
 
     // Map cluster-level pairs to gene level
     clustering match {
       case Some(c) => {
-        inputOutputPairs =
-          new ClusterPairExpansion(c).clusterMemberPairs(inputOutputPairs)
       }
       case None =>
     }
