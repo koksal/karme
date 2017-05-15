@@ -6,6 +6,7 @@ import karme.evaluation.ReachabilityEvaluation
 import karme.evaluation.ReachabilityEvaluation.ReachabilityEvaluationResult
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.printing.SynthesisResultLogger
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
@@ -136,6 +137,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         softTransitions - nextBestUnused, possibleVars) match {
         case Some(result @ SynthesisResult(ts, _)) => {
           reporter.debug(s"Found a maximal transition set of size ${ts.size}.")
+          reporter.debug(s"Functions:")
+          reporter.debug(SynthesisResultLogger.resultStr(result))
 
           // remove used ts from transitions to check
           unusedTransitions = unusedTransitions -- ts

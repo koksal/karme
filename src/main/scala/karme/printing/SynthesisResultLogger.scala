@@ -22,7 +22,7 @@ object SynthesisResultLogger {
     FileUtil.writeToFile(f, contentPerLabel.mkString("\n\n"))
   }
 
-  private def resultStr(r: SynthesisResult): String = {
+  def resultStr(r: SynthesisResult): String = {
     r.functions.map(FunExprPrettyPrinter.apply).mkString("\n")
   }
 
