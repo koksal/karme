@@ -31,7 +31,7 @@ do
 done
 
 declare -A SMOOTHING_RADIUS_ARGS
-for i in 0 10 20
+for i in 10 15 20
 do
   SMOOTHING_RADIUS_ARGS["$i"]="--smoothing-radius $i"
 done
