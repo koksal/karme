@@ -25,10 +25,10 @@ object ReferenceOverlapAnalysis {
   ): Unit = {
     println(s"${l1.id} and ${l2.id}")
 
-    val ps1 = IOPairEvaluation.libraryPairsByDescendingScore(l1)
-    val ps2 = IOPairEvaluation.libraryPairsByDescendingScore(l2)
+    val ps1 = l1.ioPairs
+    val ps2 = l2.ioPairs
 
-    findOverlap(ps1.toSet, ps2.toSet)
+    findOverlap(ps1, ps2)
   }
 
   def findOverlap(
