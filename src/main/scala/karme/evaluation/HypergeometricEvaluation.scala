@@ -2,16 +2,21 @@ package karme.evaluation
 
 import java.io.File
 
+import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.util.FileUtil
-import karme.visualization.Heatmap
+import karme.visualization.ScatterPlot
+
+case class HypergeomEvalResult(
+  nbPredictions: Int, score: Double, avgCardinality: Double
+)
 
 class HypergeometricEvaluation(reporter: Reporter) {
 
   val P_VALUE_THRESHOLD = 0.05
 
-  val NB_DISCRIM_STEPS = 10
+  val NB_DISCRIM_STEPS = 100
 
   def evaluate(
     predictedPairs: Seq[((String, String), Int)],
@@ -19,9 +24,9 @@ class HypergeometricEvaluation(reporter: Reporter) {
   ): Unit = {
     val referencePairs = library.ioPairs
 
-    val commonNames = getCommonNames(predictedPairs, referencePairs.toSeq)
-    val backgroundSources = commonNames
-    val backgroundTargets = commonNames
+    val backgroundUniv = getCommonNames(predictedPairs, referencePairs.toSeq)
+    val backgroundSources = backgroundUniv
+    val backgroundTargets = backgroundUniv
 
     val filteredPredictions = filterTriplesForNameUniverse(predictedPairs,
       backgroundSources, backgroundTargets)
@@ -33,25 +38,36 @@ class HypergeometricEvaluation(reporter: Reporter) {
     val scores = computeScoreByDiscrimination(filteredPredictions,
       filteredRefPairs, backgroundSources, backgroundTargets)
 
-    println("Scores:")
-    println(scores.mkString("\n"))
+    saveScores(scores, reporter.file(s"hypergeom-eval-${library.id}.csv"))
+    plotScores(scores, reporter.file(s"plot-hypergeom-${library.id}.pdf"))
+
+    val libraryOrientationCard =
+      IOPairEvaluation.meanOrientationCardinality(filteredRefPairs.toSeq)
+    FileUtil.writeToFile(
+      reporter.file(s"orientation-cardinality-${library.id}.csv"),
+      libraryOrientationCard.toString)
   }
 
   def getCommonNames(
     predictedPairs: Seq[((String, String), Int)],
     referencePairs: Seq[(String, String)]
   ): Set[String] = {
-    // get names from both sets. filter accordingly. then threshold.
-    val namesInPredictions = namesInPairs(predictedPairs.map(_._1))
-    val namesInReference = namesInPairs(referencePairs)
+    val namesInPredictions = IOPairEvaluation.namesInPairs(
+      predictedPairs.map(_._1))
+    val namesInReference = IOPairEvaluation.namesInPairs(referencePairs)
 
     namesInPredictions intersect namesInReference
   }
 
-  def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {
-    pairs.toSet[(String, String)] flatMap {
-      case (src, tgt) => Set(src, tgt)
-    }
+  def getUnionOfNames(
+    predictedPairs: Seq[((String, String), Int)],
+    referencePairs: Seq[(String, String)]
+  ): Set[String] = {
+    val namesInPredictions = IOPairEvaluation.namesInPairs(
+      predictedPairs.map(_._1))
+    val namesInReference = IOPairEvaluation.namesInPairs(referencePairs)
+
+    namesInPredictions union namesInReference
   }
 
   private def filterPairsForNameUniverse(
@@ -94,7 +110,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
     referencePairs: Set[(String, String)],
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
-  ): Seq[(Int, Double)] = {
+  ): Seq[HypergeomEvalResult] = {
     for (predictionThreshold <- thresholdRange) yield {
       val filteredPredictions = filterByThreshold(predictedPairs,
         predictionThreshold).toSet
@@ -106,45 +122,26 @@ class HypergeometricEvaluation(reporter: Reporter) {
         backgroundTargets
       )
 
-      println(s"Discr. threshold: ${predictionThreshold}, Nb predictions: " +
+      val avgCard = IOPairEvaluation.meanOrientationCardinality(
+        filteredPredictions.toSeq)
+      println(s"Discr. threshold: $predictionThreshold, Nb predictions: " +
         s"${filteredPredictions.size}, score: $score")
+      println(s"Mean orientation: $avgCard")
 
-      (filteredPredictions.size, score)
+      HypergeomEvalResult(filteredPredictions.size, score, avgCard)
     }
   }
 
-  private def binarizeScoreMatrix(
-    matrix: Seq[Seq[Double]], threshold: Double
-  ): Seq[Seq[Double]] = {
-    def transform(e: Double): Double = {
-      if (e < threshold) {
-        0
-      } else {
-        1
-      }
+  private def computeOrientationCardinalities(
+    predictedPairs: Seq[((String, String), Int)]
+  ): Seq[(Int, Double)] = {
+    for (predictionThreshold <- thresholdRange) yield {
+      val filteredPredictions = filterByThreshold(predictedPairs,
+        predictionThreshold).toSet
+
+      (filteredPredictions.size,
+        IOPairEvaluation.meanOrientationCardinality(filteredPredictions.toSeq))
     }
-    matrix.map(row => row.map(transform))
-  }
-
-  private def matrixHasSingleValue(matrix: Seq[Seq[Double]]): Boolean = {
-    matrix.flatten.toSet.size == 1
-  }
-
-  private def saveScoreMatrix(matrix: Seq[Seq[Double]], f: File): Unit = {
-    val content = matrix.map(_.mkString(",")).mkString("\n")
-
-    FileUtil.writeToFile(f, content)
-  }
-
-  private def saveScoreHeatmap(matrix: Seq[Seq[Double]], f: File): Unit = {
-    val labels = thresholdRange.map(_.toString)
-    new Heatmap(matrix, "DB", "Predictions", labels, labels, f).run()
-  }
-
-  private def saveMinScore(matrix: Seq[Seq[Double]], f: File): Unit = {
-    val minScore = matrix.map(_.min).min
-
-    FileUtil.writeToFile(f, minScore.toString)
   }
 
   def filterByThreshold(
@@ -165,4 +162,26 @@ class HypergeometricEvaluation(reporter: Reporter) {
     }
   }
 
+  def plotScores(results: Seq[HypergeomEvalResult], f: File): Unit = {
+    val scorePoints = results map {
+      case HypergeomEvalResult(n, s, c) => (n, s, "HG p-value")
+    }
+    val meanCardPoints = results map {
+      case HypergeomEvalResult(n, s, c) => (n, c, "Mean orientation")
+    }
+
+    new ScatterPlot(scorePoints ++ meanCardPoints, f).run()
+  }
+
+  def saveScores(results: Seq[HypergeomEvalResult], f: File): Unit = {
+    val writer = CSVWriter.open(f)
+
+    val header = List("nb. predictions", "score", "avg. cardinality")
+    val tuples = results map {
+      case HypergeomEvalResult(n, s, c) => List(n, s, c)
+    }
+    writer.writeAll(header +: tuples)
+
+    writer.close()
+  }
 }

@@ -24,9 +24,7 @@ class ScatterPlot[T: ClassTag, U: ClassTag](
 
     val aes = "aes(x = x, y = y, color = label)"
     R.eval(s"plot = ggplot(data, $aes) + geom_line() + " +
-      "  theme(" +
-      "     axis.text.y=element_blank(), " +
-      "     axis.ticks.y=element_blank())")
+      s"expand_limits(x = 0, y = 0)")
 
     R.set("fname", file.getAbsolutePath())
     R.eval("ggsave(plot, file = fname)")

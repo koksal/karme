@@ -31,10 +31,11 @@ object IOPairEvaluation {
     library: EnrichrPredictionLibrary,
     reporter: Reporter
   ): Unit = {
-    val hypergeomEval = new HypergeometricEvaluation(reporter)
-    hypergeomEval.evaluate(predictionsWithCounts, library)
+    // val hypergeomEval = new HypergeometricEvaluation(reporter)
+    // hypergeomEval.evaluate(predictionsWithCounts, library)
 
     // TODO PR eval. Separate predictions into match/nonmatch, feed with counts
+    new PRAUCEvaluation(reporter).evaluate(predictionsWithCounts, library)
   }
 
 
@@ -44,7 +45,7 @@ object IOPairEvaluation {
     new HistogramPlotInterface(scores, labels, f).run()
   }
 
-  private def countOrientations(pairs: Seq[(String, String)]): Double = {
+  def meanOrientationCardinality(pairs: Seq[(String, String)]): Double = {
     val groupedByValueSet = pairs.groupBy {
       case (src, tgt) => Set(src, tgt)
     }
@@ -56,22 +57,22 @@ object IOPairEvaluation {
     MathUtil.mean(cardinalities)
   }
 
-  def shuffleBigrams(
-    originalBigrams: Seq[(String, String)]
+  def shufflePairs(
+    originalPairs: Seq[(String, String)]
   ): Seq[(String, String)] = {
-    val (sources, targets) = originalBigrams.unzip
+    val (sources, targets) = originalPairs.unzip
     val allNames = sources ++ targets
 
     val random = new Random()
 
     val shuffled = random.shuffle(allNames)
-    val newSources = shuffled.take(originalBigrams.size)
-    val newTargets = shuffled.drop(originalBigrams.size)
+    val newSources = shuffled.take(originalPairs.size)
+    val newTargets = shuffled.drop(originalPairs.size)
 
     newSources zip newTargets
   }
 
-  def randomBigrams(
+  def randomPairs(
     nameUniverse: Set[String], size: Int
   ): Seq[(String, String)] = {
     val random = new Random()
@@ -85,4 +86,26 @@ object IOPairEvaluation {
     sources zip targets
   }
 
+  def randomPairsWithoutReplacement(
+    nameUniverse: Set[String], size: Int
+  ): Seq[(String, String)] = {
+    val random = new Random()
+
+    val indexedNames = nameUniverse.toIndexedSeq
+    val n = indexedNames.size
+
+    var res = Set[(String, String)]()
+    while (res.size < size) {
+      res +=
+        ((indexedNames(random.nextInt(n)), indexedNames(random.nextInt(n))))
+    }
+
+    res.toSeq
+  }
+
+  def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {
+    pairs.toSet[(String, String)] flatMap {
+      case (src, tgt) => Set(src, tgt)
+    }
+  }
 }
