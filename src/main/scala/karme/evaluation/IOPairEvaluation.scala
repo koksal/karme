@@ -31,11 +31,11 @@ object IOPairEvaluation {
     library: EnrichrPredictionLibrary,
     reporter: Reporter
   ): Unit = {
-    // val hypergeomEval = new HypergeometricEvaluation(reporter)
-    // hypergeomEval.evaluate(predictionsWithCounts, library)
+    val hypergeomEval = new HypergeometricEvaluation(reporter)
+    val randomized = randomPredictionsWithSameScore(predictionsWithCounts)
+    hypergeomEval.evaluate(predictionsWithCounts, library)
 
-    // TODO PR eval. Separate predictions into match/nonmatch, feed with counts
-    new PRAUCEvaluation(reporter).evaluate(predictionsWithCounts, library)
+    // new PRAUCEvaluation(reporter).evaluate(predictionsWithCounts, library)
   }
 
 
@@ -101,6 +101,19 @@ object IOPairEvaluation {
     }
 
     res.toSeq
+  }
+
+  def randomPredictionsWithSameScore(
+    predictions: Seq[((String, String), Int)]
+  ): Seq[((String, String), Int)] = {
+
+    val randomizedPairs = IOPairEvaluation.randomPairsWithoutReplacement(
+      IOPairEvaluation.namesInPairs(predictions.map(_._1)),
+      predictions.size).toSet
+
+    predictions.zip(randomizedPairs) map {
+      case (pred, pair) => (pair, pred._2)
+    }
   }
 
   def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {

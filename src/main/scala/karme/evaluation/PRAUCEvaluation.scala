@@ -1,5 +1,7 @@
 package karme.evaluation
 
+import java.io.File
+
 import karme.Reporter
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 
@@ -14,23 +16,19 @@ class PRAUCEvaluation(reporter: Reporter) {
     println(s"Evaluating ${library.id}")
 
     // compute original
-    val auc = computeAucPR(predictions, library)
+    val auc = computeAucPR(predictions, library, reporter.file("pr-curve.pdf"))
     println(s"Original (${predictions.size}):")
     println(auc)
 
     var betterThanRandomCount = 0
 
     for (i <- 1 to NB_RAND_TRIALS) {
-      val randomizedPairs = IOPairEvaluation.randomPairsWithoutReplacement(
-        IOPairEvaluation.namesInPairs(predictions.map(_._1)),
-        predictions.size).toSet
+      val randomizedPredictions =
+        IOPairEvaluation.randomPredictionsWithSameScore(predictions)
 
-      val randomizedPredictions = predictions.zip(randomizedPairs) map {
-        case (pred, pair) => (pair, pred._2)
-      }
-
-      val randomAuc = computeAucPR(randomizedPredictions, library)
-      println(s"Random run $i (${randomizedPairs.size})")
+      val randomAuc = computeAucPR(randomizedPredictions, library,
+        reporter.file(s"pr-curve-random-$i.pdf"))
+      println(s"Random run $i:")
       println(randomAuc)
 
       if (auc > randomAuc) {
@@ -43,7 +41,8 @@ class PRAUCEvaluation(reporter: Reporter) {
 
   def computeAucPR(
     predictions: Seq[((String, String), Int)],
-    library: EnrichrPredictionLibrary
+    library: EnrichrPredictionLibrary,
+    curveFile: File
   ): Double = {
     val referencePairs = library.ioPairs
 
@@ -58,14 +57,14 @@ class PRAUCEvaluation(reporter: Reporter) {
 
     val predictedPairs = predictions.map(_._1).toSet
     assert(predictedPairs.size == predictions.size)
-    
+
     val falseNegatives = referencePairs -- predictedPairs
     val falseNegScores = falseNegatives.toSeq.map(_ => 0)
 
     val positiveScores = truePosScores ++ falseNegScores
     val negativeScores = falsePosScores
 
-    new PRAUC(positiveScores, negativeScores).run()
+    new PRAUC(positiveScores, negativeScores, curveFile).run()
   }
 
 }

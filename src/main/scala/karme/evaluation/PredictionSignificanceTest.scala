@@ -2,12 +2,14 @@ package karme.evaluation
 
 object PredictionSignificanceTest {
 
+  case class SignificanceResult(hgPValue: Double, foldEnrichment: Double)
+
   def computeSignificance(
     predictedPairs: Set[(String, String)],
     referencePairs: Set[(String, String)],
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
-  ): Double = {
+  ): SignificanceResult = {
     require(predictedPairs.forall(p => checkBackground(p, backgroundSources,
       backgroundTargets)))
     require(referencePairs.forall(p => checkBackground(p, backgroundSources,
@@ -31,8 +33,8 @@ object PredictionSignificanceTest {
   private def computeSignificance(
     predictedPairs: Set[(String, String)],
     referencePairs: Set[(String, String)],
-    totalNbElements: Int
-  ): Double = {
+    nbTotalElements: Int
+  ): SignificanceResult = {
     // nb samples: prediction size
     val nbSamples = predictedPairs.size
     println(s"Nb samples: $nbSamples")
@@ -46,15 +48,31 @@ object PredictionSignificanceTest {
     println(s"Nb total successes: $nbTotalSuccesses")
 
     // total failures: all possible pairs - reference
-    val nbTotalFailures = totalNbElements - nbTotalSuccesses
+    val nbTotalFailures = nbTotalElements - nbTotalSuccesses
     println(s"Nb total failures: $nbTotalFailures")
 
-    new HypergeometricTest(
+    val foldEnrichment = computeFoldEnrichment(nbSampleSuccesses,
+      nbTotalSuccesses, nbSamples, nbTotalElements)
+    println(s"Fold enrichment: ${foldEnrichment}")
+
+    val hgPValue = new HypergeometricTest(
       nbSamples = nbSamples,
       nbSampleSuccesses = nbSampleSuccesses,
       nbTotalSuccesses = nbTotalSuccesses,
       nbTotalFailures = nbTotalFailures
     ).run()
+
+    SignificanceResult(hgPValue, foldEnrichment)
+  }
+
+  private def computeFoldEnrichment(
+    nbSampleSuccesses: Double,
+    nbTotalSuccesses: Double,
+    nbSamples: Double,
+    nbTotalElements: Double
+  ): Double = {
+    (nbSampleSuccesses.toDouble / nbTotalSuccesses) /
+        (nbSamples.toDouble / nbTotalElements)
   }
 
 }

@@ -4,12 +4,16 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
+import karme.evaluation.PredictionSignificanceTest.SignificanceResult
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.util.FileUtil
 import karme.visualization.ScatterPlot
 
 case class HypergeomEvalResult(
-  nbPredictions: Int, score: Double, avgCardinality: Double
+  nbPredictions: Int,
+  hgPValue: Double,
+  foldEnrichment: Double,
+  avgCardinality: Double
 )
 
 class HypergeometricEvaluation(reporter: Reporter) {
@@ -27,6 +31,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
     val backgroundUniv = getCommonNames(predictedPairs, referencePairs.toSeq)
     val backgroundSources = backgroundUniv
     val backgroundTargets = backgroundUniv
+    println(s"Background universe set size: ${backgroundUniv.size}")
 
     val filteredPredictions = filterTriplesForNameUniverse(predictedPairs,
       backgroundSources, backgroundTargets)
@@ -38,8 +43,8 @@ class HypergeometricEvaluation(reporter: Reporter) {
     val scores = computeScoreByDiscrimination(filteredPredictions,
       filteredRefPairs, backgroundSources, backgroundTargets)
 
-    saveScores(scores, reporter.file(s"hypergeom-eval-${library.id}.csv"))
-    plotScores(scores, reporter.file(s"plot-hypergeom-${library.id}.pdf"))
+    saveScores(scores, reporter.file(s"significance-eval-${library.id}.csv"))
+    plotScores(scores, library.id)
 
     val libraryOrientationCard =
       IOPairEvaluation.meanOrientationCardinality(filteredRefPairs.toSeq)
@@ -54,7 +59,9 @@ class HypergeometricEvaluation(reporter: Reporter) {
   ): Set[String] = {
     val namesInPredictions = IOPairEvaluation.namesInPairs(
       predictedPairs.map(_._1))
+    println(s"Prediction universe size: ${namesInPredictions.size}")
     val namesInReference = IOPairEvaluation.namesInPairs(referencePairs)
+    println(s"Ref universe size: ${namesInReference.size}")
 
     namesInPredictions intersect namesInReference
   }
@@ -115,20 +122,18 @@ class HypergeometricEvaluation(reporter: Reporter) {
       val filteredPredictions = filterByThreshold(predictedPairs,
         predictionThreshold).toSet
 
-      val score = PredictionSignificanceTest.computeSignificance(
-        filteredPredictions,
-        referencePairs,
-        backgroundSources,
-        backgroundTargets
-      )
+      val SignificanceResult(hgPValue, foldEnrichment) =
+        PredictionSignificanceTest.computeSignificance(filteredPredictions,
+          referencePairs, backgroundSources, backgroundTargets)
 
       val avgCard = IOPairEvaluation.meanOrientationCardinality(
         filteredPredictions.toSeq)
-      println(s"Discr. threshold: $predictionThreshold, Nb predictions: " +
-        s"${filteredPredictions.size}, score: $score")
-      println(s"Mean orientation: $avgCard")
 
-      HypergeomEvalResult(filteredPredictions.size, score, avgCard)
+      println(s"Discr. threshold: $predictionThreshold, Nb predictions: " +
+        s"${filteredPredictions.size}, hgPValue: $hgPValue")
+
+      HypergeomEvalResult(filteredPredictions.size, hgPValue, foldEnrichment,
+        avgCard)
     }
   }
 
@@ -162,23 +167,33 @@ class HypergeometricEvaluation(reporter: Reporter) {
     }
   }
 
-  def plotScores(results: Seq[HypergeomEvalResult], f: File): Unit = {
-    val scorePoints = results map {
-      case HypergeomEvalResult(n, s, c) => (n, s, "HG p-value")
+  def plotScores(results: Seq[HypergeomEvalResult], libraryId: String): Unit = {
+    val pValuePoints = results map {
+      case HypergeomEvalResult(n, p, fe, c) => (n, p, "HG p-value")
     }
-    val meanCardPoints = results map {
-      case HypergeomEvalResult(n, s, c) => (n, c, "Mean orientation")
-    }
+    new ScatterPlot(pValuePoints,
+      reporter.file(s"hg-p-values-$libraryId.pdf")).run()
 
-    new ScatterPlot(scorePoints ++ meanCardPoints, f).run()
+    val foldEnrPoints = results map {
+      case HypergeomEvalResult(n, p, fe, c) => (n, fe, "fold enrichment")
+    }
+    new ScatterPlot(foldEnrPoints,
+      reporter.file(s"fold-enr-$libraryId.pdf")).run()
+
+    val meanCardPoints = results map {
+      case HypergeomEvalResult(n, p, fe, c) => (n, c, "Mean orientation")
+    }
+    new ScatterPlot(meanCardPoints,
+      reporter.file(s"mean-cardinality-$libraryId.pdf")).run()
   }
 
   def saveScores(results: Seq[HypergeomEvalResult], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
-    val header = List("nb. predictions", "score", "avg. cardinality")
+    val header = List("nb. predictions", "hg p-value", "fold enr.",
+      "avg. cardinality")
     val tuples = results map {
-      case HypergeomEvalResult(n, s, c) => List(n, s, c)
+      case HypergeomEvalResult(n, s, fe, c) => List(n, s, fe, c)
     }
     writer.writeAll(header +: tuples)
 
