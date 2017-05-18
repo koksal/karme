@@ -4,6 +4,7 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
+import karme.evaluation.IOPairEvaluation.ScoredPrediction
 import karme.evaluation.PredictionSignificanceTest.SignificanceResult
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.util.FileUtil
@@ -23,7 +24,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
   val NB_DISCRIM_STEPS = 100
 
   def evaluate(
-    predictedPairs: Seq[((String, String), Int)],
+    predictedPairs: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
     val referencePairs = library.ioPairs
@@ -54,7 +55,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
   }
 
   def getCommonNames(
-    predictedPairs: Seq[((String, String), Int)],
+    predictedPairs: Seq[ScoredPrediction],
     referencePairs: Seq[(String, String)]
   ): Set[String] = {
     val namesInPredictions = IOPairEvaluation.namesInPairs(
@@ -67,7 +68,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
   }
 
   def getUnionOfNames(
-    predictedPairs: Seq[((String, String), Int)],
+    predictedPairs: Seq[ScoredPrediction],
     referencePairs: Seq[(String, String)]
   ): Set[String] = {
     val namesInPredictions = IOPairEvaluation.namesInPairs(
@@ -89,10 +90,10 @@ class HypergeometricEvaluation(reporter: Reporter) {
   }
 
   private def filterTriplesForNameUniverse(
-    pairs: Seq[((String, String), Int)],
+    pairs: Seq[ScoredPrediction],
     possibleSources: Set[String],
     possibleTargets: Set[String]
-  ): Seq[((String, String), Int)] = {
+  ): Seq[ScoredPrediction] = {
     pairs filter {
       case ((src, tgt), i) =>
         possibleSources.contains(src) && possibleTargets.contains(tgt)
@@ -100,7 +101,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
   }
 
   def predictionPairsByDescendingScore(
-    predictedPairs: Seq[((String, String), Int)]
+    predictedPairs: Seq[ScoredPrediction]
   ): Seq[(String, String)] = {
     val sortedPreds = predictedPairs.sortBy(_._2).reverse
     sortedPreds map {
@@ -108,49 +109,46 @@ class HypergeometricEvaluation(reporter: Reporter) {
     }
   }
 
-  def thresholdRange: Seq[Double] = {
-    (1 to NB_DISCRIM_STEPS) map (_ / NB_DISCRIM_STEPS.toDouble)
+  def predictionsByMinDescendingScore(
+    preds: Seq[ScoredPrediction]
+  ): Seq[(Set[(String, String)], Int)] = {
+    val uniqDescendingScores = preds.map(_._2).distinct.sorted.reverse
+
+    for (scoreThreshold <- uniqDescendingScores) yield {
+      val pairs = preds collect {
+        case ((src, tgt), score) if score >= scoreThreshold => {
+          (src, tgt)
+        }
+      }
+      (pairs.toSet, scoreThreshold)
+    }
   }
 
   private def computeScoreByDiscrimination(
-    predictedPairs: Seq[((String, String), Int)],
+    predictedPairs: Seq[ScoredPrediction],
     referencePairs: Set[(String, String)],
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
   ): Seq[HypergeomEvalResult] = {
-    for (predictionThreshold <- thresholdRange) yield {
-      val filteredPredictions = filterByThreshold(predictedPairs,
-        predictionThreshold).toSet
-
+    val predictionGroups = predictionsByMinDescendingScore(predictedPairs)
+    for ((filteredPreds, minScore) <- predictionGroups) yield {
       val SignificanceResult(hgPValue, foldEnrichment) =
-        PredictionSignificanceTest.computeSignificance(filteredPredictions,
+        PredictionSignificanceTest.computeSignificance(filteredPreds,
           referencePairs, backgroundSources, backgroundTargets)
 
       val avgCard = IOPairEvaluation.meanOrientationCardinality(
-        filteredPredictions.toSeq)
+        filteredPreds.toSeq)
 
-      println(s"Discr. threshold: $predictionThreshold, Nb predictions: " +
-        s"${filteredPredictions.size}, hgPValue: $hgPValue")
+      println(s"Minimum score: $minScore, Nb predictions: " +
+        s"${filteredPreds.size}, hgPValue: $hgPValue")
 
-      HypergeomEvalResult(filteredPredictions.size, hgPValue, foldEnrichment,
+      HypergeomEvalResult(filteredPreds.size, hgPValue, foldEnrichment,
         avgCard)
     }
   }
 
-  private def computeOrientationCardinalities(
-    predictedPairs: Seq[((String, String), Int)]
-  ): Seq[(Int, Double)] = {
-    for (predictionThreshold <- thresholdRange) yield {
-      val filteredPredictions = filterByThreshold(predictedPairs,
-        predictionThreshold).toSet
-
-      (filteredPredictions.size,
-        IOPairEvaluation.meanOrientationCardinality(filteredPredictions.toSeq))
-    }
-  }
-
   def filterByThreshold(
-    pairs: Seq[((String, String), Int)], threshold: Double
+    pairs: Seq[ScoredPrediction], threshold: Double
   ): Seq[(String, String)] = {
     require(threshold >= 0 && threshold <= 1)
 
@@ -171,8 +169,16 @@ class HypergeometricEvaluation(reporter: Reporter) {
     val pValuePoints = results map {
       case HypergeomEvalResult(n, p, fe, c) => (n, p, "HG p-value")
     }
-    new ScatterPlot(pValuePoints,
-      reporter.file(s"hg-p-values-$libraryId.pdf")).run()
+    new ScatterPlot(
+      pValuePoints,
+      reporter.file(s"hg-p-values-$libraryId.pdf"),
+      logYScale = false
+    ).run()
+    new ScatterPlot(
+      pValuePoints,
+      reporter.file(s"log-hg-p-values-$libraryId.pdf"),
+      logYScale = true
+    ).run()
 
     val foldEnrPoints = results map {
       case HypergeomEvalResult(n, p, fe, c) => (n, fe, "fold enrichment")

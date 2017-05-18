@@ -13,6 +13,8 @@ import scala.util.Random
 
 object IOPairEvaluation {
 
+  type ScoredPrediction = ((String, String), Int)
+
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
     val reporter = new Reporter(opts.reporterOpts)
@@ -27,7 +29,7 @@ object IOPairEvaluation {
   }
 
   def evaluate(
-    predictionsWithCounts: Seq[((String, String), Int)],
+    predictionsWithCounts: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary,
     reporter: Reporter
   ): Unit = {
@@ -104,8 +106,8 @@ object IOPairEvaluation {
   }
 
   def randomPredictionsWithSameScore(
-    predictions: Seq[((String, String), Int)]
-  ): Seq[((String, String), Int)] = {
+    predictions: Seq[ScoredPrediction]
+  ): Seq[ScoredPrediction] = {
 
     val randomizedPairs = IOPairEvaluation.randomPairsWithoutReplacement(
       IOPairEvaluation.namesInPairs(predictions.map(_._1)),
