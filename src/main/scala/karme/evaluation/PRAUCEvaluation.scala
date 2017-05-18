@@ -4,10 +4,11 @@ import java.io.File
 
 import karme.Reporter
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.util.FileUtil
 
 class PRAUCEvaluation(reporter: Reporter) {
 
-  val NB_RAND_TRIALS = 50
+  val NB_RAND_TRIALS = 100
 
   def evaluate(
     predictions: Seq[((String, String), Int)],
@@ -16,9 +17,8 @@ class PRAUCEvaluation(reporter: Reporter) {
     println(s"Evaluating ${library.id}")
 
     // compute original
-    val auc = computeAucPR(predictions, library, reporter.file("pr-curve.pdf"))
-    println(s"Original (${predictions.size}):")
-    println(auc)
+    val auc = computeAucPR(predictions, library,
+      Some(reporter.file(s"pr-curve-${library.id}.pdf")))
 
     var betterThanRandomCount = 0
 
@@ -26,23 +26,22 @@ class PRAUCEvaluation(reporter: Reporter) {
       val randomizedPredictions =
         IOPairEvaluation.randomPredictionsWithSameScore(predictions)
 
-      val randomAuc = computeAucPR(randomizedPredictions, library,
-        reporter.file(s"pr-curve-random-$i.pdf"))
-      println(s"Random run $i:")
-      println(randomAuc)
+      val randomAuc = computeAucPR(randomizedPredictions, library, None)
 
       if (auc > randomAuc) {
         betterThanRandomCount += 1
       }
     }
 
-    println(s"Better than random in: $betterThanRandomCount / $NB_RAND_TRIALS")
+    FileUtil.writeToFile(reporter.file(s"auc-pr-${library.id}.txt"),
+      s"AUC PR: Better than random in: " +
+        s"$betterThanRandomCount / $NB_RAND_TRIALS")
   }
 
   def computeAucPR(
     predictions: Seq[((String, String), Int)],
     library: EnrichrPredictionLibrary,
-    curveFile: File
+    curveFile: Option[File]
   ): Double = {
     val referencePairs = library.ioPairs
 

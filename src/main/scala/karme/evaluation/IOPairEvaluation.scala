@@ -23,8 +23,14 @@ object IOPairEvaluation {
 
     val predsWithCounts = IOPairParser(opts.evalOpts.predictionPairsFile.get)
 
+    val toEvaluate = if (opts.evalOpts.randomize) {
+      randomPredictionsWithSameScore(predsWithCounts)
+    } else {
+      predsWithCounts
+    }
+
     for (library <- evalCtx.references) {
-      evaluate(predsWithCounts, library, reporter)
+      evaluate(toEvaluate, library, reporter)
     }
   }
 
@@ -33,13 +39,11 @@ object IOPairEvaluation {
     library: EnrichrPredictionLibrary,
     reporter: Reporter
   ): Unit = {
-    val hypergeomEval = new HypergeometricEvaluation(reporter)
-    val randomized = randomPredictionsWithSameScore(predictionsWithCounts)
-    hypergeomEval.evaluate(predictionsWithCounts, library)
+    new HypergeometricEvaluation(reporter).evaluate(predictionsWithCounts,
+      library)
 
-    // new PRAUCEvaluation(reporter).evaluate(predictionsWithCounts, library)
+    new PRAUCEvaluation(reporter).evaluate(predictionsWithCounts, library)
   }
-
 
   private def plotScoreDist(scores: Seq[Double], f: File): Unit = {
     val labels = scores.map(_ => "none")

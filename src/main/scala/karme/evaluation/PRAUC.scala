@@ -6,7 +6,7 @@ import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
 class PRAUC(
-  positiveScores: Seq[Int], negativeScores: Seq[Int], plotFile: File
+  positiveScores: Seq[Int], negativeScores: Seq[Int], plotFile: Option[File]
 ) extends AbstractRInterface[Double] {
 
   override val LIBRARIES = Seq("PRROC")
@@ -17,12 +17,11 @@ class PRAUC(
 
     R.eval("result <- pr.curve(pos, neg, curve = TRUE)")
 
-    R.eval(s"""pdf("${plotFile.getPath()}")""")
-    R.eval("plot(result)")
-    R.eval("dev.off()")
-
-    val seq = R.evalD2("result$curve").map(_.toSeq).toSeq
-    println(seq.mkString("\n"))
+    plotFile map { f =>
+      R.eval(s"""pdf("${f.getPath()}")""")
+      R.eval("plot(result)")
+      R.eval("dev.off()")
+    }
 
     R.evalD0("result$auc.integral")
   }

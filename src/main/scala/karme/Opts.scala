@@ -51,7 +51,8 @@ case class SynthOpts(
 
 case class EvalOpts(
   referenceFiles: Seq[File] = Seq(),
-  predictionPairsFile: Option[File] = None
+  predictionPairsFile: Option[File] = None,
+  randomize: Boolean = false
 )
 
 case class ReporterOpts(

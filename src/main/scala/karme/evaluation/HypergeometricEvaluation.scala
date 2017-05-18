@@ -19,20 +19,23 @@ case class HypergeomEvalResult(
 
 class HypergeometricEvaluation(reporter: Reporter) {
 
-  val P_VALUE_THRESHOLD = 0.05
-
-  val NB_DISCRIM_STEPS = 100
-
   def evaluate(
     predictedPairs: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
     val referencePairs = library.ioPairs
 
-    val backgroundUniv = getCommonNames(predictedPairs, referencePairs.toSeq)
-    val backgroundSources = backgroundUniv
-    val backgroundTargets = backgroundUniv
-    println(s"Background universe set size: ${backgroundUniv.size}")
+    val refSources = referencePairs.map(_._1)
+    val refTargets = referencePairs.map(_._2)
+    println(s"# reference sources: ${refSources.size}")
+    println(s"# reference targets: ${refTargets.size}")
+
+    val predictionUniverse = IOPairEvaluation.namesInPairs(
+      predictedPairs.map(_._1))
+    val refUniverse = refSources union refTargets
+
+    val backgroundSources = refSources intersect predictionUniverse
+    val backgroundTargets = refTargets intersect predictionUniverse
 
     val filteredPredictions = filterTriplesForNameUniverse(predictedPairs,
       backgroundSources, backgroundTargets)
