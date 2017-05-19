@@ -78,7 +78,6 @@ object Main {
     new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
       nodeHighlightGroups = List(sources.map(_.state)))
 
-    
 
   }
 }

@@ -27,4 +27,11 @@ object FileUtil {
     FileSystems.getDefault().getPath(path).getFileName().toString()
   }
 
+  def readContent(f: File): String = {
+    val source = scala.io.Source.fromFile(f)
+    val content = source.getLines().mkString("\n")
+    source.close()
+    content
+  }
+
 }

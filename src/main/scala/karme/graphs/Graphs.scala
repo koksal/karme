@@ -91,9 +91,9 @@ object Graphs {
     }
   }
 
-  class UnlabeledGraph[Vertex <: Ordered[Vertex]](
-    val V: Set[Vertex] = Set.empty,
-    val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]]
+  case class UnlabeledGraph[Vertex <: Ordered[Vertex]](
+    V: Set[Vertex] = Set.empty,
+    E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]]
   ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]] {
 
     def addVertex(v: Vertex) = new UnlabeledGraph(V + v, E)
@@ -115,10 +115,10 @@ object Graphs {
 
   }
 
-  class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
-    val V: Set[Vertex] = Set.empty[Vertex],
-    val E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
-    val edgeDirections: Map[UnlabeledEdge[Vertex], Set[EdgeDirection]] =
+  case class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
+    V: Set[Vertex] = Set.empty[Vertex],
+    E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
+    edgeDirections: Map[UnlabeledEdge[Vertex], Set[EdgeDirection]] =
       Map.empty[UnlabeledEdge[Vertex], Set[EdgeDirection]]
   ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]]
     with DigraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledDiGraph[Vertex]] {

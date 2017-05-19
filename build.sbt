@@ -4,6 +4,8 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 )
 
+val circeVersion = "0.8.0"
+
 lazy val root = (project in file(".")).
   settings(commonSettings: _*).
   settings(
@@ -12,7 +14,11 @@ lazy val root = (project in file(".")).
       "com.github.scopt" %% "scopt" % "3.5.0",
       "org.ddahl" %% "rscala" % "1.0.15",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4",
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion
+
     )
   )
 
