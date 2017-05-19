@@ -3,6 +3,7 @@ package karme
 import karme.evaluation.ClusterPairExpansion
 import karme.evaluation.FunctionIOPairs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.IOPairLogger
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.SynthesisResult
@@ -26,8 +27,7 @@ object Main {
     val TransformResult(graph, sources, clustering) =
       inputTransformer.transform()
 
-    new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
-      nodeHighlightGroups = List(sources.map(_.state)))
+    // TODO save graph and clustering, graph node pseudotimes, cell members
 
     if (opts.runSynthesis) {
       runSynthesis(opts, inputTransformer, graph, clustering, reporter)
@@ -68,5 +68,17 @@ object Main {
 
     IOPairLogger.logPairs(clusterIOPairs, reporter.file("cluster-io-pairs.csv"))
     IOPairLogger.logPairs(geneIOPairs, reporter.file("gene-io-pairs.csv"))
+  }
+
+  def logGraph(
+    graph: DirectedBooleanStateGraph,
+    sources: Set[StateGraphVertex],
+    reporter: Reporter
+  ): Unit = {
+    new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
+      nodeHighlightGroups = List(sources.map(_.state)))
+
+    
+
   }
 }
