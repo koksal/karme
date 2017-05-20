@@ -6,6 +6,7 @@ import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.IOPairLogger
 import karme.printing.SynthesisResultLogger
+import karme.store.ClusteringStore
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.transformations.InputTransformer
@@ -27,7 +28,10 @@ object Main {
     val TransformResult(graph, sources, clustering) =
       inputTransformer.transform()
 
-    // TODO save graph and clustering, graph node pseudotimes, cell members
+    logGraph(graph, sources, reporter)
+    new ClusteringStore(opts.reporterOpts.outFolder).store(clustering)
+    // TODO save graph edges, graph node cell members
+    // TODO save functions
 
     if (opts.runSynthesis) {
       runSynthesis(opts, inputTransformer, graph, clustering, reporter)

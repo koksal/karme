@@ -8,7 +8,7 @@ import karme.util.FileUtil
 
 class ClusteringStore(parent: File) {
 
-  val fileName = "clustering.json"
+  val fileName = "gene-clustering.json"
   val file = new File(parent, fileName)
 
   def store(clustering: Map[String, Set[String]]): Unit = {
