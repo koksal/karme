@@ -19,6 +19,7 @@ import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState
 import karme.util.MapUtil
 import karme.util.MathUtil
+import karme.util.UniqueCounter
 
 import scala.collection.mutable
 
@@ -68,9 +69,11 @@ object StateGraphs {
   ): Set[StateGraphVertex] = {
     val stateToMeasurements = booleanExperiment.measurements.groupBy(_.state)
 
+    val ctr = new UniqueCounter()
+
     val V = stateToMeasurements map {
       case (state, ms) =>
-        StateGraphVertex(state, ms)
+        StateGraphVertex(s"v_${ctr.next}", state, ms)
     }
 
     V.toSet
@@ -133,45 +136,20 @@ object StateGraphs {
   }
 
   case class StateGraphVertex(
+    id: String,
     state: ConcreteBooleanState,
     measurements: Seq[BooleanMeasurement]
-  ) extends Ordered[StateGraphVertex] {
-    override def compare(o: StateGraphVertex): Int = {
-      assert(this.state.size == o.state.size)
-
-      import scala.math.Ordering.Implicits._
-      if (this.state.orderedValues < o.state.orderedValues) {
-        -1
-      } else if (this.state == o.state) {
-        0
-      } else {
-        1
-      }
-    }
-
+  ) extends VertexLike {
     def names: Seq[String] = {
       state.orderedKeys
     }
   }
 
   case class ThreeValuedStateGraphVertex(
+    id: String,
     state: ThreeValuedState,
     measurements: Seq[ThreeValuedMeasurement]
-  ) extends Ordered[ThreeValuedStateGraphVertex] {
-    override def compare(o: ThreeValuedStateGraphVertex): Int = {
-
-      implicit val ordering = ThreeValuedState.threeValuedOrdering
-      import scala.math.Ordering.Implicits._
-
-      if (this.state.orderedValues < o.state.orderedValues) {
-        -1
-      } else if (this.state == o.state) {
-        0
-      } else {
-        1
-      }
-    }
-  }
+  ) extends VertexLike
 
   object StateGraphOps {
     def names(g: GraphLike[StateGraphVertex, _, _]): Seq[String] = {
@@ -289,17 +267,6 @@ object StateGraphs {
       }
     }
     result
-  }
-
-
-  def makeNodeIDs(
-    vs: Iterable[StateGraphVertex]
-  ): Map[StateGraphVertex, String] = {
-    vs.toSeq.sorted.zipWithIndex.map{
-      case (v, i) => {
-        v -> s"V$i"
-      }
-    }.toMap
   }
 
   def makeCellIDs(

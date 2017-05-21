@@ -29,9 +29,7 @@ class StateGraphPlotter(reporter: Reporter) {
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
-    val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
-    val dotString = undirectedDotString(g, cellClustering, nodeToID,
-      nodeHighlightGroups)
+    val dotString = undirectedDotString(g, cellClustering, nodeHighlightGroups)
     plotGraph(dotString, name)
   }
 
@@ -42,9 +40,7 @@ class StateGraphPlotter(reporter: Reporter) {
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
-    val nodeToID = StateGraphs.makeNodeIDs(g.V.toSeq.sorted)
-    val dotString = directedDotString(g, cellClustering, nodeToID,
-      nodeHighlightGroups)
+    val dotString = directedDotString(g, cellClustering, nodeHighlightGroups)
     plotGraph(dotString, name)
   }
 
@@ -52,10 +48,9 @@ class StateGraphPlotter(reporter: Reporter) {
     g: DirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
     transitions: Iterable[Transition],
-    nodeToID: Map[StateGraphVertex, String],
     name: String
   ): Unit = {
-    val dotString = transitionDotString(g, clustering, transitions, nodeToID)
+    val dotString = transitionDotString(g, clustering, transitions)
     plotGraph(dotString, name)
   }
 
@@ -93,33 +88,30 @@ class StateGraphPlotter(reporter: Reporter) {
   private def undirectedDotString(
     g: UndirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
-    nodeToID: Map[StateGraphVertex, String],
     nodeHighlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID, nodeHighlightGroups)
-    val edgeStr = undirectedDotEdges(g, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, nodeHighlightGroups)
+    val edgeStr = undirectedDotEdges(g)
     dotGraph(nodeStr, edgeStr, isDirected = false)
   }
 
   private def directedDotString(
     g: DirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
-    nodeToID: Map[StateGraphVertex, String],
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID, highlightGroups)
-    val edgeStr = directedDotEdges(g, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, highlightGroups)
+    val edgeStr = directedDotEdges(g)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
 
   private def transitionDotString(
     g: DirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
-    transitions: Iterable[Transition],
-    nodeToID: Map[StateGraphVertex, String]
+    transitions: Iterable[Transition]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, nodeToID, Nil)
-    val edgeStr = transitionDotEdges(g, transitions, nodeToID)
+    val nodeStr = dotNodes(g.V, clustering, Nil)
+    val edgeStr = transitionDotEdges(g, transitions)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
 
@@ -141,7 +133,6 @@ class StateGraphPlotter(reporter: Reporter) {
   private def dotNodes(
     V: Iterable[StateGraphVertex],
     clustering: Map[String, Set[String]],
-    nodeToId: Map[StateGraphVertex, String],
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
     val DEFAULT_BACKGROUND_COLOR = "white"
@@ -158,7 +149,6 @@ class StateGraphPlotter(reporter: Reporter) {
         GROUP_COLORS(highlightGroupIndex)
       }
 
-      val id = nodeToId(node)
       val counts = node.measurements.size
       val clusterCountStrings =
         StateGraphs.nodeMeasurementsPerCluster(node, clustering).map{
@@ -169,9 +159,10 @@ class StateGraphPlotter(reporter: Reporter) {
       } else {
         clusterCountStrings.mkString(" {", ", ", "}")
       }
-      val nodeStr = s"${id} / $counts${clusterString}"
+      val nodeStr = s"${node.id} / $counts${clusterString}"
       sb append (
-        s"""${id} [label="${nodeStr}", fillcolor="${color}", style="filled"];
+        s"""${node.id} [label="${nodeStr}", fillcolor="${color}",
+           |style="filled"];
            |""".stripMargin)
       sb append "\n"
     }
@@ -179,15 +170,12 @@ class StateGraphPlotter(reporter: Reporter) {
   }
 
   private def undirectedDotEdges(
-    g: UndirectedBooleanStateGraph,
-    nodeToId: Map[StateGraphVertex, String]
+    g: UndirectedBooleanStateGraph
   ): String = {
     val sb = new StringBuilder()
     for (e <- g.E) {
       val labels = UndirectedStateGraphOps.edgeLabels(e)
-      val lhsID = nodeToId(e.v1)
-      val rhsID = nodeToId(e.v2)
-      sb append s"${lhsID} -- ${rhsID}"
+      sb append s"${e.v1.id} -- ${e.v2.id}"
       sb append " [label=\""
       sb append labels.mkString(",")
       sb append "\"]\n"
@@ -197,14 +185,13 @@ class StateGraphPlotter(reporter: Reporter) {
   }
 
   private def directedDotEdges(
-    g: DirectedBooleanStateGraph,
-    nodeToID: Map[StateGraphVertex, String]
+    g: DirectedBooleanStateGraph
   ): String = {
     val sb = new StringBuilder()
     for (e <- g.E) {
       val labels = UndirectedStateGraphOps.edgeLabels(e)
-      val lhsID = nodeToID(e.v1)
-      val rhsID = nodeToID(e.v2)
+      val lhsID = e.v1.id
+      val rhsID = e.v2.id
       val edgeDirections = g.edgeDirections.getOrElse(e, Set[EdgeDirection]())
       if (edgeDirections contains Forward) {
         for (label <- labels) {
@@ -232,8 +219,7 @@ class StateGraphPlotter(reporter: Reporter) {
 
   private def transitionDotEdges(
     graph: DirectedBooleanStateGraph,
-    transitions: Iterable[Transition],
-    nodeToID: Map[StateGraphVertex, String]
+    transitions: Iterable[Transition]
   ): String = {
     val sb = new StringBuilder()
 
@@ -242,8 +228,8 @@ class StateGraphPlotter(reporter: Reporter) {
       val neighbors = graph.targets(inputVertex)
       for (neighbor <- neighbors) {
         if (neighbor.state.value(transition.label) == transition.output) {
-          val lhs = nodeToID(inputVertex)
-          val rhs = nodeToID(neighbor)
+          val lhs = inputVertex.id
+          val rhs = neighbor.id
           val label = s"${transition.label} (${transition.weight})"
           sb append directedDotEdge(lhs, rhs, List(label))
         }

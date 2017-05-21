@@ -13,7 +13,6 @@ object StatePseudotimeLogger {
     trajectories: Iterable[CellTrajectory],
     outFolder: File
   ): Unit = {
-    val nodeToID = StateGraphs.makeNodeIDs(vertices.toSeq.sorted)
     for ((trajectory, i) <- trajectories.zipWithIndex) {
       val filename = s"state-pseudotimes-${i}.csv"
       val file = new File(outFolder, filename)
@@ -21,7 +20,7 @@ object StatePseudotimeLogger {
       for (v <- vertices) {
         StateGraphs.avgNodePseudotime(v, trajectory) match {
           case Some(pt) => {
-            rows = List(nodeToID(v), pt.toString) :: rows
+            rows = List(v.id, pt.toString) :: rows
           }
           case None =>
         }

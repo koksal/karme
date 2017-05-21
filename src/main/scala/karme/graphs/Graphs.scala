@@ -2,11 +2,13 @@ package karme.graphs
 
 import karme.util.MapUtil
 
-import scala.collection.immutable.Queue
-import scala.collection.mutable
-import scala.collection.mutable
-
 object Graphs {
+  trait VertexLike extends Ordered[VertexLike] {
+    def id: String
+
+    override def compare(that: VertexLike): Int = this.id.compare(that.id)
+  }
+
   trait EdgeLike[Vertex] {
     def v1: Vertex
     def v2: Vertex
@@ -17,7 +19,7 @@ object Graphs {
   case class LabeledEdge[Vertex, Label](v1: Vertex, v2: Vertex, label: Label)
     extends EdgeLike[Vertex]
 
-  trait GraphLike[Vertex <: Ordered[Vertex], Edge <: EdgeLike[Vertex],
+  trait GraphLike[Vertex <: VertexLike, Edge <: EdgeLike[Vertex],
     G <: GraphLike[Vertex, Edge, G]] {
     def V: Set[Vertex]
     def E: Set[Edge]
@@ -39,7 +41,7 @@ object Graphs {
 
   }
 
-  trait DigraphLike[Vertex <: Ordered[Vertex], Edge <: EdgeLike[Vertex],
+  trait DigraphLike[Vertex <: VertexLike, Edge <: EdgeLike[Vertex],
     G <: GraphLike[Vertex, Edge, G]] {
     this: G =>
 
@@ -129,7 +131,7 @@ object Graphs {
     }
   }
 
-  case class UnlabeledGraph[Vertex <: Ordered[Vertex]](
+  case class UnlabeledGraph[Vertex <: VertexLike](
     V: Set[Vertex] = Set.empty,
     E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]]
   ) extends GraphLike[Vertex, UnlabeledEdge[Vertex], UnlabeledGraph[Vertex]] {
@@ -153,7 +155,7 @@ object Graphs {
 
   }
 
-  case class UnlabeledDiGraph[Vertex <: Ordered[Vertex]](
+  case class UnlabeledDiGraph[Vertex <: VertexLike](
     V: Set[Vertex] = Set.empty[Vertex],
     E: Set[UnlabeledEdge[Vertex]] = Set.empty[UnlabeledEdge[Vertex]],
     edgeDirections: Map[UnlabeledEdge[Vertex], Set[EdgeDirection]] =
@@ -192,10 +194,10 @@ object Graphs {
   case object Forward extends EdgeDirection
   case object Backward extends EdgeDirection
 
-  def lexicographicEdge[Vertex <: Ordered[Vertex]](
+  def lexicographicEdge[Vertex <: VertexLike](
     v1: Vertex, v2: Vertex
   ): UnlabeledEdge[Vertex] = {
-    if (v1 < v2) {
+    if (v1.id < v2.id) {
       UnlabeledEdge(v1, v2)
     } else {
       UnlabeledEdge(v2, v1)
