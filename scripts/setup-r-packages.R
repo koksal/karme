@@ -1,6 +1,15 @@
-install.packages("Ckmeans.1d.dp", repos="http://cran.rstudio.com/")
-install.packages("ggplot2", repos="http://cran.rstudio.com/")
-install.packages("gplots", repos="http://cran.rstudio.com/")
-install.packages("mclust", repos="http://cran.rstudio.com/")
-install.packages("NbClust", repos="http://cran.rstudio.com/")
-install.packages("RColorBrewer", repos="http://cran.rstudio.com/")
+libraries = c(
+              "Ckmeans.1d.dp", 
+              "cluster",
+              "ggplot2",
+              "gplots",
+              "mclust",
+              "NbClust",
+              "PRROC",
+              "RColorBrewer",
+              "scales"
+              )
+
+for (lib in libraries) {
+  install.packages(lib, repos="http://cran.rstudio.com/")
+}
