@@ -2,8 +2,6 @@ package karme.synthesis
 
 import karme.Reporter
 import karme.SynthOpts
-import karme.evaluation.ReachabilityEvaluation
-import karme.evaluation.ReachabilityEvaluation.ReachabilityEvaluationResult
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.printing.SynthesisResultLogger
@@ -11,7 +9,6 @@ import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 import karme.transformations.TransitionProducer
-import karme.visualization.StateGraphPlotter
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 

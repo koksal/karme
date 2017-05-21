@@ -80,6 +80,13 @@ object Graphs {
       }
     }
 
+    def shortestPaths(src: Vertex): Set[Seq[Vertex]] = {
+      var pred = Map[Vertex, Vertex]()
+      var dist = Map[Vertex, Int]()
+
+      ???
+    }
+
     def source(edge: Edge, direction: EdgeDirection): Vertex = direction match {
       case Forward => edge.v1
       case Backward => edge.v2
