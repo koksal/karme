@@ -31,7 +31,7 @@ class IncrementalStateGraphBuilder(
   private def removeNodesWithoutNeighbors(
     g: DirectedBooleanStateGraph
   ): DirectedBooleanStateGraph = {
-    val nodesWithoutNeighbors = g.V filter (v => g.neighbors(v).isEmpty)
+    val nodesWithoutNeighbors = g.V filter (v => g.undirectedNeighbors(v).isEmpty)
 
     var newG = g
     for (v <- nodesWithoutNeighbors) {

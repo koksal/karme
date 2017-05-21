@@ -2,6 +2,8 @@ package karme.graphs
 
 import karme.util.MapUtil
 
+import scala.collection.immutable.Queue
+import scala.collection.mutable
 import scala.collection.mutable
 
 object Graphs {
@@ -20,7 +22,7 @@ object Graphs {
     def V: Set[Vertex]
     def E: Set[Edge]
 
-    def neighbors(v: Vertex): Set[Vertex] = {
+    def undirectedNeighbors(v: Vertex): Set[Vertex] = {
       var vs = Set[Vertex]()
       for (e <- E) {
         if (e.v1 == v) {
@@ -81,10 +83,39 @@ object Graphs {
     }
 
     def shortestPaths(src: Vertex): Set[Seq[Vertex]] = {
-      var pred = Map[Vertex, Vertex]()
-      var dist = Map[Vertex, Int]()
+      var prev = Map[Vertex, Vertex]()
+      var dist = Map[Vertex, Int](src -> 0)
+      var toProcess = Set(src)
 
-      ???
+      def reconstructPath(v: Vertex): Seq[Vertex] = {
+        require(dist.isDefinedAt(v))
+        prev.get(v) match {
+          case Some(p) => reconstructPath(p) ++ Seq(v)
+          case None => Seq(v)
+        }
+      }
+
+      while (toProcess.nonEmpty) {
+        val u = toProcess.minBy(dist(_))
+        toProcess -= u
+
+        for (v <- this.targets(u)) {
+          // constant distance
+          val altDist = dist(u) + 1
+          dist.get(v) match {
+            case Some(d) if d <= altDist => {
+              // neighbor is already reachable
+            }
+            case _ => {
+              dist += (v -> altDist)
+              prev += (v -> u)
+              toProcess += v
+            }
+          }
+        }
+      }
+
+      dist.keySet.map(reconstructPath)
     }
 
     def source(edge: Edge, direction: EdgeDirection): Vertex = direction match {
