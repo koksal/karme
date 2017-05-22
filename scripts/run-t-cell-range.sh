@@ -43,7 +43,7 @@ do
   CLUSTERING_ARGS["$i"]="--cluster --min-clusters $i --max-clusters $i"
 done
 
-SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 10 run_with_args \
+SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 60 --joblog joblog.txt run_with_args \
   ::: "${TRANSFORM_ARGS[@]}" \
   ::: "${ACTIVITY_FILTER_ARGS[@]}" \
   ::: "${SMOOTHING_RADIUS_ARGS[@]}" \
