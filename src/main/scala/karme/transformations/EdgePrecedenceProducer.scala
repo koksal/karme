@@ -16,15 +16,15 @@ object EdgePrecedenceProducer {
     g: DirectedBooleanStateGraph, v: StateGraphVertex
   ): Seq[EdgePrecedence] = {
     val shortestPaths = g.shortestPaths(v)
-    val nonTrivialPaths = shortestPaths.filter(_.size > 1)
+    val nonTrivialPaths = shortestPaths.filter(_.size >= 3)
 
     nonTrivialPaths.toSeq flatMap precedenceFromPath
   }
 
   def precedenceFromPath(p: Seq[StateGraphVertex]): Seq[EdgePrecedence] = {
-    require(p.size >= 2)
+    require(p.size >= 3)
 
-    val distance = p.size - 1
+    val distance = p.size - 2
     val firstEdge = UnlabeledEdge(p(0), p(1))
     val lastEdge = UnlabeledEdge(p(p.size - 2), p(p.size - 1))
 
