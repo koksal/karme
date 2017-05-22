@@ -34,4 +34,8 @@ object FileUtil {
     content
   }
 
+  def listFiles(folder: File): Seq[File] = {
+    folder.list() map (new File(_))
+  }
+
 }

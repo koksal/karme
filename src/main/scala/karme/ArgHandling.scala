@@ -158,6 +158,10 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(predictionPairsFile = Some(f)))
       } text "File with predictions to evaluate"
 
+      opt[File]("run-collection") action { (f, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(runCollectionFolder = Some(f)))
+      } text "Folder containing run folders to evaluate."
+
       opt[Unit]("randomize-eval") action { (_, o) =>
         o.copy(evalOpts = o.evalOpts.copy(randomize = true))
       } text "Randomize predictions before evaluation"

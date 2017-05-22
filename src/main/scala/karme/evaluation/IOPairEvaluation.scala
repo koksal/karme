@@ -3,9 +3,11 @@ package karme.evaluation
 import java.io.File
 
 import karme.ArgHandling
+import karme.Clustering
 import karme.Reporter
-import karme.evaluation.enrichr.{EnrichrPredictionLibrary}
+import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.parsing.IOPairParser
+import karme.store.ClusteringStore
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 
@@ -31,6 +33,12 @@ object IOPairEvaluation {
 
     for (library <- evalCtx.references) {
       evaluate(toEvaluate, library, reporter)
+    }
+  }
+
+  def readClusterings(folders: Seq[File]): Seq[Clustering] = {
+    folders map { f =>
+      Clustering(new ClusteringStore(f).read)
     }
   }
 
