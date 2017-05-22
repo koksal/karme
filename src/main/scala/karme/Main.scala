@@ -7,8 +7,10 @@ import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.IOPairLogger
 import karme.printing.SynthesisResultLogger
 import karme.store.ClusteringStore
+import karme.store.EdgePrecedenceStore
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
+import karme.transformations.EdgePrecedenceProducer
 import karme.transformations.InputTransformer
 import karme.transformations.TransformResult
 import karme.visualization.StateGraphPlotter
@@ -29,7 +31,12 @@ object Main {
       inputTransformer.transform()
 
     logGraph(graph, sources, reporter)
+
     new ClusteringStore(opts.reporterOpts.outFolder).store(clustering)
+
+    val edgePrecedences = EdgePrecedenceProducer.computePrecedence(graph)
+    new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
+
     // TODO save graph edges, graph node cell members
     // TODO save functions
 

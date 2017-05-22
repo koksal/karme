@@ -6,7 +6,7 @@ import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 
 case class EdgePrecedence(source: String, target: String, distance: Int)
 
-class EdgePrecedenceProducer {
+object EdgePrecedenceProducer {
 
   def computePrecedence(g: DirectedBooleanStateGraph): Seq[EdgePrecedence] = {
     g.V.toSeq.flatMap(v => computePrecedenceFromNode(g, v))

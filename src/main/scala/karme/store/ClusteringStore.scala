@@ -12,7 +12,7 @@ class ClusteringStore(parent: File) {
   val file = new File(parent, fileName)
 
   def store(clustering: Map[String, Set[String]]): Unit = {
-    println(clustering.asJson.spaces2)
+    FileUtil.writeToFile(file, clustering.asJson.spaces2)
   }
 
   def read: Map[String, Set[String]] = {
