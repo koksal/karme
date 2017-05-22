@@ -24,7 +24,7 @@ class PRAUCEvaluation(reporter: Reporter) {
 
     for (i <- 1 to NB_RAND_TRIALS) {
       val randomizedPredictions =
-        IOPairEvaluation.randomPredictionsWithSameScore(predictions)
+        PairEvaluator.randomPredictionsWithSameScore(predictions)
 
       val randomAuc = computeAucPR(randomizedPredictions, library, None)
 

@@ -53,6 +53,7 @@ case class EvalOpts(
   referenceFiles: Seq[File] = Seq(),
   predictionPairsFile: Option[File] = None,
   runCollectionFolder: Option[File] = None,
+  maxPrecedenceDistance: Option[Int] = None,
   randomize: Boolean = false
 )
 

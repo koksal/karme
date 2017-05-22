@@ -162,6 +162,10 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(runCollectionFolder = Some(f)))
       } text "Folder containing run folders to evaluate."
 
+      opt[Int]("max-precedence-distance") action { (i, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(maxPrecedenceDistance = Some(i)))
+      } text "Maximum allowed precedence distance for predictions."
+
       opt[Unit]("randomize-eval") action { (_, o) =>
         o.copy(evalOpts = o.evalOpts.copy(randomize = true))
       } text "Randomize predictions before evaluation"

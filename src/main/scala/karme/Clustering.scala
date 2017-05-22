@@ -11,4 +11,6 @@ case class Clustering(clusterToMember: Map[String, Set[String]]) {
     }
   }
 
+  val allMembers: Set[String] = memberToCluster.keySet
+
 }

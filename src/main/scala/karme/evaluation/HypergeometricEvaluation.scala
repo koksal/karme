@@ -4,7 +4,7 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
-import karme.evaluation.IOPairEvaluation.ScoredPrediction
+import karme.evaluation.Evaluation.ScoredPrediction
 import karme.evaluation.PredictionSignificanceTest.SignificanceResult
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.util.FileUtil
@@ -30,9 +30,8 @@ class HypergeometricEvaluation(reporter: Reporter) {
     println(s"# reference sources: ${refSources.size}")
     println(s"# reference targets: ${refTargets.size}")
 
-    val predictionUniverse = IOPairEvaluation.namesInPairs(
+    val predictionUniverse = PairEvaluator.namesInPairs(
       predictedPairs.map(_._1))
-    val refUniverse = refSources union refTargets
 
     val backgroundSources = refSources intersect predictionUniverse
     val backgroundTargets = refTargets intersect predictionUniverse
@@ -51,7 +50,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
     plotScores(scores, library.id)
 
     val libraryOrientationCard =
-      IOPairEvaluation.meanOrientationCardinality(filteredRefPairs.toSeq)
+      PairEvaluator.meanOrientationCardinality(filteredRefPairs.toSeq)
     FileUtil.writeToFile(
       reporter.file(s"orientation-cardinality-${library.id}.csv"),
       libraryOrientationCard.toString)
@@ -61,10 +60,10 @@ class HypergeometricEvaluation(reporter: Reporter) {
     predictedPairs: Seq[ScoredPrediction],
     referencePairs: Seq[(String, String)]
   ): Set[String] = {
-    val namesInPredictions = IOPairEvaluation.namesInPairs(
+    val namesInPredictions = PairEvaluator.namesInPairs(
       predictedPairs.map(_._1))
     println(s"Prediction universe size: ${namesInPredictions.size}")
-    val namesInReference = IOPairEvaluation.namesInPairs(referencePairs)
+    val namesInReference = PairEvaluator.namesInPairs(referencePairs)
     println(s"Ref universe size: ${namesInReference.size}")
 
     namesInPredictions intersect namesInReference
@@ -74,9 +73,9 @@ class HypergeometricEvaluation(reporter: Reporter) {
     predictedPairs: Seq[ScoredPrediction],
     referencePairs: Seq[(String, String)]
   ): Set[String] = {
-    val namesInPredictions = IOPairEvaluation.namesInPairs(
+    val namesInPredictions = PairEvaluator.namesInPairs(
       predictedPairs.map(_._1))
-    val namesInReference = IOPairEvaluation.namesInPairs(referencePairs)
+    val namesInReference = PairEvaluator.namesInPairs(referencePairs)
 
     namesInPredictions union namesInReference
   }
@@ -139,7 +138,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
         PredictionSignificanceTest.computeSignificance(filteredPreds,
           referencePairs, backgroundSources, backgroundTargets)
 
-      val avgCard = IOPairEvaluation.meanOrientationCardinality(
+      val avgCard = PairEvaluator.meanOrientationCardinality(
         filteredPreds.toSeq)
 
       println(s"Minimum score: $minScore, Nb predictions: " +

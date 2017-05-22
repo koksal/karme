@@ -35,7 +35,7 @@ object FileUtil {
   }
 
   def listFiles(folder: File): Seq[File] = {
-    folder.list() map (new File(_))
+    folder.listFiles()
   }
 
 }

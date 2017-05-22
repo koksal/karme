@@ -18,11 +18,13 @@ lazy val root = (project in file(".")).
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion
-
     )
   )
 
 fork in run := true
+connectInput in run := true
+outputStrategy := Some(StdoutOutput)
+
 javaOptions in run += "-Xmx32G"
 
 // Show test times
