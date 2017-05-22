@@ -8,6 +8,8 @@ import karme.Reporter
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
+import karme.store.EdgePrecedenceStore
+import karme.transformations.EdgePrecedence
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 
@@ -39,6 +41,12 @@ object IOPairEvaluation {
   def readClusterings(folders: Seq[File]): Seq[Clustering] = {
     folders map { f =>
       Clustering(new ClusteringStore(f).read)
+    }
+  }
+
+  def readPrecedences(folders: Seq[File]): Seq[EdgePrecedence] = {
+    folders flatMap { f =>
+      new EdgePrecedenceStore(f).read
     }
   }
 
