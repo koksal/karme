@@ -7,6 +7,7 @@ import karme.EvalOpts
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
 import karme.store.EdgePrecedenceStore
 import karme.transformations.EdgePrecedence
@@ -17,19 +18,34 @@ import karme.visualization.HistogramPlotInterface
 import scala.util.Random
 
 class PairEvaluator(
+  folders: Seq[File],
   references: Seq[EnrichrPredictionLibrary],
   evalOpts: EvalOpts,
   reporter: Reporter
 ) {
 
-  def evaluatePrecedences(folders: Seq[File]): Unit = {
-    val runData = readRuns(folders)
+  lazy val runDataCollection: Seq[RunData] = readRuns(folders)
 
-    val precedencePredictions = aggregateGeneLevelPrecedences(runData)
+  case class RunData(
+    clustering: Clustering,
+    precedences: Seq[EdgePrecedence],
+    geneIOPairs: Seq[ScoredPrediction]
+  )
+
+  def evaluatePrecedences(): Unit = {
+    val precedencePredictions = aggregateGeneLevelPrecedences(runDataCollection)
 
     for (ref <- references) {
       evaluatePairs(precedencePredictions, ref)
       // analyzeRunCollection(runData, ref)
+    }
+  }
+
+  def evaluateFunctionIOPairs(): Unit = {
+    val ioPairPredictions = aggregateGeneIOPairs(runDataCollection)
+
+    for (ref <- references) {
+      evaluatePairs(ioPairPredictions, ref)
     }
   }
 
@@ -95,21 +111,34 @@ class PairEvaluator(
       }
     }
 
+    val hitRatio = nbHits.toDouble / (nbHits + nbMisses)
+
     println(s"Analyzing edge: $edge")
     println(s"Nb hits: $nbHits")
     println(s"Nb misses: $nbMisses")
+    println(s"Hit ratio: $hitRatio")
     println(s"Nb shared cluster runs: $nbSharedClusterRuns")
     println(s"Distances in graphs:")
     println(matchingPrecedences.mkString("\n"))
 
   }
 
+  def aggregateGeneIOPairs(
+    runData: Seq[RunData]
+  ): Seq[ScoredPrediction] = {
+    val allPairs = runData flatMap {
+      case RunData(_, _, geneIOPairs) => geneIOPairs
+    }
+
+    CollectionUtil.combineCounts(allPairs)
+  }
+
   def aggregateGeneLevelPrecedences(
-    runData: Seq[(Clustering, Seq[EdgePrecedence])]
+    runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
     val expandedPrecedences = runData flatMap {
-      case (clus, precs) =>
-        precs flatMap (p => expandEdgePrecedence(p, clus).toSeq)
+      case RunData(clustering, precedences, _) =>
+        precedences flatMap (p => expandEdgePrecedence(p, clustering).toSeq)
     }
 
     val distanceLimitedPrecedences = limitByMaxDistance(expandedPrecedences)
@@ -146,15 +175,18 @@ class PairEvaluator(
     clusterings.map(_.allMembers).flatten.toSet
   }
 
-  def readRuns(folders: Seq[File]): Seq[(Clustering, Seq[EdgePrecedence])] = {
+  def readRuns(folders: Seq[File]): Seq[RunData] = {
     println(s"Reading run data from ${folders.size} folders.")
 
     folders map { f =>
       val clustering = Clustering(new ClusteringStore(f).read)
       val precedences = new EdgePrecedenceStore(f).read
+      val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
 
+      println("Filtering out self-precedences.")
       val nonSelfPrecedences = precedences filter (p => p.source != p.target)
-      (clustering, nonSelfPrecedences)
+
+      RunData(clustering, nonSelfPrecedences, geneIOPairs)
     }
   }
 

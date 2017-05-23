@@ -16,10 +16,10 @@ object Evaluation {
 
     opts.evalOpts.runCollectionFolder match {
       case Some(f) => {
-        val evaluator = new PairEvaluator(evalCtx.references, opts.evalOpts,
-          reporter)
+        val evaluator = new PairEvaluator(FileUtil.listFiles(f),
+          evalCtx.references, opts.evalOpts, reporter)
 
-        evaluator.evaluatePrecedences(FileUtil.listFiles(f))
+        evaluator.evaluateFunctionIOPairs()
       }
       case None => {
         reporter.log("No run collection to evaluate.")
