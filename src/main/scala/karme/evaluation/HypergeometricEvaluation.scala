@@ -21,118 +21,34 @@ class HypergeometricEvaluation(reporter: Reporter) {
 
   def evaluate(
     predictedPairs: Seq[ScoredPrediction],
-    library: EnrichrPredictionLibrary
+    referenceEdges: Set[(String, String)],
+    backgroundSources: Set[String],
+    backgroundTargets: Set[String],
+    referenceID: String
   ): Unit = {
-    val referencePairs = library.ioPairs
 
-    val refSources = referencePairs.map(_._1)
-    val refTargets = referencePairs.map(_._2)
-    println(s"# reference sources: ${refSources.size}")
-    println(s"# reference targets: ${refTargets.size}")
+    println(s"Evaluating $referenceID")
 
-    val predictionUniverse = PairEvaluator.namesInPairs(
-      predictedPairs.map(_._1))
+    val scores = computeScoreByDiscrimination(predictedPairs,
+      referenceEdges, backgroundSources, backgroundTargets)
 
-    val backgroundSources = refSources intersect predictionUniverse
-    val backgroundTargets = refTargets intersect predictionUniverse
+    saveScores(scores, reporter.file(s"significance-eval-$referenceID.csv"))
+    plotScores(scores, referenceID)
 
-    val filteredPredictions = filterTriplesForNameUniverse(predictedPairs,
-      backgroundSources, backgroundTargets)
-    val filteredRefPairs = filterPairsForNameUniverse(referencePairs,
-      backgroundSources, backgroundTargets)
-
-    println(s"Evaluating ${library.id}")
-
-    val scores = computeScoreByDiscrimination(filteredPredictions,
-      filteredRefPairs, backgroundSources, backgroundTargets)
-
-    saveScores(scores, reporter.file(s"significance-eval-${library.id}.csv"))
-    plotScores(scores, library.id)
-
-    val libraryOrientationCard =
-      PairEvaluator.meanOrientationCardinality(filteredRefPairs.toSeq)
+    val libraryOrientationCard = PairEvaluator.meanOrientationCardinality(
+      referenceEdges.toSeq)
     FileUtil.writeToFile(
-      reporter.file(s"orientation-cardinality-${library.id}.csv"),
+      reporter.file(s"orientation-cardinality-$referenceID.csv"),
       libraryOrientationCard.toString)
   }
 
-  def getCommonNames(
-    predictedPairs: Seq[ScoredPrediction],
-    referencePairs: Seq[(String, String)]
-  ): Set[String] = {
-    val namesInPredictions = PairEvaluator.namesInPairs(
-      predictedPairs.map(_._1))
-    println(s"Prediction universe size: ${namesInPredictions.size}")
-    val namesInReference = PairEvaluator.namesInPairs(referencePairs)
-    println(s"Ref universe size: ${namesInReference.size}")
-
-    namesInPredictions intersect namesInReference
-  }
-
-  def getUnionOfNames(
-    predictedPairs: Seq[ScoredPrediction],
-    referencePairs: Seq[(String, String)]
-  ): Set[String] = {
-    val namesInPredictions = PairEvaluator.namesInPairs(
-      predictedPairs.map(_._1))
-    val namesInReference = PairEvaluator.namesInPairs(referencePairs)
-
-    namesInPredictions union namesInReference
-  }
-
-  private def filterPairsForNameUniverse(
-    pairs: Set[(String, String)],
-    possibleSources: Set[String],
-    possibleTargets: Set[String]
-  ): Set[(String, String)] = {
-    pairs filter {
-      case (src, tgt) =>
-        possibleSources.contains(src) && possibleTargets.contains(tgt)
-    }
-  }
-
-  private def filterTriplesForNameUniverse(
-    pairs: Seq[ScoredPrediction],
-    possibleSources: Set[String],
-    possibleTargets: Set[String]
-  ): Seq[ScoredPrediction] = {
-    pairs filter {
-      case ((src, tgt), i) =>
-        possibleSources.contains(src) && possibleTargets.contains(tgt)
-    }
-  }
-
-  def predictionPairsByDescendingScore(
-    predictedPairs: Seq[ScoredPrediction]
-  ): Seq[(String, String)] = {
-    val sortedPreds = predictedPairs.sortBy(_._2).reverse
-    sortedPreds map {
-      case ((src, tgt), _) => (src, tgt)
-    }
-  }
-
-  def predictionsByMinDescendingScore(
-    preds: Seq[ScoredPrediction]
-  ): Seq[(Set[(String, String)], Int)] = {
-    val uniqDescendingScores = preds.map(_._2).distinct.sorted.reverse
-
-    for (scoreThreshold <- uniqDescendingScores) yield {
-      val pairs = preds collect {
-        case ((src, tgt), score) if score >= scoreThreshold => {
-          (src, tgt)
-        }
-      }
-      (pairs.toSet, scoreThreshold)
-    }
-  }
-
-  private def computeScoreByDiscrimination(
+  def computeScoreByDiscrimination(
     predictedPairs: Seq[ScoredPrediction],
     referencePairs: Set[(String, String)],
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
   ): Seq[HypergeomEvalResult] = {
-    val predictionGroups = predictionsByMinDescendingScore(predictedPairs)
+    val predictionGroups = predictionSubsetsByUniqueThreshold(predictedPairs)
     for ((filteredPreds, minScore) <- predictionGroups) yield {
       val SignificanceResult(hgPValue, foldEnrichment) =
         PredictionSignificanceTest.computeSignificance(filteredPreds,
@@ -149,21 +65,18 @@ class HypergeometricEvaluation(reporter: Reporter) {
     }
   }
 
-  def filterByThreshold(
-    pairs: Seq[ScoredPrediction], threshold: Double
-  ): Seq[(String, String)] = {
-    require(threshold >= 0 && threshold <= 1)
+  def predictionSubsetsByUniqueThreshold(
+    preds: Seq[ScoredPrediction]
+  ): Seq[(Set[(String, String)], Int)] = {
+    val uniqDescendingScores = preds.map(_._2).distinct.sorted.reverse
 
-    val targetNbElems = (pairs.size * threshold).toInt
-
-    val pairsUpToThreshold = pairs take targetNbElems
-    val pairsAfterThreshold = pairs drop targetNbElems
-
-    val lastScore = pairsUpToThreshold.last._2
-    val pairsWithLastScore = pairsAfterThreshold.filter(_._2 == lastScore)
-
-    (pairsUpToThreshold ++ pairsWithLastScore) map {
-      case ((x, y), i) => (x, y)
+    for (scoreThreshold <- uniqDescendingScores) yield {
+      val pairs = preds collect {
+        case ((src, tgt), score) if score >= scoreThreshold => {
+          (src, tgt)
+        }
+      }
+      (pairs.toSet, scoreThreshold)
     }
   }
 
@@ -173,7 +86,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
     }
     new ScatterPlot(
       pValuePoints,
-      reporter.file(s"hg-p-values-$libraryId.pdf"),
+      reporter.file(s"linear-hg-p-values-$libraryId.pdf"),
       logYScale = false
     ).run()
     new ScatterPlot(

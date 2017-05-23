@@ -12,13 +12,14 @@ class PRAUCEvaluation(reporter: Reporter) {
 
   def evaluate(
     predictions: Seq[((String, String), Int)],
-    library: EnrichrPredictionLibrary
+    referenceEdges: Set[(String, String)],
+    referenceID: String
   ): Unit = {
-    println(s"Evaluating ${library.id}")
+    println(s"PR AUC evaluation for $referenceID")
 
     // compute original
-    val auc = computeAucPR(predictions, library,
-      Some(reporter.file(s"pr-curve-${library.id}.pdf")))
+    val auc = computeAucPR(predictions, referenceEdges,
+      Some(reporter.file(s"pr-curve-$referenceID.pdf")))
 
     var betterThanRandomCount = 0
 
@@ -26,29 +27,31 @@ class PRAUCEvaluation(reporter: Reporter) {
       val randomizedPredictions =
         PairEvaluator.randomPredictionsWithSameScore(predictions)
 
-      val randomAuc = computeAucPR(randomizedPredictions, library, None)
+      val plotFile = if (i == 1) {
+        Some(reporter.file(s"pr-curve-random-example-$referenceID.pdf"))
+      } else {
+        None
+      }
+      val randomAuc = computeAucPR(randomizedPredictions, referenceEdges,
+        plotFile)
 
       if (auc > randomAuc) {
         betterThanRandomCount += 1
       }
     }
 
-    FileUtil.writeToFile(reporter.file(s"auc-pr-${library.id}.txt"),
+    FileUtil.writeToFile(reporter.file(s"auc-pr-$referenceID.txt"),
       s"AUC PR: Better than random in: " +
         s"$betterThanRandomCount / $NB_RAND_TRIALS")
   }
 
   def computeAucPR(
     predictions: Seq[((String, String), Int)],
-    library: EnrichrPredictionLibrary,
+    referencePairs: Set[(String, String)],
     curveFile: Option[File]
   ): Double = {
-    val referencePairs = library.ioPairs
-
     val (truePositives, falsePositives) = predictions partition {
-      case ((src, tgt), score) => {
-        referencePairs.contains((src, tgt))
-      }
+      case ((src, tgt), _) => referencePairs.contains((src, tgt))
     }
 
     val truePosScores = truePositives.map(_._2)

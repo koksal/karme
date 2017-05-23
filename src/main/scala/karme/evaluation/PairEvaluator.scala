@@ -193,15 +193,41 @@ class PairEvaluator(
     predictionsWithCounts: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    new HypergeometricEvaluation(reporter).evaluate(predictionsWithCounts,
-      library)
+    val (backgroundSources, backgroundTargets) = PairEvaluator.commonUniverse(
+      predictionsWithCounts, library.ioPairs)
 
-    new PRAUCEvaluation(reporter).evaluate(predictionsWithCounts, library)
+    val predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
+      predictionsWithCounts, backgroundSources, backgroundTargets)
+    val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
+      library.ioPairs, backgroundSources, backgroundTargets)
+
+    new HypergeometricEvaluation(reporter).evaluate(predictionsInBackground,
+      referenceEdgesInBackground, backgroundSources, backgroundTargets,
+      library.id)
+
+    new PRAUCEvaluation(reporter).evaluate(predictionsInBackground,
+      referenceEdgesInBackground, library.id)
   }
 }
 
 object PairEvaluator {
-  private def plotScoreDist(scores: Seq[Double], f: File): Unit = {
+
+  def commonUniverse(
+    predictions: Seq[ScoredPrediction],
+    referencePairs: Set[(String, String)]
+  ): (Set[String], Set[String]) = {
+    val refSources = referencePairs.map(_._1)
+    val refTargets = referencePairs.map(_._2)
+
+    val predictionUniverse = PairEvaluator.namesInPairs(predictions.map(_._1))
+
+    val backgroundSources = refSources intersect predictionUniverse
+    val backgroundTargets = refTargets intersect predictionUniverse
+
+    (backgroundSources, backgroundTargets)
+  }
+
+  def plotScoreDist(scores: Seq[Double], f: File): Unit = {
     val labels = scores.map(_ => "none")
 
     new HistogramPlotInterface(scores, labels, f).run()
@@ -270,11 +296,10 @@ object PairEvaluator {
   ): Seq[ScoredPrediction] = {
 
     val randomizedPairs = randomPairsWithoutReplacement(
-      namesInPairs(predictions.map(_._1)),
-      predictions.size).toSet
+      namesInPairs(predictions.map(_._1)), predictions.size).toSet
 
     predictions.zip(randomizedPairs) map {
-      case (pred, pair) => (pair, pred._2)
+      case (origPrediction, randomPair) => (randomPair, origPrediction._2)
     }
   }
 
@@ -283,4 +308,27 @@ object PairEvaluator {
       case (src, tgt) => Set(src, tgt)
     }
   }
+
+  def filterPairsForNameUniverse(
+    pairs: Set[(String, String)],
+    possibleSources: Set[String],
+    possibleTargets: Set[String]
+  ): Set[(String, String)] = {
+    pairs filter {
+      case (src, tgt) =>
+        possibleSources.contains(src) && possibleTargets.contains(tgt)
+    }
+  }
+
+  def filterTriplesForNameUniverse(
+    pairs: Seq[ScoredPrediction],
+    possibleSources: Set[String],
+    possibleTargets: Set[String]
+  ): Seq[ScoredPrediction] = {
+    pairs filter {
+      case ((src, tgt), i) =>
+        possibleSources.contains(src) && possibleTargets.contains(tgt)
+    }
+  }
+
 }
