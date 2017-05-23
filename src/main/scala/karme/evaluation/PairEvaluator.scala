@@ -183,7 +183,6 @@ class PairEvaluator(
       val precedences = new EdgePrecedenceStore(f).read
       val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
 
-      println("Filtering out self-precedences.")
       val nonSelfPrecedences = precedences filter (p => p.source != p.target)
 
       RunData(clustering, nonSelfPrecedences, geneIOPairs)
