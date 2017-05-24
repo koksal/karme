@@ -27,21 +27,25 @@ class PairEvaluator(
   lazy val runDataCollection: Seq[RunData] = readRuns(folders)
 
   case class RunData(
+    id: String,
     clustering: Clustering,
     precedences: Seq[EdgePrecedence],
     geneIOPairs: Seq[ScoredPrediction]
   )
 
   def evaluatePrecedences(): Unit = {
+    println("Evaluating precedences.")
+
     val precedencePredictions = aggregateGeneLevelPrecedences(runDataCollection)
 
     for (ref <- references) {
       evaluatePairs(precedencePredictions, ref)
-      // analyzeRunCollection(runData, ref)
     }
   }
 
   def evaluateFunctionIOPairs(): Unit = {
+    println("Evaluating function IO pairs.")
+
     val ioPairPredictions = aggregateGeneIOPairs(runDataCollection)
 
     for (ref <- references) {
@@ -49,85 +53,11 @@ class PairEvaluator(
     }
   }
 
-  def analyzeRunCollection(
-    runData: Seq[(Clustering, Seq[EdgePrecedence])],
-    ref: EnrichrPredictionLibrary
-  ): Unit = {
-    println(s"Analyzing ${ref.id}")
-
-    val namesInClusterings = aggregateClusteredNames(runData.map(_._1))
-
-    val (edgesWithKnownGenes, edgesWithUnknownGenes) = ref.ioPairs.partition {
-      case (src, tgt) =>
-        namesInClusterings.contains(src) && namesInClusterings.contains(tgt)
-    }
-
-    println(s"Reference edges with known genes: ${edgesWithKnownGenes.size}")
-    println(
-      s"Reference edges with unknown genes: ${edgesWithUnknownGenes.size}")
-
-    for (e <- edgesWithKnownGenes) {
-      analyzeReferenceEdge(e, runData)
-    }
-  }
-
-  def analyzeReferenceEdge(
-    edge: (String, String),
-    runData: Seq[(Clustering, Seq[EdgePrecedence])]
-  ): Unit = {
-    // for each run:
-    //   is the edge in the clustering?
-    //   is it within a cluster?
-    //   what is the distribution of distances for the edge?
-
-    var nbHits = 0
-    var nbMisses = 0
-
-    var nbSharedClusterRuns = 0
-    var matchingPrecedences = Seq[EdgePrecedence]()
-
-    for ((clustering, precedences) <- runData) {
-      val lhsClustOpt = clustering.memberToCluster.get(edge._1)
-      val rhsClustOpt = clustering.memberToCluster.get(edge._2)
-
-      (lhsClustOpt, rhsClustOpt) match {
-        case (Some(lhsClust), Some(rhsClust)) => {
-          nbHits += 1
-          if (lhsClust == rhsClust) {
-            nbSharedClusterRuns += 1
-          }
-
-          val matching = precedences filter {
-            case EdgePrecedence(src, tgt, dist) => {
-              src == lhsClust && tgt == rhsClust
-            }
-          }
-
-          matchingPrecedences = matchingPrecedences ++ matching
-        }
-        case _ => {
-          nbMisses += 1
-        }
-      }
-    }
-
-    val hitRatio = nbHits.toDouble / (nbHits + nbMisses)
-
-    println(s"Analyzing edge: $edge")
-    println(s"Nb hits: $nbHits")
-    println(s"Nb misses: $nbMisses")
-    println(s"Hit ratio: $hitRatio")
-    println(s"Nb shared cluster runs: $nbSharedClusterRuns")
-    println(s"Distances in graphs:")
-    println(matchingPrecedences.mkString("\n"))
-
-  }
-
   def aggregateGeneIOPairs(
     runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
     val allPairs = runData flatMap {
-      case RunData(_, _, geneIOPairs) => geneIOPairs
+      case RunData(_, _, _, geneIOPairs) => geneIOPairs
     }
 
     CollectionUtil.combineCounts(allPairs)
@@ -137,7 +67,7 @@ class PairEvaluator(
     runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
     val expandedPrecedences = runData flatMap {
-      case RunData(clustering, precedences, _) =>
+      case RunData(_, clustering, precedences, _) =>
         precedences flatMap (p => expandEdgePrecedence(p, clustering).toSeq)
     }
 
@@ -185,7 +115,7 @@ class PairEvaluator(
 
       val nonSelfPrecedences = precedences filter (p => p.source != p.target)
 
-      RunData(clustering, nonSelfPrecedences, geneIOPairs)
+      RunData(f.getName, clustering, nonSelfPrecedences, geneIOPairs)
     }
   }
 
@@ -193,36 +123,152 @@ class PairEvaluator(
     predictionsWithCounts: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    val (backgroundSources, backgroundTargets) = PairEvaluator.commonUniverse(
-      predictionsWithCounts, library.ioPairs)
+    val (backgroundSources, backgroundTargets) =
+      PairEvaluator.edgeSpaceForRunUnion(predictionsWithCounts, library.ioPairs)
 
-    val predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
+    var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
       predictionsWithCounts, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
       library.ioPairs, backgroundSources, backgroundTargets)
 
-    new HypergeometricEvaluation(reporter).evaluate(predictionsInBackground,
+    if (evalOpts.randomize) {
+      println("Randomizing predictions.")
+      predictionsInBackground = PairEvaluator.randomPredictionsWithSameScore(
+        predictionsInBackground, backgroundSources, backgroundTargets)
+    }
+
+    println(s"# predictions: ${predictionsInBackground.size}")
+    println(s"# reference edges: ${referenceEdgesInBackground.size}")
+
+    new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
       referenceEdgesInBackground, backgroundSources, backgroundTargets,
       library.id)
 
     new PRAUCEvaluation(reporter).evaluate(predictionsInBackground,
-      referenceEdgesInBackground, library.id)
+      referenceEdgesInBackground, backgroundSources, backgroundTargets,
+      library.id)
+
+    findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
+    findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
+  }
+
+  def findEdgeCoverageRatios(
+    refPairs: Seq[(String, String)],
+    refID: String
+  ): Unit = {
+    val coverageRatios = for ((src, tgt) <- refPairs) yield {
+      // find runs that have both names, by checking clustering.
+      val runsWithSrcAndTarget = runDataCollection filter {
+        case RunData(_, clustering, _, _) => {
+          clustering.allMembers.contains(src) &&
+            clustering.allMembers.contains(tgt)
+        }
+      }
+      val runsWithSameSrcTgtCluster = runsWithSrcAndTarget filter {
+        case RunData(_, clustering, _, _) => {
+          clustering.memberToCluster(src) == clustering.memberToCluster(tgt)
+        }
+      }
+      val coverageRatio =
+        runsWithSrcAndTarget.size.toDouble / runDataCollection.size
+
+      val coClusteringRatio =
+        runsWithSameSrcTgtCluster.size.toDouble / runsWithSrcAndTarget.size
+
+      (coverageRatio, coClusteringRatio)
+    }
+
+    val coverageLabels = coverageRatios.map(_ => "coverage ratio")
+    val coClusteringLabels = coverageRatios.map(_ => "co-clustering ratio")
+    new HistogramPlotInterface(coverageRatios.map(_._1), coverageLabels,
+      reporter.file(s"coverage-ratio-${refID}.pdf")).run()
+    new HistogramPlotInterface(coverageRatios.map(_._2), coClusteringLabels,
+      reporter.file(s"same-cluster-ratio-${refID}.pdf")).run()
+  }
+
+  def findMedianDistances(
+    refPairs: Seq[(String, String)],
+    refID: String
+  ): Unit = {
+    val refPrecedences = refPairs.map{
+      case (src, tgt) => {
+        runDataCollection flatMap {
+          case RunData(_, clustering, precedences, _) => {
+            val srcClusterOpt = clustering.memberToCluster.get(src)
+            val tgtClusterOpt = clustering.memberToCluster.get(tgt)
+            (srcClusterOpt, tgtClusterOpt) match {
+              case (Some(srcClust), Some(tgtClust)) => {
+                precedences.filter(
+                  p => p.source == srcClust && p.target == tgtClust)
+              }
+              case _ => {
+                Nil
+              }
+            }
+          }
+        }
+      }
+    }.filter(_.nonEmpty)
+
+    val medianDistances = refPrecedences.map(
+      ps => MathUtil.median(ps.map(_.distance)))
+    val labels = medianDistances map (_ => "median distance")
+    new HistogramPlotInterface(medianDistances, labels,
+      reporter.file(
+        s"reference-edge-median-precedence-distance-distribution-" +
+          s"${refID}.pdf")).run()
+  }
+
+  def namesCommonToAllRuns: Set[String] = {
+    val nameSets = runDataCollection.map(_.clustering.allMembers)
+
+    val commonNames = nameSets.reduceLeft[Set[String]] {
+      case (acc, ns) => acc.intersect(ns)
+    }
+
+    println(s"# names common to all runs: ${commonNames.size}")
+
+    commonNames
+  }
+
+  def plotAllDistances(): Unit = {
+    val distances = runDataCollection.flatMap(_.precedences).map(_.distance)
+    println(s"Found ${distances.size} distances.")
+
+    val labels = distances map (_ => "distance")
+
+    new HistogramPlotInterface(distances, labels,
+      reporter.file(
+        s"all-distances-distribution.pdf")).run()
   }
 }
 
 object PairEvaluator {
 
-  def commonUniverse(
+  def edgeSpaceForRunIntersection(
+    namesCommonToRuns: Set[String],
+    referencePairs: Set[(String, String)]
+  ): (Set[String], Set[String]) = {
+    edgeSpace(namesCommonToRuns, referencePairs)
+  }
+
+  def edgeSpaceForRunUnion(
     predictions: Seq[ScoredPrediction],
+    referencePairs: Set[(String, String)]
+  ): (Set[String], Set[String]) = {
+    val predictionNameUnion = PairEvaluator.namesInPairs(predictions.map(_._1))
+    edgeSpace(predictionNameUnion, referencePairs)
+  }
+
+  def edgeSpace(
+    predictionNames: Set[String],
     referencePairs: Set[(String, String)]
   ): (Set[String], Set[String]) = {
     val refSources = referencePairs.map(_._1)
     val refTargets = referencePairs.map(_._2)
 
-    val predictionUniverse = PairEvaluator.namesInPairs(predictions.map(_._1))
-
-    val backgroundSources = refSources intersect predictionUniverse
-    val backgroundTargets = refTargets intersect predictionUniverse
+    val backgroundSources = refSources intersect predictionNames
+    val backgroundTargets = refTargets intersect predictionNames
 
     (backgroundSources, backgroundTargets)
   }
@@ -275,28 +321,32 @@ object PairEvaluator {
   }
 
   def randomPairsWithoutReplacement(
-    nameUniverse: Set[String], size: Int
+    sourceUniverse: Set[String],
+    targetUniverse: Set[String],
+    size: Int
   ): Seq[(String, String)] = {
     val random = new Random()
 
-    val indexedNames = nameUniverse.toIndexedSeq
-    val n = indexedNames.size
+    val indexedSources = sourceUniverse.toIndexedSeq
+    val indexedTargets = targetUniverse.toIndexedSeq
 
     var res = Set[(String, String)]()
     while (res.size < size) {
       res +=
-        ((indexedNames(random.nextInt(n)), indexedNames(random.nextInt(n))))
+        ((indexedSources(random.nextInt(indexedSources.size)),
+          indexedTargets(random.nextInt(indexedTargets.size))))
     }
 
     res.toSeq
   }
 
   def randomPredictionsWithSameScore(
-    predictions: Seq[ScoredPrediction]
+    predictions: Seq[ScoredPrediction],
+    sourceUniv: Set[String],
+    targetUniv: Set[String]
   ): Seq[ScoredPrediction] = {
-
-    val randomizedPairs = randomPairsWithoutReplacement(
-      namesInPairs(predictions.map(_._1)), predictions.size).toSet
+    val randomizedPairs = randomPairsWithoutReplacement(sourceUniv,
+      targetUniv, predictions.size)
 
     predictions.zip(randomizedPairs) map {
       case (origPrediction, randomPair) => (randomPair, origPrediction._2)

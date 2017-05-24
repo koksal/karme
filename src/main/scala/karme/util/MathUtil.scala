@@ -3,6 +3,7 @@ package karme.util
 object MathUtil {
 
   def median(vs: Iterable[Int]): Double = {
+    require(vs.nonEmpty)
     val sorted = vs.toList.sorted
     if (sorted.size % 2 == 0) {
       val i = sorted.size / 2 - 1

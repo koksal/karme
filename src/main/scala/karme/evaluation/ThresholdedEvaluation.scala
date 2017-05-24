@@ -10,14 +10,15 @@ import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.util.FileUtil
 import karme.visualization.ScatterPlot
 
-case class HypergeomEvalResult(
+case class ThresholdedEvalResult(
   nbPredictions: Int,
   hgPValue: Double,
   foldEnrichment: Double,
+  recall: Double,
   avgCardinality: Double
 )
 
-class HypergeometricEvaluation(reporter: Reporter) {
+class ThresholdedEvaluation(reporter: Reporter) {
 
   def evaluate(
     predictedPairs: Seq[ScoredPrediction],
@@ -47,7 +48,7 @@ class HypergeometricEvaluation(reporter: Reporter) {
     referencePairs: Set[(String, String)],
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
-  ): Seq[HypergeomEvalResult] = {
+  ): Seq[ThresholdedEvalResult] = {
     val predictionGroups = predictionSubsetsByUniqueThreshold(predictedPairs)
     for ((filteredPreds, minScore) <- predictionGroups) yield {
       val SignificanceResult(hgPValue, foldEnrichment) =
@@ -57,12 +58,21 @@ class HypergeometricEvaluation(reporter: Reporter) {
       val avgCard = PairEvaluator.meanOrientationCardinality(
         filteredPreds.toSeq)
 
+      val recall = computeRecall(filteredPreds, referencePairs)
+
       println(s"Minimum score: $minScore, Nb predictions: " +
         s"${filteredPreds.size}, hgPValue: $hgPValue")
 
-      HypergeomEvalResult(filteredPreds.size, hgPValue, foldEnrichment,
-        avgCard)
+      ThresholdedEvalResult(filteredPreds.size, hgPValue, foldEnrichment,
+        recall, avgCard)
     }
+  }
+
+  def computeRecall(
+    predictions: Set[(String, String)], references: Set[(String, String)]
+  ): Double = {
+    val common = predictions.intersect(references)
+    common.size.toDouble / references.size.toDouble
   }
 
   def predictionSubsetsByUniqueThreshold(
@@ -80,9 +90,11 @@ class HypergeometricEvaluation(reporter: Reporter) {
     }
   }
 
-  def plotScores(results: Seq[HypergeomEvalResult], libraryId: String): Unit = {
-    val pValuePoints = results map {
-      case HypergeomEvalResult(n, p, fe, c) => (n, p, "HG p-value")
+  def plotScores(
+    results: Seq[ThresholdedEvalResult], libraryId: String
+  ): Unit = {
+    val pValuePoints = results map { r =>
+      (r.nbPredictions, r.hgPValue, "HG p-value")
     }
     new ScatterPlot(
       pValuePoints,
@@ -95,26 +107,31 @@ class HypergeometricEvaluation(reporter: Reporter) {
       logYScale = true
     ).run()
 
-    val foldEnrPoints = results map {
-      case HypergeomEvalResult(n, p, fe, c) => (n, fe, "fold enrichment")
+    val foldEnrPoints = results map { r =>
+      (r.nbPredictions, r.foldEnrichment, "fold enrichment")
     }
     new ScatterPlot(foldEnrPoints,
       reporter.file(s"fold-enr-$libraryId.pdf")).run()
 
-    val meanCardPoints = results map {
-      case HypergeomEvalResult(n, p, fe, c) => (n, c, "Mean orientation")
+    val recallPoints = results map { r =>
+      (r.nbPredictions, r.recall, "Recall")
+    }
+    new ScatterPlot(recallPoints, reporter.file(s"recall-$libraryId.pdf")).run()
+
+    val meanCardPoints = results map { r =>
+      (r.nbPredictions, r.avgCardinality, "Mean orientation")
     }
     new ScatterPlot(meanCardPoints,
       reporter.file(s"mean-cardinality-$libraryId.pdf")).run()
   }
 
-  def saveScores(results: Seq[HypergeomEvalResult], f: File): Unit = {
+  def saveScores(results: Seq[ThresholdedEvalResult], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
     val header = List("nb. predictions", "hg p-value", "fold enr.",
       "avg. cardinality")
-    val tuples = results map {
-      case HypergeomEvalResult(n, s, fe, c) => List(n, s, fe, c)
+    val tuples = results map { r =>
+      List(r.nbPredictions, r.hgPValue, r.foldEnrichment, r.avgCardinality)
     }
     writer.writeAll(header +: tuples)
 

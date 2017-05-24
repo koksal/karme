@@ -13,6 +13,8 @@ class PRAUCEvaluation(reporter: Reporter) {
   def evaluate(
     predictions: Seq[((String, String), Int)],
     referenceEdges: Set[(String, String)],
+    backgroundSources: Set[String],
+    backgroundTargets: Set[String],
     referenceID: String
   ): Unit = {
     println(s"PR AUC evaluation for $referenceID")
@@ -25,7 +27,8 @@ class PRAUCEvaluation(reporter: Reporter) {
 
     for (i <- 1 to NB_RAND_TRIALS) {
       val randomizedPredictions =
-        PairEvaluator.randomPredictionsWithSameScore(predictions)
+        PairEvaluator.randomPredictionsWithSameScore(predictions,
+          backgroundSources, backgroundTargets)
 
       val plotFile = if (i == 1) {
         Some(reporter.file(s"pr-curve-random-example-$referenceID.pdf"))
