@@ -8,7 +8,7 @@ import karme.util.FileUtil
 
 class PRAUCEvaluation(reporter: Reporter) {
 
-  val NB_RAND_TRIALS = 100
+  val NB_RAND_TRIALS = 1000
 
   def evaluate(
     predictions: Seq[((String, String), Int)],

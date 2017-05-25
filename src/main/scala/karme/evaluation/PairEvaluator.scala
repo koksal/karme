@@ -125,7 +125,8 @@ class PairEvaluator(
     library: EnrichrPredictionLibrary
   ): Unit = {
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.edgeSpaceForRunUnion(predictionsWithCounts, library.ioPairs)
+      PairEvaluator.edgeSpaceForRunUnion(predictionsWithCounts,
+        library.ioPairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
       predictionsWithCounts, backgroundSources, backgroundTargets)
@@ -141,16 +142,16 @@ class PairEvaluator(
     println(s"# predictions: ${predictionsInBackground.size}")
     println(s"# reference edges: ${referenceEdgesInBackground.size}")
 
-    // new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
-    //   referenceEdgesInBackground, backgroundSources, backgroundTargets,
-    //   library.id)
+    new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
+      referenceEdgesInBackground, backgroundSources, backgroundTargets,
+      library.id)
 
-    // new PRAUCEvaluation(reporter).evaluate(predictionsInBackground,
-    //   referenceEdgesInBackground, backgroundSources, backgroundTargets,
-    //   library.id)
+    new PRAUCEvaluation(reporter).evaluate(predictionsInBackground,
+      referenceEdgesInBackground, backgroundSources, backgroundTargets,
+      library.id)
 
-    // findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
-    // findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
+    findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
+    findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
 
     joinPredictionsWithReference(predictionsInBackground,
       referenceEdgesInBackground,
@@ -279,6 +280,20 @@ object PairEvaluator {
     edgeSpace(namesCommonToRuns, referencePairs)
   }
 
+  def edgeSpaceForRunReferenceUnion(
+    predictions: Seq[ScoredPrediction],
+    referencePairs: Set[(String, String)]
+  ): (Set[String], Set[String]) = {
+    val predictionNameUnion = PairEvaluator.namesInPairs(predictions.map(_._1))
+
+    val refSources = referencePairs.map(_._1)
+    val refTargets = referencePairs.map(_._2)
+    val refNames = refSources union refTargets
+
+    val common = predictionNameUnion intersect refNames
+    (common, common)
+  }
+
   def edgeSpaceForRunUnion(
     predictions: Seq[ScoredPrediction],
     referencePairs: Set[(String, String)]
@@ -364,7 +379,7 @@ object PairEvaluator {
           indexedTargets(random.nextInt(indexedTargets.size))))
     }
 
-    res.toSeq
+    random.shuffle(res.toSeq)
   }
 
   def randomPredictionsWithSameScore(
@@ -388,7 +403,7 @@ object PairEvaluator {
     val randomizedPairs = randomPairsWithoutReplacement(sourceUniv,
       targetUniv, predictions.size)
 
-    randomizedPairs.zipWithIndex
+    randomizedPairs.zipWithIndex.reverse
   }
 
   def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {
