@@ -49,7 +49,8 @@ class ThresholdedEvaluation(reporter: Reporter) {
     backgroundSources: Set[String],
     backgroundTargets: Set[String]
   ): Seq[ThresholdedEvalResult] = {
-    val predictionGroups = predictionSubsetsByUniqueThreshold(predictedPairs)
+    val predictionGroups =
+      predictionSubsetsByUniqueThreshold(predictedPairs)
     for ((filteredPreds, minScore) <- predictionGroups) yield {
       val SignificanceResult(hgPValue, foldEnrichment) =
         PredictionSignificanceTest.computeSignificance(filteredPreds,

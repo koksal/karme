@@ -2,6 +2,7 @@ package karme.evaluation
 
 import java.io.File
 
+import com.github.tototoshi.csv.CSVWriter
 import karme.Clustering
 import karme.EvalOpts
 import karme.Reporter
@@ -140,16 +141,42 @@ class PairEvaluator(
     println(s"# predictions: ${predictionsInBackground.size}")
     println(s"# reference edges: ${referenceEdgesInBackground.size}")
 
-    new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
-      referenceEdgesInBackground, backgroundSources, backgroundTargets,
-      library.id)
+    // new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
+    //   referenceEdgesInBackground, backgroundSources, backgroundTargets,
+    //   library.id)
 
-    new PRAUCEvaluation(reporter).evaluate(predictionsInBackground,
-      referenceEdgesInBackground, backgroundSources, backgroundTargets,
-      library.id)
+    // new PRAUCEvaluation(reporter).evaluate(predictionsInBackground,
+    //   referenceEdgesInBackground, backgroundSources, backgroundTargets,
+    //   library.id)
 
-    findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
-    findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
+    // findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
+    // findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
+
+    joinPredictionsWithReference(predictionsInBackground,
+      referenceEdgesInBackground,
+      reporter.file(s"predictions-joined-with-${library.id}"))
+  }
+
+  def joinPredictionsWithReference(
+    predictions: Seq[ScoredPrediction],
+    referenceEdges: Set[(String, String)],
+    f: File
+  ): Unit = {
+    val headers = List("source", "target", "score", "in reference",
+      "targets in ref.")
+    val rows = for (((src, tgt), score) <- predictions) yield {
+      val isInReference = if (referenceEdges.contains((src, tgt))) {
+        "YES"
+      } else {
+        ""
+      }
+      val otherTargets = referenceEdges.filter(_._1 == src).map(_._2)
+      List(src, tgt, score, isInReference, otherTargets.mkString(", "))
+    }
+
+    val writer = CSVWriter.open(f)
+    writer.writeAll(headers +: rows)
+    writer.close
   }
 
   def findEdgeCoverageRatios(
@@ -351,6 +378,17 @@ object PairEvaluator {
     predictions.zip(randomizedPairs) map {
       case (origPrediction, randomPair) => (randomPair, origPrediction._2)
     }
+  }
+
+  def randomPredictionsWithUniqueScore(
+    predictions: Seq[ScoredPrediction],
+    sourceUniv: Set[String],
+    targetUniv: Set[String]
+  ): Seq[ScoredPrediction] = {
+    val randomizedPairs = randomPairsWithoutReplacement(sourceUniv,
+      targetUniv, predictions.size)
+
+    randomizedPairs.zipWithIndex
   }
 
   def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {

@@ -19,7 +19,7 @@ object Evaluation {
         val evaluator = new PairEvaluator(FileUtil.listFiles(f),
           evalCtx.references, opts.evalOpts, reporter)
 
-        evaluator.evaluatePrecedences()
+        evaluator.evaluateFunctionIOPairs()
       }
       case None => {
         reporter.log("No run collection to evaluate.")
