@@ -41,6 +41,8 @@ class PairEvaluator(
 
     for (ref <- references) {
       evaluatePairs(precedencePredictions, ref)
+      // transitiveReferenceCheck(ref)
+      // sourceTargetOverlapCheck(ref)
     }
   }
 
@@ -124,23 +126,27 @@ class PairEvaluator(
     predictionsWithCounts: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
+    val normalizedPredictions = normalizePredictions(predictionsWithCounts)
+
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.edgeSpaceForRunUnion(predictionsWithCounts,
+      PairEvaluator.edgeSpaceForRunReferenceUnion(normalizedPredictions,
         library.ioPairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
-      predictionsWithCounts, backgroundSources, backgroundTargets)
+      normalizedPredictions, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
       library.ioPairs, backgroundSources, backgroundTargets)
 
     if (evalOpts.randomize) {
       println("Randomizing predictions.")
-      predictionsInBackground = PairEvaluator.randomPredictionsWithSameScore(
+      predictionsInBackground = PairEvaluator.randomPredictionsWithUniqueScore(
         predictionsInBackground, backgroundSources, backgroundTargets)
     }
 
-    println(s"# predictions: ${predictionsInBackground.size}")
-    println(s"# reference edges: ${referenceEdgesInBackground.size}")
+    println(s"# non-filtered predictions: ${normalizedPredictions.size}")
+    println(s"# filtered predictions: ${predictionsInBackground.size}")
+    println(s"# non-filtered reference edges: ${library.ioPairs.size}")
+    println(s"# filtered reference edges: ${referenceEdgesInBackground.size}")
 
     new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
       referenceEdgesInBackground, backgroundSources, backgroundTargets,
@@ -158,21 +164,84 @@ class PairEvaluator(
       reporter.file(s"predictions-joined-with-${library.id}"))
   }
 
+  def sourceTargetOverlapCheck(library: EnrichrPredictionLibrary) = {
+    val sources = library.ioPairs.map(_._1)
+    val targets = library.ioPairs.map(_._2)
+    val common = sources intersect targets
+    println(s"Source-target overlap check for ${library.id}")
+    println(s"Common to reference sources and targets: ${common.size}")
+  }
+
+  def transitiveReferenceCheck(library: EnrichrPredictionLibrary) = {
+    val tc = transitiveClosure(library.ioPairs)
+    val missingFromOriginal = tc -- library.ioPairs
+    println(s"Transitive reference check for ${library.id}")
+    println("Transitive closure edges missing from reference:")
+    println(missingFromOriginal.size)
+  }
+
+  def transitiveClosure(pairs: Set[(String, String)]) = {
+    var closure = pairs
+    var prevClosure = pairs
+    do {
+      prevClosure = closure
+      closure = oneTransitiveStep(closure)
+    } while (closure != prevClosure)
+    closure
+  }
+
+  def oneTransitiveStep(pairs: Set[(String, String)]) = {
+    val sources = pairs.map(_._1)
+    val edgesToSources = pairs.filter(p => sources.contains(p._2))
+    val newEdges = for {
+      (src, tgt) <- edgesToSources
+      (src2, tgt2) <- pairs.filter(_._1 == tgt)
+    } yield {
+      val newEdge = (src, tgt2)
+      if (!pairs.contains(newEdge)) {
+        println(s"Edge in transitive closure, missing: $src -> $tgt -> $tgt2")
+      }
+      newEdge
+    }
+    pairs ++ newEdges
+  }
+
+  def normalizePredictions(
+    predictions: Seq[ScoredPrediction]
+  ): Seq[ScoredPrediction] = {
+    // for each prediction, normalize score by how often the pair appeared in
+    // runs.
+    val normalized = for (((src, tgt), score) <- predictions) yield {
+      val nbOccurrences = nbRunsWithBothGenes(src, tgt)
+      val occurrenceRatio = nbOccurrences.toDouble / runDataCollection.size
+      val normalizedScore = score * (1.0 / occurrenceRatio)
+      ((src, tgt), normalizedScore.toInt)
+    }
+
+    normalized.sortBy(_._2).reverse
+  }
+
   def joinPredictionsWithReference(
     predictions: Seq[ScoredPrediction],
     referenceEdges: Set[(String, String)],
     f: File
   ): Unit = {
     val headers = List("source", "target", "score", "in reference",
-      "targets in ref.")
+      "conflicts reference", "targets in ref.")
     val rows = for (((src, tgt), score) <- predictions) yield {
       val isInReference = if (referenceEdges.contains((src, tgt))) {
         "YES"
       } else {
         ""
       }
+      val isConflicting = if (referenceEdges.contains((tgt, src))) {
+        "YES"
+      } else {
+        ""
+      }
       val otherTargets = referenceEdges.filter(_._1 == src).map(_._2)
-      List(src, tgt, score, isInReference, otherTargets.mkString(", "))
+      List(src, tgt, score, isInReference, isConflicting,
+        otherTargets.mkString(", "))
     }
 
     val writer = CSVWriter.open(f)
@@ -212,6 +281,16 @@ class PairEvaluator(
       reporter.file(s"coverage-ratio-${refID}.pdf")).run()
     new HistogramPlotInterface(coverageRatios.map(_._2), coClusteringLabels,
       reporter.file(s"same-cluster-ratio-${refID}.pdf")).run()
+  }
+
+  def nbRunsWithBothGenes(src: String, tgt: String): Int = {
+    val runsWithSrcAndTarget = runDataCollection filter {
+      case RunData(_, clustering, _, _) => {
+        clustering.allMembers.contains(src) &&
+          clustering.allMembers.contains(tgt)
+      }
+    }
+    runsWithSrcAndTarget.size
   }
 
   def findMedianDistances(
@@ -309,9 +388,17 @@ object PairEvaluator {
     val refSources = referencePairs.map(_._1)
     val refTargets = referencePairs.map(_._2)
 
+    println(s"|G| = ${predictionNames.size}")
+    println(s"|G x G| = ${predictionNames.size * predictionNames.size}")
+    println(s"|S| = ${refSources.size}")
+    println(s"|T| = ${refTargets.size}")
+    println(s"|S x T| = ${refSources.size * refTargets.size}")
+
     val backgroundSources = refSources intersect predictionNames
     val backgroundTargets = refTargets intersect predictionNames
 
+    println(s"|G && S x G && T| = ${backgroundSources.size *
+      backgroundTargets.size}")
     (backgroundSources, backgroundTargets)
   }
 

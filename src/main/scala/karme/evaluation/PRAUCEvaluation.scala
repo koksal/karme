@@ -8,7 +8,7 @@ import karme.util.FileUtil
 
 class PRAUCEvaluation(reporter: Reporter) {
 
-  val NB_RAND_TRIALS = 1000
+  val NB_RAND_TRIALS = 100
 
   def evaluate(
     predictions: Seq[((String, String), Int)],
@@ -27,7 +27,7 @@ class PRAUCEvaluation(reporter: Reporter) {
 
     for (i <- 1 to NB_RAND_TRIALS) {
       val randomizedPredictions =
-        PairEvaluator.randomPredictionsWithSameScore(predictions,
+        PairEvaluator.randomPredictionsWithUniqueScore(predictions,
           backgroundSources, backgroundTargets)
 
       val plotFile = if (i == 1) {
@@ -41,6 +41,8 @@ class PRAUCEvaluation(reporter: Reporter) {
       if (auc > randomAuc) {
         betterThanRandomCount += 1
       }
+
+      println(s"PR AUC trial $i, (${betterThanRandomCount.toDouble / i})")
     }
 
     FileUtil.writeToFile(reporter.file(s"auc-pr-$referenceID.txt"),
