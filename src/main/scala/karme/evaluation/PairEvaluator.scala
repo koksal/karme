@@ -5,6 +5,8 @@ import java.io.File
 import com.github.tototoshi.csv.CSVWriter
 import karme.Clustering
 import karme.EvalOpts
+import karme.FunIOPairsPrediction
+import karme.PrecedencePairsPrediction
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
@@ -34,25 +36,16 @@ class PairEvaluator(
     geneIOPairs: Seq[ScoredPrediction]
   )
 
-  def evaluatePrecedences(): Unit = {
-    println("Evaluating precedences.")
-
-    val precedencePredictions = aggregateGeneLevelPrecedences(runDataCollection)
-
-    for (ref <- references) {
-      evaluatePairs(precedencePredictions, ref)
-      // transitiveReferenceCheck(ref)
-      // sourceTargetOverlapCheck(ref)
+  def evaluatePredictions(): Unit = {
+    val predictions = evalOpts.predictionType match {
+      case FunIOPairsPrediction =>
+        aggregateGeneIOPairs(runDataCollection)
+      case PrecedencePairsPrediction =>
+        aggregateGeneLevelPrecedences(runDataCollection)
     }
-  }
-
-  def evaluateFunctionIOPairs(): Unit = {
-    println("Evaluating function IO pairs.")
-
-    val ioPairPredictions = aggregateGeneIOPairs(runDataCollection)
 
     for (ref <- references) {
-      evaluatePairs(ioPairPredictions, ref)
+      evaluatePairs(predictions, ref)
     }
   }
 
@@ -140,7 +133,7 @@ class PairEvaluator(
     if (evalOpts.randomize) {
       println("Randomizing predictions.")
       predictionsInBackground = PairEvaluator.randomPredictionsWithUniqueScore(
-        predictionsInBackground, backgroundSources, backgroundTargets)
+        predictionsInBackground.size, backgroundSources, backgroundTargets)
     }
 
     println(s"# non-filtered predictions: ${normalizedPredictions.size}")
@@ -469,28 +462,28 @@ object PairEvaluator {
     random.shuffle(res.toSeq)
   }
 
-  def randomPredictionsWithSameScore(
-    predictions: Seq[ScoredPrediction],
+  def randomPredictionsWithGivenScores(
+    scores: Seq[Int],
     sourceUniv: Set[String],
     targetUniv: Set[String]
   ): Seq[ScoredPrediction] = {
     val randomizedPairs = randomPairsWithoutReplacement(sourceUniv,
-      targetUniv, predictions.size)
+      targetUniv, scores.size)
 
-    predictions.zip(randomizedPairs) map {
-      case (origPrediction, randomPair) => (randomPair, origPrediction._2)
-    }
+    randomizedPairs.zip(scores)
   }
 
   def randomPredictionsWithUniqueScore(
-    predictions: Seq[ScoredPrediction],
+    size: Int,
     sourceUniv: Set[String],
     targetUniv: Set[String]
   ): Seq[ScoredPrediction] = {
     val randomizedPairs = randomPairsWithoutReplacement(sourceUniv,
-      targetUniv, predictions.size)
+      targetUniv, size)
 
-    randomizedPairs.zipWithIndex.reverse
+    val scores = (1 to randomizedPairs.size).reverse
+
+    randomizedPairs.zip(scores)
   }
 
   def namesInPairs(pairs: Iterable[(String, String)]): Set[String] = {

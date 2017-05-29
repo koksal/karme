@@ -8,7 +8,7 @@ import karme.util.FileUtil
 
 class PRAUCEvaluation(reporter: Reporter) {
 
-  val NB_RAND_TRIALS = 100
+  val NB_RAND_TRIALS = 500
 
   def evaluate(
     predictions: Seq[((String, String), Int)],
@@ -27,7 +27,7 @@ class PRAUCEvaluation(reporter: Reporter) {
 
     for (i <- 1 to NB_RAND_TRIALS) {
       val randomizedPredictions =
-        PairEvaluator.randomPredictionsWithUniqueScore(predictions,
+        PairEvaluator.randomPredictionsWithUniqueScore(predictions.size,
           backgroundSources, backgroundTargets)
 
       val plotFile = if (i == 1) {

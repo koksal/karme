@@ -162,6 +162,14 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(runCollectionFolder = Some(f)))
       } text "Folder containing run folders to evaluate."
 
+      opt[String]("prediction-type") action { (s, o) =>
+        val predictionType = s match {
+          case "fun-io-pairs" => FunIOPairsPrediction
+          case "precedence-pairs" => PrecedencePairsPrediction
+        }
+        o.copy(evalOpts = o.evalOpts.copy(predictionType = predictionType))
+      } text "Evaluation type (function IO pairs or precedence pairs"
+
       opt[Int]("max-precedence-distance") action { (i, o) =>
         o.copy(evalOpts = o.evalOpts.copy(maxPrecedenceDistance = Some(i)))
       } text "Maximum allowed precedence distance for predictions."
