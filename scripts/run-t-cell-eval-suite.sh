@@ -8,7 +8,7 @@ SWEEP_FOLDER=evaluation/2017-05-21-parameter-sweep-with-clustering-and-reachabil
   --prediction-type fun-io-pairs \
   --run-collection $SWEEP_FOLDER
 
-for i in 1..5
+for i in {1..10}
 do
   ./scripts/run-t-cell-eval.sh \
     $OUTFOLDER/precedence-up-to-$i \

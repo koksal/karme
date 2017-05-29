@@ -119,14 +119,15 @@ class PairEvaluator(
     predictionsWithCounts: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    val normalizedPredictions = normalizePredictions(predictionsWithCounts)
+    // val normalizedPredictions = normalizePredictions(predictionsWithCounts)
+    val predictionsToEvaluate = predictionsWithCounts
 
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.edgeSpaceForRunReferenceUnion(normalizedPredictions,
+      PairEvaluator.edgeSpaceForRunReferenceUnion(predictionsToEvaluate,
         library.ioPairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
-      normalizedPredictions, backgroundSources, backgroundTargets)
+      predictionsToEvaluate, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
       library.ioPairs, backgroundSources, backgroundTargets)
 
@@ -136,7 +137,7 @@ class PairEvaluator(
         predictionsInBackground.size, backgroundSources, backgroundTargets)
     }
 
-    println(s"# non-filtered predictions: ${normalizedPredictions.size}")
+    println(s"# non-filtered predictions: ${predictionsToEvaluate.size}")
     println(s"# filtered predictions: ${predictionsInBackground.size}")
     println(s"# non-filtered reference edges: ${library.ioPairs.size}")
     println(s"# filtered reference edges: ${referenceEdgesInBackground.size}")
