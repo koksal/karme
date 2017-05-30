@@ -37,11 +37,15 @@ class PairEvaluator(
   )
 
   def evaluatePredictions(): Unit = {
-    val predictions = evalOpts.predictionType match {
+    var predictions = evalOpts.predictionType match {
       case FunIOPairsPrediction =>
         aggregateGeneIOPairs(runDataCollection)
       case PrecedencePairsPrediction =>
         aggregateGeneLevelPrecedences(runDataCollection)
+    }
+
+    if (evalOpts.normalizeScores) {
+      predictions = normalizePredictions(predictions)
     }
 
     for (ref <- references) {
@@ -52,9 +56,7 @@ class PairEvaluator(
   def aggregateGeneIOPairs(
     runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
-    val allPairs = runData flatMap {
-      case RunData(_, _, _, geneIOPairs) => geneIOPairs
-    }
+    val allPairs = runData flatMap { _.geneIOPairs }
 
     CollectionUtil.combineCounts(allPairs)
   }
@@ -116,18 +118,15 @@ class PairEvaluator(
   }
 
   def evaluatePairs(
-    predictionsWithCounts: Seq[ScoredPrediction],
+    scoredPredictions: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    val normalizedPredictions = normalizePredictions(predictionsWithCounts)
-    val predictionsToEvaluate = normalizedPredictions
-
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.edgeSpaceForRunReferenceUnion(predictionsToEvaluate,
+      PairEvaluator.edgeSpaceForRunReferenceUnion(scoredPredictions,
         library.ioPairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
-      predictionsToEvaluate, backgroundSources, backgroundTargets)
+      scoredPredictions, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
       library.ioPairs, backgroundSources, backgroundTargets)
 
@@ -137,7 +136,7 @@ class PairEvaluator(
         predictionsInBackground.size, backgroundSources, backgroundTargets)
     }
 
-    println(s"# non-filtered predictions: ${predictionsToEvaluate.size}")
+    println(s"# non-filtered predictions: ${scoredPredictions.size}")
     println(s"# filtered predictions: ${predictionsInBackground.size}")
     println(s"# non-filtered reference edges: ${library.ioPairs.size}")
     println(s"# filtered reference edges: ${referenceEdgesInBackground.size}")

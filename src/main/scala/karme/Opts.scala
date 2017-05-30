@@ -59,6 +59,7 @@ case class EvalOpts(
   runCollectionFolder: Option[File] = None,
   predictionType: PredictionType = FunIOPairsPrediction,
   maxPrecedenceDistance: Option[Int] = None,
+  normalizeScores: Boolean = false,
   randomize: Boolean = false
 )
 

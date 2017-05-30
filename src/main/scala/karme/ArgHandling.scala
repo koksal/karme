@@ -174,6 +174,10 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(maxPrecedenceDistance = Some(i)))
       } text "Maximum allowed precedence distance for predictions."
 
+      opt[Unit]("normalize-scores") action { (_, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(normalizeScores = true))
+      } text "Normalize prediction scores"
+
       opt[Unit]("randomize-eval") action { (_, o) =>
         o.copy(evalOpts = o.evalOpts.copy(randomize = true))
       } text "Randomize predictions before evaluation"

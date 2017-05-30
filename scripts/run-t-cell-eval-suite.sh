@@ -16,3 +16,12 @@ do
     --max-precedence-distance $i \
     --run-collection $SWEEP_FOLDER
 done
+
+for i in {1..3}
+do
+  ./scripts/run-t-cell-eval.sh \
+    $OUTFOLDER/randomized-predictions-$i \
+    --prediction-type fun-io-pairs \
+    --randomize-eval \
+    --run-collection $SWEEP_FOLDER
+done
