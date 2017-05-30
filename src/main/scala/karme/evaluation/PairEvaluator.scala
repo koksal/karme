@@ -119,8 +119,8 @@ class PairEvaluator(
     predictionsWithCounts: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    // val normalizedPredictions = normalizePredictions(predictionsWithCounts)
-    val predictionsToEvaluate = predictionsWithCounts
+    val normalizedPredictions = normalizePredictions(predictionsWithCounts)
+    val predictionsToEvaluate = normalizedPredictions
 
     val (backgroundSources, backgroundTargets) =
       PairEvaluator.edgeSpaceForRunReferenceUnion(predictionsToEvaluate,
