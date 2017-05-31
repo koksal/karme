@@ -17,7 +17,7 @@ object EnrichrPredictionLibraryParser {
       predictionsWithDescendingScore)
   }
 
-  private def parsePredictions(f: File): Seq[EnrichrPrediction] = {
+  private def parsePredictions(f: File): Seq[ReferencePrediction] = {
     val reader = CSVReader.open(f)
     val tuples = reader.allWithHeaders()
 
@@ -25,7 +25,7 @@ object EnrichrPredictionLibraryParser {
       val source = tuple(EnrichrPredictionLogger.SOURCE_FIELD)
       val target = tuple(EnrichrPredictionLogger.TARGET_FIELD)
       val score = tuple(EnrichrPredictionLogger.COMBINED_SCORE_FIELD)
-      EnrichrPrediction(source, target, score.toDouble)
+      ReferencePrediction(source, target, score.toDouble)
     }
   }
 

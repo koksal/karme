@@ -9,6 +9,7 @@ import karme.FunIOPairsPrediction
 import karme.PrecedencePairsPrediction
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
+import karme.evaluation.enrichr.ReferencePrediction
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
@@ -50,6 +51,7 @@ class PairEvaluator(
 
     for (ref <- references) {
       evaluatePairs(predictions, ref)
+      oneHopTransitiveCheck(ref)
     }
   }
 
@@ -122,7 +124,7 @@ class PairEvaluator(
     library: EnrichrPredictionLibrary
   ): Unit = {
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.edgeSpaceForRunReferenceUnion(scoredPredictions,
+      PairEvaluator.sourceTargetUnionBackground(scoredPredictions,
         library.ioPairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
@@ -171,6 +173,52 @@ class PairEvaluator(
     println(s"Transitive reference check for ${library.id}")
     println("Transitive closure edges missing from reference:")
     println(missingFromOriginal.size)
+  }
+
+  def oneHopTransitiveCheck(library: EnrichrPredictionLibrary) = {
+    val termToPredictions = library.predictions.groupBy(p => p.term)
+
+    var missed = 0
+    var badSign = 0
+    var captured = 0
+
+    for (pred <- library.predictions;
+         if pred.combinedScore < 0 && pred.term != pred.target) {
+      val predictionsFromSource = termToPredictions.getOrElse(pred.term, Nil)
+      val predictionsFromTarget = termToPredictions.getOrElse(pred.target, Nil)
+
+      for (predFromTarget <- predictionsFromTarget;
+           if predFromTarget.term != predFromTarget.target) {
+        predictionsFromSource.find(
+          p => p.target == predFromTarget.target) match {
+          case Some(predFromSource) => {
+            val sameSign =
+              math.signum(predFromSource.combinedScore) ==
+              math.signum(predFromTarget.combinedScore)
+            if (sameSign) {
+              captured += 1
+            } else {
+              badSign += 1
+            }
+          }
+          case None => {
+            println(s"Reference predicts: $pred")
+            println(s"Reference also predicts: $predFromTarget")
+            println(s"Reference has no edge from ${pred.term} to " +
+              s"${predFromTarget.target}")
+            println
+
+            missed += 1
+          }
+
+        }
+      }
+    }
+
+    println(s"Missed 1-hop connections: $missed")
+    println(s"Captured 1-hop connections: $captured")
+    println(s"Mismatching sign 1-hop connections: $badSign")
+
   }
 
   def transitiveClosure(pairs: Set[(String, String)]) = {
@@ -352,7 +400,7 @@ object PairEvaluator {
     edgeSpace(namesCommonToRuns, referencePairs)
   }
 
-  def edgeSpaceForRunReferenceUnion(
+  def sourceTargetUnionBackground(
     predictions: Seq[ScoredPrediction],
     referencePairs: Set[(String, String)]
   ): (Set[String], Set[String]) = {
@@ -366,7 +414,7 @@ object PairEvaluator {
     (common, common)
   }
 
-  def edgeSpaceForRunUnion(
+  def sourceTargetProductBackground(
     predictions: Seq[ScoredPrediction],
     referencePairs: Set[(String, String)]
   ): (Set[String], Set[String]) = {

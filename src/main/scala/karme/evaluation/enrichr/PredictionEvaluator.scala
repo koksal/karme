@@ -130,8 +130,8 @@ object PredictionEvaluator {
   def referenceNames(
     reference: EnrichrPredictionLibrary
   ): Set[String] = {
-    def predictionNames(p: EnrichrPrediction): Set[String] = p match {
-      case EnrichrPrediction(term, target, _) => Set(term, target)
+    def predictionNames(p: ReferencePrediction): Set[String] = p match {
+      case ReferencePrediction(term, target, _) => Set(term, target)
     }
 
     reference.predictions.toSet.flatMap(predictionNames)
@@ -141,7 +141,7 @@ object PredictionEvaluator {
     reference: EnrichrPredictionLibrary
   ): Set[(String, String)] = {
     reference.predictions.map{
-      case EnrichrPrediction(term, target, score) => (term, target)
+      case ReferencePrediction(term, target, score) => (term, target)
     }.toSet
   }
 

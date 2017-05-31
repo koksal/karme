@@ -41,13 +41,15 @@ object KnockdownExperimentTransformer {
     val sources = headers.drop(nonGeneFields.size)
 
     tuples flatMap { tuple =>
-      val target = tuple.head
-      val isTF = tuple(1).toInt == 1
+      val targets = tuple.head.split(";").filter(!_.startsWith("LOC"))
+
       val foldChanges = tuple.drop(nonGeneFields.size).map(_.toDouble)
 
       assert(foldChanges.size == sources.size)
-      sources.zip(foldChanges) map {
-        case (src, fc) => (src, target, fc)
+      sources.zip(foldChanges) flatMap {
+        case (src, fc) => {
+          targets map (t => (src, t, fc))
+        }
       }
     }
   }

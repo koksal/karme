@@ -8,7 +8,7 @@ import karme.util.NamingUtil
 
 class EnrichrOutputParser(canonicalNames: Set[String]) {
 
-  def parse(f: File): Seq[EnrichrPrediction] = {
+  def parse(f: File): Seq[ReferencePrediction] = {
     val reader = CSVReader.open(f)(new TSVFormat {})
     val tuples = reader.allWithHeaders()
     val predictionOptions = tuples map extractEnrichrPrediction
@@ -19,12 +19,12 @@ class EnrichrOutputParser(canonicalNames: Set[String]) {
 
   private def extractEnrichrPrediction(
     tuple: Map[String, String]
-  ): Option[EnrichrPrediction] = {
+  ): Option[ReferencePrediction] = {
     val canonicalTerm = NamingUtil.canonicalize(tuple("Term"))
     nameFromCanonicalTerm(canonicalTerm) map { matchedCanonicalTermName =>
       val canonicalTarget = NamingUtil.canonicalize(tuple("Genes"))
       val score = tuple("Combined Score").toDouble
-      EnrichrPrediction(matchedCanonicalTermName, canonicalTarget, score)
+      ReferencePrediction(matchedCanonicalTermName, canonicalTarget, score)
     }
   }
 

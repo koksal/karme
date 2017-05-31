@@ -2,23 +2,23 @@ package karme.evaluation.enrichr
 
 case class EnrichrPredictionLibrary(
   id: String,
-  predictions: Seq[EnrichrPrediction]
+  predictions: Seq[ReferencePrediction]
 ) {
 
   def names: Set[String] = {
     (predictions flatMap {
-      case EnrichrPrediction(term, target, _) => Set(term, target)
+      case ReferencePrediction(term, target, _) => Set(term, target)
     }).toSet
   }
 
   def ioPairs: Set[(String, String)] = {
     predictions.map{
-      case EnrichrPrediction(term, target, _) => (term, target)
+      case ReferencePrediction(term, target, _) => (term, target)
     }.toSet
   }
 
 }
 
-case class EnrichrPrediction(
+case class ReferencePrediction(
   term: String, target: String, combinedScore: Double
 )
