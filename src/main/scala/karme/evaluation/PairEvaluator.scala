@@ -50,7 +50,7 @@ class PairEvaluator(
     }
 
     for (ref <- references) {
-      evaluatePairs(predictions, ref)
+      // evaluatePairs(predictions, ref)
       oneHopTransitiveCheck(ref)
     }
   }
@@ -179,36 +179,41 @@ class PairEvaluator(
     val termToPredictions = library.predictions.groupBy(p => p.term)
 
     var missed = 0
-    var badSign = 0
     var captured = 0
 
-    for (pred <- library.predictions;
-         if pred.combinedScore < 0 && pred.term != pred.target) {
-      val predictionsFromSource = termToPredictions.getOrElse(pred.term, Nil)
-      val predictionsFromTarget = termToPredictions.getOrElse(pred.target, Nil)
+    var missedMinFoldChanges = List[Double]()
+    var capturedMinFoldChanges = List[Double]()
 
-      for (predFromTarget <- predictionsFromTarget;
-           if predFromTarget.term != predFromTarget.target) {
+    for (firstHop <- library.predictions;
+         if firstHop.combinedScore < 0 && firstHop.term != firstHop.target) {
+      val predictionsFromSource =
+        termToPredictions.getOrElse(firstHop.term, Nil)
+      val predictionsFromTarget =
+        termToPredictions.getOrElse(firstHop.target, Nil)
+
+      for (secondHop <- predictionsFromTarget;
+           if secondHop.term != secondHop.target) {
+
+        val minFoldChange = math.min(
+          math.abs(firstHop.combinedScore),
+          math.abs(secondHop.combinedScore)
+        )
+
         predictionsFromSource.find(
-          p => p.target == predFromTarget.target) match {
-          case Some(predFromSource) => {
-            val sameSign =
-              math.signum(predFromSource.combinedScore) ==
-              math.signum(predFromTarget.combinedScore)
-            if (sameSign) {
-              captured += 1
-            } else {
-              badSign += 1
-            }
+          p => p.target == secondHop.target) match {
+          case Some(twoHop) => {
+            captured += 1
+            capturedMinFoldChanges = minFoldChange :: capturedMinFoldChanges
           }
           case None => {
-            println(s"Reference predicts: $pred")
-            println(s"Reference also predicts: $predFromTarget")
-            println(s"Reference has no edge from ${pred.term} to " +
-              s"${predFromTarget.target}")
+            println(s"Reference predicts: $firstHop")
+            println(s"Reference also predicts: $secondHop")
+            println(s"Reference has no edge from ${firstHop.term} to " +
+              s"${secondHop.target}")
             println
 
             missed += 1
+            missedMinFoldChanges = minFoldChange :: missedMinFoldChanges
           }
 
         }
@@ -217,7 +222,18 @@ class PairEvaluator(
 
     println(s"Missed 1-hop connections: $missed")
     println(s"Captured 1-hop connections: $captured")
-    println(s"Mismatching sign 1-hop connections: $badSign")
+
+    val points = capturedMinFoldChanges ::: missedMinFoldChanges
+    val labels = capturedMinFoldChanges.map(_ => "captured") :::
+      missedMinFoldChanges.map(_ => "missed")
+    new HistogramPlotInterface(
+      points,
+      labels,
+      reporter.file(s"transitive-abs-fold-changes-${library.id}.pdf")
+    ).run()
+
+    val rs = new RankSumTest(capturedMinFoldChanges, missedMinFoldChanges).run()
+    println(rs)
 
   }
 
