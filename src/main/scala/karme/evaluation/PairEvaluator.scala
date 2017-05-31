@@ -50,8 +50,8 @@ class PairEvaluator(
     }
 
     for (ref <- references) {
-      // evaluatePairs(predictions, ref)
-      oneHopTransitiveCheck(ref)
+      evaluatePairs(predictions, ref)
+      // oneHopTransitiveCheck(ref)
     }
   }
 
@@ -123,14 +123,16 @@ class PairEvaluator(
     scoredPredictions: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
+    val complementedRefPairs = oneTransitiveStep(library.ioPairs)
+
     val (backgroundSources, backgroundTargets) =
       PairEvaluator.sourceTargetUnionBackground(scoredPredictions,
-        library.ioPairs)
+        complementedRefPairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
       scoredPredictions, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
-      library.ioPairs, backgroundSources, backgroundTargets)
+      complementedRefPairs, backgroundSources, backgroundTargets)
 
     if (evalOpts.randomize) {
       println("Randomizing predictions.")
@@ -140,7 +142,7 @@ class PairEvaluator(
 
     println(s"# non-filtered predictions: ${scoredPredictions.size}")
     println(s"# filtered predictions: ${predictionsInBackground.size}")
-    println(s"# non-filtered reference edges: ${library.ioPairs.size}")
+    println(s"# non-filtered reference edges: ${complementedRefPairs.size}")
     println(s"# filtered reference edges: ${referenceEdgesInBackground.size}")
 
     new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
@@ -255,9 +257,6 @@ class PairEvaluator(
       (src2, tgt2) <- pairs.filter(_._1 == tgt)
     } yield {
       val newEdge = (src, tgt2)
-      if (!pairs.contains(newEdge)) {
-        println(s"Edge in transitive closure, missing: $src -> $tgt -> $tgt2")
-      }
       newEdge
     }
     pairs ++ newEdges
