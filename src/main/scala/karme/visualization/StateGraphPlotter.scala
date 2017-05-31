@@ -54,27 +54,6 @@ class StateGraphPlotter(reporter: Reporter) {
     plotGraph(dotString, name)
   }
 
-  def plotSimulation(
-    initialStates: Set[ConcreteBooleanState],
-    observedStates: Set[ConcreteBooleanState],
-    simulatedStates: Set[ConcreteBooleanState],
-    name: String
-  ): Unit = {
-    assert(initialStates.subsetOf(observedStates))
-    assert(initialStates.subsetOf(simulatedStates))
-
-    val unionExp = Experiments.booleanStatesToExperiment(
-      observedStates ++ simulatedStates)
-    // TODO carry the Hamming distance here
-    val unionGraph = StateGraphs.fromBooleanExperiment(unionExp, 1)
-
-    val missedStates = observedStates -- simulatedStates
-    val unobservedStates = simulatedStates -- observedStates
-    val highlightGroups = List(initialStates, unobservedStates, missedStates)
-
-    plotUndirectedGraph(unionGraph, name, nodeHighlightGroups = highlightGroups)
-  }
-
   private def plotGraph(
     dotString: String,
     name: String

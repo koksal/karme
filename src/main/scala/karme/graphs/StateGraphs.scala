@@ -35,35 +35,6 @@ object StateGraphs {
     }
   }
 
-  /**
-    * Builds a state graph by adding all edges within maximum Hamming distance.
-    */
-  def fromBooleanExperiment(
-    booleanExperiment: BooleanExperiment,
-    maxHammingDistance: Int
-  ): UndirectedBooleanStateGraph = {
-    val V = nodesFromExperiment(booleanExperiment)
-
-    var g = new UndirectedBooleanStateGraph(V = V.toSet)
-
-    // Add edges with Hamming distance <= max
-    val vSeq = V.toIndexedSeq
-    for {
-      i <- 0 until vSeq.size
-      j <- (i + 1) until vSeq.size
-    } {
-      val v1 = vSeq(i)
-      val v2 = vSeq(j)
-
-      val dist = DiscreteStateAnalysis.hammingDistance(v1.state, v2.state)
-      if (dist <= maxHammingDistance) {
-        g = g.addEdge(v1, v2)
-      }
-    }
-
-    g
-  }
-
   def nodesFromExperiment(
     booleanExperiment: BooleanExperiment
   ): Set[StateGraphVertex] = {
