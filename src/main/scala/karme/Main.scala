@@ -41,13 +41,12 @@ object Main {
     // TODO save functions
 
     if (opts.runSynthesis) {
-      runSynthesis(opts, inputTransformer, graph, clustering, reporter)
+      runSynthesis(opts, graph, clustering, reporter)
     }
   }
 
   def runSynthesis(
     opts: Opts,
-    inputTransformer: InputTransformer,
     directedStateGraph: DirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
     reporter: Reporter
