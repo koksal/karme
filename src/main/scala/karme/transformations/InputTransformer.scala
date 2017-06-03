@@ -58,6 +58,21 @@ class InputTransformer(
     TransformResult(graph, sources, geneClustering)
   }
 
+  def transform2() = {
+    // 1. get smoothed experiment
+    // 2. compute clustering
+    // 3. compute graph from cluster averages
+    // 4. for each edge, label
+    //      for each gene in label cluster
+    //        test if the gene's value in the smoothed experiment changes
+    //        between the two nodes (rank-sum test)
+    // 5. return, for each edge, the set of genes that reliably change along
+    //    the edge.
+    // 6. expand cluster-level precedences using the filtered genes for each
+    //    edge.
+    // 7. alternative: intersect the genes for every edge of a cluster.
+  }
+
   def buildDirectedStateGraphsForAllClusterings():
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
     val smoothedExperiment = getSmoothedExperiment()
