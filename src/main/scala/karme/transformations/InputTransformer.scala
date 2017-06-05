@@ -57,43 +57,6 @@ class InputTransformer(
     TransformResult(graph, sources, geneClustering)
   }
 
-  def refineClusteringPerEdge(
-    geneLevelExp: Experiment[Double],
-    transformResult: TransformResult
-  ) = {
-    // 1. for each edge, label
-    //      for each gene in label cluster
-    //        test if the gene's value in the smoothed experiment changes
-    //        between the two nodes (rank-sum test)
-
-    for (e <- transformResult.graph.E) {
-      val refinedClustering = refineClusteringForEdgeLabels(e,
-        transformResult.clustering, geneLevelExp)
-
-      // 2. return, for each edge, the set of genes that reliably change along
-      //    the edge.
-      // TODO print what was refined
-      // TODO return per-edge refined clustering
-    }
-    // 3a. expand cluster-level precedences using the filtered genes for each
-    //    edge.
-    // 3b. alternative: intersect the genes for every edge of a cluster.
-  }
-
-  def refineClusteringForEdgeLabels(
-    e: UnlabeledEdge[StateGraphVertex],
-    clustering: Map[String, Set[String]],
-    geneLevelExp: Experiment[Double]
-  ): Map[String, Set[String]] = {
-    for (label <- UndirectedStateGraphOps.edgeLabels(e)) {
-      // get members for cluster "label"
-      val labelMembers = clustering(label)
-
-      // depending on the up/down switch on the label, check if each label
-      // member
-    }
-  }
-
   def buildDirectedStateGraphsForAllClusterings():
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
     val smoothedExperiment = getSmoothedExperiment()
