@@ -2,6 +2,7 @@ package karme.transformations
 
 import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
+import karme.Clustering
 import karme.Experiments.Experiment
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment}
 import karme.Reporter
@@ -19,7 +20,8 @@ import karme.visualization.CurvePlot
 case class TransformResult(
   graph: DirectedBooleanStateGraph,
   sources: Set[StateGraphVertex],
-  clustering: Map[String, Set[String]]
+  clustering: Clustering,
+  perEdgeClustering: Map[UnlabeledEdge[StateGraphVertex], Clustering]
 )
 
 class InputTransformer(
@@ -55,10 +57,11 @@ class InputTransformer(
       geneClustering)
 
     val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
-      geneClustering)
-    val refinedClustering = clusteringRefiner.refineClusteringPerEdge()
-    
-    TransformResult(graph, sources, geneClustering)
+      Clustering(geneClustering))
+    val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
+
+    TransformResult(graph, sources, Clustering(geneClustering),
+      edgeToRefinedClustering)
   }
 
   def buildDirectedStateGraphsForAllClusterings():

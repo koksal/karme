@@ -9,7 +9,6 @@ import karme.FunIOPairsPrediction
 import karme.PrecedencePairsPrediction
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
-import karme.evaluation.enrichr.ReferencePrediction
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
@@ -66,10 +65,7 @@ class PairEvaluator(
   def aggregateGeneLevelPrecedences(
     runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
-    val expandedPrecedences = runData flatMap {
-      case RunData(_, clustering, precedences, _) =>
-        precedences flatMap (p => expandEdgePrecedence(p, clustering).toSeq)
-    }
+    val expandedPrecedences = runData flatMap { rd => rd.precedences }
 
     val distanceLimitedPrecedences = limitByMaxDistance(expandedPrecedences)
 
@@ -87,17 +83,6 @@ class PairEvaluator(
           case Some(maxDist) => dist <= maxDist
           case None => true
         }
-    }
-  }
-
-  def expandEdgePrecedence(
-    edgePrecedence: EdgePrecedence, clustering: Clustering
-  ): Set[EdgePrecedence] = {
-    for {
-      src <- clustering.clusterToMember(edgePrecedence.source)
-      tgt <- clustering.clusterToMember(edgePrecedence.target)
-    } yield {
-      EdgePrecedence(src, tgt, edgePrecedence.distance)
     }
   }
 

@@ -27,18 +27,17 @@ object Main {
     val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
       annotationContext, reporter)
 
-    val TransformResult(graph, sources, clustering) =
+    val TransformResult(graph, sources, clustering, perEdgeClustering) =
       inputTransformer.transform()
 
     logGraph(graph, sources, reporter)
 
-    new ClusteringStore(opts.reporterOpts.outFolder).store(clustering)
+    new ClusteringStore(opts.reporterOpts.outFolder).store(
+      clustering.clusterToMember)
 
-    val edgePrecedences = EdgePrecedenceProducer.computePrecedence(graph)
+    val edgePrecedences = new EdgePrecedenceProducer(graph,
+      perEdgeClustering).computePrecedence
     new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
-
-    // TODO save graph edges, graph node cell members
-    // TODO save functions
 
     if (opts.runSynthesis) {
       runSynthesis(opts, graph, clustering, reporter)
@@ -48,7 +47,7 @@ object Main {
   def runSynthesis(
     opts: Opts,
     directedStateGraph: DirectedBooleanStateGraph,
-    clustering: Map[String, Set[String]],
+    clustering: Clustering,
     reporter: Reporter
   ): Unit = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
@@ -58,7 +57,7 @@ object Main {
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 
-    logIOPairs(results, clustering, reporter)
+    logIOPairs(results, clustering.clusterToMember, reporter)
   }
 
   def logIOPairs(
