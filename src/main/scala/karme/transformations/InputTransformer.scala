@@ -54,6 +54,10 @@ class InputTransformer(
     val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
       geneClustering)
 
+    val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
+      geneClustering)
+    val refinedClustering = clusteringRefiner.refineClusteringPerEdge()
+    
     TransformResult(graph, sources, geneClustering)
   }
 
