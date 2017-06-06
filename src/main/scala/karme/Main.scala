@@ -30,7 +30,7 @@ object Main {
     val TransformResult(graph, sources, clustering, perEdgeClustering) =
       inputTransformer.transform()
 
-    logGraph(graph, sources, reporter)
+    logGraph(graph, sources, annotationContext, reporter)
 
     new ClusteringStore(opts.reporterOpts.outFolder).store(
       clustering.clusterToMember)
@@ -82,11 +82,14 @@ object Main {
   def logGraph(
     graph: DirectedBooleanStateGraph,
     sources: Set[StateGraphVertex],
+    annotationContext: AnnotationContext,
     reporter: Reporter
   ): Unit = {
-    new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
-      nodeHighlightGroups = List(sources.map(_.state)))
-
-
+    new StateGraphPlotter(reporter).plotDirectedGraph(
+      graph,
+      "state-graph",
+      cellClustering = annotationContext.cellClustering,
+      nodeHighlightGroups = List(sources.map(_.state))
+    )
   }
 }
