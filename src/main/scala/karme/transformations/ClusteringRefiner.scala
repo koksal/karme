@@ -25,8 +25,6 @@ class ClusteringRefiner(
       e -> Clustering(refineClusteringForEdgeLabels(e))
     }
 
-    analyzeRefinedClusters(edgeToRefinedClustering.toMap)
-
     edgeToRefinedClustering.toMap
   }
 
@@ -46,28 +44,14 @@ class ClusteringRefiner(
         geneAgreesWithSwitch(e, g, upregulated)
       }
 
-      val conflictingGenes = ALL_GENES filter { g =>
-        geneAgreesWithSwitch(e, g, !upregulated)
-      }
-
-      assert(agreeingGenes.intersect(conflictingGenes).isEmpty)
-
       val agreeingGenesInCluster = agreeingGenes intersect clusterMembers
-      val conflictingGenesInCluster = conflictingGenes intersect clusterMembers
 
       println(s"Label: $label")
       println(s"Cluster size: ${clusterMembers.size}")
       println(s"Agreeing genes in cluster: ${agreeingGenesInCluster.size}")
-      println(agreeingGenesInCluster)
       println(s"Agreeing genes in total: ${agreeingGenes.size}")
-      println(agreeingGenes)
-      println(
-        s"Conflicting genes in cluster: ${conflictingGenesInCluster.size}")
-      println(conflictingGenesInCluster)
-      println(s"Conflicting genes in total: ${conflictingGenes.size}")
-      println(conflictingGenes)
 
-      refinedClustering += label -> (agreeingGenes ++ conflictingGenes)
+      refinedClustering += label -> agreeingGenesInCluster
     }
 
     refinedClustering
