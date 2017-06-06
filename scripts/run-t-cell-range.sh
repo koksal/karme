@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NB_JOBS=16
+NB_JOBS=8
 
 set -o xtrace
 
