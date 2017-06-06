@@ -38,7 +38,7 @@ class InputTransformer(
     new NamesParser(opts.inputFileOpts.namesFiles).names
   }
 
-  val inputExperiment: Experiment[Double] = {
+  lazy val inputExperiment: Experiment[Double] = {
     val file = opts.inputFileOpts.continuousExperimentFile.getOrElse(
       sys.error("No continuous experiment given."))
     ContinuousExperimentParser.parseAndFilter(file, geneNamesToFilter)
