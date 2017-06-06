@@ -40,18 +40,15 @@ class ClusteringRefiner(
 
       val clusterMembers = clustering.clusterToMember(label)
 
-      val agreeingGenes = ALL_GENES filter { g =>
+      val agreeingGenes = clusterMembers filter { g =>
         geneAgreesWithSwitch(e, g, upregulated)
       }
 
-      val agreeingGenesInCluster = agreeingGenes intersect clusterMembers
-
       println(s"Label: $label")
       println(s"Cluster size: ${clusterMembers.size}")
-      println(s"Agreeing genes in cluster: ${agreeingGenesInCluster.size}")
-      println(s"Agreeing genes in total: ${agreeingGenes.size}")
+      println(s"Agreeing genes in cluster: ${agreeingGenes.size}")
 
-      refinedClustering += label -> agreeingGenesInCluster
+      refinedClustering += label -> agreeingGenes
     }
 
     refinedClustering
