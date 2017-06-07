@@ -10,6 +10,7 @@ function run_with_args() {
   scripts/run-with-base-args.sh $folder \
     --annotations data/names/markers.txt \
     --boolean-normalization mclust \
+    --uncertainty-threshold 1 \
     --synthesis \
     --max-expr-depth 1 \
     "$@"
