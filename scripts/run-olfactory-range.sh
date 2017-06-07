@@ -7,7 +7,7 @@ set -o xtrace
 function run_with_args() {
   folder="log/parallel_runs/run_"`echo $@ | sed s'/[\ \/-]/_/g'`
   echo $folder
-  scripts/run-with-base-args.sh $folder \
+  scripts/run-olfactory-base-args.sh $folder \
     --annotations data/names/markers.txt \
     --boolean-normalization mclust \
     --uncertainty-threshold 1 \
