@@ -95,12 +95,20 @@ class PairEvaluator(
 
     folders map { f =>
       val clustering = Clustering(new ClusteringStore(f).read)
-      val precedences = new EdgePrecedenceStore(f).read
-      val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
 
-      val nonSelfPrecedences = precedences filter (p => p.source != p.target)
+      evalOpts.predictionType match {
+        case FunIOPairsPrediction => {
+          val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
+          RunData(f.getName, clustering, Nil, geneIOPairs)
+        }
+        case PrecedencePairsPrediction => {
+          val precedences = new EdgePrecedenceStore(f).read
 
-      RunData(f.getName, clustering, nonSelfPrecedences, geneIOPairs)
+          assert(precedences.forall(p => p.source != p.target))
+
+          RunData(f.getName, clustering, precedences, Nil)
+        }
+      }
     }
   }
 
