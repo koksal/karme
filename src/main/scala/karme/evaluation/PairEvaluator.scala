@@ -116,16 +116,16 @@ class PairEvaluator(
     scoredPredictions: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    val complementedRefPairs = oneTransitiveStep(library.ioPairs)
+    val referencePairs = library.ioPairs
 
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.sourceTargetUnionBackground(scoredPredictions,
-        complementedRefPairs)
+      PairEvaluator.sourceTargetProductBackground(scoredPredictions,
+        referencePairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
       scoredPredictions, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
-      complementedRefPairs, backgroundSources, backgroundTargets)
+      referencePairs, backgroundSources, backgroundTargets)
 
     if (evalOpts.randomize) {
       println("Randomizing predictions.")
@@ -135,7 +135,7 @@ class PairEvaluator(
 
     println(s"# non-filtered predictions: ${scoredPredictions.size}")
     println(s"# filtered predictions: ${predictionsInBackground.size}")
-    println(s"# non-filtered reference edges: ${complementedRefPairs.size}")
+    println(s"# non-filtered reference edges: ${referencePairs.size}")
     println(s"# filtered reference edges: ${referenceEdgesInBackground.size}")
 
     new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
@@ -146,8 +146,8 @@ class PairEvaluator(
       referenceEdgesInBackground, backgroundSources, backgroundTargets,
       library.id)
 
-    findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
-    findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
+    // findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
+    // findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
 
     joinPredictionsWithReference(predictionsInBackground,
       referenceEdgesInBackground,
@@ -428,6 +428,15 @@ object PairEvaluator {
   ): (Set[String], Set[String]) = {
     val predictionNameUnion = PairEvaluator.namesInPairs(predictions.map(_._1))
     edgeSpace(predictionNameUnion, referencePairs)
+  }
+
+  def referenceSourceTargetProductSpace(
+    referencePairs: Set[(String, String)]
+  ): (Set[String], Set[String]) = {
+    val refSources = referencePairs.map(_._1)
+    val refTargets = referencePairs.map(_._2)
+
+    (refSources, refTargets)
   }
 
   def edgeSpace(
