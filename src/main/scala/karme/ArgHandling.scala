@@ -136,6 +136,16 @@ object ArgHandling {
             o.inputTransformerOpts.clusteringOpts.copy(maxNbClusters = i)))
       } text "max number of gene clusters"
 
+      opt[Unit]("refine-clusters") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(refineClusters = true))
+      } text "refine clusters using rank-sum method for each edge"
+
+      opt[Double]("cluster-refinement-p-value") action { (d, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusterRefinementPValue = d))
+      } text "p-value threshold for edge-level clustering refinement"
+
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>

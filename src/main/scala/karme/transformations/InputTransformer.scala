@@ -47,21 +47,26 @@ class InputTransformer(
   def transform(): TransformResult = {
     val smoothedExp = getSmoothedExperiment()
 
-    val geneClustering = HierarchicalClustering.computeBestClustering(
+    val nonRefinedClustering = HierarchicalClustering.computeBestClustering(
       smoothedExp, opts.clusteringOpts)
 
     new CurvePlot(reporter).plotClusterCurves(smoothedExp, trajectories,
-      geneClustering, "smoothed-experiment")
+      nonRefinedClustering, "smoothed-experiment")
 
     val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
-      geneClustering)
+      nonRefinedClustering)
 
     val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
-      Clustering(geneClustering))
+      Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
     val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
 
-    TransformResult(graph, sources, Clustering(geneClustering),
-      edgeToRefinedClustering)
+    val geneClustering = if (opts.refineClusters) {
+      Clustering.combineByIntersection(edgeToRefinedClustering.values.toSeq)
+    } else {
+      Clustering(nonRefinedClustering)
+    }
+
+    TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
   }
 
   def buildDirectedStateGraphsForAllClusterings():

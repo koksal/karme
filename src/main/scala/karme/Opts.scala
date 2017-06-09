@@ -23,7 +23,9 @@ case class InputTransformerOpts(
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
   cluster: Boolean = false,
-  clusteringOpts: ClusteringOpts = ClusteringOpts()
+  clusteringOpts: ClusteringOpts = ClusteringOpts(),
+  refineClusters: Boolean = false,
+  clusterRefinementPValue: Double = 0.05
 )
 
 case class InputFileOpts(

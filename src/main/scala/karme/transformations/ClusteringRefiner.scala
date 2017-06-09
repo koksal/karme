@@ -12,10 +12,9 @@ import karme.util.MathUtil
 class ClusteringRefiner(
   clusterLevelGraph: DirectedBooleanStateGraph,
   geneLevelExp: Experiment[Double],
-  clustering: Clustering
+  clustering: Clustering,
+  pValueThreshold: Double
 ) {
-
-  val P_VALUE_THRESHOLD = 0.01
 
   val ALL_GENES = clustering.allMembers
 
@@ -88,7 +87,7 @@ class ClusteringRefiner(
     }
 
     val res = new RankSumTest(greater, smaller).run()
-    res.pValue <= P_VALUE_THRESHOLD
+    res.pValue <= pValueThreshold
   }
 
   def analyzeRefinedClusters(
