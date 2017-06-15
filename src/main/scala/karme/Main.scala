@@ -40,20 +40,21 @@ object Main {
     new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
 
     if (opts.runSynthesis) {
-      runSynthesis(opts, graph, clustering, reporter)
+      runSynthesis(opts, graph, sources, clustering, reporter)
     }
   }
 
   def runSynthesis(
     opts: Opts,
     directedStateGraph: DirectedBooleanStateGraph,
+    sources: Set[StateGraphVertex],
     clustering: Clustering,
     reporter: Reporter
   ): Unit = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
     val results = synthesizer.synthesizeForPositiveHardConstraints(
-      directedStateGraph)
+      directedStateGraph, sources)
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 

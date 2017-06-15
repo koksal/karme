@@ -1,10 +1,45 @@
 package karme.transformations
 
+import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.Transition
 
 object TransitionProducer {
+
+  def producePositiveAndNegativeTransitions(
+    directedStateGraph: DirectedBooleanStateGraph,
+    sources: Set[StateGraphVertex]
+  ): (Set[Transition], Set[Transition]) = {
+    val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
+
+    val graphWithoutEdgesFromSources =
+      removeEdgesFromSources(directedStateGraph, sources)
+
+    val positiveTransitions = TransitionProducer.positiveTransitions(
+      graphWithoutEdgesFromSources)
+
+    val negativeTransitions = TransitionProducer.negativeTransitions(
+      graphWithoutEdgesFromSources, stateNames)
+
+    (positiveTransitions, negativeTransitions)
+  }
+
+  def removeEdgesFromSources(
+    graph: DirectedBooleanStateGraph,
+    sources: Set[StateGraphVertex]
+  ): DirectedBooleanStateGraph = {
+    var newGraph = graph
+
+    for (e <- graph.E) {
+      if (sources.contains(e.v1) || sources.contains(e.v2)) {
+        newGraph = newGraph.removeEdge(e)
+      }
+    }
+
+    newGraph
+  }
 
   def positiveTransitions(
     graph: DirectedBooleanStateGraph

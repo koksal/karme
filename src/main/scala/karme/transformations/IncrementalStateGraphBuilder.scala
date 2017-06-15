@@ -4,6 +4,7 @@ import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
 import karme.Reporter
 import karme.analysis.DiscreteStateAnalysis
+import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
@@ -25,7 +26,23 @@ class IncrementalStateGraphBuilder(
     trajectories).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
-    removeNodesWithoutNeighbors(buildGraphFromEarliestNodes)
+    val connectedGraph = buildGraphFromEarliestNodes
+    removeNodesWithoutNeighbors(connectedGraph)
+  }
+
+  private def removeEdgesFromInitialNodes(
+    g: DirectedBooleanStateGraph
+  ): DirectedBooleanStateGraph = {
+    val initialNodes = nodesWithoutPredecessor(g.V)
+    var newGraph = g
+
+    for (e <- g.E) {
+      if (initialNodes.contains(e.v1) || initialNodes.contains(e.v2)) {
+        newGraph = newGraph.removeEdge(e)
+      }
+    }
+
+    newGraph
   }
 
   private def removeNodesWithoutNeighbors(
