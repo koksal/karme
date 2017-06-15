@@ -9,7 +9,10 @@ class ClusterPairExpansion(clustering: Map[String, Set[String]]) {
   ): Seq[(String, String)] = {
     clusterPairs flatMap {
       case (source, target) =>
-        betweenClusterPairs(clustering(source), clustering(target))
+        betweenClusterPairs(
+          clustering.getOrElse(source, Set.empty),
+          clustering.getOrElse(target, Set.empty)
+        )
     }
   }
 
