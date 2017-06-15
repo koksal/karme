@@ -2,13 +2,14 @@ package karme.transformations
 
 import karme.AnnotationContext
 import karme.CellTrajectories.CellTrajectory
+import karme.Clustering
 import karme.Experiments.Experiment
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment}
 import karme.Reporter
+import karme.graphs.Graphs.UnlabeledEdge
 import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
 import karme.transformations.clustering.HierarchicalClustering
 import karme.transformations.discretization.Discretization
@@ -19,7 +20,8 @@ import karme.visualization.CurvePlot
 case class TransformResult(
   graph: DirectedBooleanStateGraph,
   sources: Set[StateGraphVertex],
-  clustering: Map[String, Set[String]]
+  clustering: Clustering,
+  perEdgeClustering: Map[UnlabeledEdge[StateGraphVertex], Clustering]
 )
 
 class InputTransformer(
@@ -36,26 +38,35 @@ class InputTransformer(
     new NamesParser(opts.inputFileOpts.namesFiles).names
   }
 
-  val inputExperiment: Experiment[Double] = {
+  lazy val inputExperiment: Experiment[Double] = {
     val file = opts.inputFileOpts.continuousExperimentFile.getOrElse(
       sys.error("No continuous experiment given."))
     ContinuousExperimentParser.parseAndFilter(file, geneNamesToFilter)
   }
 
   def transform(): TransformResult = {
-
     val smoothedExp = getSmoothedExperiment()
 
-    val geneClustering = HierarchicalClustering.computeBestClustering(
+    val nonRefinedClustering = HierarchicalClustering.computeBestClustering(
       smoothedExp, opts.clusteringOpts)
 
     new CurvePlot(reporter).plotClusterCurves(smoothedExp, trajectories,
-      geneClustering, "smoothed-experiment")
+      nonRefinedClustering, "smoothed-experiment")
 
     val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
-      geneClustering)
+      nonRefinedClustering)
 
-    TransformResult(graph, sources, geneClustering)
+    val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
+      Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
+    val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
+
+    val geneClustering = if (opts.refineClusters) {
+      Clustering.combineByIntersection(edgeToRefinedClustering.values.toSeq)
+    } else {
+      Clustering(nonRefinedClustering)
+    }
+
+    TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
   }
 
   def buildDirectedStateGraphsForAllClusterings():

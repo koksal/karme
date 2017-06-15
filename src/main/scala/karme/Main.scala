@@ -27,38 +27,38 @@ object Main {
     val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
       annotationContext, reporter)
 
-    val TransformResult(graph, sources, clustering) =
+    val TransformResult(graph, sources, clustering, perEdgeClustering) =
       inputTransformer.transform()
 
-    logGraph(graph, sources, reporter)
+    logGraph(graph, sources, annotationContext, reporter)
 
-    new ClusteringStore(opts.reporterOpts.outFolder).store(clustering)
+    new ClusteringStore(opts.reporterOpts.outFolder).store(
+      clustering.clusterToMember)
 
-    val edgePrecedences = EdgePrecedenceProducer.computePrecedence(graph)
+    val edgePrecedences = new EdgePrecedenceProducer(graph,
+      perEdgeClustering).computePrecedence
     new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
 
-    // TODO save graph edges, graph node cell members
-    // TODO save functions
-
     if (opts.runSynthesis) {
-      runSynthesis(opts, graph, clustering, reporter)
+      runSynthesis(opts, graph, sources, clustering, reporter)
     }
   }
 
   def runSynthesis(
     opts: Opts,
     directedStateGraph: DirectedBooleanStateGraph,
-    clustering: Map[String, Set[String]],
+    sources: Set[StateGraphVertex],
+    clustering: Clustering,
     reporter: Reporter
   ): Unit = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
     val results = synthesizer.synthesizeForPositiveHardConstraints(
-      directedStateGraph)
+      directedStateGraph, sources)
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 
-    logIOPairs(results, clustering, reporter)
+    logIOPairs(results, clustering.clusterToMember, reporter)
   }
 
   def logIOPairs(
@@ -83,11 +83,14 @@ object Main {
   def logGraph(
     graph: DirectedBooleanStateGraph,
     sources: Set[StateGraphVertex],
+    annotationContext: AnnotationContext,
     reporter: Reporter
   ): Unit = {
-    new StateGraphPlotter(reporter).plotDirectedGraph(graph, "state-graph",
-      nodeHighlightGroups = List(sources.map(_.state)))
-
-
+    new StateGraphPlotter(reporter).plotDirectedGraph(
+      graph,
+      "state-graph",
+      cellClustering = annotationContext.cellClustering,
+      nodeHighlightGroups = List(sources.map(_.state))
+    )
   }
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NB_JOBS=16
+NB_JOBS=8
 
 set -o xtrace
 
@@ -10,6 +10,8 @@ function run_with_args() {
   scripts/run-t-cell-base-args.sh $folder \
     --boolean-normalization mclust \
     --uncertainty-threshold 1 \
+    --refine-clusters \
+    --cluster-refinement-p-value 0.01 \
     --synthesis \
     --max-expr-depth 1 \
     "$@"

@@ -9,7 +9,6 @@ import karme.FunIOPairsPrediction
 import karme.PrecedencePairsPrediction
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
-import karme.evaluation.enrichr.ReferencePrediction
 import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
@@ -66,10 +65,7 @@ class PairEvaluator(
   def aggregateGeneLevelPrecedences(
     runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
-    val expandedPrecedences = runData flatMap {
-      case RunData(_, clustering, precedences, _) =>
-        precedences flatMap (p => expandEdgePrecedence(p, clustering).toSeq)
-    }
+    val expandedPrecedences = runData flatMap { rd => rd.precedences }
 
     val distanceLimitedPrecedences = limitByMaxDistance(expandedPrecedences)
 
@@ -90,17 +86,6 @@ class PairEvaluator(
     }
   }
 
-  def expandEdgePrecedence(
-    edgePrecedence: EdgePrecedence, clustering: Clustering
-  ): Set[EdgePrecedence] = {
-    for {
-      src <- clustering.clusterToMember(edgePrecedence.source)
-      tgt <- clustering.clusterToMember(edgePrecedence.target)
-    } yield {
-      EdgePrecedence(src, tgt, edgePrecedence.distance)
-    }
-  }
-
   def aggregateClusteredNames(clusterings: Seq[Clustering]): Set[String] = {
     clusterings.map(_.allMembers).flatten.toSet
   }
@@ -110,12 +95,20 @@ class PairEvaluator(
 
     folders map { f =>
       val clustering = Clustering(new ClusteringStore(f).read)
-      val precedences = new EdgePrecedenceStore(f).read
-      val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
 
-      val nonSelfPrecedences = precedences filter (p => p.source != p.target)
+      evalOpts.predictionType match {
+        case FunIOPairsPrediction => {
+          val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
+          RunData(f.getName, clustering, Nil, geneIOPairs)
+        }
+        case PrecedencePairsPrediction => {
+          val precedences = new EdgePrecedenceStore(f).read
 
-      RunData(f.getName, clustering, nonSelfPrecedences, geneIOPairs)
+          assert(precedences.forall(p => p.source != p.target))
+
+          RunData(f.getName, clustering, precedences, Nil)
+        }
+      }
     }
   }
 
@@ -123,16 +116,16 @@ class PairEvaluator(
     scoredPredictions: Seq[ScoredPrediction],
     library: EnrichrPredictionLibrary
   ): Unit = {
-    val complementedRefPairs = oneTransitiveStep(library.ioPairs)
+    val referencePairs = library.ioPairs
 
     val (backgroundSources, backgroundTargets) =
-      PairEvaluator.sourceTargetUnionBackground(scoredPredictions,
-        complementedRefPairs)
+      PairEvaluator.sourceTargetProductBackground(scoredPredictions,
+        referencePairs)
 
     var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
       scoredPredictions, backgroundSources, backgroundTargets)
     val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
-      complementedRefPairs, backgroundSources, backgroundTargets)
+      referencePairs, backgroundSources, backgroundTargets)
 
     if (evalOpts.randomize) {
       println("Randomizing predictions.")
@@ -142,7 +135,7 @@ class PairEvaluator(
 
     println(s"# non-filtered predictions: ${scoredPredictions.size}")
     println(s"# filtered predictions: ${predictionsInBackground.size}")
-    println(s"# non-filtered reference edges: ${complementedRefPairs.size}")
+    println(s"# non-filtered reference edges: ${referencePairs.size}")
     println(s"# filtered reference edges: ${referenceEdgesInBackground.size}")
 
     new ThresholdedEvaluation(reporter).evaluate(predictionsInBackground,
@@ -153,8 +146,8 @@ class PairEvaluator(
       referenceEdgesInBackground, backgroundSources, backgroundTargets,
       library.id)
 
-    findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
-    findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
+    // findEdgeCoverageRatios(referenceEdgesInBackground.toSeq, library.id)
+    // findMedianDistances(referenceEdgesInBackground.toSeq, library.id)
 
     joinPredictionsWithReference(predictionsInBackground,
       referenceEdgesInBackground,
@@ -435,6 +428,15 @@ object PairEvaluator {
   ): (Set[String], Set[String]) = {
     val predictionNameUnion = PairEvaluator.namesInPairs(predictions.map(_._1))
     edgeSpace(predictionNameUnion, referencePairs)
+  }
+
+  def referenceSourceTargetProductSpace(
+    referencePairs: Set[(String, String)]
+  ): (Set[String], Set[String]) = {
+    val refSources = referencePairs.map(_._1)
+    val refTargets = referencePairs.map(_._2)
+
+    (refSources, refTargets)
   }
 
   def edgeSpace(

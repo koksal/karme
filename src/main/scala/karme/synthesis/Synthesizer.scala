@@ -4,6 +4,7 @@ import karme.Reporter
 import karme.SynthOpts
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
@@ -13,29 +14,19 @@ import karme.transformations.TransitionProducer
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
   def synthesizeForPositiveHardConstraints(
-    graph: DirectedBooleanStateGraph
+    graph: DirectedBooleanStateGraph,
+    sources: Set[StateGraphVertex]
   ): Map[String, Set[SynthesisResult]] = {
     if (graph.V.isEmpty) {
       reporter.log("Graph is empty, skipping synthesis.")
       Map.empty
     } else {
-      val (posTransitions, negTransitions) =
-        producePositiveAndNegativeTransitions(graph)
+      val (posTrans, negTrans) =
+        TransitionProducer.producePositiveAndNegativeTransitions(graph, sources)
 
-      synthesizeFunctionsForAllTransitionSubsets(posTransitions,
-        negTransitions, StateGraphs.namesFromStateGraph(graph))
+      synthesizeFunctionsForAllTransitionSubsets(posTrans,
+        negTrans, StateGraphs.namesFromStateGraph(graph))
     }
-  }
-
-  def producePositiveAndNegativeTransitions(
-    directedStateGraph: DirectedBooleanStateGraph
-  ): (Set[Transition], Set[Transition]) = {
-    val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
-    val positiveTransitions = TransitionProducer.positiveTransitions(
-      directedStateGraph)
-    val negativeTransitions = TransitionProducer.negativeTransitions(
-      directedStateGraph, stateNames)
-    (positiveTransitions, negativeTransitions)
   }
 
   def synthesizeFunctionsForAllTransitionSubsets(

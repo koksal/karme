@@ -188,6 +188,11 @@ object Graphs {
       }
       new UnlabeledDiGraph(V - v, E -- edgesToRemove, filteredEdgeDirs)
     }
+
+    def removeEdge(e: UnlabeledEdge[Vertex]) = {
+      new UnlabeledDiGraph(V, E - e, edgeDirections - e)
+    }
+
   }
 
   sealed trait EdgeDirection
