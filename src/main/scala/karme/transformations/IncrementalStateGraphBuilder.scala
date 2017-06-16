@@ -30,21 +30,6 @@ class IncrementalStateGraphBuilder(
     removeNodesWithoutNeighbors(connectedGraph)
   }
 
-  private def removeEdgesFromInitialNodes(
-    g: DirectedBooleanStateGraph
-  ): DirectedBooleanStateGraph = {
-    val initialNodes = nodesWithoutPredecessor(g.V)
-    var newGraph = g
-
-    for (e <- g.E) {
-      if (initialNodes.contains(e.v1) || initialNodes.contains(e.v2)) {
-        newGraph = newGraph.removeEdge(e)
-      }
-    }
-
-    newGraph
-  }
-
   private def removeNodesWithoutNeighbors(
     g: DirectedBooleanStateGraph
   ): DirectedBooleanStateGraph = {
