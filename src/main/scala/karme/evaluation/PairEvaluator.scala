@@ -39,7 +39,7 @@ class PairEvaluator(
   def evaluatePredictions(): Unit = {
     var predictions = evalOpts.predictionType match {
       case FunIOPairsPrediction =>
-        aggregateGeneIOPairs(runDataCollection)
+        aggregateInterClusterGeneIOPairs(runDataCollection)
       case PrecedencePairsPrediction =>
         aggregateGeneLevelPrecedences(runDataCollection)
     }
@@ -50,16 +50,22 @@ class PairEvaluator(
 
     for (ref <- references) {
       evaluatePairs(predictions, ref)
-      // oneHopTransitiveCheck(ref)
     }
   }
 
-  def aggregateGeneIOPairs(
+  def aggregateInterClusterGeneIOPairs(
     runData: Seq[RunData]
   ): Seq[ScoredPrediction] = {
-    val allPairs = runData flatMap { _.geneIOPairs }
+    val interClusterPairs = runData flatMap { rd =>
+      rd.geneIOPairs filter {
+        case ((src, tgt), _) => {
+          rd.clustering.memberToCluster(src) !=
+            rd.clustering.memberToCluster (tgt)
+        }
+      }
+    }
 
-    CollectionUtil.combineCounts(allPairs)
+    CollectionUtil.combineCounts(interClusterPairs)
   }
 
   def aggregateGeneLevelPrecedences(
