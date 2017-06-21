@@ -16,7 +16,7 @@ object ExperimentHistograms {
 
     for (name <- e.names) {
       val vs = e.valuesForName(name)
-      val labels = vs map (v => "none")
+      val labels = vs map (v => name)
       val f = new File(histogramsFolder, s"${name}.pdf")
       new HistogramPlotInterface(vs, labels, f).run()
     }

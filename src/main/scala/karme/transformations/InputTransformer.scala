@@ -16,6 +16,7 @@ import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
+import karme.visualization.ExperimentHistograms
 
 case class TransformResult(
   graph: DirectedBooleanStateGraph,
@@ -159,7 +160,20 @@ class InputTransformer(
       sys.error("no continuous experiment given"))
     val parsedExperiment = ContinuousExperimentParser.parseAndFilter(file,
       geneNamesToFilter)
-    transformExperiment(NamingUtil.canonicalizeNames(parsedExperiment))
+    val transformedExperiment = transformExperiment(
+      NamingUtil.canonicalizeNames(parsedExperiment))
+
+    if (opts.plotOriginalData) {
+      ExperimentHistograms.plotHistogramsPerVariable(parsedExperiment,
+        reporter.file("original-data"))
+    }
+
+    if (opts.plotTransformedData) {
+      ExperimentHistograms.plotHistogramsPerVariable(transformedExperiment,
+        reporter.file("transformed-data"))
+    }
+
+    transformedExperiment
   }
 
   def transformExperiment(exp: ContinuousExperiment): ContinuousExperiment = {

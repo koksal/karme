@@ -146,6 +146,16 @@ object ArgHandling {
           o.inputTransformerOpts.copy(clusterRefinementPValue = d))
       } text "p-value threshold for edge-level clustering refinement"
 
+      opt[Unit]("plot-original-data") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotOriginalData = true))
+      } text "plot histograms for each gene in the input data"
+
+      opt[Unit]("plot-transformed-data") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotTransformedData = true))
+      } text "plot histograms for each gene in transformed data"
+
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>
