@@ -27,9 +27,8 @@ case class TransformResult(
 
 class InputTransformer(
   opts: InputTransformerOpts,
-  annotationContext: AnnotationContext,
-  reporter: Reporter
-) {
+  annotationContext: AnnotationContext
+)(implicit reporter: Reporter) {
 
   val trajectories: Seq[CellTrajectory] = {
     opts.inputFileOpts.trajectoryFiles map CellTrajectoryParser.parse
@@ -137,24 +136,18 @@ class InputTransformer(
     }
 
     val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)
-    filterDifferentialVars(filteredByNbLevels)
+
+    new DifferentialGeneFiltering(opts.minDifferentialThreshold)
+      .filterSymmetric(filteredByNbLevels)
   }
 
   def filterOutNamesWithSingleValue(
     experiment: BooleanExperiment
   ): BooleanExperiment = {
-    // TODO this is not a transformation any more, move code
     val namesWithSingleValue =
       ExperimentTransformation.namesWithSingleValue(experiment)
     val namesWithMultipleValues = experiment.names.toSet -- namesWithSingleValue
     experiment.project(namesWithMultipleValues)
-  }
-
-  def filterDifferentialVars(experiment: BooleanExperiment): BooleanExperiment = {
-    // TODO this is not a transformation any more, move code
-    val differentialNames = ExperimentTransformation.differentialNames(
-      experiment, opts.minDifferentialThreshold)
-    experiment.project(differentialNames)
   }
 
   def getTransformedContinuousExperiment(): ContinuousExperiment = {

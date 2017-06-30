@@ -46,19 +46,4 @@ object ExperimentTransformation {
     nameSeq.toSet
   }
 
-  def differentialNames(
-    exp: BooleanExperiment, minDifferentialRatio: Double
-  ): Set[String] = {
-    val differentialNs = exp.names filter { name =>
-      val vs = exp.valuesForName(name)
-      val nbHigh = vs.count(v => v)
-      val nbLow = vs.count(v => !v)
-
-      val highRatio = nbHigh.toDouble / vs.size
-      val lowRatio = nbLow.toDouble / vs.size
-
-      highRatio >= minDifferentialRatio && lowRatio >= minDifferentialRatio
-    }
-    differentialNs.toSet
-  }
 }

@@ -41,7 +41,7 @@ object ParameterSweep {
           val runReporter = new Reporter(baseOpts.reporterOpts.copy(
             outFolder = runFolder))
 
-          val transformer = new InputTransformer(opt, annotCtx, runReporter)
+          val transformer = new InputTransformer(opt, annotCtx)(runReporter)
           TimingUtil.time(s"Building graphs for cluster range ($i)") {
             transformer.buildDirectedStateGraphsForAllClusterings()
           }
@@ -83,7 +83,7 @@ object ParameterSweep {
 
     val clusteringGraphPairs = ParUtil.withParallelism(8, allOpts).flatMap{
       opt => {
-        val transformer = new InputTransformer(opt, annotCtx,
+        val transformer = new InputTransformer(opt, annotCtx)(
           Reporter.defaultReporter())
         transformer.buildDirectedStateGraphsForAllClusterings()
       }
