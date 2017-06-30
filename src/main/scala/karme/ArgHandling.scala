@@ -156,6 +156,11 @@ object ArgHandling {
           o.inputTransformerOpts.copy(plotTransformedData = true))
       } text "plot histograms for each gene in transformed data"
 
+      opt[Unit]("plot-binarized-data") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotBinarizedData = true))
+      } text "plot histograms for each gene in binarized data"
+
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>

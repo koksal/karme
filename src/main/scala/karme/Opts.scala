@@ -27,7 +27,8 @@ case class InputTransformerOpts(
   refineClusters: Boolean = false,
   clusterRefinementPValue: Double = 0.05,
   plotOriginalData: Boolean = false,
-  plotTransformedData: Boolean = false
+  plotTransformedData: Boolean = false,
+  plotBinarizedData: Boolean = false
 )
 
 case class InputFileOpts(

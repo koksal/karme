@@ -15,8 +15,7 @@ class MclustInterface(
 
   def process(R: RClient): MClustResult = {
     R.set("xs", xs.toArray)
-    R.eval(s"bic = mclustBIC(xs, G = c(${minNbClust}, ${maxNbClust}))")
-    R.eval("res = Mclust(xs, x = bic)")
+    R.eval(s"res = Mclust(xs, G = c(${minNbClust}, ${maxNbClust}))")
 
     val optimalNbComponents = R.evalI0("res$G")
     val classification = R.evalI1("res$classification")

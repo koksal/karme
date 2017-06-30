@@ -9,15 +9,14 @@ import scala.reflect.ClassTag
 object ExperimentHistograms {
 
   def plotHistogramsPerVariable(
-    e: Experiment[Double], outFolder: File
+    e: Experiment[Double], folder: File
   ): Unit = {
-    val histogramsFolder = new File(outFolder, "histograms")
-    histogramsFolder.mkdirs()
+    folder.mkdirs()
 
     for (name <- e.names) {
       val vs = e.valuesForName(name)
       val labels = vs map (v => name)
-      val f = new File(histogramsFolder, s"${name}.pdf")
+      val f = new File(folder, s"${name}.pdf")
       new HistogramPlotInterface(vs, labels, f).run()
     }
   }
