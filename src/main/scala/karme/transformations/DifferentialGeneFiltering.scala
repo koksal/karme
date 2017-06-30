@@ -9,7 +9,7 @@ class DifferentialGeneFiltering(minRatio: Double)(implicit reporter: Reporter) {
   def filterSymmetric(exp: BooleanExperiment): BooleanExperiment = {
     val differentialNames = findSymmetricDifferentialNames(exp)
 
-    // TODO print ratio of new to old names. print filtered out names
+    logResults(exp.names.toSet, differentialNames)
 
     exp.project(differentialNames)
   }
