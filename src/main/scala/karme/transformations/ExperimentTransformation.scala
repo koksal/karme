@@ -38,12 +38,4 @@ object ExperimentTransformation {
     arcsinh(v, factor) / math.log(10.0)
   }
 
-  def namesWithSingleValue(exp: BooleanExperiment): Set[String] = {
-    val nameSeq = exp.names filter { n =>
-      val nvs = exp.valuesForName(n)
-      nvs.toSet.size == 1
-    }
-    nameSeq.toSet
-  }
-
 }

@@ -135,19 +135,8 @@ class InputTransformer(
         booleanNormalizedExp, reporter.file("binarized-data"))
     }
 
-    val filteredByNbLevels = filterOutNamesWithSingleValue(booleanNormalizedExp)
-
     new DifferentialGeneFiltering(opts.minDifferentialThreshold)
-      .filterSymmetric(filteredByNbLevels)
-  }
-
-  def filterOutNamesWithSingleValue(
-    experiment: BooleanExperiment
-  ): BooleanExperiment = {
-    val namesWithSingleValue =
-      ExperimentTransformation.namesWithSingleValue(experiment)
-    val namesWithMultipleValues = experiment.names.toSet -- namesWithSingleValue
-    experiment.project(namesWithMultipleValues)
+      .filterSymmetric(booleanNormalizedExp)
   }
 
   def getTransformedContinuousExperiment(): ContinuousExperiment = {
