@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
   * Plots pseudotime-ordered scatter plots for each dimension (name) in the
   * experiment.
   */
-class CurvePlot(reporter: Reporter) {
+class CurvePlot(implicit reporter: Reporter) {
 
   def plotClusterCurves(
     exp: Experiment[Double],
@@ -34,7 +34,7 @@ class CurvePlot(reporter: Reporter) {
     namesToPlot: Seq[String],
     plotName: String
   ): Unit = {
-    val curveFolder = reporter.file("curves")
+    val curveFolder = reporter.file("cluster-average-curves")
     curveFolder.mkdirs()
 
     for ((t, i) <- trajectories.zipWithIndex) {
@@ -69,12 +69,33 @@ class CurvePlot(reporter: Reporter) {
     new ScatterPlot(toPlot, f).run()
   }
 
+  def plotBooleanExperiment(
+    exp: Experiment[Boolean],
+    trajectories: Seq[CellTrajectory],
+    folder: File
+  ): Unit = {
+    folder.mkdirs()
+
+    def bool2int(b: Boolean): Int = {
+      if (b) 1 else 0
+    }
+
+    val integerValuedExp = exp.mapValues(bool2int)
+
+    for ((trajectory, i) <- trajectories.zipWithIndex) {
+      for (name <- integerValuedExp.names) {
+        val f = new File(folder, s"trajectory-1-$name.pdf")
+        plot(integerValuedExp, trajectory, Seq(name), f)
+      }
+    }
+  }
+
   def plot[T: ClassTag](
     exp: Experiment[T],
     trajectory: CellTrajectory,
     names: Seq[String],
     f: File
-  ) : Unit = {
+  ): Unit = {
     new ScatterPlot(labeledPointsForNames(exp, trajectory, names), f).run()
   }
 

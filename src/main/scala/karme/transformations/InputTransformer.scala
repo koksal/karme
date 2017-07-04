@@ -50,7 +50,7 @@ class InputTransformer(
     val nonRefinedClustering = HierarchicalClustering.computeBestClustering(
       smoothedExp, opts.clusteringOpts)
 
-    new CurvePlot(reporter).plotClusterCurves(smoothedExp, trajectories,
+    new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
       nonRefinedClustering, "smoothed-experiment")
 
     val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
@@ -113,6 +113,12 @@ class InputTransformer(
 
   def buildSmoothedExperiment(): ContinuousExperiment = {
     val normalizedExpAfterFiltering = getNormalizedFilteredExperiment()
+
+    if (opts.plotBinarizedGeneCurves) {
+      new CurvePlot().plotBooleanExperiment(normalizedExpAfterFiltering,
+        trajectories, reporter.file("non-smoothed-curves"))
+    }
+
     BinomialMLE.run(normalizedExpAfterFiltering, trajectories,
       opts.smoothingRadius)
   }

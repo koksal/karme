@@ -18,8 +18,7 @@ object BinomialMLE {
     // order each curve
     val cellOrders = trajectories map CellTrajectories.cellOrder
 
-    // for each cell
-    //   get all vicinities (cells within radius)
+    // for each cell, get all cells within radius (vicinity)
     val probMeasurements = for (measurement <- exp.measurements) yield {
       val vicinityCellIDs = cellIDsInVicinity(measurement.id, cellOrders,
         radius)

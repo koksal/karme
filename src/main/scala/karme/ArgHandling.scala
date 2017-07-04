@@ -161,6 +161,16 @@ object ArgHandling {
           o.inputTransformerOpts.copy(plotBinarizedData = true))
       } text "plot histograms for each gene in binarized data"
 
+      opt[Unit]("plot-binarized-curves") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotBinarizedGeneCurves = true))
+      } text "plot binarized gene curves"
+
+      opt[Unit]("plot-smoothed-curves") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotSmoothedGeneCurves = true))
+      } text "plot smoothed gene curves"
+
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>

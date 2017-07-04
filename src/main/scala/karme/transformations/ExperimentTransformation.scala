@@ -1,6 +1,5 @@
 package karme.transformations
 
-import karme.Experiments.BooleanExperiment
 import karme.Experiments.ContinuousExperiment
 import karme.Experiments.Experiment
 import karme.util.MathUtil
@@ -8,7 +7,6 @@ import karme.util.MathUtil
 object ExperimentTransformation {
 
   def arcsinh(v: Double, factor: Double): Double = {
-    // arcsinh formula
     val scaled = v / factor
     val interior = scaled + math.sqrt(scaled * scaled + 1)
     math.log(interior)

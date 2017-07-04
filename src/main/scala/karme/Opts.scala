@@ -28,7 +28,9 @@ case class InputTransformerOpts(
   clusterRefinementPValue: Double = 0.05,
   plotOriginalData: Boolean = false,
   plotTransformedData: Boolean = false,
-  plotBinarizedData: Boolean = false
+  plotBinarizedData: Boolean = false,
+  plotBinarizedGeneCurves: Boolean = false,
+  plotSmoothedGeneCurves: Boolean = false
 )
 
 case class InputFileOpts(

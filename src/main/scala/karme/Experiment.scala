@@ -80,6 +80,11 @@ object Experiments {
 
       Experiment(mappedMeasurements)
     }
+
+    def mapValues[U](f: T => U): Experiment[U] = {
+      this.copy(measurements = this.measurements.map(
+        m => m.copy(state = m.state.mapValues(f))))
+    }
   }
 
   def continuousExperimentToThreeValued(
