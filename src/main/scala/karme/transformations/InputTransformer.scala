@@ -47,6 +47,11 @@ class InputTransformer(
   def transform(): TransformResult = {
     val smoothedExp = getSmoothedExperiment()
 
+    if (opts.plotSmoothedGeneCurves) {
+      new CurvePlot().plotCurvesPerGene(smoothedExp,
+        trajectories, reporter.file("smoothed-curves"))
+    }
+
     val nonRefinedClustering = HierarchicalClustering.computeBestClustering(
       smoothedExp, opts.clusteringOpts)
 
@@ -115,7 +120,7 @@ class InputTransformer(
     val normalizedExpAfterFiltering = getNormalizedFilteredExperiment()
 
     if (opts.plotBinarizedGeneCurves) {
-      new CurvePlot().plotBooleanExperiment(normalizedExpAfterFiltering,
+      new CurvePlot().plotBooleanCurvesPerGene(normalizedExpAfterFiltering,
         trajectories, reporter.file("non-smoothed-curves"))
     }
 

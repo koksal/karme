@@ -69,23 +69,30 @@ class CurvePlot(implicit reporter: Reporter) {
     new ScatterPlot(toPlot, f).run()
   }
 
-  def plotBooleanExperiment(
+  def plotBooleanCurvesPerGene(
     exp: Experiment[Boolean],
+    trajectories: Seq[CellTrajectory],
+    folder: File
+  ): Unit = {
+    def bool2double(b: Boolean): Double = {
+      if (b) 1 else 0
+    }
+
+    plotCurvesPerGene(exp.mapValues(bool2double), trajectories, folder)
+
+  }
+
+  def plotCurvesPerGene(
+    exp: Experiment[Double],
     trajectories: Seq[CellTrajectory],
     folder: File
   ): Unit = {
     folder.mkdirs()
 
-    def bool2int(b: Boolean): Int = {
-      if (b) 1 else 0
-    }
-
-    val integerValuedExp = exp.mapValues(bool2int)
-
     for ((trajectory, i) <- trajectories.zipWithIndex) {
-      for (name <- integerValuedExp.names) {
+      for (name <- exp.names) {
         val f = new File(folder, s"trajectory-1-$name.pdf")
-        plot(integerValuedExp, trajectory, Seq(name), f)
+        plot(exp, trajectory, Seq(name), f)
       }
     }
   }
