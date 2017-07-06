@@ -60,15 +60,6 @@ object HierarchicalClustering {
     makeClusterToNamesMap(clustering)
   }
 
-  private def compareClusterings(
-    c1: Map[String, Int], c2: Map[String, Int]
-  ): Unit = {
-    assert(c1.keySet == c2.keySet)
-    val namesWithSameCluster = c1.keySet.count(n => c1(n) == c2(n))
-    println(s"Names with same cluster: ${namesWithSameCluster}")
-    println(s"Total names: ${c1.keySet.size}")
-  }
-
   private def makeClusterToNamesMap(
     nameToClusterIndex: Map[String, Int]
   ): Map[String, Set[String]] = {
@@ -99,6 +90,15 @@ object HierarchicalClustering {
 
   private def clusterName(index: Int): String = {
     s"c$index"
+  }
+
+  private def compareClusterings(
+    c1: Map[String, Int], c2: Map[String, Int]
+  ): Unit = {
+    assert(c1.keySet == c2.keySet)
+    val namesWithSameCluster = c1.keySet.count(n => c1(n) == c2(n))
+    println(s"Names with same cluster: ${namesWithSameCluster}")
+    println(s"Total names: ${c1.keySet.size}")
   }
 
 }

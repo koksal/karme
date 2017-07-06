@@ -3,7 +3,7 @@ package karme
 import java.io.File
 
 import karme.transformations.discretization.DiscretizationMethod
-import karme.transformations.discretization.Mclust
+import karme.transformations.discretization.Thresholding
 
 case class Opts(
   inputTransformerOpts: InputTransformerOpts = InputTransformerOpts(),
@@ -17,7 +17,7 @@ case class Opts(
 case class InputTransformerOpts(
   inputFileOpts: InputFileOpts = InputFileOpts(),
   pseudoLogFactor: Option[Double] = None,
-  booleanNormalizationMethod: DiscretizationMethod = Mclust,
+  booleanNormalizationMethod: DiscretizationMethod = Thresholding,
   minDifferentialThreshold: Double = 0.20,
   uncertaintyThreshold: Double = 0.4,
   smoothingRadius: Int = 20,

@@ -9,6 +9,7 @@ import karme.synthesis.Transitions.GenericState
 sealed trait DiscretizationMethod
 case object Ckmeans extends DiscretizationMethod
 case object Mclust extends DiscretizationMethod
+case object Thresholding extends DiscretizationMethod
 
 object Discretization {
 
@@ -38,6 +39,9 @@ object Discretization {
     vs: Seq[Double], method: DiscretizationMethod
   ): Seq[Boolean] = {
     val intValues = method match {
+      case Thresholding => {
+        ThresholdDiscretization(vs)
+      }
       case Ckmeans => {
         new CkmeansInterface(vs, 1, 2).run()
       }
