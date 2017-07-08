@@ -31,11 +31,23 @@ class DifferentialGeneFiltering(minRatio: Double)(implicit reporter: Reporter) {
   def logResults(
     unfilteredNames: Set[String], filteredNames: Set[String]
   ): Unit = {
-    val filterRatio = filteredNames.size.toDouble / unfilteredNames.size
-
     val f = reporter.file("differential-filtering.txt")
 
-    FileUtil.writeToFile(f, s"Differential gene ratio: $filterRatio")
+    val filterRatio = filteredNames.size.toDouble / unfilteredNames.size
+    val discardedNames = unfilteredNames -- filteredNames
+
+    val sb = new StringBuilder()
+
+    sb append s"Differential gene ratio: $filterRatio\n"
+    sb append "Remaining genes:\n"
+    appendSortedNames(sb, filteredNames)
+    sb append "Discarded genes:\n"
+    appendSortedNames(sb, discardedNames)
+
+    FileUtil.writeToFile(f, sb.toString())
   }
 
+  def appendSortedNames(sb: StringBuilder, names: Set[String]): Unit = {
+    sb.append(names.toList.sorted.mkString("\n") + "\n")
+  }
 }

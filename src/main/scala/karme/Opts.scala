@@ -19,7 +19,7 @@ case class InputTransformerOpts(
   pseudoLogFactor: Option[Double] = None,
   booleanNormalizationMethod: DiscretizationMethod = Thresholding,
   minDifferentialThreshold: Double = 0.20,
-  uncertaintyThreshold: Double = 0.4,
+  uncertaintyThreshold: Double = 1,
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
   cluster: Boolean = false,
