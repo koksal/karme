@@ -43,7 +43,9 @@ case class InputFileOpts(
 
 case class ClusteringOpts(
   minNbClusters: Int = 2,
-  maxNbClusters: Int = 30
+  maxNbClusters: Int = 30,
+  clusteringIndex: String = "gap",
+  clusteringMethod: String = "ward.D2"
 )
 
 case class AnnotationOpts(

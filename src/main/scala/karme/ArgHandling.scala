@@ -136,6 +136,18 @@ object ArgHandling {
             o.inputTransformerOpts.clusteringOpts.copy(maxNbClusters = i)))
       } text "max number of gene clusters"
 
+      opt[String]("clustering-index") action { (s, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(clusteringIndex = s)))
+      } text "index for choosing the number of gene clusters"
+
+      opt[String]("clustering-method") action { (s, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(clusteringMethod = s)))
+      } text "method for clustering genes"
+
       opt[Unit]("refine-clusters") action { (_, o) =>
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(refineClusters = true))

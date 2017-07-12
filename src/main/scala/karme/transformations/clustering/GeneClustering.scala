@@ -6,7 +6,7 @@ import karme.Experiments.Measurement
 import karme.synthesis.Transitions.GenericState
 import karme.util.MathUtil
 
-object HierarchicalClustering {
+class GeneClustering(opts: ClusteringOpts) {
 
   def computeHierarchicalClustering(
     exp: Experiment[Double],
@@ -35,8 +35,7 @@ object HierarchicalClustering {
   }
 
   def computeBestClustering(
-    exp: Experiment[Double],
-    opts: ClusteringOpts
+    exp: Experiment[Double]
   ): Map[String, Set[String]] = {
     val adjustedMaxNbClust = math.min(exp.names.size - 1, opts.maxNbClusters)
     val adjustedMinNbClust = math.min(opts.minNbClusters, adjustedMaxNbClust)
@@ -46,12 +45,9 @@ object HierarchicalClustering {
         s"$adjustedMaxNbClust).")
     }
 
-    val index = "gap"
-    val method = "ward.D2"
-
     val clusterIndices = new NbClustInterface(exp.valueMatrix,
-      adjustedMinNbClust, adjustedMaxNbClust, method = method,
-      index = index).run()
+      adjustedMinNbClust, adjustedMaxNbClust, method = opts.clusteringMethod,
+      index = opts.clusteringIndex).run()
     val clustering = exp.names.zip(clusterIndices).toMap
 
     val bestK = clusterIndices.toSet.size

@@ -11,7 +11,7 @@ import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
-import karme.transformations.clustering.HierarchicalClustering
+import karme.transformations.clustering.GeneClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
@@ -44,6 +44,8 @@ class InputTransformer(
     ContinuousExperimentParser.parseAndFilter(file, geneNamesToFilter)
   }
 
+  val clusteringModule = new GeneClustering(opts.clusteringOpts)
+
   def transform(): TransformResult = {
     val smoothedExp = getSmoothedExperiment()
 
@@ -52,8 +54,8 @@ class InputTransformer(
         trajectories, reporter.file("smoothed-curves"))
     }
 
-    val nonRefinedClustering = HierarchicalClustering.computeBestClustering(
-      smoothedExp, opts.clusteringOpts)
+    val nonRefinedClustering = clusteringModule.computeBestClustering(
+      smoothedExp)
 
     new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
       nonRefinedClustering, "smoothed-experiment")
@@ -78,7 +80,7 @@ class InputTransformer(
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
     val smoothedExperiment = getSmoothedExperiment()
 
-    val clusterings = HierarchicalClustering.computeHierarchicalClustering(
+    val clusterings = clusteringModule.computeHierarchicalClustering(
       smoothedExperiment, opts.clusteringOpts.maxNbClusters).drop(
       opts.clusteringOpts.minNbClusters - 1)
 
@@ -92,7 +94,7 @@ class InputTransformer(
     nonClusteredExperiment: Experiment[Double],
     clustering: Map[String, Set[String]]
   ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
-    val avgExp = HierarchicalClustering.experimentFromClusterAverages(
+    val avgExp = clusteringModule.experimentFromClusterAverages(
       nonClusteredExperiment, clustering)
 
     val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
