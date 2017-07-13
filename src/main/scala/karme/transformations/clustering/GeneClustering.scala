@@ -19,21 +19,6 @@ class GeneClustering(opts: ClusteringOpts) {
     clusterAssignments map makeClusterToNamesMap
   }
 
-  def computeGapStatClustering(
-    exp: Experiment[Double],
-    opts: ClusteringOpts
-  ): Map[String, Set[String]] = {
-    val clusterIndices = new ClusGapInterface(exp.valueMatrix,
-      opts.maxNbClusters).run()
-
-    val clustering = exp.names.zip(clusterIndices).toMap
-
-    val bestK = clusterIndices.toSet.size
-    println(s"Best k for gap statistic: $bestK")
-
-    makeClusterToNamesMap(clustering)
-  }
-
   def computeBestClustering(
     exp: Experiment[Double]
   ): Map[String, Set[String]] = {

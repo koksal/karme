@@ -11,6 +11,7 @@ case class Opts(
   evalOpts: EvalOpts = EvalOpts(),
   annotationOpts: AnnotationOpts = AnnotationOpts(),
   reporterOpts: ReporterOpts = ReporterOpts(),
+  runPrecedence: Boolean = false,
   runSynthesis: Boolean = false
 )
 
@@ -22,7 +23,6 @@ case class InputTransformerOpts(
   uncertaintyThreshold: Double = 1,
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
-  cluster: Boolean = false,
   clusteringOpts: ClusteringOpts = ClusteringOpts(),
   refineClusters: Boolean = false,
   clusterRefinementPValue: Double = 0.05,

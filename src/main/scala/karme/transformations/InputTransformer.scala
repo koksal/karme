@@ -67,13 +67,15 @@ class InputTransformer(
       Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
     val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
 
-    val geneClustering = if (opts.refineClusters) {
-      Clustering.combineByIntersection(edgeToRefinedClustering.values.toSeq)
+    if (opts.refineClusters) {
+      val geneClustering = Clustering.combineByIntersection(
+        edgeToRefinedClustering.values.toSeq)
+      TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
     } else {
-      Clustering(nonRefinedClustering)
+      val geneClustering = Clustering(nonRefinedClustering)
+      TransformResult(graph, sources, geneClustering, Map.empty)
     }
 
-    TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
   }
 
   def buildDirectedStateGraphsForAllClusterings():

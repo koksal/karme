@@ -35,9 +35,11 @@ object Main {
     new ClusteringStore(opts.reporterOpts.outFolder).store(
       clustering.clusterToMember)
 
-    val edgePrecedences = new EdgePrecedenceProducer(graph,
-      perEdgeClustering).computePrecedence
-    new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
+    if (opts.runPrecedence) {
+      val edgePrecedences = new EdgePrecedenceProducer(graph,
+        perEdgeClustering).computePrecedence
+      new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
+    }
 
     if (opts.runSynthesis) {
       runSynthesis(opts, graph, sources, clustering, reporter)

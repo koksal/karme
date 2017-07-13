@@ -56,7 +56,7 @@ object ArgHandling {
           inputTransformerOpts = o.inputTransformerOpts.copy(
             inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
               namesFiles = vs)))
-      } text "names files to filter experiment with"
+      } text "names files to filter experiment with (uses the union of files)"
 
       opt[Seq[File]]("trajectories") action { (vs, o) =>
         o.copy(
@@ -118,11 +118,6 @@ object ArgHandling {
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
-
-      opt[Unit]("cluster") action { (_, o) =>
-        o.copy(inputTransformerOpts =
-          o.inputTransformerOpts.copy(cluster = true))
-      }
 
       opt[Int]("min-clusters") action { (i, o) =>
         o.copy(inputTransformerOpts =
