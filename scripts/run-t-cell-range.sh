@@ -42,7 +42,7 @@ done
 declare -A CLUSTERING_ARGS
 for i in {5..15}
 do 
-  CLUSTERING_ARGS["$i"]="--cluster --min-clusters $i --max-clusters $i"
+  CLUSTERING_ARGS["$i"]="--min-clusters $i --max-clusters $i"
 done
 
 SHELL="/bin/bash" parallel --jobs $NB_JOBS --delay 60 --joblog joblog.txt run_with_args \

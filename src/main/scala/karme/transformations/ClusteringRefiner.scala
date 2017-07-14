@@ -46,6 +46,7 @@ class ClusteringRefiner(
       println(s"Label: $label")
       println(s"Cluster size: ${clusterMembers.size}")
       println(s"Agreeing genes in cluster: ${agreeingGenes.size}")
+      println(agreeingGenes.toList.sorted.mkString(", "))
 
       refinedClustering += label -> agreeingGenes
     }

@@ -57,25 +57,27 @@ class InputTransformer(
     val nonRefinedClustering = clusteringModule.computeBestClustering(
       smoothedExp)
 
-    new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
-      nonRefinedClustering, "smoothed-experiment")
-
     val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
       nonRefinedClustering)
 
-    val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
-      Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
-    val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
+    val (geneClustering, edgeToRefinedClustering) = if (opts.refineClusters) {
+      val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
+        Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
+      val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
 
-    if (opts.refineClusters) {
       val geneClustering = Clustering.combineByIntersection(
         edgeToRefinedClustering.values.toSeq)
-      TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
+      (geneClustering, edgeToRefinedClustering)
     } else {
       val geneClustering = Clustering(nonRefinedClustering)
-      TransformResult(graph, sources, geneClustering, Map.empty)
+      val emptyRefinement = Map[UnlabeledEdge[StateGraphVertex], Clustering]()
+      (geneClustering, emptyRefinement)
     }
 
+    new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
+      nonRefinedClustering, "smoothed-experiment")
+
+    TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
   }
 
   def buildDirectedStateGraphsForAllClusterings():
