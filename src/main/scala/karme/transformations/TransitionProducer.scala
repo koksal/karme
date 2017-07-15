@@ -14,14 +14,11 @@ object TransitionProducer {
   ): (Set[Transition], Set[Transition]) = {
     val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
 
-    val graphWithoutEdgesFromSources =
-      removeEdgesFromSources(directedStateGraph, sources)
-
     val positiveTransitions = TransitionProducer.positiveTransitions(
-      graphWithoutEdgesFromSources)
+      directedStateGraph)
 
     val negativeTransitions = TransitionProducer.negativeTransitions(
-      graphWithoutEdgesFromSources, stateNames)
+      directedStateGraph, stateNames)
 
     (positiveTransitions, negativeTransitions)
   }
