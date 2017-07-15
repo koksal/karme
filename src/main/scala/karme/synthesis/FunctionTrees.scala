@@ -7,12 +7,14 @@ import karme.synthesis.traversal.BFS
 object FunctionTrees {
 
   sealed trait FunExpr
+  case class FunConst(v: Boolean) extends FunExpr
   case class FunVar(id: String) extends FunExpr
   case class FunAnd(l: FunExpr, r: FunExpr) extends FunExpr
   case class FunOr(l: FunExpr, r: FunExpr) extends FunExpr
   case class FunNot(e: FunExpr) extends FunExpr
 
   def eval(fe: FunExpr, in: ConcreteBooleanState): Boolean = fe match {
+    case FunConst(v) => v
     case FunVar(id) => in.value(id)
     case FunAnd(l, r) => eval(l, in) && eval(r, in)
     case FunOr(l, r) => eval(l, in) || eval(r, in)
@@ -20,6 +22,7 @@ object FunctionTrees {
   }
 
   def collectIdentifiers(fe: FunExpr): Set[String] = fe match {
+    case FunConst(_) => Set()
     case FunVar(id) => Set(id)
     case FunAnd(l, r) => collectIdentifiers(l) ++ collectIdentifiers(r)
     case FunOr(l, r) => collectIdentifiers(l) ++ collectIdentifiers(r)
@@ -43,9 +46,12 @@ object FunctionTrees {
       )
     }
 
-    def topLevelConsistencyWithFactorizedNegation(): Expr
     def localNodeConsistency(canBeNegation: Boolean): Expr
     def nbVariables(): Expr
+
+    def isTRUE: Expr = Equals(this.nodeValue, encodingMapping.TRUE_NODE)
+    def isFALSE: Expr = Equals(this.nodeValue, encodingMapping.FALSE_NODE)
+    def isCONST: Expr = Or(this.isTRUE, this.isFALSE)
 
     def isAND: Expr = Equals(this.nodeValue, encodingMapping.AND_NODE)
     def isOR: Expr = Equals(this.nodeValue, encodingMapping.OR_NODE)
@@ -79,47 +85,6 @@ object FunctionTrees {
     def children = List(l, r)
     def descendants = l.descendants ::: r.descendants ::: List(l, r)
 
-    // Function of form either:
-    //    a monotonic Boolean function (no negations)
-    //    !a && b where a and b are monotonic Boolean functions
-    def topLevelConsistencyWithFactorizedNegation(): Expr = {
-      val hasFactorizedNegation = And(
-        // this node is locally consistent and is a conjunction
-        this.localNodeConsistency(canBeNegation = false),
-        this.isAND,
-        // the left child locally consistent and is a negation
-        this.l.localNodeConsistency(canBeNegation = true),
-        this.l.isNOT,
-        // the negated subexpression is monotonic
-        And(
-          this.l.descendants.map(_.localNodeConsistency(canBeNegation =
-            false)): _*
-        ),
-        // the non-negated subexpression is monotonic
-        this.r.localNodeConsistency(canBeNegation = false),
-        And(
-          this.r.descendants.map(_.localNodeConsistency(canBeNegation =
-            false)): _*
-        )
-      )
-
-      Or(
-        this.topLevelMonotonicConsistency(),
-        hasFactorizedNegation
-      )
-    }
-
-    private def topLevelMonotonicConsistency(): Expr = {
-      val descendantsConsistency = this.descendants.map { d =>
-        d.localNodeConsistency(canBeNegation = false)
-      }
-      And(
-        Not(this.isIGNORE),
-        this.localNodeConsistency(canBeNegation = false),
-        And(descendantsConsistency: _*)
-      )
-    }
-
     def localNodeConsistency(canBeNegation: Boolean): Expr = {
       val andCase = And(
         this.isAND,
@@ -140,6 +105,11 @@ object FunctionTrees {
       } else {
         BooleanLiteral(false)
       }
+      val constCase = And(
+        this.isCONST,
+        l.isIGNORE,
+        r.isIGNORE
+      )
       val ignoreCase = And(
         this.isIGNORE,
         l.isIGNORE,
@@ -152,7 +122,7 @@ object FunctionTrees {
       )
 
       And(
-        Or(andCase, orCase, notCase, ignoreCase, varCase),
+        Or(andCase, orCase, notCase, constCase, ignoreCase, varCase),
         symmetryBreaking()
       )
     }
@@ -185,17 +155,22 @@ object FunctionTrees {
     }
 
     def nbVariables(): Expr = {
+      // if this is a const, then 0.
       // if this is a var, then 1.
       // if it's a NOT, then carry from left child.
       // if a binary gate, then it's the sum of children's vars.
       // we don't care about IGNORE nodes.
       ITE(
-        this.isVAR,
-        IntLiteral(1),
+        this.isCONST,
+        IntLiteral(0),
         ITE(
-          this.isNOT,
-          l.nbVariables(),
-          Plus(l.nbVariables(), r.nbVariables())
+          this.isVAR,
+          IntLiteral(1),
+          ITE(
+            this.isNOT,
+            l.nbVariables(),
+            Plus(l.nbVariables(), r.nbVariables())
+          )
         )
       )
     }
@@ -215,21 +190,21 @@ object FunctionTrees {
     def children = List()
     def descendants = List()
 
-    // Only invoked at top-level, so we have a 0-depth tree
-    def topLevelConsistencyWithFactorizedNegation(): Expr = {
-      this.isVAR
-    }
-
     def localNodeConsistency(canBeNegation: Boolean): Expr = {
       Or(
+        this.isCONST,
         this.isVAR,
         this.isIGNORE
       )
     }
 
     def nbVariables(): Expr = {
-      // only used for VAR cases from parent nodes.
-      IntLiteral(1)
+      ITE(
+        this.isCONST,
+        IntLiteral(0),
+        // VAR case, used from parent nodes.
+        IntLiteral(1)
+      )
     }
   }
 }

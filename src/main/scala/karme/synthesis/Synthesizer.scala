@@ -317,6 +317,15 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       )
     }
 
+    val trueCase = Implies(
+      sf.isTRUE,
+      Equals(res, BooleanLiteral(true))
+    )
+    val falseCase = Implies(
+      sf.isFALSE,
+      Equals(res, BooleanLiteral(false))
+    )
+
     sf match {
       case SymFunTree(l, _, r) => {
         val (lres, lcons) = evaluate(l, input)
@@ -333,11 +342,13 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
           sf.isNOT,
           Equals(res, Not(lres))
         )
-        val localCons = And(List(andCase, orCase, notCase) ::: varCases: _*)
+
+        val localCons = And(
+          List(andCase, orCase, notCase, trueCase, falseCase) ::: varCases: _*)
         (res, And(localCons, lcons, rcons))
       }
       case SymFunLeaf(_) => {
-        (res, And(varCases: _*))
+        (res, And(List(trueCase, falseCase) ::: varCases: _*))
       }
     }
 
@@ -361,6 +372,10 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
             FunOr(funExprValue(l, m), funExprValue(r, m))
           case x if x == e.encodingMapping.NOT_NODE =>
             FunNot(funExprValue(l, m))
+          case x if x == e.encodingMapping.TRUE_NODE =>
+            FunConst(true)
+          case x if x == e.encodingMapping.FALSE_NODE =>
+            FunConst(false)
           case x if x == e.encodingMapping.IGNORE_NODE =>
             throw new Exception("not reachable")
           case IntLiteral(i) =>
@@ -369,6 +384,10 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       }
       case SymFunLeaf(v) => {
         m(v.id) match {
+          case x if x == e.encodingMapping.TRUE_NODE =>
+            FunConst(true)
+          case x if x == e.encodingMapping.FALSE_NODE =>
+            FunConst(false)
           case x if x == e.encodingMapping.IGNORE_NODE =>
             throw new Exception("not reachable")
           case IntLiteral(i) =>
@@ -381,6 +400,12 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
   // Returns a formula stating that sfe equals the concrete fe
   private def funExprEquals(sfe: SymFunExpr, fe: FunExpr): Expr = {
     fe match {
+      case FunConst(true) => {
+        Equals(sfe.nodeValue, sfe.encodingMapping.TRUE_NODE)
+      }
+      case FunConst(false) => {
+        Equals(sfe.nodeValue, sfe.encodingMapping.FALSE_NODE)
+      }
       case FunVar(id) => {
         Equals(sfe.nodeValue, sfe.encodingMapping.VAR_NODE(id))
       }

@@ -6,6 +6,8 @@ import karme.synthesis.Trees.IntLiteral
 class EncodingMapping(variableNames: Seq[String]) {
   sealed trait EncodingMappingValue
   case object IgnoreEncodingValue extends EncodingMappingValue
+  case object TrueEncodingValue extends EncodingMappingValue
+  case object FalseEncodingValue extends EncodingMappingValue
   case object NotEncodingValue extends EncodingMappingValue
   case object AndEncodingValue extends EncodingMappingValue
   case object OrEncodingValue extends EncodingMappingValue
@@ -14,7 +16,8 @@ class EncodingMapping(variableNames: Seq[String]) {
   // non-ignore values to make symmetry breaking work with functions of the
   // form !f_1 && f_2. Can we eliminate this implicit dependence?
   private val nonVariableEncodingValues = List(IgnoreEncodingValue,
-    NotEncodingValue, AndEncodingValue, OrEncodingValue)
+    TrueEncodingValue, FalseEncodingValue, NotEncodingValue, AndEncodingValue,
+    OrEncodingValue)
 
   private def encodingValueConstant(emv: EncodingMappingValue): Int = {
     assert(nonVariableEncodingValues.contains(emv))
@@ -22,6 +25,8 @@ class EncodingMapping(variableNames: Seq[String]) {
   }
 
   val IGNORE_NODE = IntLiteral(encodingValueConstant(IgnoreEncodingValue))
+  val TRUE_NODE = IntLiteral(encodingValueConstant(TrueEncodingValue))
+  val FALSE_NODE = IntLiteral(encodingValueConstant(FalseEncodingValue))
   val NOT_NODE = IntLiteral(encodingValueConstant(NotEncodingValue))
   val AND_NODE = IntLiteral(encodingValueConstant(AndEncodingValue))
   val OR_NODE = IntLiteral(encodingValueConstant(OrEncodingValue))
