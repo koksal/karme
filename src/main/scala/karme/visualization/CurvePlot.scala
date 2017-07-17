@@ -23,23 +23,27 @@ class CurvePlot(implicit reporter: Reporter) {
     name: String
   ): Unit = {
     for ((clusterName, clusterGenes) <- geneClustering) {
-      plotAveragesWithBands(exp, trajectories, clusterGenes.toSeq,
+      plotCluster(exp, trajectories, clusterGenes.toSeq,
         s"$name-cluster-$clusterName")
     }
   }
 
-  def plotAveragesWithBands(
+  def plotCluster(
     exp: Experiment[Double],
     trajectories: Seq[CellTrajectory],
     namesToPlot: Seq[String],
     plotName: String
   ): Unit = {
-    val curveFolder = reporter.file("cluster-average-curves")
-    curveFolder.mkdirs()
+    val avgCurveFolder = reporter.file("cluster-average-curves")
+    val allCurvesFolder = reporter.file("cluster-all-curves")
+
+    avgCurveFolder.mkdirs()
+    allCurvesFolder.mkdirs()
 
     for ((t, i) <- trajectories.zipWithIndex) {
-      plotAverageAndStdev(exp, t, namesToPlot,
-        new File(curveFolder, s"$plotName-curve-$i.pdf"))
+      val fname = s"$plotName-curve-$i.pdf"
+      plotAverageAndStdev(exp, t, namesToPlot, new File(avgCurveFolder, fname))
+      plot(exp, t, namesToPlot, new File(allCurvesFolder, fname))
     }
   }
 

@@ -74,8 +74,8 @@ class IncrementalStateGraphBuilder(
 
     val validNeighbors = distancesToNeighbors filter {
       case (source, target, distance) => {
-        nodePartialOrdering.lt(source, target) &&
-          distance < MAX_HAMMING_DISTANCE
+        distance < MAX_HAMMING_DISTANCE &&
+          nodePartialOrdering.lt(source, target)
       }
     }
 

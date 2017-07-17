@@ -21,23 +21,28 @@ do
       for CLUST_METHOD in "kmeans"
       do
 
-        for k in {10..20}
+        for CLUST_DISTANCE in "euclidean"
         do
 
-          OUTFOLDER=$OUTFOLDER_BASE-$TRAJECTORY-diff-ratio-$DIFF_RATIO-radius-$RADIUS-clustering-$CLUST_METHOD-$k
+          for k in 10
+          do
 
-          ./scripts/run-t-cell-base-args.sh $OUTFOLDER \
-            --trajectories $TRAJECTORY_PATH \
-            --cell-activity-threshold $DIFF_RATIO \
-            --smoothing-radius $RADIUS \
-            --clustering-method $CLUST_METHOD \
-            --clustering-index kl \
-            --min-clusters $k \
-            --max-clusters $k \
-            --refine-clusters \
-            --cluster-refinement-p-value 0.05 \
-            --synthesis \
-            --max-expr-depth 1
+            OUTFOLDER=$OUTFOLDER_BASE-$TRAJECTORY-diff-ratio-$DIFF_RATIO-radius-$RADIUS-clustering-$CLUST_METHOD-$CLUST_DISTANCE-$k
+
+            ./scripts/run-t-cell-base-args.sh $OUTFOLDER \
+              --trajectories $TRAJECTORY_PATH \
+              --cell-activity-threshold $DIFF_RATIO \
+              --smoothing-radius $RADIUS \
+              --clustering-method $CLUST_METHOD \
+              --clustering-distance $CLUST_DISTANCE \
+              --clustering-index kl \
+              --min-clusters $k \
+              --max-clusters $k \
+              --refine-clusters \
+              --cluster-refinement-p-value 0.05 \
+              --synthesis \
+              --max-expr-depth 1
+          done
         done
       done
     done

@@ -31,8 +31,11 @@ class GeneClustering(opts: ClusteringOpts) {
     }
 
     val clusterIndices = new NbClustInterface(exp.valueMatrix,
-      adjustedMinNbClust, adjustedMaxNbClust, method = opts.clusteringMethod,
+      adjustedMinNbClust, adjustedMaxNbClust,
+      distance = opts.clusteringDistance,
+      method = opts.clusteringMethod,
       index = opts.clusteringIndex).run()
+
     val clustering = exp.names.zip(clusterIndices).toMap
 
     val bestK = clusterIndices.toSet.size

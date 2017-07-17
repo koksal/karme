@@ -13,16 +13,8 @@ class NodePartialOrderByPseudotimeRankSum(
 
   val P_VALUE_THRESHOLD = 0.05
 
-  private val trajectoryToGTPValues: Map[
-    CellTrajectory, Seq[Seq[Option[Double]]]] = {
-    val pairs = trajectories map { t =>
-      TimingUtil.time("p-value computation for trajectory") {
-        t -> trajectoryPValues(t)
-      }
-    }
-
-    pairs.toMap
-  }
+  private var pValueCache:
+    Map[(CellTrajectory, String, String), Option[Double]] = Map.empty
 
   def partialOrdering: PartialOrdering[StateGraphVertex] = {
     new PartialOrdering[StateGraphVertex] {
@@ -54,10 +46,22 @@ class NodePartialOrderByPseudotimeRankSum(
   def gtPValue(
     x: StateGraphVertex, y: StateGraphVertex, t: CellTrajectory
   ): Option[Double] = {
-    val xi = V.indexOf(x)
-    val yi = V.indexOf(y)
+    this.synchronized {
+      val key = (t, x.id, y.id)
 
-    trajectoryToGTPValues(t)(xi)(yi)
+      pValueCache.get(key) match {
+        case None => {
+          // compute and cache
+          val pv = computeRankSumIfNonEmptySamples(
+            StateGraphs.nodePseudotimes(x, t),
+            StateGraphs.nodePseudotimes(y, t)
+          )
+          pValueCache += key -> pv
+          pv
+        }
+        case Some(pv) => pv
+      }
+    }
   }
 
   def significantGT(
@@ -72,17 +76,6 @@ class NodePartialOrderByPseudotimeRankSum(
   ): Boolean = {
     trajectories exists { t =>
       gtPValue(x, y, t).nonEmpty
-    }
-  }
-
-  private def trajectoryPValues(t: CellTrajectory): Seq[Seq[Option[Double]]] = {
-    for (i <- 0 until V.size) yield {
-      for (j <- 0 until V.size) yield {
-        computeRankSumIfNonEmptySamples(
-          StateGraphs.nodePseudotimes(V(i), t),
-          StateGraphs.nodePseudotimes(V(j), t)
-        )
-      }
     }
   }
 

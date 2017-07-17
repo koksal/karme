@@ -45,7 +45,8 @@ case class ClusteringOpts(
   minNbClusters: Int = 2,
   maxNbClusters: Int = 30,
   clusteringIndex: String = "gap",
-  clusteringMethod: String = "ward.D2"
+  clusteringMethod: String = "ward.D2",
+  clusteringDistance: String = "euclidean"
 )
 
 case class AnnotationOpts(

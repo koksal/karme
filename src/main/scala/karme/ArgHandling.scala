@@ -143,6 +143,12 @@ object ArgHandling {
             o.inputTransformerOpts.clusteringOpts.copy(clusteringMethod = s)))
       } text "method for clustering genes"
 
+      opt[String]("clustering-distance") action { (s, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(clusteringDistance = s)))
+      } text "clustering distance measure"
+
       opt[Unit]("refine-clusters") action { (_, o) =>
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(refineClusters = true))
