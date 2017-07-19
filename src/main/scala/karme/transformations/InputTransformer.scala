@@ -63,12 +63,6 @@ class InputTransformer(
     val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
       Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
 
-    val geneDerivatives = clusteringRefiner.deriveGenesOnEdges()
-    for ((gene, derivatives) <- geneDerivatives) {
-      val row = gene +: (derivatives.map(_.toString))
-      println(row.mkString("\t"))
-    }
-
     val (geneClustering, edgeToRefinedClustering) = if (opts.refineClusters) {
       val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
 

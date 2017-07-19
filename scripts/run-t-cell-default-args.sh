@@ -3,9 +3,9 @@
 OUTFOLDER_BASE=$1
 
 TRAJECTORY_FILES=(
-  # "pc1-values.csv"
+  "pc1-values.csv"
   "negative-pathogenicity-signature-large.csv"
-  # "negative-pathogenicity-signature-manual.csv"
+  "negative-pathogenicity-signature-manual.csv"
   )
 
 for TRAJECTORY in "${TRAJECTORY_FILES[@]}"
@@ -24,7 +24,7 @@ do
         for CLUST_DISTANCE in "euclidean"
         do
 
-          for k in 10
+          for k in {5..15}
           do
 
             OUTFOLDER=$OUTFOLDER_BASE-$TRAJECTORY-diff-ratio-$DIFF_RATIO-radius-$RADIUS-clustering-$CLUST_METHOD-$CLUST_DISTANCE-$k
