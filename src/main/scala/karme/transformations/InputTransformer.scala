@@ -60,9 +60,16 @@ class InputTransformer(
     val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
       nonRefinedClustering)
 
+    val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
+      Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
+
+    val geneDerivatives = clusteringRefiner.deriveGenesOnEdges()
+    for ((gene, derivatives) <- geneDerivatives) {
+      val row = gene +: (derivatives.map(_.toString))
+      println(row.mkString("\t"))
+    }
+
     val (geneClustering, edgeToRefinedClustering) = if (opts.refineClusters) {
-      val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
-        Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
       val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
 
       val geneClustering = Clustering.combineByIntersection(
@@ -74,8 +81,10 @@ class InputTransformer(
       (geneClustering, emptyRefinement)
     }
 
-    new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
-      nonRefinedClustering, "smoothed-experiment")
+    if (opts.plotClusterCurves) {
+      new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
+        nonRefinedClustering, "smoothed-experiment")
+    }
 
     TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
   }

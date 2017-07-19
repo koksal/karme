@@ -30,7 +30,8 @@ case class InputTransformerOpts(
   plotTransformedData: Boolean = false,
   plotBinarizedData: Boolean = false,
   plotBinarizedGeneCurves: Boolean = false,
-  plotSmoothedGeneCurves: Boolean = false
+  plotSmoothedGeneCurves: Boolean = false,
+  plotClusterCurves: Boolean = false
 )
 
 case class InputFileOpts(

@@ -16,7 +16,39 @@ class ClusteringRefiner(
   pValueThreshold: Double
 ) {
 
-  val ALL_GENES = clustering.allMembers
+  sealed trait GeneDerivative
+  case object Upregulated extends GeneDerivative
+  case object Downregulated extends GeneDerivative
+  case object Unchanged extends GeneDerivative
+
+  val ALL_GENES = clustering.allMembers.toSeq
+  val ALL_EDGES = clusterLevelGraph.E.toSeq
+
+  def deriveGenesOnEdges(): Map[String, Seq[GeneDerivative]] = {
+    var geneToDerivatives = Map[String, Seq[GeneDerivative]]()
+
+    for (gene <- ALL_GENES) {
+      println(s"Deriving gene $gene")
+      val derivatives = for (e <- ALL_EDGES) yield {
+        deriveGeneOnEdge(e, gene)
+      }
+      geneToDerivatives += gene -> derivatives
+    }
+
+    geneToDerivatives
+  }
+
+  def deriveGeneOnEdge(
+    edge: UnlabeledEdge[StateGraphVertex], gene: String
+  ): GeneDerivative = {
+    if (geneAgreesWithSwitch(edge, gene, true)) {
+      Upregulated
+    } else if (geneAgreesWithSwitch(edge, gene, false)) {
+      Downregulated
+    } else {
+      Unchanged
+    }
+  }
 
   def refineClusteringPerEdge():
       Map[UnlabeledEdge[StateGraphVertex], Clustering] = {
