@@ -70,7 +70,7 @@ class CurvePlot(implicit reporter: Reporter) {
         )
       }
     }
-    new ScatterPlot(toPlot, f).run()
+    new ScatterPlot().plot(toPlot, f)
   }
 
   def plotBooleanCurvesPerGene(
@@ -107,7 +107,7 @@ class CurvePlot(implicit reporter: Reporter) {
     names: Seq[String],
     f: File
   ): Unit = {
-    new ScatterPlot(labeledPointsForNames(exp, trajectory, names), f).run()
+    new ScatterPlot().plot(labeledPointsForNames(exp, trajectory, names), f)
   }
 
   private def labeledPointsForNames[T](

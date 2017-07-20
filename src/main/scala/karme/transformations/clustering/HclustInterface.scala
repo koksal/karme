@@ -4,11 +4,11 @@ import karme.Experiments.Experiment
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-class HclustInterface(
-  exp: Experiment[Double], kMax: Int
-) extends AbstractRInterface[Seq[Map[String, Int]]] {
+class HclustInterface extends AbstractRInterface {
 
-  def process(R: RClient): Seq[Map[String, Int]] = {
+  def findAllClusterings(
+    exp: Experiment[Double], kMax: Int
+  ): Seq[Map[String, Int]] = {
     require(kMax >= 1)
 
     val valuesPerVariable = exp.valueMatrix.map(_.toArray).toArray

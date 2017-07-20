@@ -2,21 +2,14 @@ package karme.external
 
 import org.ddahl.rscala.RClient
 
-abstract class AbstractRInterface[T] {
+abstract class AbstractRInterface {
 
-  val LIBRARIES: Seq[String] = Nil
+  def LIBRARIES: Seq[String] = Nil
 
-  def process(R: RClient): T
+  val R = RClient()
+  importLibraries(R)
 
-  def run(): T = {
-    val R = RClient()
-    importLibraries(R)
-    val result = process(R)
-    R.exit()
-    result
-  }
-
-  def call(R: RClient)(
+  def call(
     method: String, resultVar: String, args: (String, _)*
   ): Unit = {
     val argsStr = args.map{

@@ -62,7 +62,7 @@ class PredictionEvaluator(
     reporter.debug(predictionRatios.sorted.reverse)
     reporter.debug(allRatios.sorted.reverse)
 
-    val res = new RankSumTest(predictionRatios, allRatios).run()
+    val res = new RankSumTest().test(predictionRatios, allRatios)
     res.pValue
   }
 

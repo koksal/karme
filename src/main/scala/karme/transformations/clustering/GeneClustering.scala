@@ -14,7 +14,7 @@ class GeneClustering(opts: ClusteringOpts) {
   ): Seq[Map[String, Set[String]]] = {
     val kMax = math.min(exp.names.size - 1, maxNbClusters)
 
-    val clusterAssignments = new HclustInterface(exp, kMax).run()
+    val clusterAssignments = new HclustInterface().findAllClusterings(exp, kMax)
 
     clusterAssignments map makeClusterToNamesMap
   }
@@ -30,11 +30,11 @@ class GeneClustering(opts: ClusteringOpts) {
         s"$adjustedMaxNbClust).")
     }
 
-    val clusterIndices = new NbClustInterface(exp.valueMatrix,
+    val clusterIndices = new NbClustInterface().cluster(exp.valueMatrix,
       adjustedMinNbClust, adjustedMaxNbClust,
       distance = opts.clusteringDistance,
       method = opts.clusteringMethod,
-      index = opts.clusteringIndex).run()
+      index = opts.clusteringIndex)
 
     val clustering = exp.names.zip(clusterIndices).toMap
 

@@ -71,7 +71,7 @@ class PRAUCEvaluation(reporter: Reporter) {
     val positiveScores = truePosScores ++ falseNegScores
     val negativeScores = falsePosScores
 
-    new PRAUC(positiveScores, negativeScores, curveFile).run()
+    new PRAUC().run(positiveScores, negativeScores, curveFile)
   }
 
 }

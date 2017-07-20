@@ -1,5 +1,6 @@
 package karme.evaluation
 
+import karme.util.TimingUtil
 import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 
@@ -13,8 +14,10 @@ class RankSumTestTest extends FunSuite {
     val xs = (1 to 100) map (_ => 10.0)
     val ys = (1 to 100) map (_ => 20.0)
 
-    val testXsGreater = new RankSumTest(xs, ys).run()
-    val testYsGreater = new RankSumTest(ys, xs).run()
+    val rankSumTest = new RankSumTest
+
+    val testXsGreater = rankSumTest.test(xs, ys)
+    val testYsGreater = rankSumTest.test(ys, xs)
 
     assert(equality.areEqual(0, testXsGreater.statistic))
     assert(equality.areEqual(1, testXsGreater.pValue))
@@ -28,8 +31,10 @@ class RankSumTestTest extends FunSuite {
     val dist = (1 to 100) map (_ => rand.nextDouble())
     val subsample = dist.sorted.reverse.take(20)
 
-    val testSampleGreater = new RankSumTest(subsample, dist).run()
-    val testDistGreater = new RankSumTest(dist, subsample).run()
+    val rankSum = new RankSumTest
+
+    val testSampleGreater = rankSum.test(subsample, dist)
+    val testDistGreater = rankSum.test(dist, subsample)
 
     assert(testSampleGreater.statistic > testDistGreater.statistic)
     assert(testSampleGreater.pValue < testDistGreater.pValue)
@@ -39,8 +44,10 @@ class RankSumTestTest extends FunSuite {
     val xs = List(1.0)
     val ys = List(2.0)
 
-    val testXsGreater = new RankSumTest(xs, ys).run()
-    val testYsGreater = new RankSumTest(ys, xs).run()
+    val rankSum = new RankSumTest
+    
+    val testXsGreater = rankSum.test(xs, ys)
+    val testYsGreater = rankSum.test(ys, xs)
 
     assert(equality.areEqual(1, testXsGreater.pValue))
     assert(equality.areEqual(0.5, testYsGreater.pValue))

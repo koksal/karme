@@ -19,7 +19,7 @@ class HeatmapTest extends FunSuite {
     val xLabels = List("x1", "x2", "x3")
     val yLabels = List("y1", "y2", "y3")
 
-    new Heatmap(matrix, "x", "y", xLabels, yLabels, f).run()
+    new Heatmap().plot(matrix, "x", "y", xLabels, yLabels, f)
 
     assert(f.exists())
   }

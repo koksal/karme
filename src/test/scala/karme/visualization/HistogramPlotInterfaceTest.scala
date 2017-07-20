@@ -12,7 +12,7 @@ class HistogramPlotInterfaceTest extends FunSuite {
     val f = File.createTempFile("histogram-test", ".pdf")
     f.deleteOnExit()
 
-    new HistogramPlotInterface(vs, fillVs, f).run()
+    new HistogramPlotInterface().plot(vs, fillVs, f)
 
     // Only check that the file exists since it differs for each platform.
     assert(f.exists())

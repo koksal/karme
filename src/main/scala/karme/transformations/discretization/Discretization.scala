@@ -43,10 +43,10 @@ object Discretization {
         ThresholdDiscretization(vs)
       }
       case Ckmeans => {
-        new CkmeansInterface(vs, 1, 2).run()
+        new CkmeansInterface().cluster(vs, 1, 2)
       }
       case Mclust => {
-        new MclustInterface(vs, 1, 2).run().classification
+        new MclustInterface().cluster(vs, 1, 2).classification
       }
     }
     assert(intValues.forall(i => i >= 1 && i <= 2))

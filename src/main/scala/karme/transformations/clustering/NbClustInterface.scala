@@ -3,22 +3,22 @@ package karme.transformations.clustering
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-class NbClustInterface(
-  matrix: Seq[Seq[Double]],
-  minNbClust: Int,
-  maxNbClust: Int,
-  distance: String = "euclidean",
-  method: String = "ward.D2",
-  index: String = "kl"
-) extends AbstractRInterface[Seq[Int]] {
+class NbClustInterface extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("NbClust")
+  override def LIBRARIES = Seq("NbClust")
 
-  def process(R: RClient): Seq[Int] = {
+  def cluster(
+    matrix: Seq[Seq[Double]],
+    minNbClust: Int,
+    maxNbClust: Int,
+    distance: String = "euclidean",
+    method: String = "ward.D2",
+    index: String = "kl"
+  ): Seq[Int] = {
     println(s"Running NbClust with ($minNbClust, $maxNbClust)")
 
     R.set("matrix", matrix.map(_.toArray).toArray)
-    call(R)("NbClust", "res", "data" -> "matrix",
+    call("NbClust", "res", "data" -> "matrix",
       "distance" -> s""""$distance"""", "method" -> s""""$method"""",
       "min.nc" -> minNbClust, "max.nc" -> maxNbClust,
       "index" -> s""""$index"""")

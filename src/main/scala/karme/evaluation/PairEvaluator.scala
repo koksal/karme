@@ -227,13 +227,14 @@ class PairEvaluator(
     val points = capturedMinFoldChanges ::: missedMinFoldChanges
     val labels = capturedMinFoldChanges.map(_ => "captured") :::
       missedMinFoldChanges.map(_ => "missed")
-    new HistogramPlotInterface(
+    new HistogramPlotInterface().plot(
       points,
       labels,
       reporter.file(s"transitive-abs-fold-changes-${library.id}.pdf")
-    ).run()
+    )
 
-    val rs = new RankSumTest(capturedMinFoldChanges, missedMinFoldChanges).run()
+    val rs = new RankSumTest().test(
+      capturedMinFoldChanges, missedMinFoldChanges)
     println(rs)
 
   }
@@ -332,10 +333,10 @@ class PairEvaluator(
 
     val coverageLabels = coverageRatios.map(_ => "coverage ratio")
     val coClusteringLabels = coverageRatios.map(_ => "co-clustering ratio")
-    new HistogramPlotInterface(coverageRatios.map(_._1), coverageLabels,
-      reporter.file(s"coverage-ratio-${refID}.pdf")).run()
-    new HistogramPlotInterface(coverageRatios.map(_._2), coClusteringLabels,
-      reporter.file(s"same-cluster-ratio-${refID}.pdf")).run()
+    new HistogramPlotInterface().plot( coverageRatios.map(_._1), coverageLabels,
+      reporter.file(s"coverage-ratio-${refID}.pdf"))
+    new HistogramPlotInterface().plot(coverageRatios.map(_._2),
+      coClusteringLabels, reporter.file(s"same-cluster-ratio-${refID}.pdf"))
   }
 
   def nbRunsWithBothGenes(src: String, tgt: String): Int = {
@@ -375,10 +376,9 @@ class PairEvaluator(
     val medianDistances = refPrecedences.map(
       ps => MathUtil.median(ps.map(_.distance)))
     val labels = medianDistances map (_ => "median distance")
-    new HistogramPlotInterface(medianDistances, labels,
-      reporter.file(
-        s"reference-edge-median-precedence-distance-distribution-" +
-          s"${refID}.pdf")).run()
+    new HistogramPlotInterface().plot(medianDistances, labels,
+      reporter.file(s"reference-edge-median-precedence-distance-distribution-" +
+          s"${refID}.pdf"))
   }
 
   def namesCommonToAllRuns: Set[String] = {
@@ -399,9 +399,8 @@ class PairEvaluator(
 
     val labels = distances map (_ => "distance")
 
-    new HistogramPlotInterface(distances, labels,
-      reporter.file(
-        s"all-distances-distribution.pdf")).run()
+    new HistogramPlotInterface().plot(distances, labels,
+      reporter.file(s"all-distances-distribution.pdf"))
   }
 }
 
@@ -469,7 +468,7 @@ object PairEvaluator {
   def plotScoreDist(scores: Seq[Double], f: File): Unit = {
     val labels = scores.map(_ => "none")
 
-    new HistogramPlotInterface(scores, labels, f).run()
+    new HistogramPlotInterface().plot(scores, labels, f)
   }
 
   def meanOrientationCardinality(pairs: Seq[(String, String)]): Double = {

@@ -55,12 +55,12 @@ object PredictionSignificanceTest {
       nbTotalSuccesses, nbSamples, nbTotalElements)
     println(s"Fold enrichment: ${foldEnrichment}")
 
-    val hgPValue = new HypergeometricTest(
+    val hgPValue = new HypergeometricTest().test(
       nbSamples = nbSamples,
       nbSampleSuccesses = nbSampleSuccesses,
       nbTotalSuccesses = nbTotalSuccesses,
       nbTotalFailures = nbTotalFailures
-    ).run()
+    )
 
     SignificanceResult(hgPValue, foldEnrichment)
   }

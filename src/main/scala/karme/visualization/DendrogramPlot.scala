@@ -6,13 +6,13 @@ import karme.Experiments.Experiment
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-class DendrogramPlot(
-  exp: Experiment[Double], kMax: Int
-) extends AbstractRInterface[Unit] {
+class DendrogramPlot extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("gplots", "RColorBrewer")
+  override def LIBRARIES = Seq("gplots", "RColorBrewer")
 
-  def process(R: RClient): Unit = {
+  def plot(
+    exp: Experiment[Double], kMax: Int
+  ): Unit = {
     val valuesPerVariable = exp.valueMatrix.map(_.toArray).toArray
 
     R.set("valuesPerVariable", valuesPerVariable)

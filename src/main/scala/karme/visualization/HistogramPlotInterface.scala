@@ -7,15 +7,15 @@ import org.ddahl.rscala.RClient
 
 import scala.reflect.ClassTag
 
-class HistogramPlotInterface[T: ClassTag, U: ClassTag](
-  values: Seq[T],
-  labels: Seq[U],
-  f: File
-) extends AbstractRInterface[Unit] {
+class HistogramPlotInterface extends AbstractRInterface {
 
-  override val LIBRARIES: Seq[String] = Seq("ggplot2")
+  override def LIBRARIES: Seq[String] = Seq("ggplot2")
 
-  def process(R: RClient): Unit = {
+  def plot[T: ClassTag, U: ClassTag](
+    values: Seq[T],
+    labels: Seq[U],
+    f: File
+  ): Unit = {
     assert(values.size == labels.size)
 
     R.set("values", values.toArray)

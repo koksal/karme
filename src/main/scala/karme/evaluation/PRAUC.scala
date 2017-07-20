@@ -3,15 +3,14 @@ package karme.evaluation
 import java.io.File
 
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
-class PRAUC(
-  positiveScores: Seq[Int], negativeScores: Seq[Int], plotFile: Option[File]
-) extends AbstractRInterface[Double] {
+class PRAUC extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("PRROC")
+  override def LIBRARIES = Seq("PRROC")
 
-  def process(R: RClient): Double = {
+  def run(
+    positiveScores: Seq[Int], negativeScores: Seq[Int], plotFile: Option[File]
+  ): Double = {
     R.set("pos", positiveScores.toArray)
     R.set("neg", negativeScores.toArray)
 

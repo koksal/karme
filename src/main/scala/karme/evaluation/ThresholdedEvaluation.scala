@@ -6,7 +6,6 @@ import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
 import karme.evaluation.PredictionSignificanceTest.SignificanceResult
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
 import karme.util.FileUtil
 import karme.visualization.ScatterPlot
 
@@ -94,36 +93,39 @@ class ThresholdedEvaluation(reporter: Reporter) {
   def plotScores(
     results: Seq[ThresholdedEvalResult], libraryId: String
   ): Unit = {
+    val scatterPlotInterface = new ScatterPlot()
+
     val pValuePoints = results map { r =>
       (r.nbPredictions, r.hgPValue, "HG p-value")
     }
-    new ScatterPlot(
+    scatterPlotInterface.plot(
       pValuePoints,
       reporter.file(s"linear-hg-p-values-$libraryId.pdf"),
       logYScale = false
-    ).run()
-    new ScatterPlot(
+    )
+    scatterPlotInterface.plot(
       pValuePoints,
       reporter.file(s"log-hg-p-values-$libraryId.pdf"),
       logYScale = true
-    ).run()
+    )
 
     val foldEnrPoints = results map { r =>
       (r.nbPredictions, r.foldEnrichment, "fold enrichment")
     }
-    new ScatterPlot(foldEnrPoints,
-      reporter.file(s"fold-enr-$libraryId.pdf")).run()
+    scatterPlotInterface.plot(foldEnrPoints,
+      reporter.file(s"fold-enr-$libraryId.pdf"))
 
     val recallPoints = results map { r =>
       (r.nbPredictions, r.recall, "Recall")
     }
-    new ScatterPlot(recallPoints, reporter.file(s"recall-$libraryId.pdf")).run()
+    scatterPlotInterface.plot(recallPoints,
+      reporter.file(s"recall-$libraryId.pdf"))
 
     val meanCardPoints = results map { r =>
       (r.nbPredictions, r.avgCardinality, "Mean orientation")
     }
-    new ScatterPlot(meanCardPoints,
-      reporter.file(s"mean-cardinality-$libraryId.pdf")).run()
+    scatterPlotInterface.plot(meanCardPoints,
+      reporter.file(s"mean-cardinality-$libraryId.pdf"))
   }
 
   def saveScores(results: Seq[ThresholdedEvalResult], f: File): Unit = {

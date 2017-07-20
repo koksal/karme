@@ -139,12 +139,14 @@ object StateGraphs {
       g: UndirectedBooleanStateGraph,
       trajectories: Seq[CellTrajectory]
     ): DirectedBooleanStateGraph = {
+      val graphOrienter = new GraphOrientationByTrajectory(g)
+
       var directions =
         Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]]()
 
       // compute all directions that can be assigned with trajectories
       val directionMaps = trajectories map (t =>
-        orientByTrajectoryRankSum(g, t))
+        graphOrienter.orientForTrajectory(t))
 
       // merge directions
       for (edge <- g.E) {
@@ -159,50 +161,6 @@ object StateGraphs {
       // we filter the graph down to edges that could be oriented
       new DirectedBooleanStateGraph(g.V, directions.keySet.toSet, directions)
     }
-
-    private def orientByTrajectoryRankSum(
-      g: UndirectedBooleanStateGraph,
-      trajectory: CellTrajectory
-    ): Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]] = {
-      var res = Map[UnlabeledEdge[StateGraphVertex], Set[EdgeDirection]]()
-
-      for (e @ UnlabeledEdge(v1, v2) <- g.E) {
-        val dirOpt = orientByRankSum(
-          nodePseudotimes(v1, trajectory),
-          nodePseudotimes(v2, trajectory)
-        )
-        dirOpt foreach {
-          res += e -> Set(_)
-        }
-      }
-
-      res
-    }
-
-    def orientByRankSum(
-      leftPseudotimes: Seq[Double], rightPseudotimes: Seq[Double]
-    ): Option[EdgeDirection] = {
-      val P_VALUE_THRESHOLD = 0.05
-
-      if (leftPseudotimes.isEmpty || rightPseudotimes.isEmpty) {
-        None
-      } else {
-        val forwardPVal = new RankSumTest(
-          rightPseudotimes, leftPseudotimes).run().pValue
-        val backwardPVal = new RankSumTest(
-          leftPseudotimes, rightPseudotimes).run().pValue
-
-        if (forwardPVal <= P_VALUE_THRESHOLD) {
-          assert(backwardPVal > P_VALUE_THRESHOLD)
-          Some(Forward)
-        } else if (backwardPVal <= P_VALUE_THRESHOLD) {
-          Some(Backward)
-        } else {
-          None
-        }
-      }
-    }
-
   }
 
   def avgNodePseudotime(

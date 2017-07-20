@@ -16,6 +16,8 @@ class ClusteringRefiner(
   pValueThreshold: Double
 ) {
 
+  val rankSum = new RankSumTest
+
   sealed trait GeneDerivative
   case object Upregulated extends GeneDerivative
   case object Downregulated extends GeneDerivative
@@ -119,7 +121,7 @@ class ClusteringRefiner(
       (leftGeneValues, rightGeneValues)
     }
 
-    val res = new RankSumTest(greater, smaller).run()
+    val res = rankSum.test(greater, smaller)
     res.pValue <= pValueThreshold
   }
 

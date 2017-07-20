@@ -7,13 +7,13 @@ case class MClustResult(
   g: Int, classification: Seq[Int], uncertainty: Seq[Double]
 )
 
-class MclustInterface(
-  xs: Seq[Double], minNbClust: Int, maxNbClust: Int
-) extends AbstractRInterface[MClustResult] {
+class MclustInterface extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("mclust")
+  override def LIBRARIES = Seq("mclust")
 
-  def process(R: RClient): MClustResult = {
+  def cluster(
+    xs: Seq[Double], minNbClust: Int, maxNbClust: Int
+  ): MClustResult = {
     R.set("xs", xs.toArray)
     R.eval(s"res = Mclust(xs, G = c(${minNbClust}, ${maxNbClust}))")
 

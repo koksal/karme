@@ -5,15 +5,15 @@ import java.io.File
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-class BoxPlot(
-  labelToValues: Map[String, Iterable[Double]],
-  outPrefix: String,
-  outFolder: File
-) extends AbstractRInterface[Unit] {
+class BoxPlot extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("ggplot2")
+  override def LIBRARIES = Seq("ggplot2")
 
-  def process(R: RClient): Unit = {
+  def plot(
+    labelToValues: Map[String, Iterable[Double]],
+    outPrefix: String,
+    outFolder: File
+  ): Unit = {
     var dataList = List[Double]()
     var labelArray = Array[String]()
 

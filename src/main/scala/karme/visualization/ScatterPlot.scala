@@ -11,16 +11,16 @@ trait PlotStyle
 case object GeomPoint extends PlotStyle
 case object GeomLine extends PlotStyle
 
-class ScatterPlot[T: ClassTag, U: ClassTag](
-  labeledPoints: Iterable[(T, U, String)],
-  file: File,
-  logYScale: Boolean = false,
-  plotStyle: PlotStyle = GeomLine
-) extends AbstractRInterface[Unit] {
+class ScatterPlot extends AbstractRInterface {
 
-  override val LIBRARIES: Seq[String] = List("ggplot2", "scales")
+  override def LIBRARIES: Seq[String] = List("ggplot2", "scales")
 
-  def process(R: RClient): Unit = {
+  def plot[T: ClassTag, U: ClassTag](
+    labeledPoints: Iterable[(T, U, String)],
+    file: File,
+    logYScale: Boolean = false,
+    plotStyle: PlotStyle = GeomLine
+  ): Unit = {
     val (xs, ys, ls) = labeledPoints.unzip3
     R.set("xs", xs.toArray)
     R.set("ys", ys.toArray)

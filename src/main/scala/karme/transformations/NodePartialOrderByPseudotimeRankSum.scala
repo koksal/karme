@@ -13,6 +13,8 @@ class NodePartialOrderByPseudotimeRankSum(
 
   val P_VALUE_THRESHOLD = 0.05
 
+  val rankSum = new RankSumTest
+
   private var pValueCache:
     Map[(CellTrajectory, String, String), Option[Double]] = Map.empty
 
@@ -85,7 +87,7 @@ class NodePartialOrderByPseudotimeRankSum(
     if (leftPseudotimes.isEmpty || rightPseudotimes.isEmpty) {
       None
     } else {
-      val res = new RankSumTest(leftPseudotimes, rightPseudotimes).run()
+      val res = rankSum.test(leftPseudotimes, rightPseudotimes)
       Some(res.pValue)
     }
   }

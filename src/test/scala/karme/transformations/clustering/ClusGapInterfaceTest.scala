@@ -11,7 +11,7 @@ class ClusGapInterfaceTest extends FunSuite {
       Seq(101, 101, 101)
     )
 
-    val result = new ClusGapInterface(matrix, 3).run()
+    val result = new ClusGapInterface().findGapStatistic(matrix, 3)
     assert(result(0) == result(1))
     assert(result(2) == result(3))
     assert(result(0) != result(2))

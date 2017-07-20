@@ -3,14 +3,14 @@ package karme.transformations.clustering
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-class ClusGapInterface(
-  matrix: Seq[Seq[Double]],
-  maxK: Int
-) extends AbstractRInterface[Seq[Int]] {
+class ClusGapInterface extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("cluster")
+  override def LIBRARIES = Seq("cluster")
 
-  override def process(R: RClient): Seq[Int] = {
+  def findGapStatistic(
+    matrix: Seq[Seq[Double]],
+    maxK: Int
+  ): Seq[Int] = {
     R.set("matrix", matrix.map(_.toArray).toArray)
     R.eval(s"gap <- clusGap(matrix, kmeans, K.max=$maxK, B=500)")
     R.eval(

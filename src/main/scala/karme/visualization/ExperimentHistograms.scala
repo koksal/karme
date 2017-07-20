@@ -17,7 +17,7 @@ object ExperimentHistograms {
       val vs = e.valuesForName(name)
       val labels = vs map (v => name)
       val f = new File(folder, s"${name}.pdf")
-      new HistogramPlotInterface(vs, labels, f).run()
+      new HistogramPlotInterface().plot(vs, labels, f)
     }
   }
 
@@ -40,7 +40,7 @@ object ExperimentHistograms {
       assert(values.size == labels.size)
 
       val f = new File(folder, s"$name.pdf")
-      new HistogramPlotInterface(values, labels, f).run()
+      new HistogramPlotInterface().plot(values, labels, f)
     }
   }
 

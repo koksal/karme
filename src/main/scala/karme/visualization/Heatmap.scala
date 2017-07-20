@@ -5,18 +5,18 @@ import java.io.File
 import karme.external.AbstractRInterface
 import org.ddahl.rscala.RClient
 
-class Heatmap(
-  matrix: Seq[Seq[Double]],
-  xName: String,
-  yName: String,
-  xLabels: Seq[String],
-  yLabels: Seq[String],
-  file: File
-) extends AbstractRInterface[Unit] {
+class Heatmap extends AbstractRInterface {
 
-  override val LIBRARIES = Seq("gplots")
+  override def LIBRARIES = Seq("gplots")
 
-  def process(R: RClient): Unit = {
+  def plot(
+    matrix: Seq[Seq[Double]],
+    xName: String,
+    yName: String,
+    xLabels: Seq[String],
+    yLabels: Seq[String],
+    file: File
+  ): Unit = {
     R.set("matrix", matrix.map(_.toArray).toArray)
     R.set("xLabels", xLabels.toArray)
     R.set("yLabels", yLabels.toArray)

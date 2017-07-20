@@ -1,19 +1,16 @@
 package karme.evaluation
 
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
 case class RankSumTestResult(statistic: Double, pValue: Double)
 
-class RankSumTest(
-  greaterSeq: Seq[Double], lessSeq: Seq[Double]
-) extends AbstractRInterface[RankSumTestResult] {
+class RankSumTest extends AbstractRInterface {
 
-  def process(R: RClient): RankSumTestResult = {
+  def test(greaterSeq: Seq[Double], lessSeq: Seq[Double]): RankSumTestResult = {
     R.set("xs", greaterSeq.toArray)
     R.set("ys", lessSeq.toArray)
 
-    call(R)("wilcox.test", "res",
+    call("wilcox.test", "res",
       "x" -> "xs",
       "y" -> "ys",
       "alternative" -> "\"greater\""
