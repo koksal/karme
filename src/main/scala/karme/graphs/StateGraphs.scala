@@ -12,11 +12,11 @@ import karme.Experiments.ThreeValuedMeasurement
 import karme.Experiments.ThreeValuedExperiment
 import karme.Experiments.Uncertain
 import karme.analysis.DiscreteStateAnalysis
-import karme.evaluation.RankSumTest
 import karme.graphs.Graphs._
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.GenericState
 import karme.synthesis.Transitions.ThreeValuedState
+import karme.transformations.RankSumTest
 import karme.util.MapUtil
 import karme.util.MathUtil
 import karme.util.UniqueCounter

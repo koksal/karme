@@ -1,6 +1,5 @@
-package karme.evaluation
+package karme.transformations
 
-import karme.util.TimingUtil
 import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 
@@ -45,7 +44,7 @@ class RankSumTestTest extends FunSuite {
     val ys = List(2.0)
 
     val rankSum = new RankSumTest
-    
+
     val testXsGreater = rankSum.test(xs, ys)
     val testYsGreater = rankSum.test(ys, xs)
 

@@ -2,7 +2,6 @@ package karme.transformations
 
 import karme.Clustering
 import karme.Experiments.Experiment
-import karme.evaluation.RankSumTest
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex

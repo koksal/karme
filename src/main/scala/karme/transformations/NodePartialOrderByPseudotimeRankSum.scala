@@ -1,7 +1,6 @@
 package karme.transformations
 
 import karme.CellTrajectories.CellTrajectory
-import karme.evaluation.RankSumTest
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{StateGraphVertex, UndirectedStateGraphOps}
 import karme.util.TimingUtil

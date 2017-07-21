@@ -14,6 +14,7 @@ import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
 import karme.store.EdgePrecedenceStore
 import karme.transformations.EdgePrecedence
+import karme.transformations.RankSumTest
 import karme.util.CollectionUtil
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface

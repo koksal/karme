@@ -2,8 +2,9 @@ package karme.evaluation.enrichr
 
 import karme.EvalOpts
 import karme.Reporter
-import karme.evaluation.{ClusterPairExpansion, EvaluationContext, FunctionIOPairs, RankSumTest}
+import karme.evaluation.{ClusterPairExpansion, EvaluationContext, FunctionIOPairs}
 import karme.synthesis.SynthesisResult
+import karme.transformations.RankSumTest
 
 class PredictionEvaluator(
   opts: EvalOpts,
