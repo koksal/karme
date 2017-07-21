@@ -16,6 +16,8 @@ import scala.reflect.ClassTag
   */
 class CurvePlot(implicit reporter: Reporter) {
 
+  val scatterPlot = new ScatterPlot
+
   def plotClusterCurves(
     exp: Experiment[Double],
     trajectories: Seq[CellTrajectory],
@@ -107,7 +109,7 @@ class CurvePlot(implicit reporter: Reporter) {
     names: Seq[String],
     f: File
   ): Unit = {
-    new ScatterPlot().plot(labeledPointsForNames(exp, trajectory, names), f)
+    scatterPlot.plot(labeledPointsForNames(exp, trajectory, names), f)
   }
 
   private def labeledPointsForNames[T](
@@ -116,7 +118,7 @@ class CurvePlot(implicit reporter: Reporter) {
     assert(names.toSet.subsetOf(exp.names.toSet))
 
     // order measurements by trajectory
-    val trajectoryExp = CellTrajectories.experimentOrderedByTrajectory(exp,
+    val trajectoryExp = CellTrajectories.orderMeasurementsByTrajectory(exp,
       trajectory)
 
     names flatMap { name =>

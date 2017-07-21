@@ -10,7 +10,7 @@ object CellTrajectories {
     trajectory.toSeq.sortBy(_._2).map(_._1)
   }
 
-  def experimentOrderedByTrajectory[T](
+  def orderMeasurementsByTrajectory[T](
     experiment: Experiment[T], trajectory: CellTrajectory
   ): Experiment[T] = {
     val orderedIDs = CellTrajectories.cellOrder(trajectory)

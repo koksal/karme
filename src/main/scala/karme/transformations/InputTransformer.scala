@@ -54,6 +54,14 @@ class InputTransformer(
         trajectories, reporter.file("smoothed-curves"))
     }
 
+    // TODO hierarchical switch analysis
+    val hierarchicalSwitchAnalysis =
+      new HierarchicalSwitchAnalysis(smoothedExp, trajectories.head)
+
+    hierarchicalSwitchAnalysis.analyzeGenes()
+
+    sys.exit(0)
+
     val nonRefinedClustering = clusteringModule.computeBestClustering(
       smoothedExp)
 

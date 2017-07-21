@@ -1,6 +1,5 @@
 package karme.transformations
 
-import karme.util.TimingUtil
 import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 
