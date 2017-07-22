@@ -61,7 +61,7 @@ object ParameterSweep {
 
         // TODO store and pass graph sources here
         val results = TimingUtil.time(s"Synthesizing ($i)") {
-          synthesizer.synthesizeForPositiveHardConstraints(graph, ???)
+          synthesizer.synthesizeForPositiveHardConstraints(graph)
         }
 
         SynthesisResultLogger(results, runReporter.file("functions.txt"))

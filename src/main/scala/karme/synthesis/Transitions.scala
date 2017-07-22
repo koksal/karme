@@ -24,6 +24,9 @@ object Transitions {
       }
       GenericState(newMapping)
     }
+    def replaceValue(name: String, newValue: T): GenericState[T] = {
+      this.copy(mapping = this.mapping + (name -> newValue))
+    }
   }
 
   type ConcreteBooleanState = GenericState[Boolean]

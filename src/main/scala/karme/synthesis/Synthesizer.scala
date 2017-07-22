@@ -14,15 +14,14 @@ import karme.transformations.TransitionProducer
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
   def synthesizeForPositiveHardConstraints(
-    graph: DirectedBooleanStateGraph,
-    sources: Set[StateGraphVertex]
+    graph: DirectedBooleanStateGraph
   ): Map[String, Set[SynthesisResult]] = {
     if (graph.V.isEmpty) {
       reporter.log("Graph is empty, skipping synthesis.")
       Map.empty
     } else {
       val (posTrans, negTrans) =
-        TransitionProducer.producePositiveAndNegativeTransitions(graph, sources)
+        TransitionProducer.producePositiveAndNegativeTransitions(graph)
 
       synthesizeFunctionsForAllTransitionSubsets(posTrans,
         negTrans, StateGraphs.namesFromStateGraph(graph))

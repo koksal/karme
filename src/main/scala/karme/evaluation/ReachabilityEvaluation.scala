@@ -36,7 +36,7 @@ object ReachabilityEvaluation {
     }
   }
 
-  def computeReachabilityEvaluationResults(
+  private def computeReachabilityEvaluationResults(
     labelToSynthesisResults: Map[String, Set[SynthesisResult]],
     initialStates: Set[ConcreteBooleanState],
     observedStates: Set[ConcreteBooleanState]

@@ -15,7 +15,7 @@ do
   for DIFF_RATIO in 0.1
   do
 
-    for RADIUS in 40
+    for RADIUS in 10
     do
 
       for CLUST_METHOD in "kmeans"
@@ -24,7 +24,7 @@ do
         for CLUST_DISTANCE in "euclidean"
         do
 
-          for k in {5..15}
+          for k in {5..10}
           do
 
             OUTFOLDER=$OUTFOLDER_BASE-$TRAJECTORY-diff-ratio-$DIFF_RATIO-radius-$RADIUS-clustering-$CLUST_METHOD-$CLUST_DISTANCE-$k

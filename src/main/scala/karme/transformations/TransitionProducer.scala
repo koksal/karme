@@ -9,8 +9,7 @@ import karme.synthesis.Transitions.Transition
 object TransitionProducer {
 
   def producePositiveAndNegativeTransitions(
-    directedStateGraph: DirectedBooleanStateGraph,
-    sources: Set[StateGraphVertex]
+    directedStateGraph: DirectedBooleanStateGraph
   ): (Set[Transition], Set[Transition]) = {
     val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
 
@@ -21,21 +20,6 @@ object TransitionProducer {
       directedStateGraph, stateNames)
 
     (positiveTransitions, negativeTransitions)
-  }
-
-  def removeEdgesFromSources(
-    graph: DirectedBooleanStateGraph,
-    sources: Set[StateGraphVertex]
-  ): DirectedBooleanStateGraph = {
-    var newGraph = graph
-
-    for (e <- graph.E) {
-      if (sources.contains(e.v1) || sources.contains(e.v2)) {
-        newGraph = newGraph.removeEdge(e)
-      }
-    }
-
-    newGraph
   }
 
   def positiveTransitions(

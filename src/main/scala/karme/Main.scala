@@ -2,6 +2,7 @@ package karme
 
 import karme.evaluation.ClusterPairExpansion
 import karme.evaluation.FunctionIOPairs
+import karme.evaluation.PerturbationAnalysis
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.IOPairLogger
@@ -56,7 +57,14 @@ object Main {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
     val results = synthesizer.synthesizeForPositiveHardConstraints(
-      directedStateGraph, sources)
+      directedStateGraph)
+
+    val toEvaluate = results map {
+      case (name, results) => name -> results.head.functions.head
+    }
+    val perturbationAnalysis = new PerturbationAnalysis(toEvaluate,
+      directedStateGraph, clustering, Set())(reporter)
+    perturbationAnalysis.findGeneDrivers(sources.map(_.state))
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 
