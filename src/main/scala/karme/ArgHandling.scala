@@ -184,6 +184,11 @@ object ArgHandling {
           o.inputTransformerOpts.copy(plotSmoothedGeneCurves = true))
       } text "plot smoothed gene curves"
 
+      opt[Unit]("plot-cluster-curves") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotClusterCurves = true))
+      } text "plot gene cluster curves"
+
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>
