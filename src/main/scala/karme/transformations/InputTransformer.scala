@@ -164,11 +164,12 @@ class InputTransformer(
       sys.error("no continuous experiment given"))
     val parsedExperiment = ContinuousExperimentParser.parseAndFilter(file,
       geneNamesToFilter)
+    val filteredCellExperiment = filterCellsByTrajectories(parsedExperiment)
     val transformedExperiment = transformExperiment(
-      NamingUtil.canonicalizeNames(parsedExperiment))
+      NamingUtil.canonicalizeNames(filteredCellExperiment))
 
     if (opts.plotOriginalData) {
-      ExperimentHistograms.plotHistogramsPerVariable(parsedExperiment,
+      ExperimentHistograms.plotHistogramsPerVariable(filteredCellExperiment,
         reporter.file("original-data"))
     }
 
@@ -185,5 +186,13 @@ class InputTransformer(
       case Some(factor) => ExperimentTransformation.pseudoLog(exp, factor)
       case None => exp
     }
+  }
+
+  def filterCellsByTrajectories(exp: Experiment[Double]): Experiment[Double] = {
+    val allTrajectoryMeasurementIDs = trajectories.flatMap(_.keySet).toSet
+    val trajectoryMeasurements = exp.measurements filter {
+      ms => allTrajectoryMeasurementIDs.contains(ms.id)
+    }
+    exp.copy(measurements = trajectoryMeasurements)
   }
 }
