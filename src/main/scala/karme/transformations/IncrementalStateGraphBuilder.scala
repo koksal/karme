@@ -53,24 +53,23 @@ class IncrementalStateGraphBuilder(
 
     var keepSearching = true
     while (keepSearching) {
-      chooseMinimalHammingNeighbor(graph.V) match {
-        case Some((source, neighbor)) => {
-          graph = graph.addEdge(source, neighbor)
-        }
-        case None => {
-          keepSearching = false
-        }
+      val graphBeforeExtension = graph
+      val minHammingNeighbors = chooseMinimalHammingNeighbors(graph.V)
+
+      for ((source, neighbor) <- minHammingNeighbors) {
+        graph = graph.addEdge(source, neighbor)
       }
+
+      keepSearching = graph != graphBeforeExtension
     }
 
     graph
   }
 
-  private def chooseMinimalHammingNeighbor(
+  private def chooseMinimalHammingNeighbors(
     reachableNodes: Set[StateGraphVertex]
-  ): Option[(StateGraphVertex, StateGraphVertex)] = {
-    val distancesToNeighbors = hammingDistancesToTargets(
-      reachableNodes, V -- reachableNodes)
+  ): Set[(StateGraphVertex, StateGraphVertex)] = {
+    val distancesToNeighbors = hammingDistancesToTargets(reachableNodes, V)
 
     val validNeighbors = distancesToNeighbors filter {
       case (source, target, distance) => {
@@ -79,12 +78,9 @@ class IncrementalStateGraphBuilder(
       }
     }
 
-    if (validNeighbors.isEmpty) {
-      None
-    } else {
-      val minDistanceTriplet = validNeighbors.minBy(_._3)
-      Some((minDistanceTriplet._1, minDistanceTriplet._2))
-    }
+    val minDistance = validNeighbors.map(_._3).min
+    val minDistanceNeighbors = validNeighbors.filter(_._3 == minDistance)
+    minDistanceNeighbors.map(triple => (triple._1, triple._2))
   }
 
   private def hammingDistancesToTargets(
