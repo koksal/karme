@@ -16,7 +16,7 @@ import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
-import karme.visualization.ExperimentHistograms
+import karme.visualization.HistogramPlotter
 
 case class TransformResult(
   graph: DirectedBooleanStateGraph,
@@ -110,6 +110,11 @@ class InputTransformer(
     val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
       threeValExp)
 
+    if (opts.plotBinarizedClusterData) {
+      new HistogramPlotter().plotLabeledHistograms(avgExp, expandedBoolExp,
+        reporter.file("binarized-cluster-data"))
+    }
+
     val graphBuilder = new IncrementalStateGraphBuilder(expandedBoolExp,
       clustering, trajectories)
 
@@ -151,7 +156,7 @@ class InputTransformer(
       opts.booleanNormalizationMethod)
 
     if (opts.plotBinarizedData) {
-      ExperimentHistograms.plotLabeledHistograms(continuousExperiment,
+      new HistogramPlotter().plotLabeledHistograms(continuousExperiment,
         booleanNormalizedExp, reporter.file("binarized-data"))
     }
 
@@ -169,12 +174,12 @@ class InputTransformer(
       NamingUtil.canonicalizeNames(filteredCellExperiment))
 
     if (opts.plotOriginalData) {
-      ExperimentHistograms.plotHistogramsPerVariable(filteredCellExperiment,
+      new HistogramPlotter().plotHistogramsPerVariable(filteredCellExperiment,
         reporter.file("original-data"))
     }
 
     if (opts.plotTransformedData) {
-      ExperimentHistograms.plotHistogramsPerVariable(transformedExperiment,
+      new HistogramPlotter().plotHistogramsPerVariable(transformedExperiment,
         reporter.file("transformed-data"))
     }
 

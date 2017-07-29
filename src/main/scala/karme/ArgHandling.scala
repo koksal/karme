@@ -189,6 +189,11 @@ object ArgHandling {
           o.inputTransformerOpts.copy(plotClusterCurves = true))
       } text "plot gene cluster curves"
 
+      opt[Unit]("plot-binarized-cluster-data") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(plotBinarizedClusterData = true))
+      } text "plot cluster histograms with binary labels"
+
       // Synthesis options:
 
       opt[Int]("max-expr-depth") action { (i, o) =>

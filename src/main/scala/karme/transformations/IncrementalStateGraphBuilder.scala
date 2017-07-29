@@ -51,36 +51,104 @@ class IncrementalStateGraphBuilder(
       graph = graph.addVertex(n)
     }
 
-    var keepSearching = true
-    while (keepSearching) {
-      val graphBeforeExtension = graph
-      val minHammingNeighbors = chooseMinimalHammingNeighbors(graph.V)
+    var prevGraph = graph
+    do {
+      prevGraph = graph
 
-      for ((source, neighbor) <- minHammingNeighbors) {
-        graph = graph.addEdge(source, neighbor)
-      }
-
-      keepSearching = graph != graphBeforeExtension
-    }
+      graph = extendGraphBySaturatingEdges(graph)
+      graph = extendReachability(graph)
+    } while (prevGraph != graph)
 
     graph
   }
 
-  private def chooseMinimalHammingNeighbors(
-    reachableNodes: Set[StateGraphVertex]
-  ): Set[(StateGraphVertex, StateGraphVertex)] = {
-    val distancesToNeighbors = hammingDistancesToTargets(reachableNodes, V)
+  private def extendGraphBySaturatingEdges(
+    g: DirectedBooleanStateGraph
+  ): DirectedBooleanStateGraph = {
+    var prevGraph = g
+    var currGraph = g
 
-    val validNeighbors = distancesToNeighbors filter {
-      case (source, target, distance) => {
-        distance < MAX_HAMMING_DISTANCE &&
-          nodePartialOrdering.lt(source, target)
+    do {
+      prevGraph = currGraph
+
+      val edgesFromReachableNodes = allHammingNeighbors(currGraph.V, V, 1)
+
+      for ((source, neighbor) <- edgesFromReachableNodes) {
+        currGraph = currGraph.addEdge(source, neighbor)
+      }
+    } while (prevGraph != currGraph)
+
+    currGraph
+  }
+
+  private def extendReachability(
+    g: DirectedBooleanStateGraph
+  ): DirectedBooleanStateGraph = {
+    val edgesToNonReachedNodes = minimalHammingNeighbors(g.V, V -- g.V,
+      MAX_HAMMING_DISTANCE)
+
+    var newGraph = g
+    for ((source, target) <- edgesToNonReachedNodes) {
+      newGraph = newGraph.addEdge(source, target)
+    }
+    newGraph
+  }
+
+  private def allHammingNeighbors(
+    reachableNodes: Set[StateGraphVertex],
+    targetNodes: Set[StateGraphVertex],
+    maxHammingDistance: Int
+  ): Set[(StateGraphVertex, StateGraphVertex)] = {
+    val edgesWithDistance = allHammingNeighborsWithDistance(reachableNodes,
+      targetNodes, maxHammingDistance)
+
+    edgesWithDistance map {
+      case (source, target, _) => (source, target)
+    }
+  }
+
+  private def minimalHammingNeighbors(
+    reachableNodes: Set[StateGraphVertex],
+    targetNodes: Set[StateGraphVertex],
+    maxHammingDistance: Int
+  ): Set[(StateGraphVertex, StateGraphVertex)] = {
+    val allEdgesWithDistance = allHammingNeighborsWithDistance(reachableNodes,
+      targetNodes, maxHammingDistance)
+
+    if (allEdgesWithDistance.isEmpty) {
+      Set.empty
+    } else {
+      val minDistance = allEdgesWithDistance.map(_._3).min
+      val minDistanceNeighbors = allEdgesWithDistance.filter(_._3 == minDistance)
+
+      minDistanceNeighbors.map {
+        case (source, target, _) => (source, target)
       }
     }
+  }
 
-    val minDistance = validNeighbors.map(_._3).min
-    val minDistanceNeighbors = validNeighbors.filter(_._3 == minDistance)
-    minDistanceNeighbors.map(triple => (triple._1, triple._2))
+  private def allHammingNeighborsWithDistance(
+    reachableNodes: Set[StateGraphVertex],
+    targetNodes: Set[StateGraphVertex],
+    maxHammingDistance: Int
+  ): Set[(StateGraphVertex, StateGraphVertex, Int)] = {
+    val edgesWithDistance = hammingDistancesToTargets(reachableNodes,
+      targetNodes)
+
+    val edgesWithinHammingBound = edgesWithDistance filter {
+      case (source, target, distance) => distance <= maxHammingDistance
+    }
+
+    filterToPartialOrderValidEdges(edgesWithinHammingBound)
+  }
+
+
+  private def filterToPartialOrderValidEdges(
+    edges: Set[(StateGraphVertex, StateGraphVertex, Int)]
+  ): Set[(StateGraphVertex, StateGraphVertex, Int)] = {
+    edges filter {
+      case (source, target, _) => nodePartialOrdering.lt(source, target)
+    }
   }
 
   private def hammingDistancesToTargets(

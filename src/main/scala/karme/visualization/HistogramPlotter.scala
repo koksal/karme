@@ -6,7 +6,9 @@ import karme.Experiments.Experiment
 
 import scala.reflect.ClassTag
 
-object ExperimentHistograms {
+class HistogramPlotter {
+
+  private val interface = new HistogramPlotInterface()
 
   def plotHistogramsPerVariable(
     e: Experiment[Double], folder: File
@@ -17,7 +19,7 @@ object ExperimentHistograms {
       val vs = e.valuesForName(name)
       val labels = vs map (v => name)
       val f = new File(folder, s"${name}.pdf")
-      new HistogramPlotInterface().plot(vs, labels, f)
+      interface.plot(vs, labels, f)
     }
   }
 
@@ -26,6 +28,9 @@ object ExperimentHistograms {
     expToLabel: Experiment[U],
     folder: File
   ): Unit = {
+    require(expToPlot.measurements.map(_.id) ==
+      expToLabel.measurements.map(_.id))
+
     folder.mkdirs()
 
     val namesToPlot = expToPlot.names
@@ -40,7 +45,7 @@ object ExperimentHistograms {
       assert(values.size == labels.size)
 
       val f = new File(folder, s"$name.pdf")
-      new HistogramPlotInterface().plot(values, labels, f)
+      interface.plot(values, labels, f)
     }
   }
 
