@@ -55,14 +55,14 @@ class IncrementalStateGraphBuilder(
     do {
       prevGraph = graph
 
-      graph = extendGraphBySaturatingEdges(graph)
+      graph = saturateGraphWithAllMinimalOutgoingEdges(graph)
       graph = extendReachability(graph)
     } while (prevGraph != graph)
 
     graph
   }
 
-  private def extendGraphBySaturatingEdges(
+  private def saturateGraphWithAllMinimalOutgoingEdges(
     g: DirectedBooleanStateGraph
   ): DirectedBooleanStateGraph = {
     var prevGraph = g
@@ -70,12 +70,7 @@ class IncrementalStateGraphBuilder(
 
     do {
       prevGraph = currGraph
-
-      val edgesFromReachableNodes = allHammingNeighbors(currGraph.V, V, 1)
-
-      for ((source, neighbor) <- edgesFromReachableNodes) {
-        currGraph = currGraph.addEdge(source, neighbor)
-      }
+      currGraph = extendAllNodesWithMinimalDistance(currGraph)
     } while (prevGraph != currGraph)
 
     currGraph
@@ -89,6 +84,20 @@ class IncrementalStateGraphBuilder(
 
     var newGraph = g
     for ((source, target) <- edgesToNonReachedNodes) {
+      newGraph = newGraph.addEdge(source, target)
+    }
+    newGraph
+  }
+
+  private def extendAllNodesWithMinimalDistance(
+    g: DirectedBooleanStateGraph
+  ): DirectedBooleanStateGraph = {
+    val minimalNeighbors = g.V flatMap { v =>
+      minimalHammingNeighbors(Set(v), V, MAX_HAMMING_DISTANCE)
+    }
+
+    var newGraph = g
+    for ((source, target) <- minimalNeighbors) {
       newGraph = newGraph.addEdge(source, target)
     }
     newGraph
