@@ -107,15 +107,19 @@ class InputTransformer(
     val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
       opts.uncertaintyThreshold)
 
-    val expandedBoolExp = StateGraphs.expandWithBooleanCombinations(
-      threeValExp)
+    if (opts.plotThreeValuedClusterData) {
+      new HistogramPlotter().plotLabeledHistograms(avgExp, threeValExp,
+        reporter.file("three-valued-cluster-data"))
+    }
+
+    val boolExp = StateGraphs.removeStatesWithUncertainValues(threeValExp)
 
     if (opts.plotBinarizedClusterData) {
-      new HistogramPlotter().plotLabeledHistograms(avgExp, expandedBoolExp,
+      new HistogramPlotter().plotLabeledHistograms(avgExp, boolExp,
         reporter.file("binarized-cluster-data"))
     }
 
-    val graphBuilder = new IncrementalStateGraphBuilder(expandedBoolExp,
+    val graphBuilder = new IncrementalStateGraphBuilder(boolExp,
       clustering, trajectories)
 
     val g = graphBuilder.buildGraph

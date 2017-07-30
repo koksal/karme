@@ -32,6 +32,7 @@ case class InputTransformerOpts(
   plotBinarizedGeneCurves: Boolean = false,
   plotSmoothedGeneCurves: Boolean = false,
   plotClusterCurves: Boolean = false,
+  plotThreeValuedClusterData: Boolean = false,
   plotBinarizedClusterData: Boolean = false
 )
 
