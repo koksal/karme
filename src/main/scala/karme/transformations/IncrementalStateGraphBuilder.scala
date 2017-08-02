@@ -15,7 +15,8 @@ import karme.visualization.StateGraphPlotter
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],
   clustering: Map[String, Set[String]],
-  trajectories: Seq[CellTrajectory]
+  trajectories: Seq[CellTrajectory],
+  distributionComparisonTest: DistributionComparisonTest
 ) {
 
   val MAX_HAMMING_DISTANCE = 3
@@ -23,7 +24,7 @@ class IncrementalStateGraphBuilder(
   val V = StateGraphs.nodesFromExperiment(exp)
 
   val nodePartialOrdering = new NodePartialOrderByPseudotimeRankSum(V.toSeq,
-    trajectories).partialOrdering
+    trajectories, distributionComparisonTest).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
     val connectedGraph = buildGraphFromEarliestNodes

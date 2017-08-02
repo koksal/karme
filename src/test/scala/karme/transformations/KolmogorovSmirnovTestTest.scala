@@ -13,8 +13,8 @@ class KolmogorovSmirnovTestTest extends FunSuite {
 
     val ksTest = new KolmogorovSmirnovTest
 
-    val testXsGreater = ksTest.getPValue(xs, ys)
-    val testYsGreater = ksTest.getPValue(ys, xs)
+    val testXsGreater = ksTest.testPValue(xs, ys)
+    val testYsGreater = ksTest.testPValue(ys, xs)
 
     assert(equality.areEqual(1, testXsGreater))
     assert(testYsGreater < 0.01)

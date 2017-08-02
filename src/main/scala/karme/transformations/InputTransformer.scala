@@ -120,7 +120,8 @@ class InputTransformer(
     }
 
     val graphBuilder = new IncrementalStateGraphBuilder(boolExp,
-      clustering, trajectories)
+      clustering, trajectories,
+      DistributionComparisonTest.fromOptions(opts.distributionComparisonMethod))
 
     val g = graphBuilder.buildGraph
 

@@ -2,9 +2,10 @@ package karme.transformations
 
 import karme.external.AbstractRInterface
 
-class KolmogorovSmirnovTest extends AbstractRInterface {
+class KolmogorovSmirnovTest extends AbstractRInterface
+  with DistributionComparisonTest {
 
-  def getPValue(greaterSeq: Seq[Double], lessSeq: Seq[Double]): Double = {
+  def testPValue(greaterSeq: Seq[Double], lessSeq: Seq[Double]): Double = {
     R.set("xs", greaterSeq.toArray)
     R.set("ys", lessSeq.toArray)
 

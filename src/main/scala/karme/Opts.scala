@@ -24,6 +24,7 @@ case class InputTransformerOpts(
   smoothingRadius: Int = 20,
   maxHammingDistance: Int = 1,
   clusteringOpts: ClusteringOpts = ClusteringOpts(),
+  distributionComparisonMethod: String = "ranksum",
   refineClusters: Boolean = false,
   clusterRefinementPValue: Double = 0.05,
   plotOriginalData: Boolean = false,

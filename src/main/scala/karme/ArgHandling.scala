@@ -149,6 +149,11 @@ object ArgHandling {
             o.inputTransformerOpts.clusteringOpts.copy(clusteringDistance = s)))
       } text "clustering distance measure"
 
+      opt[String]("distribution-comparison") action { (s, o) =>
+        o.copy(inputTransformerOpts = o.inputTransformerOpts.copy(
+          distributionComparisonMethod = s))
+      } text "Distribution comparison method: ks or ranksum"
+
       opt[Unit]("refine-clusters") action { (_, o) =>
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(refineClusters = true))

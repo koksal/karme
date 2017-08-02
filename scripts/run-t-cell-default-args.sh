@@ -24,10 +24,10 @@ do
         for CLUST_DISTANCE in "euclidean"
         do
 
-          for k in {5..15}
+          for k in {6..10}
           do
 
-            for UNCERTAINTY in 0.05 0.2 1
+            for UNCERTAINTY in 0.05 0.2
             do
               OUTFOLDER=$OUTFOLDER_BASE-$TRAJECTORY-diff-ratio-$DIFF_RATIO-radius-$RADIUS-clustering-$CLUST_METHOD-$CLUST_DISTANCE-$k-uncertainty-$UNCERTAINTY
 
@@ -41,6 +41,7 @@ do
                 --min-clusters $k \
                 --max-clusters $k \
                 --uncertainty-threshold $UNCERTAINTY \
+                --distribution-comparison ranksum \
                 --plot-three-valued-cluster-data
             done
           done

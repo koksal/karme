@@ -106,8 +106,8 @@ class HierarchicalSwitchAnalysis(
   def isUpregulation(
     leftVs: Seq[Double], rightVs: Seq[Double]
   ): Option[Boolean] = {
-    val decreases = ksTest.getPValue(leftVs, rightVs) < P_VALUE_THRESHOLD
-    val increases = ksTest.getPValue(rightVs, leftVs) < P_VALUE_THRESHOLD
+    val decreases = ksTest.testPValue(leftVs, rightVs) < P_VALUE_THRESHOLD
+    val increases = ksTest.testPValue(rightVs, leftVs) < P_VALUE_THRESHOLD
 
     assert(!(decreases && increases))
 

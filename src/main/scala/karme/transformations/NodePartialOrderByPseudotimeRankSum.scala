@@ -7,12 +7,11 @@ import karme.util.TimingUtil
 
 class NodePartialOrderByPseudotimeRankSum(
   V: Seq[StateGraphVertex],
-  trajectories: Seq[CellTrajectory]
+  trajectories: Seq[CellTrajectory],
+  distributionComparisonTest: DistributionComparisonTest
 ) {
 
   val P_VALUE_THRESHOLD = 0.05
-
-  val rankSum = new RankSumTest
 
   private var pValueCache:
     Map[(CellTrajectory, String, String), Option[Double]] = Map.empty
@@ -86,8 +85,9 @@ class NodePartialOrderByPseudotimeRankSum(
     if (leftPseudotimes.isEmpty || rightPseudotimes.isEmpty) {
       None
     } else {
-      val res = rankSum.test(leftPseudotimes, rightPseudotimes)
-      Some(res.pValue)
+      val pValue = distributionComparisonTest.testPValue(leftPseudotimes,
+        rightPseudotimes)
+      Some(pValue)
     }
   }
 
