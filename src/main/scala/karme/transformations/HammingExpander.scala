@@ -6,8 +6,6 @@ class HammingExpander {
 
   def expandToOneHamming(
     g: DirectedBooleanStateGraph
-  ): DirectedBooleanStateGraph = {
-
-  }
+  ): DirectedBooleanStateGraph = ???
 
 }
