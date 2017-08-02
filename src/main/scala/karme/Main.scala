@@ -59,12 +59,13 @@ object Main {
     val results = synthesizer.synthesizeForPositiveHardConstraints(
       directedStateGraph)
 
-    val toEvaluate = results map {
+    val functionsToEvaluate = results map {
       case (name, results) => name -> results.head.functions.head
     }
-    val perturbationAnalysis = new PerturbationAnalysis(toEvaluate,
-      directedStateGraph, clustering, Set())(reporter)
-    perturbationAnalysis.findGeneDrivers(sources.map(_.state))
+    val initialStates = sources.map(_.state)
+    val perturbationAnalysis = new PerturbationAnalysis(functionsToEvaluate,
+      directedStateGraph, initialStates, clustering, Set())(reporter)
+    perturbationAnalysis.findGeneDrivers()
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 

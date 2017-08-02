@@ -5,37 +5,35 @@ import karme.Reporter
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
+import karme.synthesis.FunctionTrees.FunVar
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.visualization.StateGraphPlotter
 
 /**
-  * Perturbs initial states and assesses reachability of genes of interest.
+  * Perturbs initial states and functions, and assesses reachability of genes
+  * of interest.
   */
 class PerturbationAnalysis(
-  labelToFunction: Map[String, FunExpr],
+  labelToOriginalFunction: Map[String, FunExpr],
   graph: DirectedBooleanStateGraph,
+  initialStates: Set[ConcreteBooleanState],
   clustering: Clustering,
   namesToObserve: Set[String]
 )(implicit reporter: Reporter) {
 
   private val stateGraphPlotter = new StateGraphPlotter(reporter)
 
-  def findGeneDrivers(
-    initialStates: Set[ConcreteBooleanState]
-  ) = {
-    val originalRatios = computeExpressedStateRatios(initialStates,
-      "simulation-original")
+  def findGeneDrivers() = {
+    val originalRatios = computeExpressedStateRatios(labelToOriginalFunction,
+      initialStates, "simulation-original")
 
     for {
-      (perturbedName, perturbedStateSets) <- perturbStates(initialStates)
-      perturbedStates <- perturbedStateSets
+      nameToPerturb <- initialStates.head.orderedKeys
+      value <- List(true, false)
     } {
-      val perturbedValue = perturbedStates.head.value(perturbedName)
-      println(s"Perturbing $perturbedName.")
-      println(s"Perturbed value: $perturbedValue")
+      println(s"Fixing $nameToPerturb to $value")
+      val perturbedRatios = getRatiosForPerturbedName(nameToPerturb, value)
 
-      val perturbedRatios = computeExpressedStateRatios(perturbedStates,
-        s"simulation-$perturbedName-$perturbedValue")
       val ratioDifferences = computeRatioDifferences(originalRatios,
         perturbedRatios)
 
@@ -43,6 +41,36 @@ class PerturbationAnalysis(
         println(s"Expression ratio difference for $observedName: $diff")
       }
     }
+  }
+
+  def getRatiosForPerturbedName(
+    name: String,
+    value: Boolean
+  ) = {
+    val overriddenStates = overrideStatesWithInitialValue(initialStates,
+      name, value)
+
+    val overriddenFunctions = overrideWithIdentityFunction(
+      labelToOriginalFunction, name)
+
+    computeExpressedStateRatios(overriddenFunctions, overriddenStates,
+      s"simulation-$name-$value")
+  }
+
+  def overrideWithIdentityFunction(
+    labelToFunction: Map[String, FunExpr],
+    nameToOverride: String
+  ): Map[String, FunExpr] = {
+    val identityFunction = FunVar(nameToOverride)
+    labelToFunction.updated(nameToOverride, identityFunction)
+  }
+
+  def overrideStatesWithInitialValue(
+    states: Set[ConcreteBooleanState],
+    name: String,
+    value: Boolean
+  ): Set[ConcreteBooleanState] = {
+    states map (s => s.replaceValue(name, value))
   }
 
   def computeRatioDifferences(
@@ -57,10 +85,11 @@ class PerturbationAnalysis(
   }
 
   def computeExpressedStateRatios(
+    labelToFunction: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState],
     plotLabel: String
   ): Map[String, Double] = {
-    val reachedStates = AsyncBooleanNetworkSimulation.simulate(labelToFunction,
+    val reachedStates = AsyncBooleanNetworkSimulation.simulate(labelToOriginalFunction,
       initialStates)
 
     stateGraphPlotter.plotDirectedGraph(graph, plotLabel,
@@ -75,27 +104,6 @@ class PerturbationAnalysis(
     }
 
     nameToRatio.toMap
-  }
-
-  def perturbStates(
-    states: Set[ConcreteBooleanState]
-  ): Map[String, Set[Set[ConcreteBooleanState]]] = {
-    val namesToPerturb = states.head.orderedKeys
-    val nameToStates = for (name <- namesToPerturb) yield {
-      val initialValuesForName = states.map(s => s.value(name))
-      val complementValuesForName = complementValues(initialValuesForName)
-
-      val perturbedStates = for (complement <- complementValuesForName) yield {
-        states.map(_.replaceValue(name, complement))
-      }
-
-      name -> perturbedStates
-    }
-    nameToStates.toMap
-  }
-
-  def complementValues(vs: Set[Boolean]): Set[Boolean] = {
-    vs.map(v => !v)
   }
 
 }
