@@ -3,18 +3,22 @@ package karme
 import karme.parsing.ClusteringParser
 import karme.parsing.NamesParser
 
+case class AnnotationSet(id: String, names: Set[String])
+
 case class AnnotationContext(
-  annotationVariables: Set[String],
+  annotationSets: Seq[AnnotationSet],
   cellClustering: Map[String, Set[String]]
 )
 
 object AnnotationContext {
   def fromOptions(annotationOpts: AnnotationOpts): AnnotationContext = {
-    val annotVars = new NamesParser(
-      annotationOpts.annotationsFiles).names.getOrElse(Set.empty)
+    val annotSets = annotationOpts.annotationsFiles map { f =>
+      val names = new NamesParser(List(f)).names.getOrElse(Set.empty)
+      AnnotationSet(f.getName, names)
+    }
 
     AnnotationContext(
-      annotationVariables = annotVars,
+      annotationSets = annotSets,
       cellClustering = getClustering(annotationOpts)
     )
   }

@@ -39,7 +39,8 @@ object Main {
     if (opts.runPrecedence) {
       val edgePrecedences = new EdgePrecedenceProducer(graph,
         perEdgeClustering).computePrecedence
-      new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(edgePrecedences)
+      new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(
+        edgePrecedences)
     }
 
     if (opts.runSynthesis) {
