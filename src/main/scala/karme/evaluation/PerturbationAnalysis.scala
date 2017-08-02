@@ -89,11 +89,11 @@ class PerturbationAnalysis(
     initialStates: Set[ConcreteBooleanState],
     plotLabel: String
   ): Map[String, Double] = {
-    val reachedStates = AsyncBooleanNetworkSimulation.simulate(labelToOriginalFunction,
+    val reachedStates = AsyncBooleanNetworkSimulation.simulate(labelToFunction,
       initialStates)
 
     stateGraphPlotter.plotDirectedGraph(graph, plotLabel,
-      nodeHighlightGroups = List(reachedStates))
+      nodeHighlightGroups = List(initialStates, reachedStates))
 
     val nameToRatio = for (name <- initialStates.head.orderedKeys) yield {
       val nbExpressed = reachedStates.count(s => s.value(name))
