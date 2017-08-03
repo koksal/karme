@@ -17,7 +17,7 @@ object MathUtil {
     vs.sum / vs.size
   }
 
-  def roundTo(n: Double, digits: Int): Double = {
+  def roundTo(digits: Int)(n: Double): Double = {
     (n * (Math.pow(10.0, digits))).toInt / Math.pow(10.0, digits)
   }
 

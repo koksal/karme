@@ -7,6 +7,7 @@ import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.FunctionTrees.FunVar
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.MathUtil
 import karme.visualization.StateGraphPlotter
 
 /**
@@ -22,12 +23,16 @@ class PerturbationAnalysis(
   expectedDrivers: Set[String]
 )(implicit reporter: Reporter) {
 
-  case class Perturbation(name: String, value: Boolean)
+  case class Perturbation(name: String, value: Boolean) {
+    override def toString: String = s"Perturbation: $name = $value"
+  }
   case class PerturbationEffect(
     perturbation: Perturbation,
     target: String,
     expressedStateRatioDiff: Double
   )
+
+  val roundToTwo = MathUtil.roundTo(2) _
 
   private val stateGraphPlotter = new StateGraphPlotter(reporter)
 
@@ -41,17 +46,18 @@ class PerturbationAnalysis(
   }
 
   def analyzeEffects(effects: Seq[PerturbationEffect]) = {
-    val targetClusterRatios = geneRatiosInClusters(targetsOfInterest)
-    val expectedDriverClusterRatios = geneRatiosInClusters(expectedDrivers)
-
-    println(s"Expected driver cluster ratios: $expectedDriverClusterRatios")
+    val targetClusterRatios = normalizedGeneRatiosInClusters(targetsOfInterest)
+    val expectedDriverClusterRatios = normalizedGeneRatiosInClusters(
+      expectedDrivers)
 
     val reverseOrderedTargetClusterRatios = targetClusterRatios.toList.sortBy{
       case (c, r) => - r
     }
 
     for ((cluster, targetRatio) <- reverseOrderedTargetClusterRatios) {
-      println(s"Ratio of targets in $cluster: $targetRatio")
+      println(
+        s"${ratioToPercentage(targetRatio)} of target genes are in $cluster:")
+      println(genesInCluster(targetsOfInterest, cluster).mkString(", "))
 
       val targetEffects = effects.filter(e => e.target == cluster)
       val targetEffectsByDescRatio = targetEffects.sortBy(
@@ -59,23 +65,41 @@ class PerturbationAnalysis(
 
       for (effect <- targetEffectsByDescRatio
            if effect.perturbation.name != cluster) {
-        println(s"Effect of ${effect.perturbation}: " +
-          s"${effect.expressedStateRatioDiff}")
+        println(
+          s"${effect.perturbation} leads to " +
+            s"${ratioToPercentage(effect.expressedStateRatioDiff)} change in " +
+            s"ratio of reachable cells in which $cluster is expressed")
 
-        println(s"Expected driver gene ratio in ${effect.perturbation.name}: " +
-          s"${expectedDriverClusterRatios.get(effect.perturbation.name)}")
+        val expectedGeneRatioInEffectSourceCluster =
+          expectedDriverClusterRatios.getOrElse(effect.perturbation.name, 0.0)
+        println(
+          s"${ratioToPercentage(expectedGeneRatioInEffectSourceCluster)} " +
+          s"of expected driver genes are in ${effect.perturbation.name}:")
+        println(genesInCluster(expectedDrivers, effect.perturbation.name)
+          .mkString(", "))
+        println()
+      }
+      println()
+    }
+  }
+
+  def normalizedGeneRatiosInClusters(
+    genes: Set[String]
+  ): Map[String, Double] = {
+    val clustOptToGenes = genes.groupBy(g => clustering.memberToCluster.get(g))
+    val genesInClustering = clustering.allMembers.intersect(genes)
+    clustOptToGenes.collect{
+      case (Some(clusterName), genesInCluster) => {
+        val geneRatioInCluster =
+          genesInCluster.size.toDouble / genesInClustering.size
+        (clusterName, geneRatioInCluster)
       }
     }
   }
 
-  def geneRatiosInClusters(genes: Set[String]): Map[String, Double] = {
-    val clustOptToGenes = genes.groupBy(g => clustering.memberToCluster.get(g))
-    clustOptToGenes.collect{
-      case (Some(clusterName), genesInCluster) => {
-        val geneRatioInCluster = genesInCluster.size.toDouble / genes.size
-        (clusterName, geneRatioInCluster)
-      }
-    }
+  def genesInCluster(genes: Set[String], cluster: String): Set[String] = {
+    val clustMembers = clustering.clusterToMember(cluster)
+    clustMembers intersect genes
   }
 
   def getPerturbationEffects(
@@ -84,7 +108,6 @@ class PerturbationAnalysis(
     val effectSets = for {
       perturbation <- allPerturbations
     } yield {
-      println(s"Fixing ${perturbation.name} to ${perturbation.value}")
       val perturbedRatios = getRatiosForPerturbation(perturbation)
 
       val ratioDifferences = computeRatioDifferences(originalRatios,
@@ -170,4 +193,7 @@ class PerturbationAnalysis(
     nameToRatio.toMap
   }
 
+  def ratioToPercentage(r: Double): String = {
+    s"${roundToTwo(r) * 100}%"
+  }
 }

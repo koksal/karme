@@ -58,7 +58,7 @@ class DifferentialGeneFiltering(minRatio: Double)(implicit reporter: Reporter) {
     val sb = new StringBuilder()
 
     for ((name, ratio) <- highValueRatios.sortBy(_._2).reverse) {
-      sb append (s"$name: ${MathUtil.roundTo(ratio, 4)}\n")
+      sb append (s"$name: ${MathUtil.roundTo(4)(ratio)}\n")
     }
 
     FileUtil.writeToFile(f, sb.toString())

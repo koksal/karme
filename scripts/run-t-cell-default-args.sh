@@ -40,6 +40,8 @@ do
                 --clustering-index kl \
                 --min-clusters $k \
                 --max-clusters $k \
+                --refine-clusters \
+                --cluster-refinement-p-value 0.05 \
                 --uncertainty-threshold $UNCERTAINTY \
                 --distribution-comparison ranksum \
                 --plot-three-valued-cluster-data \
