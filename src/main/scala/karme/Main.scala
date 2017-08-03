@@ -5,6 +5,7 @@ import karme.evaluation.FunctionIOPairs
 import karme.evaluation.PerturbationAnalysis
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
+import karme.parsing.NamesParser
 import karme.printing.IOPairLogger
 import karme.printing.SynthesisResultLogger
 import karme.store.ClusteringStore
@@ -64,8 +65,18 @@ object Main {
       case (name, results) => name -> results.head.functions.head
     }
     val initialStates = sources.map(_.state)
-    val perturbationAnalysis = new PerturbationAnalysis(functionsToEvaluate,
-      directedStateGraph, initialStates, clustering, Set())(reporter)
+    val targets = NamesParser.parseNames(
+      opts.evalOpts.perturbationTargetsFile.get)
+    val expectedDrivers = NamesParser.parseNames(
+      opts.evalOpts.expectedDriversFile.get)
+    val perturbationAnalysis = new PerturbationAnalysis(
+      functionsToEvaluate,
+      directedStateGraph,
+      initialStates,
+      clustering,
+      targets,
+      Set.empty
+    )
     perturbationAnalysis.findGeneDrivers()
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))

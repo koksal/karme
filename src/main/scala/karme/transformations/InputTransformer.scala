@@ -35,7 +35,7 @@ class InputTransformer(
   }
 
   val geneNamesToFilter: Option[Set[String]] = {
-    new NamesParser(opts.inputFileOpts.namesFiles).names
+    NamesParser.parseNameUnion(opts.inputFileOpts.namesFiles)
   }
 
   lazy val inputExperiment: Experiment[Double] = {

@@ -68,6 +68,8 @@ case object FunIOPairsPrediction extends PredictionType
 case object PrecedencePairsPrediction extends PredictionType
 
 case class EvalOpts(
+  perturbationTargetsFile: Option[File] = None,
+  expectedDriversFile: Option[File] = None,
   referenceFiles: Seq[File] = Seq(),
   predictionPairsFile: Option[File] = None,
   runCollectionFolder: Option[File] = None,

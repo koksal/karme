@@ -18,8 +18,16 @@ class PerturbationAnalysis(
   graph: DirectedBooleanStateGraph,
   initialStates: Set[ConcreteBooleanState],
   clustering: Clustering,
-  namesToObserve: Set[String]
+  targetsOfInterest: Set[String],
+  expectedDrivers: Set[String]
 )(implicit reporter: Reporter) {
+
+  case class Perturbation(name: String, value: Boolean)
+  case class PerturbationEffect(
+    perturbation: Perturbation,
+    target: String,
+    expressedStateRatioDiff: Double
+  )
 
   private val stateGraphPlotter = new StateGraphPlotter(reporter)
 
@@ -27,34 +35,58 @@ class PerturbationAnalysis(
     val originalRatios = computeExpressedStateRatios(labelToOriginalFunction,
       initialStates, "simulation-original")
 
-    for {
-      nameToPerturb <- initialStates.head.orderedKeys
-      value <- List(true, false)
-    } {
-      println(s"Fixing $nameToPerturb to $value")
-      val perturbedRatios = getRatiosForPerturbedName(nameToPerturb, value)
+    val effects = getPerturbationEffects(originalRatios)
+
+    analyzeEffects(effects)
+  }
+
+  def analyzeEffects(effects: Seq[PerturbationEffect]) = {
+    // what are the clusters with most target genes?
+    // what other clusters affect them most?
+    // what is the ratio of expected drivers in those other clusters?
+  }
+
+  def getPerturbationEffects(
+    originalRatios: Map[String, Double]
+  ): Seq[PerturbationEffect] = {
+    val effectSets = for {
+      perturbation <- allPerturbations
+    } yield {
+      println(s"Fixing ${perturbation.name} to ${perturbation.value}")
+      val perturbedRatios = getRatiosForPerturbation(perturbation)
 
       val ratioDifferences = computeRatioDifferences(originalRatios,
         perturbedRatios)
 
-      for ((observedName, diff) <- ratioDifferences.toList.sortBy(- _._2)) {
-        println(s"Expression ratio difference for $observedName: $diff")
+      for ((observedName, diff) <- ratioDifferences) yield {
+        PerturbationEffect(perturbation, observedName, diff)
       }
+    }
+    effectSets.flatten
+  }
+
+  def allPerturbations: Seq[Perturbation] = {
+    val allNames = initialStates.head.orderedKeys
+
+    for {
+      name <- allNames
+      truthValue <- List(true, false)
+    } yield {
+      Perturbation(name, truthValue)
     }
   }
 
-  def getRatiosForPerturbedName(
-    name: String,
-    value: Boolean
-  ) = {
+  def getRatiosForPerturbation(
+    perturbation: Perturbation
+  ): Map[String, Double] = {
     val overriddenStates = overrideStatesWithInitialValue(initialStates,
-      name, value)
+      perturbation.name, perturbation.value)
 
     val overriddenFunctions = overrideWithIdentityFunction(
-      labelToOriginalFunction, name)
+      labelToOriginalFunction, perturbation.name)
 
     computeExpressedStateRatios(overriddenFunctions, overriddenStates,
-      s"simulation-$name-$value")
+      s"simulation-${perturbation.name}-${perturbation.value}")
   }
 
   def overrideWithIdentityFunction(

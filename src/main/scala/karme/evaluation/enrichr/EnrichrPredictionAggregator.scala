@@ -9,8 +9,7 @@ object EnrichrPredictionAggregator {
 
   def main(args: Array[String]): Unit = {
     // first argument: list of TFs
-    val names = new NamesParser(List(new File(args(0)))).names.getOrElse(
-      sys.error("Empty list of TFs"))
+    val names = NamesParser.parseNames(new File(args(0)))
 
     val canonicalNames = names map NamingUtil.canonicalize
 

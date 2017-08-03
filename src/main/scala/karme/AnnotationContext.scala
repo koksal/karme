@@ -13,7 +13,7 @@ case class AnnotationContext(
 object AnnotationContext {
   def fromOptions(annotationOpts: AnnotationOpts): AnnotationContext = {
     val annotSets = annotationOpts.annotationsFiles map { f =>
-      val names = new NamesParser(List(f)).names.getOrElse(Set.empty)
+      val names = NamesParser.parseNames(f)
       AnnotationSet(f.getName, names)
     }
 
