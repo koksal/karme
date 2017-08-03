@@ -41,9 +41,41 @@ class PerturbationAnalysis(
   }
 
   def analyzeEffects(effects: Seq[PerturbationEffect]) = {
-    // what are the clusters with most target genes?
-    // what other clusters affect them most?
-    // what is the ratio of expected drivers in those other clusters?
+    val targetClusterRatios = geneRatiosInClusters(targetsOfInterest)
+    val expectedDriverClusterRatios = geneRatiosInClusters(expectedDrivers)
+
+    println(s"Expected driver cluster ratios: $expectedDriverClusterRatios")
+
+    val reverseOrderedTargetClusterRatios = targetClusterRatios.toList.sortBy{
+      case (c, r) => - r
+    }
+
+    for ((cluster, targetRatio) <- reverseOrderedTargetClusterRatios) {
+      println(s"Ratio of targets in $cluster: $targetRatio")
+
+      val targetEffects = effects.filter(e => e.target == cluster)
+      val targetEffectsByDescRatio = targetEffects.sortBy(
+        e => - e .expressedStateRatioDiff)
+
+      for (effect <- targetEffectsByDescRatio
+           if effect.perturbation.name != cluster) {
+        println(s"Effect of ${effect.perturbation}: " +
+          s"${effect.expressedStateRatioDiff}")
+
+        println(s"Expected driver gene ratio in ${effect.perturbation.name}: " +
+          s"${expectedDriverClusterRatios.get(effect.perturbation.name)}")
+      }
+    }
+  }
+
+  def geneRatiosInClusters(genes: Set[String]): Map[String, Double] = {
+    val clustOptToGenes = genes.groupBy(g => clustering.memberToCluster.get(g))
+    clustOptToGenes.collect{
+      case (Some(clusterName), genesInCluster) => {
+        val geneRatioInCluster = genesInCluster.size.toDouble / genes.size
+        (clusterName, geneRatioInCluster)
+      }
+    }
   }
 
   def getPerturbationEffects(

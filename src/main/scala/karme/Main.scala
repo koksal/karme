@@ -75,7 +75,7 @@ object Main {
       initialStates,
       clustering,
       targets,
-      Set.empty
+      expectedDrivers
     )(reporter)
     perturbationAnalysis.findGeneDrivers()
 

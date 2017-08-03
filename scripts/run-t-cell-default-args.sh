@@ -44,7 +44,9 @@ do
                 --distribution-comparison ranksum \
                 --plot-three-valued-cluster-data \
                 --synthesis \
-                --max-expr-depth 1
+                --max-expr-depth 1 \
+                --perturbation-targets data/th17/names/pathogenicity-related/col-down.txt \
+                --expected-drivers data/th17/names/potential-regulators.txt
             done
           done
         done

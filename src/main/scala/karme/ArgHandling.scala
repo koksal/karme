@@ -218,6 +218,14 @@ object ArgHandling {
 
       // Evaluation options:
 
+      opt[File]("perturbation-targets") action { (f, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(perturbationTargetsFile = Some(f)))
+      } text "List of target genes to observe in perturbation analysis."
+
+      opt[File]("expected-drivers") action { (f, o) =>
+        o.copy(evalOpts = o.evalOpts.copy(expectedDriversFile = Some(f)))
+      } text "List of genes expected to affect perturbation targets."
+
       opt[Seq[File]]("evaluation-libraries") action { (fs, o) =>
         o.copy(evalOpts = o.evalOpts.copy(referenceFiles = fs))
       } text "Prediction libraries to evaluate against"
