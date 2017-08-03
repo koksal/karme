@@ -76,7 +76,7 @@ object Main {
       clustering,
       targets,
       Set.empty
-    )
+    )(reporter)
     perturbationAnalysis.findGeneDrivers()
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
