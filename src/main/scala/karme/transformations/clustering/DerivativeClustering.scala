@@ -11,11 +11,10 @@ class DerivativeClustering(geneClustering: GeneClustering) {
   def clusterGenes(
     geneToDerivatives: Map[String, Seq[ExpressionDerivative]]
   ): Clustering = {
-    val clusterToMembers = geneClustering.computeBestClustering(
+    geneClustering.computeBestClustering(
       sortedGenes(geneToDerivatives),
       valueMatrix(geneToDerivatives)
     )
-    Clustering(clusterToMembers)
   }
 
   private def sortedGenes(

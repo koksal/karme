@@ -11,12 +11,14 @@ import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
+import karme.transformations.clustering.DerivativeClustering
 import karme.transformations.clustering.GeneClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
 import karme.visualization.HistogramPlotter
+import karme.visualization.StateGraphPlotter
 
 case class TransformResult(
   graph: DirectedBooleanStateGraph,
@@ -54,33 +56,68 @@ class InputTransformer(
         trajectories, reporter.file("smoothed-curves"))
     }
 
-    val nonRefinedClustering = clusteringModule.computeBestClustering(
-      smoothedExp)
+    // compute seed graph and clustering
+    var clustering = clusteringModule.computeBestClustering(smoothedExp)
+    var (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
+      clustering)
 
-    val (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
-      nonRefinedClustering)
-
-    val clusteringRefiner = new ClusteringRefiner(graph, smoothedExp,
-      Clustering(nonRefinedClustering), opts.clusterRefinementPValue)
-
-    val (geneClustering, edgeToRefinedClustering) = if (opts.refineClusters) {
-      val edgeToRefinedClustering = clusteringRefiner.refineClusteringPerEdge()
-
-      val geneClustering = Clustering.combineByIntersection(
-        edgeToRefinedClustering.values.toSeq)
-      (geneClustering, edgeToRefinedClustering)
-    } else {
-      val geneClustering = Clustering(nonRefinedClustering)
-      val emptyRefinement = Map[UnlabeledEdge[StateGraphVertex], Clustering]()
-      (geneClustering, emptyRefinement)
+    if (opts.clusteringOpts.refineClusters) {
+      val (newGraph, newSources, newClustering) = refineGraphIteratively(graph,
+        sources, clustering, smoothedExp)
+      graph = newGraph
+      sources = newSources
+      clustering = newClustering
     }
 
     if (opts.plotClusterCurves) {
       new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
-        nonRefinedClustering, "smoothed-experiment")
+        clustering.clusterToMembers, "smoothed-experiment")
     }
 
-    TransformResult(graph, sources, geneClustering, edgeToRefinedClustering)
+    val emptyRefinement = Map[UnlabeledEdge[StateGraphVertex], Clustering]()
+    TransformResult(graph, sources, clustering, emptyRefinement)
+  }
+
+  def refineGraphIteratively(
+    initialClusteredGraph: DirectedBooleanStateGraph,
+    initialSources: Set[StateGraphVertex],
+    initialClustering: Clustering,
+    geneLevelExp: Experiment[Double]
+  ) = {
+    var clusteredGraph = initialClusteredGraph
+    var sources = initialSources
+    var clustering = initialClustering
+    var prevClustering = clustering
+
+    var i = 0
+    do {
+      i += 1
+
+      prevClustering = clustering
+
+      val derivatives = new ClusteringRefiner(
+        clusteredGraph, geneLevelExp, clustering,
+        opts.clusteringOpts.clusterRefinementPValue).deriveGenesOnEdges()
+
+      clustering = new DerivativeClustering(clusteringModule).clusterGenes(
+        derivatives)
+
+      val (newGraph, newSources) =
+        graphAndSourcesFromClusterAverages(geneLevelExp, clustering)
+      clusteredGraph = newGraph
+      sources = newSources
+
+      new CurvePlot().plotClusterCurves(geneLevelExp, trajectories,
+        clustering.clusterToMembers, s"iterative-clustering-$i")
+      new StateGraphPlotter(reporter).plotDirectedGraph(
+        clusteredGraph,
+        s"state-graph-$i",
+        cellClustering = annotationContext.cellClustering,
+        nodeHighlightGroups = List(sources.map(_.state))
+      )
+    } while (prevClustering != clustering)
+
+    (clusteredGraph, sources, clustering)
   }
 
   def buildDirectedStateGraphsForAllClusterings():
@@ -92,17 +129,17 @@ class InputTransformer(
       opts.clusteringOpts.minNbClusters - 1)
 
     clusterings map { clustering =>
-      (clustering,
-        graphAndSourcesFromClusterAverages(smoothedExperiment, clustering)._1)
+      (clustering, graphAndSourcesFromClusterAverages(
+        smoothedExperiment, Clustering(clustering))._1)
     }
   }
 
   private def graphAndSourcesFromClusterAverages(
     nonClusteredExperiment: Experiment[Double],
-    clustering: Map[String, Set[String]]
+    clustering: Clustering
   ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
     val avgExp = clusteringModule.experimentFromClusterAverages(
-      nonClusteredExperiment, clustering)
+      nonClusteredExperiment, clustering.clusterToMembers)
 
     val threeValExp = Experiments.continuousExperimentToThreeValued(avgExp,
       opts.uncertaintyThreshold)
@@ -120,7 +157,7 @@ class InputTransformer(
     }
 
     val graphBuilder = new IncrementalStateGraphBuilder(boolExp,
-      clustering, trajectories,
+      clustering.clusterToMembers, trajectories,
       DistributionComparisonTest.fromOptions(opts.distributionComparisonMethod))
 
     val g = graphBuilder.buildGraph

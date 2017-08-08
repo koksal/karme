@@ -156,12 +156,15 @@ object ArgHandling {
 
       opt[Unit]("refine-clusters") action { (_, o) =>
         o.copy(inputTransformerOpts =
-          o.inputTransformerOpts.copy(refineClusters = true))
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(refineClusters = true)))
       } text "refine clusters using rank-sum method for each edge"
 
       opt[Double]("cluster-refinement-p-value") action { (d, o) =>
         o.copy(inputTransformerOpts =
-          o.inputTransformerOpts.copy(clusterRefinementPValue = d))
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(
+              clusterRefinementPValue = d)))
       } text "p-value threshold for edge-level clustering refinement"
 
       opt[Unit]("plot-original-data") action { (_, o) =>

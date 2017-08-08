@@ -25,8 +25,6 @@ case class InputTransformerOpts(
   maxHammingDistance: Int = 1,
   clusteringOpts: ClusteringOpts = ClusteringOpts(),
   distributionComparisonMethod: String = "ranksum",
-  refineClusters: Boolean = false,
-  clusterRefinementPValue: Double = 0.05,
   plotOriginalData: Boolean = false,
   plotTransformedData: Boolean = false,
   plotBinarizedData: Boolean = false,
@@ -50,7 +48,9 @@ case class ClusteringOpts(
   maxNbClusters: Int = 30,
   clusteringIndex: String = "gap",
   clusteringMethod: String = "ward.D2",
-  clusteringDistance: String = "euclidean"
+  clusteringDistance: String = "euclidean",
+  refineClusters: Boolean = false,
+  clusterRefinementPValue: Double = 0.05
 )
 
 case class AnnotationOpts(

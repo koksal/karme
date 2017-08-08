@@ -1,5 +1,6 @@
 package karme.transformations.clustering
 
+import karme.Clustering
 import karme.ClusteringOpts
 import karme.Experiments.Experiment
 import karme.Experiments.Measurement
@@ -21,7 +22,7 @@ class GeneClustering(opts: ClusteringOpts) {
 
   def computeBestClustering(
     exp: Experiment[Double]
-  ): Map[String, Set[String]] = {
+  ): Clustering = {
     val adjustedMaxNbClust = math.min(exp.names.size - 1, opts.maxNbClusters)
     val adjustedMinNbClust = math.min(opts.minNbClusters, adjustedMaxNbClust)
 
@@ -37,7 +38,7 @@ class GeneClustering(opts: ClusteringOpts) {
   def computeBestClustering(
     geneNames: Seq[String],
     valueMatrix: Seq[Seq[Double]]
-  ): Map[String, Set[String]] = {
+  ): Clustering = {
     computeBestClustering(geneNames, valueMatrix, opts.minNbClusters,
       opts.maxNbClusters)
   }
@@ -47,7 +48,7 @@ class GeneClustering(opts: ClusteringOpts) {
     valueMatrix: Seq[Seq[Double]],
     minK: Int,
     maxK: Int
-  ): Map[String, Set[String]] = {
+  ): Clustering = {
     val clusterIndices = new NbClustInterface().cluster(valueMatrix,
       minK, maxK,
       distance = opts.clusteringDistance,
@@ -59,8 +60,7 @@ class GeneClustering(opts: ClusteringOpts) {
     val bestK = clusterIndices.toSet.size
     println(s"Best k: $bestK")
 
-    makeClusterToNamesMap(clustering)
-
+    Clustering(makeClusterToNamesMap(clustering))
   }
 
   private def makeClusterToNamesMap(
