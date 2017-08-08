@@ -6,6 +6,10 @@ import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.transformations.ExpressionDerivation.Downregulated
+import karme.transformations.ExpressionDerivation.ExpressionDerivative
+import karme.transformations.ExpressionDerivation.Unchanged
+import karme.transformations.ExpressionDerivation.Upregulated
 import karme.util.MathUtil
 
 class ClusteringRefiner(
@@ -17,42 +21,11 @@ class ClusteringRefiner(
 
   val rankSum = new RankSumTest
 
-  sealed trait GeneDerivative
-  case object Upregulated extends GeneDerivative
-  case object Downregulated extends GeneDerivative
-  case object Unchanged extends GeneDerivative
-
   val ALL_GENES = clustering.allMembers.toSeq
   val ALL_EDGES = clusterLevelGraph.E.toSeq
 
-  def deriveGenesOnEdges(): Map[String, Seq[GeneDerivative]] = {
-    var geneToDerivatives = Map[String, Seq[GeneDerivative]]()
-
-    for (gene <- ALL_GENES) {
-      println(s"Deriving gene $gene")
-      val derivatives = for (e <- ALL_EDGES) yield {
-        deriveGeneOnEdge(e, gene)
-      }
-      geneToDerivatives += gene -> derivatives
-    }
-
-    geneToDerivatives
-  }
-
-  def deriveGeneOnEdge(
-    edge: UnlabeledEdge[StateGraphVertex], gene: String
-  ): GeneDerivative = {
-    if (geneAgreesWithSwitch(edge, gene, true)) {
-      Upregulated
-    } else if (geneAgreesWithSwitch(edge, gene, false)) {
-      Downregulated
-    } else {
-      Unchanged
-    }
-  }
-
   def refineClusteringPerEdge():
-      Map[UnlabeledEdge[StateGraphVertex], Clustering] = {
+  Map[UnlabeledEdge[StateGraphVertex], Clustering] = {
     val edgeToRefinedClustering = for (e <- clusterLevelGraph.E) yield {
       e -> Clustering(refineClusteringForEdgeLabels(e))
     }
@@ -60,7 +33,7 @@ class ClusteringRefiner(
     edgeToRefinedClustering.toMap
   }
 
-  def refineClusteringForEdgeLabels(
+  private def refineClusteringForEdgeLabels(
     e: UnlabeledEdge[StateGraphVertex]
   ): Map[String, Set[String]] = {
     var refinedClustering = Map[String, Set[String]]()
@@ -70,7 +43,7 @@ class ClusteringRefiner(
     for (label <- UndirectedStateGraphOps.edgeLabels(e)) {
       val upregulated = clusterIsUpregulated(e, label)
 
-      val clusterMembers = clustering.clusterToMember(label)
+      val clusterMembers = clustering.clusterToMembers(label)
 
       val agreeingGenes = clusterMembers filter { g =>
         geneAgreesWithSwitch(e, g, upregulated)
@@ -87,7 +60,7 @@ class ClusteringRefiner(
     refinedClustering
   }
 
-  def clusterIsUpregulated(
+  private def clusterIsUpregulated(
     e: UnlabeledEdge[StateGraphVertex], label: String
   ): Boolean = {
     val leftVal = e.v1.state.value(label)
@@ -96,6 +69,32 @@ class ClusteringRefiner(
     assert(leftVal != rightVal)
 
     !leftVal
+  }
+
+  def deriveGenesOnEdges(): Map[String, Seq[ExpressionDerivative]] = {
+    var geneToDerivatives = Map[String, Seq[ExpressionDerivative]]()
+
+    for (gene <- ALL_GENES) {
+      println(s"Deriving gene $gene")
+      val derivatives = for (e <- ALL_EDGES) yield {
+        deriveGeneOnEdge(e, gene)
+      }
+      geneToDerivatives += gene -> derivatives
+    }
+
+    geneToDerivatives
+  }
+
+  private def deriveGeneOnEdge(
+    edge: UnlabeledEdge[StateGraphVertex], gene: String
+  ): ExpressionDerivative = {
+    if (geneAgreesWithSwitch(edge, gene, true)) {
+      Upregulated
+    } else if (geneAgreesWithSwitch(edge, gene, false)) {
+      Downregulated
+    } else {
+      Unchanged
+    }
   }
 
   def geneAgreesWithSwitch(
@@ -127,8 +126,6 @@ class ClusteringRefiner(
   def analyzeRefinedClusters(
     edgeToClustering: Map[UnlabeledEdge[StateGraphVertex], Clustering]
   ): Unit = {
-    // how many clusters does each gene belong to?
-
     val memberClusterPairs =
       edgeToClustering.toList.map(_._2.memberToCluster.toList).flatten
 

@@ -38,8 +38,8 @@ class EdgePrecedenceProducer(
       l2 <- UndirectedStateGraphOps.edgeLabels(lastEdge)
     } yield {
       // get refined clustering for both edges
-      val sourceGenes = edgeToRefinedClustering(firstEdge).clusterToMember(l1)
-      val targetGenes = edgeToRefinedClustering(lastEdge).clusterToMember(l2)
+      val sourceGenes = edgeToRefinedClustering(firstEdge).clusterToMembers(l1)
+      val targetGenes = edgeToRefinedClustering(lastEdge).clusterToMembers(l2)
 
       // compute product given refined members
       computeNonSelfProduct(sourceGenes, targetGenes, distance)

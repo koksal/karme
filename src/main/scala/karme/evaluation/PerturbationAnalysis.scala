@@ -97,7 +97,7 @@ class PerturbationAnalysis(
   }
 
   def genesInCluster(genes: Set[String], cluster: String): Set[String] = {
-    val clustMembers = clustering.clusterToMember(cluster)
+    val clustMembers = clustering.clusterToMembers(cluster)
     clustMembers intersect genes
   }
 

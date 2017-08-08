@@ -1,17 +1,17 @@
 package karme
 
-case class Clustering(clusterToMember: Map[String, Set[String]]) {
+case class Clustering(clusterToMembers: Map[String, Set[String]]) {
 
   val memberToCluster: Map[String, String] = {
     for {
-      (cluster, members) <- clusterToMember
+      (cluster, members) <- clusterToMembers
       member <- members
     } yield {
       member -> cluster
     }
   }
 
-  val allClusters: Set[String] = clusterToMember.keySet
+  val allClusters: Set[String] = clusterToMembers.keySet
 
   val allMembers: Set[String] = memberToCluster.keySet
 
@@ -20,7 +20,7 @@ case class Clustering(clusterToMember: Map[String, Set[String]]) {
 object Clustering {
 
   def combineByIntersection(cs: Seq[Clustering]): Clustering = {
-    val allMappings = cs.flatMap(_.clusterToMember.toSeq)
+    val allMappings = cs.flatMap(_.clusterToMembers.toSeq)
 
     val clusterToMappings = allMappings.groupBy(_._1)
 

@@ -30,18 +30,37 @@ class GeneClustering(opts: ClusteringOpts) {
         s"$adjustedMaxNbClust).")
     }
 
-    val clusterIndices = new NbClustInterface().cluster(exp.valueMatrix,
-      adjustedMinNbClust, adjustedMaxNbClust,
+    computeBestClustering(exp.names, exp.valueMatrix, adjustedMinNbClust,
+      adjustedMaxNbClust)
+  }
+
+  def computeBestClustering(
+    geneNames: Seq[String],
+    valueMatrix: Seq[Seq[Double]]
+  ): Map[String, Set[String]] = {
+    computeBestClustering(geneNames, valueMatrix, opts.minNbClusters,
+      opts.maxNbClusters)
+  }
+
+  def computeBestClustering(
+    geneNames: Seq[String],
+    valueMatrix: Seq[Seq[Double]],
+    minK: Int,
+    maxK: Int
+  ): Map[String, Set[String]] = {
+    val clusterIndices = new NbClustInterface().cluster(valueMatrix,
+      minK, maxK,
       distance = opts.clusteringDistance,
       method = opts.clusteringMethod,
       index = opts.clusteringIndex)
 
-    val clustering = exp.names.zip(clusterIndices).toMap
+    val clustering = geneNames.zip(clusterIndices).toMap
 
     val bestK = clusterIndices.toSet.size
     println(s"Best k: $bestK")
 
     makeClusterToNamesMap(clustering)
+
   }
 
   private def makeClusterToNamesMap(

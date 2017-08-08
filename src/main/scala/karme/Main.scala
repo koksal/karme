@@ -35,7 +35,7 @@ object Main {
     logGraph(graph, sources, annotationContext, reporter)
 
     new ClusteringStore(opts.reporterOpts.outFolder).store(
-      clustering.clusterToMember)
+      clustering.clusterToMembers)
 
     if (opts.runPrecedence) {
       val edgePrecedences = new EdgePrecedenceProducer(graph,
@@ -81,7 +81,7 @@ object Main {
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 
-    logIOPairs(results, clustering.clusterToMember, reporter)
+    logIOPairs(results, clustering.clusterToMembers, reporter)
   }
 
   def logIOPairs(
