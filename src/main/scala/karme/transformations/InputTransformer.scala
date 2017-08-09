@@ -11,10 +11,12 @@ import karme.{Experiments, InputTransformerOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 import karme.parsing.{BooleanExperimentParser, CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
+import karme.transformations.ExpressionDerivation.Unchanged
 import karme.transformations.clustering.DerivativeClustering
 import karme.transformations.clustering.GeneClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
+import karme.util.FileUtil
 import karme.util.NamingUtil
 import karme.visualization.CurvePlot
 import karme.visualization.HistogramPlotter
@@ -91,22 +93,6 @@ class InputTransformer(
 
     var i = 0
     do {
-      i += 1
-
-      prevClustering = clustering
-
-      val derivatives = new ClusteringRefiner(
-        clusteredGraph, geneLevelExp, clustering,
-        opts.clusteringOpts.clusterRefinementPValue).deriveGenesOnEdges()
-
-      clustering = new DerivativeClustering(clusteringModule).clusterGenes(
-        derivatives)
-
-      val (newGraph, newSources) =
-        graphAndSourcesFromClusterAverages(geneLevelExp, clustering)
-      clusteredGraph = newGraph
-      sources = newSources
-
       new CurvePlot().plotClusterCurves(geneLevelExp, trajectories,
         clustering.clusterToMembers, s"iterative-clustering-$i")
       new StateGraphPlotter(reporter).plotDirectedGraph(
@@ -115,6 +101,37 @@ class InputTransformer(
         cellClustering = annotationContext.cellClustering,
         nodeHighlightGroups = List(sources.map(_.state))
       )
+
+      println("Refining clustering and graph.")
+      i += 1
+
+      prevClustering = clustering
+
+      val derivatives = new ClusteringRefiner(
+        clusteredGraph, geneLevelExp, clustering,
+        DistributionComparisonTest.fromOptions(
+          opts.distributionComparisonMethod),
+        opts.clusteringOpts.clusterRefinementPValue).deriveGenesOnEdges()
+
+      FileUtil.writeToFile(reporter.file(s"derivatives-$i.txt"),
+        derivatives.mkString("\n"))
+
+      val nonConstantDerivatives = derivatives filter {
+        case (name, ds) => ds.exists(d => d != Unchanged)
+      }
+      println(s"# Non constant derivatives: ${nonConstantDerivatives.size}")
+
+      clustering = new DerivativeClustering(clusteringModule).clusterGenes(
+        nonConstantDerivatives)
+
+      FileUtil.writeToFile(reporter.file(s"clustering-$i.txt"),
+        clustering.clusterToMembers.mkString("\n"))
+
+      val (newGraph, newSources) =
+        graphAndSourcesFromClusterAverages(geneLevelExp, clustering)
+      clusteredGraph = newGraph
+      sources = newSources
+
     } while (prevClustering != clustering)
 
     (clusteredGraph, sources, clustering)

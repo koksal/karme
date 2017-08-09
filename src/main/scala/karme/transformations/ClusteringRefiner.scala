@@ -16,11 +16,9 @@ class ClusteringRefiner(
   clusterLevelGraph: DirectedBooleanStateGraph,
   geneLevelExp: Experiment[Double],
   clustering: Clustering,
+  distributionComparisonTest: DistributionComparisonTest,
   pValueThreshold: Double
 ) {
-
-  val rankSum = new RankSumTest
-
   val ALL_GENES = clustering.allMembers.toSeq
   val ALL_EDGES = clusterLevelGraph.E.toSeq
 
@@ -75,7 +73,6 @@ class ClusteringRefiner(
     var geneToDerivatives = Map[String, Seq[ExpressionDerivative]]()
 
     for (gene <- ALL_GENES) {
-      println(s"Deriving gene $gene")
       val derivatives = for (e <- ALL_EDGES) yield {
         deriveGeneOnEdge(e, gene)
       }
@@ -119,8 +116,7 @@ class ClusteringRefiner(
       (leftGeneValues, rightGeneValues)
     }
 
-    val res = rankSum.test(greater, smaller)
-    res.pValue <= pValueThreshold
+    distributionComparisonTest.testPValue(greater, smaller) <= pValueThreshold
   }
 
   def analyzeRefinedClusters(

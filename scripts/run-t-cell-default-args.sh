@@ -24,7 +24,7 @@ do
         for CLUST_DISTANCE in "euclidean"
         do
 
-          for k in 5
+          for k in 10
           do
 
             for UNCERTAINTY in 0.2

@@ -23,32 +23,28 @@ class GeneClustering(opts: ClusteringOpts) {
   def computeBestClustering(
     exp: Experiment[Double]
   ): Clustering = {
-    val adjustedMaxNbClust = math.min(exp.names.size - 1, opts.maxNbClusters)
-    val adjustedMinNbClust = math.min(opts.minNbClusters, adjustedMaxNbClust)
-
-    if (adjustedMaxNbClust != opts.maxNbClusters) {
-      println(s"Setting boundaries for k to ($adjustedMinNbClust, " +
-        s"$adjustedMaxNbClust).")
-    }
-
-    computeBestClustering(exp.names, exp.valueMatrix, adjustedMinNbClust,
-      adjustedMaxNbClust)
+    computeBestClustering(exp.names, exp.valueMatrix)
   }
 
   def computeBestClustering(
     geneNames: Seq[String],
     valueMatrix: Seq[Seq[Double]]
   ): Clustering = {
-    computeBestClustering(geneNames, valueMatrix, opts.minNbClusters,
-      opts.maxNbClusters)
-  }
+    var minK = opts.minNbClusters
+    var maxK = opts.maxNbClusters
 
-  def computeBestClustering(
-    geneNames: Seq[String],
-    valueMatrix: Seq[Seq[Double]],
-    minK: Int,
-    maxK: Int
-  ): Clustering = {
+    // fewer clusters than things to cluster
+    maxK = math.min(geneNames.size - 1, maxK)
+
+    // fewer clusters than maximum distinct values
+    val uniqueDataPoints = valueMatrix.distinct
+    println(s"Unique data points: ${uniqueDataPoints.size}")
+    maxK = math.min(maxK, uniqueDataPoints.size - 1)
+
+    minK = math.min(minK, maxK)
+
+    println(s"Adjusted cluster bounds: ($minK, $maxK)")
+
     val clusterIndices = new NbClustInterface().cluster(valueMatrix,
       minK, maxK,
       distance = opts.clusteringDistance,
