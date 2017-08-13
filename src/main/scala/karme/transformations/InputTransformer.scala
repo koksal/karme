@@ -64,12 +64,23 @@ class InputTransformer(
       clustering)
 
     if (opts.clusteringOpts.refineClusters) {
-      val (newGraph, newSources, newClustering) = refineGraphIteratively(graph,
-        sources, clustering, smoothedExp)
-      graph = newGraph
-      sources = newSources
-      clustering = newClustering
+      val refiner = new ClusteringRefiner(graph, smoothedExp, clustering,
+        DistributionComparisonTest.fromOptions(
+          opts.distributionComparisonMethod),
+        opts.clusteringOpts.clusterRefinementPValue)
+      val perEdgeRft = refiner.refineClusteringPerEdge()
+      clustering = Clustering.combineByIntersection(perEdgeRft.values.toSeq)
     }
+
+    val plotter = new StateGraphPlotter(reporter)
+    plotter.plotDirectedGraph(graph, "graph-before-expansion",
+      cellClustering = annotationContext.cellClustering,
+      nodeHighlightGroups = List(sources.map(_.state)))
+
+    graph = new MultiHammingEdgeExpansion(graph).expandMultiHammingEdges()
+    plotter.plotDirectedGraph(graph, "graph-after-expansion",
+      cellClustering = annotationContext.cellClustering,
+      nodeHighlightGroups = List(sources.map(_.state)))
 
     if (opts.plotClusterCurves) {
       new CurvePlot().plotClusterCurves(smoothedExp, trajectories,
