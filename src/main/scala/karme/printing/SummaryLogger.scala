@@ -4,7 +4,7 @@ import java.io.File
 
 import karme.Opts
 import karme.evaluation.ReachabilityEvaluation.ReachabilityEvaluationResult
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.evaluation.enrichr.PredictionLibrary
 import karme.util.FileUtil
 import karme.util.MathUtil
 
@@ -13,7 +13,7 @@ object SummaryLogger {
   def apply(
     opts: Opts,
     optimalResults: Seq[ReachabilityEvaluationResult],
-    refPValues: Seq[(EnrichrPredictionLibrary, Double)],
+    refPValues: Seq[(PredictionLibrary, Double)],
     f: File
   ): Unit = {
     val optHeaderToValue = Seq(

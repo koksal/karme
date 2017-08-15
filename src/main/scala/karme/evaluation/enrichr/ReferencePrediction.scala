@@ -1,6 +1,6 @@
 package karme.evaluation.enrichr
 
-case class EnrichrPredictionLibrary(
+case class PredictionLibrary(
   id: String,
   predictions: Seq[ReferencePrediction]
 ) {
@@ -20,5 +20,5 @@ case class EnrichrPredictionLibrary(
 }
 
 case class ReferencePrediction(
-  term: String, target: String, combinedScore: Double
+  term: String, target: String, weight: Double
 )

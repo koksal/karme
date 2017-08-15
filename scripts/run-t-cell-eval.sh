@@ -8,6 +8,6 @@ LOGFILE=$OUTFOLDER/log.txt
 mkdir -p $OUTFOLDER
 
 sbt "run-main karme.evaluation.Evaluation \
-  --evaluation-libraries data/reference/t-cell-knockdown.csv,data/reference/t-cell-late-network.csv \
+  --evaluation-libraries data/reference/th17/knockdown-fold-changes.csv \
   --outfolder $OUTFOLDER \
   --verbose $*" | tee $LOGFILE

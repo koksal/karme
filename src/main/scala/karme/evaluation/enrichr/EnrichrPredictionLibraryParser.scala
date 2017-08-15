@@ -7,13 +7,13 @@ import karme.util.FileUtil
 
 object EnrichrPredictionLibraryParser {
 
-  def apply(f: File): EnrichrPredictionLibrary = {
+  def apply(f: File): PredictionLibrary = {
     val parsedPredictions = parsePredictions(f)
 
     val predictionsWithDescendingScore =
-      parsedPredictions.sortBy(_.combinedScore).reverse
+      parsedPredictions.sortBy(_.weight).reverse
 
-    EnrichrPredictionLibrary(FileUtil.getFileName(f.getPath),
+    PredictionLibrary(FileUtil.getFileName(f.getPath),
       predictionsWithDescendingScore)
   }
 

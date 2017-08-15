@@ -1,11 +1,11 @@
 package karme.evaluation
 
 import karme.EvalOpts
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.evaluation.enrichr.PredictionLibrary
 import karme.evaluation.enrichr.EnrichrPredictionLibraryParser
 
 case class EvaluationContext(
-  references: Seq[EnrichrPredictionLibrary]
+  references: Seq[PredictionLibrary]
 )
 
 object EvaluationContext {

@@ -2,7 +2,7 @@ package karme.evaluation
 
 import karme.ArgHandling
 import karme.Reporter
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.evaluation.enrichr.PredictionLibrary
 
 object ReferenceOverlapAnalysis {
 
@@ -21,7 +21,7 @@ object ReferenceOverlapAnalysis {
   }
 
   def findOverlap(
-    l1: EnrichrPredictionLibrary, l2: EnrichrPredictionLibrary
+    l1: PredictionLibrary, l2: PredictionLibrary
   ): Unit = {
     println(s"${l1.id} and ${l2.id}")
 

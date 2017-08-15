@@ -11,6 +11,14 @@ class HistogramPlotInterface extends AbstractRInterface {
 
   override def LIBRARIES: Seq[String] = Seq("ggplot2")
 
+  def plot[T: ClassTag](
+    values: Seq[T],
+    f: File
+  ): Unit = {
+    val labels = values map (v => "Unlabeled")
+    plot(values, labels, f)
+  }
+
   def plot[T: ClassTag, U: ClassTag](
     values: Seq[T],
     labels: Seq[U],

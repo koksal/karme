@@ -21,7 +21,7 @@ class PredictionEvaluator(
 
   def computeReferencePValues(
     results: Seq[Map[String, SynthesisResult]]
-  ): Seq[(EnrichrPredictionLibrary, Double)] = {
+  ): Seq[(PredictionLibrary, Double)] = {
     for (reference <- evalContext.references) yield {
       reference -> computeReferencePValues(results, reference)
     }
@@ -29,7 +29,7 @@ class PredictionEvaluator(
 
   def computeReferencePValues(
     results: Seq[Map[String, SynthesisResult]],
-    reference: EnrichrPredictionLibrary
+    reference: PredictionLibrary
   ): Double = {
     val predictedClusterPairs = ???
 
@@ -82,7 +82,7 @@ class PredictionEvaluator(
   def compareToReference(
     result: Map[String, SynthesisResult],
     clustering: Option[Map[String, Set[String]]],
-    reference: EnrichrPredictionLibrary
+    reference: PredictionLibrary
   ): Double = {
     // For each target, gather possible sources
 
@@ -98,7 +98,7 @@ class PredictionEvaluator(
   }
 
   def referenceNamesInOriginalExperiment(
-    reference: EnrichrPredictionLibrary
+    reference: PredictionLibrary
   ): Set[String] = {
     experimentNamesBeforeFiltering.intersect(
       PredictionEvaluator.referenceNames(reference))
@@ -129,7 +129,7 @@ class PredictionEvaluator(
 object PredictionEvaluator {
 
   def referenceNames(
-    reference: EnrichrPredictionLibrary
+    reference: PredictionLibrary
   ): Set[String] = {
     def predictionNames(p: ReferencePrediction): Set[String] = p match {
       case ReferencePrediction(term, target, _) => Set(term, target)
@@ -139,7 +139,7 @@ object PredictionEvaluator {
   }
 
   def referencePairs(
-    reference: EnrichrPredictionLibrary
+    reference: PredictionLibrary
   ): Set[(String, String)] = {
     reference.predictions.map{
       case ReferencePrediction(term, target, score) => (term, target)

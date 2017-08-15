@@ -3,7 +3,7 @@ package karme.evaluation
 import java.io.File
 
 import karme.Reporter
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.evaluation.enrichr.PredictionLibrary
 import karme.util.FileUtil
 
 class PRAUCEvaluation(reporter: Reporter) {

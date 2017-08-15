@@ -1,7 +1,7 @@
 package karme.analysis
 
 import karme.evaluation.EvaluationContext
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.evaluation.enrichr.PredictionLibrary
 import karme.evaluation.enrichr.PredictionEvaluator
 
 class ReferenceAnalysis(evalContext: EvaluationContext) {
@@ -22,7 +22,7 @@ class ReferenceAnalysis(evalContext: EvaluationContext) {
   }
 
   def analyzeReferenceForClustering(
-    reference: EnrichrPredictionLibrary,
+    reference: PredictionLibrary,
     clustering: Map[String, Set[String]]
   ): Unit = {
     val referencePairs = PredictionEvaluator.referencePairs(reference)

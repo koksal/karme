@@ -9,7 +9,8 @@ import karme.FunIOPairsPrediction
 import karme.PrecedencePairsPrediction
 import karme.Reporter
 import karme.evaluation.Evaluation.ScoredPrediction
-import karme.evaluation.enrichr.EnrichrPredictionLibrary
+import karme.evaluation.enrichr.PredictionLibrary
+import karme.evaluation.enrichr.ReferencePrediction
 import karme.parsing.IOPairParser
 import karme.store.ClusteringStore
 import karme.store.EdgePrecedenceStore
@@ -23,7 +24,7 @@ import scala.util.Random
 
 class PairEvaluator(
   folders: Seq[File],
-  references: Seq[EnrichrPredictionLibrary],
+  references: Seq[PredictionLibrary],
   evalOpts: EvalOpts,
   reporter: Reporter
 ) {
@@ -50,7 +51,8 @@ class PairEvaluator(
     }
 
     for (ref <- references) {
-      evaluatePairs(predictions, ref)
+      // evaluatePairs(predictions, ref)
+      evaluateReferenceWeightsForPredictions(predictions, ref)
     }
   }
 
@@ -119,9 +121,93 @@ class PairEvaluator(
     }
   }
 
+  def evaluateReferenceWeightsForPredictions(
+    scoredPredictions: Seq[ScoredPrediction],
+    library: PredictionLibrary
+  ) = {
+    // optionally compute 1-hop transitive reference predictions
+    val useTransitivePredictions = false
+    val refPredictions = if (useTransitivePredictions) {
+      transitiveReferencePreds(library.predictions)
+    } else {
+      library.predictions
+    }
+    val refPairs = refPredictions.map(p => (p.term, p.target))
+
+    // intersect domains
+    val (backgroundSources, backgroundTargets) =
+      PairEvaluator.sourceTargetProductBackground(scoredPredictions,
+        refPairs.toSet)
+    val predictionsInBackground =
+      PairEvaluator.filterScoredPredictionsForDomain(scoredPredictions,
+        backgroundSources, backgroundTargets)
+    val refPredsInBackground =
+      PairEvaluator.filterReferencePredictionsForDomain(refPredictions,
+        backgroundSources, backgroundTargets)
+
+    // compute the reference weights for each predictions
+    val weights = absRefWeightsForPredictions(predictionsInBackground,
+      refPredsInBackground)
+    val nonZeroWeights = weights.filter(_ > 0)
+    val weightsToTest = nonZeroWeights
+
+    val rs = new RankSumTest()
+    var rsResults = Set[Double]()
+    val histPlot = new HistogramPlotInterface()
+    for (i <- 0 until 100) {
+      // compare to randomly selected predictions from domain
+      /*
+      val randomPreds = PairEvaluator.randomPredictionsWithGivenScores(
+        predictionsInBackground.map(_._2), backgroundSources, backgroundTargets)
+      val randomWeights = absRefWeightsForPredictions(randomPreds,
+        refPredsInBackground)
+        */
+      val randomWeights = new Random().shuffle(refPredsInBackground).take(
+        nonZeroWeights.size).map(p => math.abs(p.weight))
+
+      // plot both and perform distribution comparison
+      val fstLabels = weightsToTest map (w => "Original")
+      val sndLabels = randomWeights map (w => "Randomized")
+      val allPoints = weightsToTest ++ randomWeights
+      val allLabels = fstLabels ++ sndLabels
+      histPlot.plot(allPoints, allLabels,
+        reporter.file(s"randomized-weight-comparison-$i.pdf"))
+
+      val originalGreaterP = rs.testPValue(weightsToTest, randomWeights)
+      println(s"Original weights are greater: ${originalGreaterP}")
+      rsResults += originalGreaterP
+    }
+
+    println(s"Average p-value: ${MathUtil.mean(rsResults)}")
+  }
+
+  def absRefWeightsForPredictions(
+    predictions: Seq[ScoredPrediction],
+    refPredictions: Seq[ReferencePrediction]
+  ): Seq[Double] = {
+    predictions map (p => absRefWeightForPrediction(p, refPredictions))
+  }
+
+  def absRefWeightForPrediction(
+    prediction: ScoredPrediction,
+    refPredictions: Seq[ReferencePrediction]
+  ): Double = {
+    // inefficient lookup for now
+    val ((predSrc, predTgt), predW) = prediction
+    val matchingRefPred = refPredictions.find {
+      case ReferencePrediction(term, target, _) => {
+        term == predSrc && target == predTgt
+      }
+    }
+    matchingRefPred match {
+      case Some(pred) => math.abs(pred.weight)
+      case None => 0.0
+    }
+  }
+
   def evaluatePairs(
     scoredPredictions: Seq[ScoredPrediction],
-    library: EnrichrPredictionLibrary
+    library: PredictionLibrary
   ): Unit = {
     val referencePairs = library.ioPairs
 
@@ -129,9 +215,10 @@ class PairEvaluator(
       PairEvaluator.sourceTargetProductBackground(scoredPredictions,
         referencePairs)
 
-    var predictionsInBackground = PairEvaluator.filterTriplesForNameUniverse(
-      scoredPredictions, backgroundSources, backgroundTargets)
-    val referenceEdgesInBackground = PairEvaluator.filterPairsForNameUniverse(
+    var predictionsInBackground =
+      PairEvaluator.filterScoredPredictionsForDomain(scoredPredictions,
+        backgroundSources, backgroundTargets)
+    val referenceEdgesInBackground = PairEvaluator.filterPairsForDomain(
       referencePairs, backgroundSources, backgroundTargets)
 
     if (evalOpts.randomize) {
@@ -161,7 +248,7 @@ class PairEvaluator(
       reporter.file(s"predictions-joined-with-${library.id}"))
   }
 
-  def sourceTargetOverlapCheck(library: EnrichrPredictionLibrary) = {
+  def sourceTargetOverlapCheck(library: PredictionLibrary) = {
     val sources = library.ioPairs.map(_._1)
     val targets = library.ioPairs.map(_._2)
     val common = sources intersect targets
@@ -169,7 +256,7 @@ class PairEvaluator(
     println(s"Common to reference sources and targets: ${common.size}")
   }
 
-  def transitiveReferenceCheck(library: EnrichrPredictionLibrary) = {
+  def transitiveReferenceCheck(library: PredictionLibrary) = {
     val tc = transitiveClosure(library.ioPairs)
     val missingFromOriginal = tc -- library.ioPairs
     println(s"Transitive reference check for ${library.id}")
@@ -177,7 +264,7 @@ class PairEvaluator(
     println(missingFromOriginal.size)
   }
 
-  def oneHopTransitiveCheck(library: EnrichrPredictionLibrary) = {
+  def oneHopTransitiveCheck(library: PredictionLibrary) = {
     val termToPredictions = library.predictions.groupBy(p => p.term)
 
     var missed = 0
@@ -187,7 +274,7 @@ class PairEvaluator(
     var capturedMinFoldChanges = List[Double]()
 
     for (firstHop <- library.predictions;
-         if firstHop.combinedScore < 0 && firstHop.term != firstHop.target) {
+         if firstHop.weight < 0 && firstHop.term != firstHop.target) {
       val predictionsFromSource =
         termToPredictions.getOrElse(firstHop.term, Nil)
       val predictionsFromTarget =
@@ -197,8 +284,8 @@ class PairEvaluator(
            if secondHop.term != secondHop.target) {
 
         val minFoldChange = math.min(
-          math.abs(firstHop.combinedScore),
-          math.abs(secondHop.combinedScore)
+          math.abs(firstHop.weight),
+          math.abs(secondHop.weight)
         )
 
         predictionsFromSource.find(
@@ -248,6 +335,33 @@ class PairEvaluator(
       closure = oneTransitiveStep(closure)
     } while (closure != prevClosure)
     closure
+  }
+
+  def transitiveReferencePreds(
+    referencePredictions: Seq[ReferencePrediction]
+  ) = {
+    // group by source, target
+    val srcToPred = referencePredictions.groupBy(_.term)
+    val pairs = referencePredictions.map(p => (p.term, p.target)).toSet
+
+    var transitivePreds = Set[ReferencePrediction]()
+
+    for (firstPred <- referencePredictions) {
+      val predsFromTarget = srcToPred.getOrElse(firstPred.target, Nil)
+      for (secondPred <- predsFromTarget) {
+        val transitivePair = (firstPred.term, secondPred.target)
+        if (!pairs.contains(transitivePair)) {
+          val transitiveWeight = math.min(firstPred.weight, secondPred.weight)
+          val transitivePred = ReferencePrediction(transitivePair._1,
+            transitivePair._2, transitiveWeight)
+          transitivePreds += transitivePred
+        }
+      }
+    }
+
+    println(s"Ref preds: ${referencePredictions.size}")
+    println(s"Added transitive preds: ${transitivePreds.size}")
+    referencePredictions ++ transitivePreds.toSeq
   }
 
   def oneTransitiveStep(pairs: Set[(String, String)]) = {
@@ -563,7 +677,19 @@ object PairEvaluator {
     }
   }
 
-  def filterPairsForNameUniverse(
+  def filterReferencePredictionsForDomain(
+    predictions: Seq[ReferencePrediction],
+    possibleSources: Set[String],
+    possibleTargets: Set[String]
+  ): Seq[ReferencePrediction] = {
+    predictions filter {
+      case ReferencePrediction(term, target, _) => {
+        possibleSources.contains(term) && possibleTargets.contains(target)
+      }
+    }
+  }
+
+  def filterPairsForDomain(
     pairs: Set[(String, String)],
     possibleSources: Set[String],
     possibleTargets: Set[String]
@@ -574,12 +700,12 @@ object PairEvaluator {
     }
   }
 
-  def filterTriplesForNameUniverse(
-    pairs: Seq[ScoredPrediction],
+  def filterScoredPredictionsForDomain(
+    predictions: Seq[ScoredPrediction],
     possibleSources: Set[String],
     possibleTargets: Set[String]
   ): Seq[ScoredPrediction] = {
-    pairs filter {
+    predictions filter {
       case ((src, tgt), i) =>
         possibleSources.contains(src) && possibleTargets.contains(tgt)
     }
