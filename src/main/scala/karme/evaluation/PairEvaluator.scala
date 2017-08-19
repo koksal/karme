@@ -20,6 +20,7 @@ import karme.util.CollectionUtil
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 
+import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class PairEvaluator(
@@ -31,12 +32,89 @@ class PairEvaluator(
 
   lazy val runDataCollection: Seq[RunData] = readRuns(folders)
 
+  val histogramPlotInterface = new HistogramPlotInterface()
+
   case class RunData(
     id: String,
     clustering: Clustering,
     precedences: Seq[EdgePrecedence],
     geneIOPairs: Seq[ScoredPrediction]
   )
+
+  def evaluateClusterings(): Unit = {
+    // for each clustering
+    //   Option 2. Cluster 40-length vectors of response to perturbation and
+    //     compare to original clustering
+    for {
+      runData <- runDataCollection
+      reference <- references
+    } {
+      evaluateClustering(runData.clustering, reference)
+    }
+  }
+
+  def evaluateClustering(
+    clustering: Clustering, reference: PredictionLibrary
+  ): Unit = {
+    // TODO filter clustering to names in reference.
+    val clusteringFilteredByRef = filterClusteringByReferenceTargets(clustering,
+      reference)
+
+    val sourceToReferencePreds = reference.predictions.groupBy(_.term)
+
+    var zeroRatios = List[Double]()
+    for {
+      (cluster, i) <- clusteringFilteredByRef.allClusters.zipWithIndex
+      (refSource, refPredsFromSource) <- sourceToReferencePreds
+    } {
+      val members = clusteringFilteredByRef.clusterToMembers(cluster)
+
+      val fcs = clusterFoldChanges(members, refPredsFromSource)
+
+      val f = reporter.file(s"cluster-$i-knockdown-$refSource.pdf")
+      histogramPlotInterface.plot(fcs, f)
+
+      val posFcs = fcs.filter(_ > 0)
+      val negFcs = fcs.filter(_ < 0)
+      val zeroFcs = fcs.filter(_ == 0)
+      val zeroRatio = MathUtil.roundTo(4)(zeroFcs.size.toDouble / fcs.size)
+      println(List(i, refSource, zeroRatio).mkString(","))
+      zeroRatios = zeroRatio :: zeroRatios
+    }
+
+    histogramPlotInterface.plot(zeroRatios,
+      reporter.file("zero-ratios-distribution.pdf"))
+  }
+
+  def filterClusteringByReferenceTargets(
+    clustering: Clustering, reference: PredictionLibrary
+  ): Clustering = {
+    val referenceTargets = reference.predictions.map(_.target).toSet
+    val newMapping = clustering.clusterToMembers map {
+      case (cluster, members) => {
+        (cluster, members intersect referenceTargets)
+      }
+    }
+    val nonEmptyClusters = newMapping filter {
+      case (cluster, members) => members.nonEmpty
+    }
+    Clustering(nonEmptyClusters)
+  }
+
+  // returns missing effects as 0.0
+  def clusterFoldChanges(
+    cluster: Set[String], preds: Seq[ReferencePrediction]
+  ): Seq[Double] = {
+    val targetToPreds = preds.groupBy(_.target)
+    cluster.toSeq flatMap { member =>
+      targetToPreds.get(member) match {
+        case Some(predsToTarget) => {
+          predsToTarget.map(_.weight)
+        }
+        case None => Seq(0.0)
+      }
+    }
+  }
 
   def evaluatePredictions(): Unit = {
     var predictions = evalOpts.predictionType match {
