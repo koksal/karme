@@ -130,7 +130,8 @@ class PairEvaluator(
 
     for (ref <- references) {
       // evaluatePairs(predictions, ref)
-      evaluateReferenceWeightsForPredictions(predictions, ref)
+      // evaluateReferenceWeightsForPredictions(predictions, ref)
+      oneHopTransitiveCheck(ref);
     }
   }
 
@@ -656,12 +657,6 @@ object PairEvaluator {
     println(s"|G && S x G && T| = ${backgroundSources.size *
       backgroundTargets.size}")
     (backgroundSources, backgroundTargets)
-  }
-
-  def plotScoreDist(scores: Seq[Double], f: File): Unit = {
-    val labels = scores.map(_ => "none")
-
-    new HistogramPlotInterface().plot(scores, labels, f)
   }
 
   def meanOrientationCardinality(pairs: Seq[(String, String)]): Double = {

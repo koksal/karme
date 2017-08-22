@@ -19,8 +19,8 @@ object Evaluation {
         val evaluator = new PairEvaluator(FileUtil.listFiles(f),
           evalCtx.references, opts.evalOpts, reporter)
 
-        // evaluator.evaluatePredictions()
-        evaluator.evaluateClusterings()
+        evaluator.evaluatePredictions()
+        // evaluator.evaluateClusterings()
       }
       case None => {
         reporter.log("No run collection to evaluate.")
