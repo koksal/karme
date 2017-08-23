@@ -72,7 +72,7 @@ class CurvePlot(implicit reporter: Reporter) {
         )
       }
     }
-    new ScatterPlot().plot(toPlot, f)
+    scatterPlot.plot(toPlot, f)
   }
 
   def plotBooleanCurvesPerGene(

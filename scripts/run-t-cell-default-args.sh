@@ -24,7 +24,7 @@ do
         for CLUST_DISTANCE in "euclidean"
         do
 
-          for k in {5..10}
+          for k in {5..20}
           do
 
             for UNCERTAINTY in 0.2
@@ -43,12 +43,7 @@ do
                 --refine-clusters \
                 --cluster-refinement-p-value 0.05 \
                 --uncertainty-threshold $UNCERTAINTY \
-                --distribution-comparison ranksum \
-                --plot-cluster-curves \
-                --synthesis \
-                --max-expr-depth 1 \
-                --perturbation-targets data/th17/names/pathogenicity-related/col-down.txt \
-                --expected-drivers data/th17/names/potential-regulators.txt
+                --distribution-comparison ranksum
             done
           done
         done
