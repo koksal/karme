@@ -17,7 +17,7 @@ class GeneClustering(opts: ClusteringOpts) {
 
     val clusterAssignments = new HclustInterface().findAllClusterings(exp, kMax)
 
-    clusterAssignments map makeClusterToNamesMap
+    clusterAssignments map GeneClustering.makeClusterToNamesMap
   }
 
   def computeBestClustering(

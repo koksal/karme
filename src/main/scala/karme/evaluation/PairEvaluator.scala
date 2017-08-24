@@ -16,6 +16,7 @@ import karme.store.ClusteringStore
 import karme.store.EdgePrecedenceStore
 import karme.transformations.EdgePrecedence
 import karme.transformations.RankSumTest
+import karme.transformations.clustering.ReferenceClustering
 import karme.util.CollectionUtil
 import karme.util.FileUtil
 import karme.util.MathUtil
@@ -42,15 +43,25 @@ class PairEvaluator(
   )
 
   def evaluateClusterings(): Unit = {
-    // for each clustering
-    //   Option 2. Cluster 40-length vectors of response to perturbation and
-    //     compare to original clustering
-    for {
-      runData <- runDataCollection
-      reference <- references
-    } {
-      evaluateClustering(runData.id, runData.clustering, reference)
+    for (reference <- references) {
+      val refClustering =
+        ReferenceClustering.clusterTargetsByCommonResponse(reference)
+
+      // TODO plot clustering information and maybe plot per pseudotime
+      println(s"Found ${refClustering.allClusters.size} clusters.")
+
+      for (runData <- runDataCollection) {
+        // evaluateClustering(runData.id, runData.clustering, reference)
+        // evaluateClusterSimilarity(refClustering, runData.clustering)
+      }
     }
+  }
+
+  def evaluateClusterSimilarity(
+    referenceGeneClustering: Clustering,
+    singleCellGeneClustering: Clustering
+  ): Unit = {
+    // TODO find common targets and assess clustering similarity.
   }
 
   def evaluateClustering(

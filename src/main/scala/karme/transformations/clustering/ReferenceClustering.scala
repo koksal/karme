@@ -4,9 +4,7 @@ import karme.Clustering
 import karme.evaluation.enrichr.PredictionLibrary
 import karme.evaluation.enrichr.ReferencePrediction
 
-class ReferenceClustering {
-
-  val nbClust = new NbClustInterface()
+object ReferenceClustering {
 
   def clusterTargetsByCommonResponse(library: PredictionLibrary): Clustering = {
     val (sources, targets) = library.ioPairs.toSeq.unzip
@@ -17,6 +15,7 @@ class ReferenceClustering {
       sources map (s => getFoldChange(s, predsToTarget))
     }
 
+    val nbClust = new NbClustInterface()
     val clusterIndices = nbClust.cluster(foldChangeMatrix, 2, 30)
 
     GeneClustering.makeClustering(targets, clusterIndices)
