@@ -40,7 +40,7 @@ object KnockdownExperimentTransformer {
     assert(headers.take(nonGeneFields.size) == nonGeneFields)
     val sources = headers.drop(nonGeneFields.size)
 
-    tuples flatMap { tuple =>
+    val interactionsWithDups = tuples flatMap { tuple =>
       val targets = tuple.head.split(";").filter(!_.startsWith("LOC"))
 
       val foldChanges = tuple.drop(nonGeneFields.size).map(_.toDouble)
@@ -48,9 +48,40 @@ object KnockdownExperimentTransformer {
       assert(foldChanges.size == sources.size)
       sources.zip(foldChanges) flatMap {
         case (src, fc) => {
-          targets map (t => (src, t, fc))
+          targets map (t => (mapSourceName(src), t, fc))
         }
       }
+    }
+
+    reduceDuplicateInteractions(interactionsWithDups)
+  }
+
+  private def reduceDuplicateInteractions(
+    tuples: Seq[(String, String, Double)]
+  ): Seq[(String, String, Double)] = {
+    val pairToTuple = tuples.groupBy(t => (t._1, t._2))
+    pairToTuple.toList.map {
+      case (pair, tuples) => {
+        val reducedW = reduceWeights(pair._1, pair._2, tuples.map(_._3))
+        (pair._1, pair._2, reducedW)
+      }
+    }
+  }
+
+  private def reduceWeights(src: String, tgt: String, ws: Seq[Double]) = {
+    val min = ws.min
+    val max = ws.max
+    if (min.signum != max.signum && min != 0 && max != 0) {
+      println(
+        s"Min max different for: $src -> $tgt. Weights: ${ws.mkString(",")}")
+    }
+    ws.maxBy(w => math.abs(w))
+  }
+
+  private def mapSourceName(s: String): String = {
+    val r = """^(\w+)(?: \(KO.*\))?$""".r
+    s match {
+      case r(name) => name
     }
   }
 

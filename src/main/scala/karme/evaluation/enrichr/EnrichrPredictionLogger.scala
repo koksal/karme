@@ -8,12 +8,12 @@ object EnrichrPredictionLogger {
 
   val SOURCE_FIELD = "source"
   val TARGET_FIELD = "target"
-  val COMBINED_SCORE_FIELD = "Combined Score"
+  val WEIGHT_FIELD = "weight"
 
   def saveToFile(predictions: Seq[ReferencePrediction], f: File): Unit = {
     val writer = CSVWriter.open(f)
 
-    val headerRow = List(SOURCE_FIELD, TARGET_FIELD, COMBINED_SCORE_FIELD)
+    val headerRow = List(SOURCE_FIELD, TARGET_FIELD, WEIGHT_FIELD)
 
     val dataRows = predictions map {
       case ReferencePrediction(term, target, combinedScore) => {
