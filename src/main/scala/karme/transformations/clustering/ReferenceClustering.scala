@@ -16,14 +16,14 @@ object ReferenceClustering {
     }
 
     val nbClust = new NbClustInterface()
-    val clusterIndices = nbClust.cluster(foldChangeMatrix, 2, 30)
+    val clusterIndices = nbClust.cluster(foldChangeMatrix, 2, 20)
 
     GeneClustering.makeClustering(targets, clusterIndices)
   }
 
   def getFoldChange(source: String, preds: Seq[ReferencePrediction]): Double = {
     preds.find(_.term == source) match {
-      case Some(p) => p.weight
+      case Some(p) => p.weight.signum
       case None => 0.0
     }
   }

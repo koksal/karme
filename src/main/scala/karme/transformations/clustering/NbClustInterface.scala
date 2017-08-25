@@ -12,7 +12,7 @@ class NbClustInterface extends AbstractRInterface {
     minNbClust: Int,
     maxNbClust: Int,
     distance: String = "euclidean",
-    method: String = "ward.D2",
+    method: String = "kmeans",
     index: String = "kl"
   ): Seq[Int] = {
     println(s"Running NbClust with ($minNbClust, $maxNbClust)")

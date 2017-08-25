@@ -36,13 +36,13 @@ object ReferenceOverlapAnalysis {
   ): Unit = {
     val nbCommon = ps1.intersect(ps2).size
     val nbTotal = ps1.union(ps2).size
-    val jaccardDistance = nbCommon.toDouble / nbTotal.toDouble
+    val jacSimilarity = nbCommon.toDouble / nbTotal.toDouble
 
     println(s"|A| = ${ps1.size}")
     println(s"|B| = ${ps2.size}")
     println(s"|A && B|: $nbCommon")
     println(s"|A || B|: $nbTotal")
-    println(s"Jaccard: $jaccardDistance")
+    println(s"Jaccard: $jacSimilarity")
     println()
   }
 }

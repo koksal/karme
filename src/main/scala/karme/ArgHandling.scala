@@ -65,6 +65,12 @@ object ArgHandling {
               trajectoryFiles = vs)))
       } text "trajectory files in CSV format"
 
+      opt[File]("knockdown-experiment") action { (f, o)  =>
+        o.copy(inputTransformerOpts = o.inputTransformerOpts.copy(
+          inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
+            knockdownExperimentFile = Some(f))))
+      } text "knockdown experiment file"
+
       opt[File]("cell-clusters") action { (v, o) =>
         o.copy(annotationOpts =
           o.annotationOpts.copy(cellClusteringFile = Some(v)))

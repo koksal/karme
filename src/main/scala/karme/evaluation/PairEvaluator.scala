@@ -52,7 +52,7 @@ class PairEvaluator(
 
       for (runData <- runDataCollection) {
         // evaluateClustering(runData.id, runData.clustering, reference)
-        // evaluateClusterSimilarity(refClustering, runData.clustering)
+        evaluateClusterSimilarity(refClustering, runData.clustering)
       }
     }
   }
@@ -61,7 +61,25 @@ class PairEvaluator(
     referenceGeneClustering: Clustering,
     singleCellGeneClustering: Clustering
   ): Unit = {
-    // TODO find common targets and assess clustering similarity.
+    var jacSimilarities = Set[(String, String, Double)]()
+
+    for {
+      refCluster <- referenceGeneClustering.allClusters
+      scCluster <- singleCellGeneClustering.allClusters
+    } {
+      // what is the jaccard similarity between the two
+      val jacSimilarity = CollectionUtil.jaccardSimilarity(
+        referenceGeneClustering.clusterToMembers(refCluster),
+        singleCellGeneClustering.clusterToMembers(scCluster)
+      )
+      jacSimilarities += ((refCluster, scCluster, jacSimilarity))
+    }
+
+    val orderedSimilarities = jacSimilarities.toSeq.sortBy(- _._3)
+    for ((refCluster, scCluster, similarity) <- orderedSimilarities) {
+      println(s"$refCluster, $scCluster, $similarity")
+    }
+
   }
 
   def evaluateClustering(

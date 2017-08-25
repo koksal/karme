@@ -58,7 +58,6 @@ class InputTransformer(
         trajectories, reporter.file("smoothed-curves"))
     }
 
-    // compute seed graph and clustering
     var clustering = clusteringModule.computeBestClustering(smoothedExp)
     var (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
       clustering)
