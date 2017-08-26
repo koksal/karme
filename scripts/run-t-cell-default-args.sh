@@ -43,7 +43,9 @@ do
                 --refine-clusters \
                 --cluster-refinement-p-value 0.05 \
                 --uncertainty-threshold $UNCERTAINTY \
-                --distribution-comparison ranksum
+                --distribution-comparison ranksum \
+                --plot-binarized-data \
+                --plot-cluster-curves
             done
           done
         done
