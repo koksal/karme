@@ -10,11 +10,9 @@ object EnrichrPredictionLibraryParser {
   def apply(f: File): PredictionLibrary = {
     val parsedPredictions = parsePredictions(f)
 
-    val predictionsWithDescendingScore =
-      parsedPredictions.sortBy(_.weight).reverse
+    val predsByDescWeight = parsedPredictions.sortBy(- _.weight)
 
-    PredictionLibrary(FileUtil.getFileName(f.getPath),
-      predictionsWithDescendingScore)
+    PredictionLibrary(FileUtil.getFileName(f.getPath), predsByDescWeight)
   }
 
   private def parsePredictions(f: File): Seq[ReferencePrediction] = {
@@ -24,8 +22,8 @@ object EnrichrPredictionLibraryParser {
     tuples map { tuple =>
       val source = tuple(EnrichrPredictionLogger.SOURCE_FIELD)
       val target = tuple(EnrichrPredictionLogger.TARGET_FIELD)
-      val score = tuple(EnrichrPredictionLogger.COMBINED_SCORE_FIELD)
-      ReferencePrediction(source, target, score.toDouble)
+      val weight = tuple(EnrichrPredictionLogger.WEIGHT_FIELD)
+      ReferencePrediction(source, target, weight.toDouble)
     }
   }
 

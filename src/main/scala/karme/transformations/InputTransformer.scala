@@ -30,8 +30,8 @@ case class TransformResult(
 )
 
 class InputTransformer(
-  opts: InputTransformerOpts,
-  annotationContext: AnnotationContext
+  val opts: InputTransformerOpts,
+  val annotationContext: AnnotationContext
 )(implicit reporter: Reporter) {
 
   val trajectories: Seq[CellTrajectory] = {
@@ -58,7 +58,6 @@ class InputTransformer(
         trajectories, reporter.file("smoothed-curves"))
     }
 
-    // compute seed graph and clustering
     var clustering = clusteringModule.computeBestClustering(smoothedExp)
     var (graph, sources) = graphAndSourcesFromClusterAverages(smoothedExp,
       clustering)
@@ -91,63 +90,6 @@ class InputTransformer(
     TransformResult(graph, sources, clustering, emptyRefinement)
   }
 
-  def refineGraphIteratively(
-    initialClusteredGraph: DirectedBooleanStateGraph,
-    initialSources: Set[StateGraphVertex],
-    initialClustering: Clustering,
-    geneLevelExp: Experiment[Double]
-  ) = {
-    var clusteredGraph = initialClusteredGraph
-    var sources = initialSources
-    var clustering = initialClustering
-    var prevClustering = clustering
-
-    var i = 0
-    do {
-      new CurvePlot().plotClusterCurves(geneLevelExp, trajectories,
-        clustering.clusterToMembers, s"iterative-clustering-$i")
-      new StateGraphPlotter(reporter).plotDirectedGraph(
-        clusteredGraph,
-        s"state-graph-$i",
-        cellClustering = annotationContext.cellClustering,
-        nodeHighlightGroups = List(sources.map(_.state))
-      )
-
-      println("Refining clustering and graph.")
-      i += 1
-
-      prevClustering = clustering
-
-      val derivatives = new ClusteringRefiner(
-        clusteredGraph, geneLevelExp, clustering,
-        DistributionComparisonTest.fromOptions(
-          opts.distributionComparisonMethod),
-        opts.clusteringOpts.clusterRefinementPValue).deriveGenesOnEdges()
-
-      FileUtil.writeToFile(reporter.file(s"derivatives-$i.txt"),
-        derivatives.mkString("\n"))
-
-      val nonConstantDerivatives = derivatives filter {
-        case (name, ds) => ds.exists(d => d != Unchanged)
-      }
-      println(s"# Non constant derivatives: ${nonConstantDerivatives.size}")
-
-      clustering = new DerivativeClustering(clusteringModule).clusterGenes(
-        nonConstantDerivatives)
-
-      FileUtil.writeToFile(reporter.file(s"clustering-$i.txt"),
-        clustering.clusterToMembers.mkString("\n"))
-
-      val (newGraph, newSources) =
-        graphAndSourcesFromClusterAverages(geneLevelExp, clustering)
-      clusteredGraph = newGraph
-      sources = newSources
-
-    } while (prevClustering != clustering)
-
-    (clusteredGraph, sources, clustering)
-  }
-
   def buildDirectedStateGraphsForAllClusterings():
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
     val smoothedExperiment = getSmoothedExperiment()
@@ -162,7 +104,7 @@ class InputTransformer(
     }
   }
 
-  private def graphAndSourcesFromClusterAverages(
+  def graphAndSourcesFromClusterAverages(
     nonClusteredExperiment: Experiment[Double],
     clustering: Clustering
   ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {

@@ -61,8 +61,11 @@ object Main {
     val results = synthesizer.synthesizeForPositiveHardConstraints(
       directedStateGraph)
 
-    val functionsToEvaluate = results map {
-      case (name, results) => name -> results.head.functions.head
+    // TODO move into its own method
+    val functionsToEvaluate = results collect {
+      case (name, results) if results.nonEmpty => {
+        name -> results.head.functions.head
+      }
     }
     val initialStates = sources.map(_.state)
     val targets = NamesParser.parseNames(

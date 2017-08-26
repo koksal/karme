@@ -16,11 +16,12 @@ import karme.store.ClusteringStore
 import karme.store.EdgePrecedenceStore
 import karme.transformations.EdgePrecedence
 import karme.transformations.RankSumTest
+import karme.transformations.clustering.ReferenceClustering
 import karme.util.CollectionUtil
+import karme.util.FileUtil
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 
-import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class PairEvaluator(
@@ -42,19 +43,47 @@ class PairEvaluator(
   )
 
   def evaluateClusterings(): Unit = {
-    // for each clustering
-    //   Option 2. Cluster 40-length vectors of response to perturbation and
-    //     compare to original clustering
-    for {
-      runData <- runDataCollection
-      reference <- references
-    } {
-      evaluateClustering(runData.clustering, reference)
+    for (reference <- references) {
+      val refClustering =
+        ReferenceClustering.clusterTargetsByCommonResponse(reference)
+
+      // TODO plot clustering information and maybe plot per pseudotime
+      println(s"Found ${refClustering.allClusters.size} clusters.")
+
+      for (runData <- runDataCollection) {
+        // evaluateClustering(runData.id, runData.clustering, reference)
+        evaluateClusterSimilarity(refClustering, runData.clustering)
+      }
     }
   }
 
+  def evaluateClusterSimilarity(
+    referenceGeneClustering: Clustering,
+    singleCellGeneClustering: Clustering
+  ): Unit = {
+    var jacSimilarities = Set[(String, String, Double)]()
+
+    for {
+      refCluster <- referenceGeneClustering.allClusters
+      scCluster <- singleCellGeneClustering.allClusters
+    } {
+      // what is the jaccard similarity between the two
+      val jacSimilarity = CollectionUtil.jaccardSimilarity(
+        referenceGeneClustering.clusterToMembers(refCluster),
+        singleCellGeneClustering.clusterToMembers(scCluster)
+      )
+      jacSimilarities += ((refCluster, scCluster, jacSimilarity))
+    }
+
+    val orderedSimilarities = jacSimilarities.toSeq.sortBy(- _._3)
+    for ((refCluster, scCluster, similarity) <- orderedSimilarities) {
+      println(s"$refCluster, $scCluster, $similarity")
+    }
+
+  }
+
   def evaluateClustering(
-    clustering: Clustering, reference: PredictionLibrary
+    runID: String, clustering: Clustering, reference: PredictionLibrary
   ): Unit = {
     // TODO filter clustering to names in reference.
     val clusteringFilteredByRef = filterClusteringByReferenceTargets(clustering,
@@ -69,21 +98,24 @@ class PairEvaluator(
     } {
       val members = clusteringFilteredByRef.clusterToMembers(cluster)
 
-      val fcs = clusterFoldChanges(members, refPredsFromSource)
+      if (members.nonEmpty) {
+        val fcs = clusterFoldChanges(members, refPredsFromSource)
 
-      val f = reporter.file(s"cluster-$i-knockdown-$refSource.pdf")
-      histogramPlotInterface.plot(fcs, f)
+        // val f = reporter.file(s"cluster-$i-knockdown-$refSource.pdf")
+        // histogramPlotInterface.plot(fcs, f)
 
-      val posFcs = fcs.filter(_ > 0)
-      val negFcs = fcs.filter(_ < 0)
-      val zeroFcs = fcs.filter(_ == 0)
-      val zeroRatio = MathUtil.roundTo(4)(zeroFcs.size.toDouble / fcs.size)
-      println(List(i, refSource, zeroRatio).mkString(","))
-      zeroRatios = zeroRatio :: zeroRatios
+        val posFcs = fcs.filter(_ > 0)
+        val negFcs = fcs.filter(_ < 0)
+        val zeroFcs = fcs.filter(_ == 0)
+        val zeroRatio = MathUtil.roundTo(4)(zeroFcs.size.toDouble / fcs.size)
+        println(
+          List(s"cluster-$i", refSource, zeroRatio, fcs.size).mkString(","))
+        zeroRatios = zeroRatio :: zeroRatios
+      }
     }
 
     histogramPlotInterface.plot(zeroRatios,
-      reporter.file("zero-ratios-distribution.pdf"))
+      reporter.file(s"${runID}-zero-ratios-distribution.pdf"))
   }
 
   def filterClusteringByReferenceTargets(
@@ -184,19 +216,24 @@ class PairEvaluator(
     folders map { f =>
       val clustering = Clustering(new ClusteringStore(f).read)
 
+      val runID = FileUtil.getFileName(f.getName)
+
+      RunData(runID, clustering, Nil, Nil)
+      /*
       evalOpts.predictionType match {
         case FunIOPairsPrediction => {
           val geneIOPairs = IOPairParser(new File(f, "gene-io-pairs.csv"))
-          RunData(f.getName, clustering, Nil, geneIOPairs)
+          RunData(runID, clustering, Nil, geneIOPairs)
         }
         case PrecedencePairsPrediction => {
           val precedences = new EdgePrecedenceStore(f).read
 
           assert(precedences.forall(p => p.source != p.target))
 
-          RunData(f.getName, clustering, precedences, Nil)
+          RunData(runID, clustering, precedences, Nil)
         }
       }
+      */
     }
   }
 

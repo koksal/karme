@@ -40,7 +40,8 @@ case class InputFileOpts(
   discretizedExperimentFile: Option[File] = None,
   smoothedExperimentFile: Option[File] = None,
   namesFiles: Seq[File] = Seq(),
-  trajectoryFiles: Seq[File] = Seq()
+  trajectoryFiles: Seq[File] = Seq(),
+  knockdownExperimentFile: Option[File] = None
 )
 
 case class ClusteringOpts(

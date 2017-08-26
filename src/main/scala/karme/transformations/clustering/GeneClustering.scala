@@ -17,7 +17,7 @@ class GeneClustering(opts: ClusteringOpts) {
 
     val clusterAssignments = new HclustInterface().findAllClusterings(exp, kMax)
 
-    clusterAssignments map makeClusterToNamesMap
+    clusterAssignments map GeneClustering.makeClusterToNamesMap
   }
 
   def computeBestClustering(
@@ -51,22 +51,10 @@ class GeneClustering(opts: ClusteringOpts) {
       method = opts.clusteringMethod,
       index = opts.clusteringIndex)
 
-    val clustering = geneNames.zip(clusterIndices).toMap
-
     val bestK = clusterIndices.toSet.size
     println(s"Best k: $bestK")
 
-    Clustering(makeClusterToNamesMap(clustering))
-  }
-
-  private def makeClusterToNamesMap(
-    nameToClusterIndex: Map[String, Int]
-  ): Map[String, Set[String]] = {
-    nameToClusterIndex.groupBy{
-      case (_, i) => i
-    }.map{
-      case (i, map) => clusterName(i) -> map.keySet
-    }
+    GeneClustering.makeClustering(geneNames, clusterIndices)
   }
 
   def experimentFromClusterAverages(
@@ -85,6 +73,29 @@ class GeneClustering(opts: ClusteringOpts) {
     }
 
     Experiment(clusterMs)
+  }
+
+}
+
+object GeneClustering {
+
+  def makeClustering(
+    namesToCluster: Seq[String],
+    clusterIndices: Seq[Int]
+  ): Clustering = {
+    val nameToClust = namesToCluster.zip(clusterIndices).toMap
+    val clusterToMembers = makeClusterToNamesMap(nameToClust)
+    Clustering(clusterToMembers)
+  }
+
+  private def makeClusterToNamesMap(
+    nameToClusterIndex: Map[String, Int]
+  ): Map[String, Set[String]] = {
+    nameToClusterIndex.groupBy{
+      case (_, i) => i
+    }.map{
+      case (i, map) => clusterName(i) -> map.keySet
+    }
   }
 
   private def clusterName(index: Int): String = {

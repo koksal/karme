@@ -26,6 +26,10 @@ class HistogramPlotInterface extends AbstractRInterface {
   ): Unit = {
     assert(values.size == labels.size)
 
+    if (values.isEmpty) {
+      return
+    }
+
     R.set("values", values.toArray)
     R.set("labels", labels.toArray.map(_.toString))
 

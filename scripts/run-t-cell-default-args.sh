@@ -44,11 +44,8 @@ do
                 --cluster-refinement-p-value 0.05 \
                 --uncertainty-threshold $UNCERTAINTY \
                 --distribution-comparison ranksum \
-                --plot-cluster-curves \
-                --synthesis \
-                --max-expr-depth 1 \
-                --perturbation-targets data/th17/names/pathogenicity-related/col-down.txt \
-                --expected-drivers data/th17/names/potential-regulators.txt
+                --plot-binarized-data \
+                --plot-cluster-curves
             done
           done
         done

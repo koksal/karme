@@ -24,4 +24,9 @@ object CollectionUtil {
     pairsWithCombinedCounts.sortBy(_._2).reverse
   }
 
+  def jaccardSimilarity[A](s1: Set[A], s2: Set[A]): Double = {
+    val nbCommon = s1.intersect(s2).size
+    val nbTotal = s1.union(s2).size
+    nbCommon.toDouble / nbTotal
+  }
 }
