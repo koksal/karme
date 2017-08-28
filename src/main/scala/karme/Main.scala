@@ -24,10 +24,9 @@ object Main {
 
     val reporter = new Reporter(opts.reporterOpts)
 
-    val annotationContext = AnnotationContext.fromOptions(opts.annotationOpts)
+    val annotationContext = AnnotationContext.fromOpts(opts.annotationOpts)
 
-    val inputTransformer = new InputTransformer(opts.inputTransformerOpts,
-      annotationContext)(reporter)
+    val inputTransformer: InputTransformer = ???
 
     val TransformResult(graph, sources, clustering, perEdgeClustering) =
       inputTransformer.transform()

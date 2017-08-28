@@ -11,7 +11,7 @@ case class AnnotationContext(
 )
 
 object AnnotationContext {
-  def fromOptions(annotationOpts: AnnotationOpts): AnnotationContext = {
+  def fromOpts(annotationOpts: AnnotationOpts): AnnotationContext = {
     val annotSets = annotationOpts.annotationsFiles map { f =>
       val names = NamesParser.parseNames(f)
       AnnotationSet(f.getName, names)

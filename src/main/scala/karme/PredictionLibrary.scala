@@ -1,4 +1,4 @@
-package karme.evaluation.enrichr
+package karme
 
 case class PredictionLibrary(
   id: String,
@@ -7,18 +7,18 @@ case class PredictionLibrary(
 
   def names: Set[String] = {
     (predictions flatMap {
-      case ReferencePrediction(term, target, _) => Set(term, target)
+      case ReferencePrediction(source, target, _) => Set(source, target)
     }).toSet
   }
 
   def ioPairs: Set[(String, String)] = {
     predictions.map{
-      case ReferencePrediction(term, target, _) => (term, target)
+      case ReferencePrediction(source, target, _) => (source, target)
     }.toSet
   }
 
 }
 
 case class ReferencePrediction(
-  term: String, target: String, weight: Double
+  source: String, target: String, weight: Double
 )

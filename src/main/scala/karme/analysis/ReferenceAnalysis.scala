@@ -1,7 +1,7 @@
 package karme.analysis
 
+import karme.PredictionLibrary
 import karme.evaluation.EvaluationContext
-import karme.evaluation.enrichr.PredictionLibrary
 import karme.evaluation.enrichr.PredictionEvaluator
 
 class ReferenceAnalysis(evalContext: EvaluationContext) {

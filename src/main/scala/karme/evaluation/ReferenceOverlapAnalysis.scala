@@ -1,8 +1,6 @@
 package karme.evaluation
 
-import karme.ArgHandling
-import karme.Reporter
-import karme.evaluation.enrichr.PredictionLibrary
+import karme.{ArgHandling, PredictionLibrary, Reporter}
 
 object ReferenceOverlapAnalysis {
 

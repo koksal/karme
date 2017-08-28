@@ -3,17 +3,10 @@ package karme.evaluation
 import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
-import karme.Clustering
-import karme.EvalOpts
-import karme.FunIOPairsPrediction
-import karme.PrecedencePairsPrediction
-import karme.Reporter
+import karme._
 import karme.evaluation.Evaluation.ScoredPrediction
-import karme.evaluation.enrichr.PredictionLibrary
-import karme.evaluation.enrichr.ReferencePrediction
-import karme.parsing.IOPairParser
+import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PrecedencePairsPrediction}
 import karme.store.ClusteringStore
-import karme.store.EdgePrecedenceStore
 import karme.transformations.EdgePrecedence
 import karme.transformations.RankSumTest
 import karme.transformations.clustering.ReferenceClustering
@@ -89,7 +82,7 @@ class PairEvaluator(
     val clusteringFilteredByRef = filterClusteringByReferenceTargets(clustering,
       reference)
 
-    val sourceToReferencePreds = reference.predictions.groupBy(_.term)
+    val sourceToReferencePreds = reference.predictions.groupBy(_.source)
 
     var zeroRatios = List[Double]()
     for {
@@ -248,7 +241,7 @@ class PairEvaluator(
     } else {
       library.predictions
     }
-    val refPairs = refPredictions.map(p => (p.term, p.target))
+    val refPairs = refPredictions.map(p => (p.source, p.target))
 
     // intersect domains
     val (backgroundSources, backgroundTargets) =
@@ -381,7 +374,7 @@ class PairEvaluator(
   }
 
   def oneHopTransitiveCheck(library: PredictionLibrary) = {
-    val termToPredictions = library.predictions.groupBy(p => p.term)
+    val termToPredictions = library.predictions.groupBy(p => p.source)
 
     var missed = 0
     var captured = 0
@@ -390,14 +383,14 @@ class PairEvaluator(
     var capturedMinFoldChanges = List[Double]()
 
     for (firstHop <- library.predictions;
-         if firstHop.weight < 0 && firstHop.term != firstHop.target) {
+         if firstHop.weight < 0 && firstHop.source != firstHop.target) {
       val predictionsFromSource =
-        termToPredictions.getOrElse(firstHop.term, Nil)
+        termToPredictions.getOrElse(firstHop.source, Nil)
       val predictionsFromTarget =
         termToPredictions.getOrElse(firstHop.target, Nil)
 
       for (secondHop <- predictionsFromTarget;
-           if secondHop.term != secondHop.target) {
+           if secondHop.source != secondHop.target) {
 
         val minFoldChange = math.min(
           math.abs(firstHop.weight),
@@ -413,7 +406,7 @@ class PairEvaluator(
           case None => {
             println(s"Reference predicts: $firstHop")
             println(s"Reference also predicts: $secondHop")
-            println(s"Reference has no edge from ${firstHop.term} to " +
+            println(s"Reference has no edge from ${firstHop.source} to " +
               s"${secondHop.target}")
             println
 
@@ -457,15 +450,15 @@ class PairEvaluator(
     referencePredictions: Seq[ReferencePrediction]
   ) = {
     // group by source, target
-    val srcToPred = referencePredictions.groupBy(_.term)
-    val pairs = referencePredictions.map(p => (p.term, p.target)).toSet
+    val srcToPred = referencePredictions.groupBy(_.source)
+    val pairs = referencePredictions.map(p => (p.source, p.target)).toSet
 
     var transitivePreds = Set[ReferencePrediction]()
 
     for (firstPred <- referencePredictions) {
       val predsFromTarget = srcToPred.getOrElse(firstPred.target, Nil)
       for (secondPred <- predsFromTarget) {
-        val transitivePair = (firstPred.term, secondPred.target)
+        val transitivePair = (firstPred.source, secondPred.target)
         if (!pairs.contains(transitivePair)) {
           val transitiveWeight = math.min(firstPred.weight, secondPred.weight)
           val transitivePred = ReferencePrediction(transitivePair._1,

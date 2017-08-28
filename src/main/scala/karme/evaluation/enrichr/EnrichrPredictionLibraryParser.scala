@@ -3,6 +3,7 @@ package karme.evaluation.enrichr
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
+import karme.{PredictionLibrary, ReferencePrediction}
 import karme.util.FileUtil
 
 object EnrichrPredictionLibraryParser {

@@ -1,13 +1,11 @@
 package karme.transformations.clustering
 
-import karme.Clustering
-import karme.evaluation.enrichr.PredictionLibrary
-import karme.evaluation.enrichr.ReferencePrediction
+import karme.{Clustering, PredictionLibrary, ReferencePrediction}
 
 object ReferenceClustering {
 
   def clusterTargetsByCommonResponse(library: PredictionLibrary): Clustering = {
-    val sources = library.predictions.map(_.term).distinct
+    val sources = library.predictions.map(_.source).distinct
     val targets = library.predictions.map(_.target).distinct
     val targetToPredictions = library.predictions.groupBy(_.target)
 
@@ -29,7 +27,7 @@ object ReferenceClustering {
   }
 
   def getFoldChange(source: String, preds: Seq[ReferencePrediction]): Int = {
-    preds.find(_.term == source) match {
+    preds.find(_.source == source) match {
       case Some(p) => p.weight.signum
       case None => 0
     }

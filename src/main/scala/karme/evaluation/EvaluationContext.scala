@@ -1,7 +1,6 @@
 package karme.evaluation
 
-import karme.EvalOpts
-import karme.evaluation.enrichr.PredictionLibrary
+import karme.{EvalOpts, PredictionLibrary}
 import karme.evaluation.enrichr.EnrichrPredictionLibraryParser
 
 case class EvaluationContext(

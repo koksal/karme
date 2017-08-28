@@ -30,28 +30,16 @@ case class TransformResult(
 )
 
 class InputTransformer(
+  val rawExperiment: Experiment[Double],
+  val trajectories: Seq[CellTrajectory],
   val opts: InputTransformerOpts,
   val annotationContext: AnnotationContext
 )(implicit reporter: Reporter) {
 
-  val trajectories: Seq[CellTrajectory] = {
-    opts.inputFileOpts.trajectoryFiles map CellTrajectoryParser.parse
-  }
-
-  val geneNamesToFilter: Option[Set[String]] = {
-    NamesParser.parseNameUnion(opts.inputFileOpts.namesFiles)
-  }
-
-  lazy val inputExperiment: Experiment[Double] = {
-    val file = opts.inputFileOpts.continuousExperimentFile.getOrElse(
-      sys.error("No continuous experiment given."))
-    ContinuousExperimentParser.parseAndFilter(file, geneNamesToFilter)
-  }
-
   val clusteringModule = new GeneClustering(opts.clusteringOpts)
 
   def transform(): TransformResult = {
-    val smoothedExp = getSmoothedExperiment()
+    val smoothedExp = buildSmoothedExperiment()
 
     if (opts.plotSmoothedGeneCurves) {
       new CurvePlot().plotCurvesPerGene(smoothedExp,
@@ -92,7 +80,7 @@ class InputTransformer(
 
   def buildDirectedStateGraphsForAllClusterings():
       Seq[(Map[String, Set[String]], DirectedBooleanStateGraph)] = {
-    val smoothedExperiment = getSmoothedExperiment()
+    val smoothedExperiment = buildSmoothedExperiment()
 
     val clusterings = clusteringModule.computeHierarchicalClustering(
       smoothedExperiment, opts.clusteringOpts.maxNbClusters).drop(
@@ -135,15 +123,8 @@ class InputTransformer(
     (g, graphBuilder.initialNodes(g))
   }
 
-  def getSmoothedExperiment(): ContinuousExperiment = {
-    opts.inputFileOpts.smoothedExperimentFile match {
-      case Some(f) => ContinuousExperimentParser.parseAndFilter(f, None)
-      case None => buildSmoothedExperiment()
-    }
-  }
-
   def buildSmoothedExperiment(): ContinuousExperiment = {
-    val normalizedExpAfterFiltering = getNormalizedFilteredExperiment()
+    val normalizedExpAfterFiltering = buildNormalizedFilteredExperiment()
 
     if (opts.plotBinarizedGeneCurves) {
       new CurvePlot().plotBooleanCurvesPerGene(normalizedExpAfterFiltering,
@@ -152,13 +133,6 @@ class InputTransformer(
 
     BinomialMLE.run(normalizedExpAfterFiltering, trajectories,
       opts.smoothingRadius)
-  }
-
-  def getNormalizedFilteredExperiment(): BooleanExperiment = {
-    opts.inputFileOpts.discretizedExperimentFile match {
-      case Some(f) => BooleanExperimentParser.parseAndFilter(f, None)
-      case None => buildNormalizedFilteredExperiment()
-    }
   }
 
   def buildNormalizedFilteredExperiment(): BooleanExperiment = {
@@ -177,11 +151,7 @@ class InputTransformer(
   }
 
   def getTransformedContinuousExperiment(): ContinuousExperiment = {
-    val file = opts.inputFileOpts.continuousExperimentFile.getOrElse(
-      sys.error("no continuous experiment given"))
-    val parsedExperiment = ContinuousExperimentParser.parseAndFilter(file,
-      geneNamesToFilter)
-    val filteredCellExperiment = filterCellsByTrajectories(parsedExperiment)
+    val filteredCellExperiment = filterCellsByTrajectories(rawExperiment)
     val transformedExperiment = transformExperiment(
       NamingUtil.canonicalizeNames(filteredCellExperiment))
 

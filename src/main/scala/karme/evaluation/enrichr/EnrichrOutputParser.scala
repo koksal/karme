@@ -4,6 +4,7 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.TSVFormat
+import karme.ReferencePrediction
 import karme.util.NamingUtil
 
 class EnrichrOutputParser(canonicalNames: Set[String]) {

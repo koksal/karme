@@ -2,10 +2,12 @@ package karme
 
 import java.io.File
 
+import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PredictionType}
 import karme.transformations.discretization.DiscretizationMethod
 import karme.transformations.discretization.Thresholding
 
 case class Opts(
+  inputFileOpts: InputFileOpts = InputFileOpts(),
   inputTransformerOpts: InputTransformerOpts = InputTransformerOpts(),
   synthOpts: SynthOpts = SynthOpts(),
   evalOpts: EvalOpts = EvalOpts(),
@@ -16,7 +18,6 @@ case class Opts(
 )
 
 case class InputTransformerOpts(
-  inputFileOpts: InputFileOpts = InputFileOpts(),
   pseudoLogFactor: Option[Double] = None,
   booleanNormalizationMethod: DiscretizationMethod = Thresholding,
   minDifferentialThreshold: Double = 0.20,
@@ -63,10 +64,6 @@ case class SynthOpts(
   maxExpressionDepth: Int = 2,
   maxNbModels: Option[Int] = None
 )
-
-sealed trait PredictionType
-case object FunIOPairsPrediction extends PredictionType
-case object PrecedencePairsPrediction extends PredictionType
 
 case class EvalOpts(
   perturbationTargetsFile: Option[File] = None,

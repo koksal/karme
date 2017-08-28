@@ -2,9 +2,8 @@ package karme.printing
 
 import java.io.File
 
-import karme.Opts
+import karme.{Opts, PredictionLibrary}
 import karme.evaluation.ReachabilityEvaluation.ReachabilityEvaluationResult
-import karme.evaluation.enrichr.PredictionLibrary
 import karme.util.FileUtil
 import karme.util.MathUtil
 

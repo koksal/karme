@@ -2,6 +2,7 @@ package karme
 
 import java.io.File
 
+import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PrecedencePairsPrediction}
 import karme.transformations.discretization.Ckmeans
 import karme.transformations.discretization.Mclust
 import scopt.OptionParser
@@ -31,45 +32,34 @@ object ArgHandling {
       // Input files:
 
       opt[File]("continuous-experiment") action { (v, o) =>
-        o.copy(
-          inputTransformerOpts = o.inputTransformerOpts.copy(
-            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
-              continuousExperimentFile = Some(v))))
+        o.copy(inputFileOpts =
+          o.inputFileOpts.copy(continuousExperimentFile = Some(v)))
       } text "continuous experiment file in CSV format"
 
       opt[File]("discretized-experiment") action { (v, o) =>
-        o.copy(
-          inputTransformerOpts = o.inputTransformerOpts.copy(
-            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
-              discretizedExperimentFile = Some(v))))
+        o.copy(inputFileOpts =
+          o.inputFileOpts.copy(discretizedExperimentFile = Some(v)))
       } text "discretized experiment file in CSV format"
 
       opt[File]("smoothed-experiment") action { (v, o) =>
-        o.copy(
-          inputTransformerOpts = o.inputTransformerOpts.copy(
-            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
-              smoothedExperimentFile = Some(v))))
+        o.copy(inputFileOpts =
+          o.inputFileOpts.copy(smoothedExperimentFile = Some(v)))
       } text "Smoothed experiment file in CSV format"
 
       opt[Seq[File]]("names") action { (vs, o) =>
-        o.copy(
-          inputTransformerOpts = o.inputTransformerOpts.copy(
-            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
-              namesFiles = vs)))
+        o.copy(inputFileOpts = o.inputFileOpts.copy(namesFiles = vs))
       } text "names files to filter experiment with (uses the union of files)"
 
       opt[Seq[File]]("trajectories") action { (vs, o) =>
-        o.copy(
-          inputTransformerOpts = o.inputTransformerOpts.copy(
-            inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
-              trajectoryFiles = vs)))
+        o.copy(inputFileOpts = o.inputFileOpts.copy(trajectoryFiles = vs))
       } text "trajectory files in CSV format"
 
       opt[File]("knockdown-experiment") action { (f, o)  =>
-        o.copy(inputTransformerOpts = o.inputTransformerOpts.copy(
-          inputFileOpts = o.inputTransformerOpts.inputFileOpts.copy(
-            knockdownExperimentFile = Some(f))))
+        o.copy(inputFileOpts =
+          o.inputFileOpts.copy(knockdownExperimentFile = Some(f)))
       } text "knockdown experiment file"
+
+      // Annotation files:
 
       opt[File]("cell-clusters") action { (v, o) =>
         o.copy(annotationOpts =

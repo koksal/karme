@@ -31,7 +31,7 @@ object ParameterSweep {
     baseOpts: Opts,
     inputTransOptRange: Seq[InputTransformerOpts]
   ): Seq[(Map[String, Set[String]], Map[String, Set[SynthesisResult]])] = {
-    val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
+    val annotCtx = AnnotationContext.fromOpts(baseOpts.annotationOpts)
 
     val clustGraphPairs =
       ParUtil.withParallelism(8, inputTransOptRange).zipWithIndex.flatMap {
@@ -41,7 +41,8 @@ object ParameterSweep {
           val runReporter = new Reporter(baseOpts.reporterOpts.copy(
             outFolder = runFolder))
 
-          val transformer = new InputTransformer(opt, annotCtx)(runReporter)
+          // TODO: use runReporter
+          val transformer: InputTransformer =  ???
           TimingUtil.time(s"Building graphs for cluster range ($i)") {
             transformer.buildDirectedStateGraphsForAllClusterings()
           }
@@ -76,15 +77,15 @@ object ParameterSweep {
     baseOpts: Opts,
     paramRangeExpanders: Seq[OptParameterRangeExpander[_, InputTransformerOpts]]
   ): Unit = {
-    val annotCtx = AnnotationContext.fromOptions(baseOpts.annotationOpts)
+    val annotCtx = AnnotationContext.fromOpts(baseOpts.annotationOpts)
 
     val allOpts = expandOpts(baseOpts.inputTransformerOpts, paramRangeExpanders)
     println(s"Expanded to ${allOpts.size} options.")
 
     val clusteringGraphPairs = ParUtil.withParallelism(8, allOpts).flatMap{
       opt => {
-        val transformer = new InputTransformer(opt, annotCtx)(
-          Reporter.defaultReporter())
+        // TODO: use default reporter
+        val transformer: InputTransformer = ???
         transformer.buildDirectedStateGraphsForAllClusterings()
       }
     }.seq
