@@ -32,8 +32,7 @@ case class InputTransformerOpts(
   plotBinarizedGeneCurves: Boolean = false,
   plotSmoothedGeneCurves: Boolean = false,
   plotClusterCurves: Boolean = false,
-  plotThreeValuedClusterData: Boolean = false,
-  plotBinarizedClusterData: Boolean = false
+  plotThreeValuedData: Boolean = false
 )
 
 case class InputFileOpts(
@@ -46,6 +45,7 @@ case class InputFileOpts(
 )
 
 case class ClusteringOpts(
+  cluster: Boolean = false,
   minNbClusters: Int = 2,
   maxNbClusters: Int = 30,
   clusteringIndex: String = "gap",

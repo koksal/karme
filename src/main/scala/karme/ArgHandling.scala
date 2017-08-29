@@ -115,6 +115,12 @@ object ArgHandling {
           o.inputTransformerOpts.copy(maxHammingDistance = i))
       } text "maximum hamming distance in state graph"
 
+      opt[Unit]("cluster") action { (_, o) =>
+        o.copy(inputTransformerOpts =
+          o.inputTransformerOpts.copy(clusteringOpts =
+            o.inputTransformerOpts.clusteringOpts.copy(cluster = true)))
+      } text "perform gene clustering"
+
       opt[Int]("min-clusters") action { (i, o) =>
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(clusteringOpts =
@@ -195,13 +201,8 @@ object ArgHandling {
 
       opt[Unit]("plot-three-valued-cluster-data") action { (_, o) =>
         o.copy(inputTransformerOpts =
-          o.inputTransformerOpts.copy(plotThreeValuedClusterData = true))
+          o.inputTransformerOpts.copy(plotThreeValuedData = true))
       } text "plot cluster histograms with ternary labels"
-
-      opt[Unit]("plot-binarized-cluster-data") action { (_, o) =>
-        o.copy(inputTransformerOpts =
-          o.inputTransformerOpts.copy(plotBinarizedClusterData = true))
-      } text "plot cluster histograms with binary labels"
 
       // Synthesis options:
 

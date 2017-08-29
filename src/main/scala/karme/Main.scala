@@ -46,27 +46,20 @@ object Main {
       annotationContext
     )(reporter)
 
-    val TransformResult(graph, sources, clustering, perEdgeClustering) =
+    val TransformResult(graph, sources, clustering) =
       inputTransformer.transform()
 
     logGraph(graph, sources, annotationContext, reporter)
 
-    new ClusteringStore(opts.reporterOpts.outFolder).store(
-      clustering.clusterToMembers)
-
-    if (opts.runPrecedence) {
-      val edgePrecedences = new EdgePrecedenceProducer(graph,
-        perEdgeClustering).computePrecedence
-      new EdgePrecedenceStore(opts.reporterOpts.outFolder).store(
-        edgePrecedences)
+    if (opts.inputTransformerOpts.clusteringOpts.cluster) {
+      new ClusteringStore(opts.reporterOpts.outFolder).store(
+        clustering.get.clusterToMembers)
     }
 
     if (opts.runSynthesis) {
       val results = runSynthesis(opts, graph, sources, clustering, reporter)
 
-      if (false) {
-        runPerturbationEval(results, sources, graph, clustering, opts, reporter)
-      }
+      // TODO get IO pairs and evaluate
     }
   }
 
@@ -74,7 +67,7 @@ object Main {
     opts: Opts,
     directedStateGraph: DirectedBooleanStateGraph,
     sources: Set[StateGraphVertex],
-    clustering: Clustering,
+    clustering: Option[Clustering],
     reporter: Reporter
   ): Map[String, Set[SynthesisResult]] = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
@@ -83,7 +76,7 @@ object Main {
       directedStateGraph)
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
-    logIOPairs(results, clustering.clusterToMembers, reporter)
+    logIOPairs(results, clustering, reporter)
 
     results
   }
@@ -119,21 +112,28 @@ object Main {
 
   def logIOPairs(
     results: Map[String, Set[SynthesisResult]],
-    clustering: Map[String, Set[String]],
+    clustering: Option[Clustering],
     reporter: Reporter
   ): Unit = {
-    var clusterIOPairs = Seq[(String, String)]()
+    var nonMappedPairs = Seq[(String, String)]()
     for ((label, labelResults) <- results) {
       for (res <- labelResults) {
-        clusterIOPairs ++= FunctionIOPairs.funInputOutputPairs(label, res)
+        nonMappedPairs ++= FunctionIOPairs.funInputOutputPairs(label, res)
       }
     }
 
-    val geneIOPairs = new ClusterPairExpansion(
-      clustering).clusterMemberPairs(clusterIOPairs)
+    IOPairLogger.logPairs(nonMappedPairs,
+      reporter.file("non-mapped-io-pairs.csv"))
 
-    IOPairLogger.logPairs(clusterIOPairs, reporter.file("cluster-io-pairs.csv"))
-    IOPairLogger.logPairs(geneIOPairs, reporter.file("gene-io-pairs.csv"))
+    clustering match {
+      case Some(cs) => {
+        val mappedPairs = new ClusterPairExpansion(
+          cs.clusterToMembers).clusterMemberPairs(nonMappedPairs)
+
+        IOPairLogger.logPairs(mappedPairs, reporter.file("mapped-io-pairs.csv"))
+      }
+      case None =>
+    }
   }
 
   def logGraph(

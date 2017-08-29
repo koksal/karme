@@ -75,10 +75,10 @@ object StateGraphs {
   }
 
   /**
-    * Filters out every state with uncertain values and converts remaining
-    * states to Boolean states.
+    * Filters out every measurement with uncertain values and converts
+    * associated states to Boolean states.
     */
-  def removeStatesWithUncertainValues(
+  def removeMeasurementsWithUncertainDiscretization(
     threeValuedExperiment: ThreeValuedExperiment
   ): BooleanExperiment = {
     // filter out measurements which have states with uncertain values.

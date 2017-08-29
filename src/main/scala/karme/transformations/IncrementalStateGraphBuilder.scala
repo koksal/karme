@@ -14,7 +14,6 @@ import karme.visualization.StateGraphPlotter
 
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],
-  clustering: Map[String, Set[String]],
   trajectories: Seq[CellTrajectory],
   distributionComparisonTest: DistributionComparisonTest
 ) {

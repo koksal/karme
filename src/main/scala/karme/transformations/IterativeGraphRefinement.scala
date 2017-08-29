@@ -64,9 +64,10 @@ class IterativeGraphRefinement(
       FileUtil.writeToFile(reporter.file(s"clustering-$i.txt"),
         clustering.clusterToMembers.mkString("\n"))
 
-      val (newGraph, newSources) =
-        inputTransformer.graphAndSourcesFromClusterAverages(geneLevelExp,
-          clustering)
+      val avgExp = inputTransformer.clusteringModule
+        .experimentFromClusterAverages(geneLevelExp,
+          clustering.clusterToMembers)
+      val (newGraph, newSources) = inputTransformer.makeGraphAndSources(avgExp)
       clusteredGraph = newGraph
       sources = newSources
 
