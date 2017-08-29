@@ -1,5 +1,7 @@
 package karme
 
+import karme.CellTrajectories.CellTrajectory
+import karme.Experiments.Experiment
 import karme.evaluation.ClusterPairExpansion
 import karme.evaluation.FunctionIOPairs
 import karme.evaluation.PerturbationAnalysis
@@ -26,18 +28,20 @@ object Main {
     val annotationContext = AnnotationContext.fromOpts(opts.annotationOpts)
     val inputContext = InputContext.fromOpts(opts.inputFileOpts)
 
-    run(opts, reporter, annotationContext, inputContext)
+    run(opts, reporter, annotationContext, inputContext.rawExperiment,
+      inputContext.trajectories)
   }
 
   def run(
     opts: Opts,
     reporter: Reporter,
     annotationContext: AnnotationContext,
-    inputContext: InputContext
+    rawExperiment: Experiment[Double],
+    trajectories: Seq[CellTrajectory]
   ): Unit = {
     val inputTransformer = new InputTransformer(
-      inputContext.rawExperiment,
-      inputContext.trajectories,
+      rawExperiment,
+      trajectories,
       opts.inputTransformerOpts,
       annotationContext
     )(reporter)

@@ -17,6 +17,9 @@ case class PredictionLibrary(
     }.toSet
   }
 
+  def sources: Set[String] = predictions.map(_.source).toSet
+  def targets: Set[String] = predictions.map(_.target).toSet
+
 }
 
 case class ReferencePrediction(
