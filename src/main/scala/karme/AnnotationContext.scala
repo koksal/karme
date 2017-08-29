@@ -19,11 +19,11 @@ object AnnotationContext {
 
     AnnotationContext(
       annotationSets = annotSets,
-      cellClustering = getClustering(annotationOpts)
+      cellClustering = getCellClustering(annotationOpts)
     )
   }
 
-  def getClustering(
+  def getCellClustering(
     annotationOpts: AnnotationOpts
   ): Map[String, Set[String]] = {
     annotationOpts.cellClusteringFile match {

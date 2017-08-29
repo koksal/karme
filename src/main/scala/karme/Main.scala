@@ -21,12 +21,26 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     val opts = ArgHandling.parseOptions(args)
-
     val reporter = new Reporter(opts.reporterOpts)
 
     val annotationContext = AnnotationContext.fromOpts(opts.annotationOpts)
+    val inputContext = InputContext.fromOpts(opts.inputFileOpts)
 
-    val inputTransformer: InputTransformer = ???
+    run(opts, reporter, annotationContext, inputContext)
+  }
+
+  def run(
+    opts: Opts,
+    reporter: Reporter,
+    annotationContext: AnnotationContext,
+    inputContext: InputContext
+  ): Unit = {
+    val inputTransformer = new InputTransformer(
+      inputContext.rawExperiment,
+      inputContext.trajectories,
+      opts.inputTransformerOpts,
+      annotationContext
+    )(reporter)
 
     val TransformResult(graph, sources, clustering, perEdgeClustering) =
       inputTransformer.transform()
@@ -44,7 +58,11 @@ object Main {
     }
 
     if (opts.runSynthesis) {
-      runSynthesis(opts, graph, sources, clustering, reporter)
+      val results = runSynthesis(opts, graph, sources, clustering, reporter)
+
+      if (false) {
+        runPerturbationEval(results, sources, graph, clustering, opts, reporter)
+      }
     }
   }
 
@@ -54,13 +72,26 @@ object Main {
     sources: Set[StateGraphVertex],
     clustering: Clustering,
     reporter: Reporter
-  ): Unit = {
+  ): Map[String, Set[SynthesisResult]] = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
 
     val results = synthesizer.synthesizeForPositiveHardConstraints(
       directedStateGraph)
 
-    // TODO move into its own method
+    SynthesisResultLogger(results, reporter.file("functions.txt"))
+    logIOPairs(results, clustering.clusterToMembers, reporter)
+
+    results
+  }
+
+  def runPerturbationEval(
+    results: Map[String, Set[SynthesisResult]],
+    sources: Set[StateGraphVertex],
+    graph: DirectedBooleanStateGraph,
+    clustering: Clustering,
+    opts: Opts,
+    reporter: Reporter
+  ): Unit = {
     val functionsToEvaluate = results collect {
       case (name, results) if results.nonEmpty => {
         name -> results.head.functions.head
@@ -73,17 +104,13 @@ object Main {
       opts.evalOpts.expectedDriversFile.get)
     val perturbationAnalysis = new PerturbationAnalysis(
       functionsToEvaluate,
-      directedStateGraph,
+      graph,
       initialStates,
       clustering,
       targets,
       expectedDrivers
     )(reporter)
     perturbationAnalysis.findGeneDrivers()
-
-    SynthesisResultLogger(results, reporter.file("functions.txt"))
-
-    logIOPairs(results, clustering.clusterToMembers, reporter)
   }
 
   def logIOPairs(

@@ -14,20 +14,36 @@ case class InputContext(
 object InputContext {
 
   def fromOpts(opts: InputFileOpts): InputContext = {
-    val trajectories = opts.trajectoryFiles map CellTrajectoryParser.parse
-
     val genes = NamesParser.parseNameUnion(opts.namesFiles)
 
-    val rawExperiment = opts.continuousExperimentFile match {
-      case Some(f) => ContinuousExperimentParser.parseAndFilter(f, genes)
+    InputContext(
+      getRawExperiment(opts, genes),
+      getTrajectories(opts),
+      getKnockdownExpOpt(opts)
+    )
+  }
+
+  def getRawExperiment(
+    opts: InputFileOpts, geneNames: Option[Set[String]]
+  ): Experiment[Double] = {
+    opts.continuousExperimentFile match {
+      case Some(f) => ContinuousExperimentParser.parseAndFilter(f, geneNames)
       case None => sys.error("No raw experiment file given.")
     }
+  }
 
-    val knockdownExp = opts.knockdownExperimentFile map {
+  def getTrajectories(
+    opts: InputFileOpts
+  ): Seq[CellTrajectory] = {
+    opts.trajectoryFiles map CellTrajectoryParser.parse
+  }
+
+  def getKnockdownExpOpt(
+    opts: InputFileOpts
+  ): Option[PredictionLibrary] = {
+    opts.knockdownExperimentFile map {
       f => EnrichrPredictionLibraryParser(f)
     }
-
-    InputContext(rawExperiment, trajectories, knockdownExp)
   }
 
 }
