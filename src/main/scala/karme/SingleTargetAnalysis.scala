@@ -12,8 +12,11 @@ object SingleTargetAnalysis {
       opts.inputFileOpts).getOrElse(sys.error("No KD experiment."))
 
     for (target <- kdExperiment.targets.toSeq.sorted) {
-      runForTarget(target, kdExperiment.sources, opts, annotationContext,
-        reporter)
+      val ioPairs = runForTarget(target, kdExperiment.sources, opts,
+        annotationContext, reporter)
+
+      // TODO evaluate for target.
+      evaluateForTarget(ioPairs, target, kdExperiment)
     }
   }
 
@@ -28,7 +31,27 @@ object SingleTargetAnalysis {
     val rawExp = InputContext.getRawExperiment(opts.inputFileOpts, genesOpt)
     val trajectories = InputContext.getTrajectories(opts.inputFileOpts)
 
-    Main.run(opts, reporter, annotationContext, rawExp, trajectories)
+    val runReporter = reporter.subfolderReporter(s"target-$target")
+    Main.runInference(opts, runReporter, annotationContext,
+      rawExp, trajectories)
+
   }
 
+  def evaluateForTarget(
+    ioPairs: Seq[(String, String)],
+    target: String,
+    kdExperiment: PredictionLibrary
+  ) = {
+    val predictedSourcesForTarget = ioPairs collect {
+      case (src, tgt) if tgt == target => src
+    }
+
+    val actualSourcesForTarget = kdExperiment.ioPairs collect {
+      case (src, tgt) if tgt == target => src
+    }
+
+    println(s"Target: $target")
+    println(s"Predicted sources: $predictedSourcesForTarget")
+    println(s"Actual sources: $actualSourcesForTarget")
+  }
 }

@@ -199,10 +199,10 @@ object ArgHandling {
           o.inputTransformerOpts.copy(plotClusterCurves = true))
       } text "plot gene cluster curves"
 
-      opt[Unit]("plot-three-valued-cluster-data") action { (_, o) =>
+      opt[Unit]("plot-three-valued-data") action { (_, o) =>
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(plotThreeValuedData = true))
-      } text "plot cluster histograms with ternary labels"
+      } text "plot histograms with ternary labels"
 
       // Synthesis options:
 

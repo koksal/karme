@@ -11,10 +11,8 @@ import karme.parsing.NamesParser
 import karme.printing.IOPairLogger
 import karme.printing.SynthesisResultLogger
 import karme.store.ClusteringStore
-import karme.store.EdgePrecedenceStore
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
-import karme.transformations.EdgePrecedenceProducer
 import karme.transformations.InputTransformer
 import karme.transformations.TransformResult
 import karme.visualization.StateGraphPlotter
@@ -28,17 +26,17 @@ object Main {
     val annotationContext = AnnotationContext.fromOpts(opts.annotationOpts)
     val inputContext = InputContext.fromOpts(opts.inputFileOpts)
 
-    run(opts, reporter, annotationContext, inputContext.rawExperiment,
+    runInference(opts, reporter, annotationContext, inputContext.rawExperiment,
       inputContext.trajectories)
   }
 
-  def run(
+  def runInference(
     opts: Opts,
     reporter: Reporter,
     annotationContext: AnnotationContext,
     rawExperiment: Experiment[Double],
     trajectories: Seq[CellTrajectory]
-  ): Unit = {
+  ): Seq[(String, String)] = {
     val inputTransformer = new InputTransformer(
       rawExperiment,
       trajectories,
@@ -56,11 +54,9 @@ object Main {
         clustering.get.clusterToMembers)
     }
 
-    if (opts.runSynthesis) {
-      val results = runSynthesis(opts, graph, sources, clustering, reporter)
+    val results = runSynthesis(opts, graph, sources, clustering, reporter)
 
-      // TODO get IO pairs and evaluate
-    }
+    getIOPairs(results, clustering, reporter)
   }
 
   def runSynthesis(
@@ -76,8 +72,6 @@ object Main {
       directedStateGraph)
 
     SynthesisResultLogger(results, reporter.file("functions.txt"))
-    logIOPairs(results, clustering, reporter)
-
     results
   }
 
@@ -110,11 +104,11 @@ object Main {
     perturbationAnalysis.findGeneDrivers()
   }
 
-  def logIOPairs(
+  def getIOPairs(
     results: Map[String, Set[SynthesisResult]],
     clustering: Option[Clustering],
     reporter: Reporter
-  ): Unit = {
+  ): Seq[(String, String)] = {
     var nonMappedPairs = Seq[(String, String)]()
     for ((label, labelResults) <- results) {
       for (res <- labelResults) {
@@ -131,8 +125,11 @@ object Main {
           cs.clusterToMembers).clusterMemberPairs(nonMappedPairs)
 
         IOPairLogger.logPairs(mappedPairs, reporter.file("mapped-io-pairs.csv"))
+        mappedPairs
       }
-      case None =>
+      case None => {
+        nonMappedPairs
+      }
     }
   }
 

@@ -2,7 +2,7 @@ package karme
 
 import java.io.File
 
-class Reporter(opts: ReporterOpts) {
+class Reporter(val opts: ReporterOpts) {
 
   opts.outFolder.mkdirs()
 
@@ -18,6 +18,10 @@ class Reporter(opts: ReporterOpts) {
     if (opts.verbose) {
       log(message)
     }
+  }
+
+  def subfolderReporter(subfolderName: String): Reporter = {
+    new Reporter(opts.copy(outFolder = this.file(subfolderName)))
   }
 
 }

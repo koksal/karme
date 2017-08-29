@@ -35,17 +35,10 @@ do
                 --trajectories $TRAJECTORY_PATH \
                 --cell-activity-threshold $DIFF_RATIO \
                 --smoothing-radius $RADIUS \
-                --clustering-method $CLUST_METHOD \
-                --clustering-distance $CLUST_DISTANCE \
-                --clustering-index kl \
-                --min-clusters $k \
-                --max-clusters $k \
-                --refine-clusters \
-                --cluster-refinement-p-value 0.05 \
                 --uncertainty-threshold $UNCERTAINTY \
                 --distribution-comparison ranksum \
-                --plot-binarized-data \
-                --plot-cluster-curves
+                --plot-smoothed-curves \
+                --plot-binarized-data
             done
           done
         done
