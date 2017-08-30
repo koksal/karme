@@ -15,7 +15,6 @@ object SingleTargetAnalysis {
       val ioPairs = runForTarget(target, kdExperiment.sources, opts,
         annotationContext, reporter)
 
-      // TODO evaluate for target.
       evaluateForTarget(ioPairs, target, kdExperiment)
     }
   }
@@ -53,5 +52,13 @@ object SingleTargetAnalysis {
     println(s"Target: $target")
     println(s"Predicted sources: $predictedSourcesForTarget")
     println(s"Actual sources: $actualSourcesForTarget")
+
+    if (predictedSourcesForTarget.nonEmpty) {
+      val correctPredictions =
+        predictedSourcesForTarget.toSet.intersect(actualSourcesForTarget)
+      val hitRatio = correctPredictions.size.toDouble /
+        predictedSourcesForTarget.size
+      println(s"Hit ratio: $target,$hitRatio")
+    }
   }
 }
