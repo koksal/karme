@@ -85,7 +85,7 @@ object KnockdownExperimentTransformer {
     }
   }
 
-  private def saveTriples(
+  def saveTriples(
     triples: Seq[(String, String, Double)],
     f: File
   ): Unit = {
