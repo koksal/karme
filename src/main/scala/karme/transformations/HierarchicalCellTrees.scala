@@ -1,8 +1,5 @@
 package karme.transformations
 
-import karme.CellTrajectories
-import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.Experiment
 import karme.Experiments.Measurement
 
 sealed trait HierarchicalCellTree

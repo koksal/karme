@@ -13,8 +13,7 @@ import karme.printing.SynthesisResultLogger
 import karme.store.ClusteringStore
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
-import karme.transformations.InputTransformer
-import karme.transformations.TransformResult
+import karme.transformations.{HierarchicalCellTrees, InputTransformer, TransformResult}
 import karme.visualization.StateGraphPlotter
 
 object Main {
@@ -28,6 +27,20 @@ object Main {
 
     runInference(opts, reporter, annotationContext, inputContext.rawExperiment,
       inputContext.trajectories)
+  }
+
+  def runLinearInference(
+    opts: Opts,
+    reporter: Reporter,
+    annotationContext: AnnotationContext,
+    rawExperiment: Experiment[Double],
+    trajectories: Seq[CellTrajectory]
+  ) = {
+    val cellTree = HierarchicalCellTrees.buildCellHierarchy(
+      rawExperiment.measurements)
+
+    val treeHeight = HierarchicalCellTrees.height(cellTree)
+
   }
 
   def runInference(

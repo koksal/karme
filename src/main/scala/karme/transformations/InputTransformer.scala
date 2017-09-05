@@ -79,7 +79,6 @@ class InputTransformer(
         clustering.get.clusterToMembers, "smoothed-experiment")
     }
 
-    val emptyRefinement = Map[UnlabeledEdge[StateGraphVertex], Clustering]()
     TransformResult(graph, sources, clustering)
   }
 
