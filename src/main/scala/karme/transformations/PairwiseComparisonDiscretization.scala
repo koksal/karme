@@ -21,7 +21,7 @@ class PairwiseComparisonDiscretization(
     }
   }
 
-  def discretizeGene(
+  private def discretizeGene(
     measurementGroups: Seq[Seq[Measurement[Double]]],
     name: String
   ): Seq[Boolean] = {

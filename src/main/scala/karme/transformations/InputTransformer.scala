@@ -69,6 +69,8 @@ class InputTransformer(
       cellClustering = annotationContext.cellClustering,
       nodeHighlightGroups = List(sources.map(_.state)))
 
+    LinearGraphAnalysis.analyze(smoothedExp, trajectories.head)
+
     graph = new MultiHammingEdgeExpansion(graph).expandMultiHammingEdges()
     plotter.plotDirectedGraph(graph, "graph-after-expansion",
       cellClustering = annotationContext.cellClustering,
