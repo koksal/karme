@@ -54,6 +54,12 @@ object LinearGraphAnalysis {
               firstChangeIndex(srcValues) >= 0 &&
               firstChangeIndex(tgtValues) >= 0
 
+          val consistentWithInteractionSign = if (p.weight < 0) {
+            srcValues.head == tgtValues.head
+          } else {
+            srcValues.head != tgtValues.head
+          }
+
           val row = List(
             p.source,
             p.target,
@@ -63,7 +69,8 @@ object LinearGraphAnalysis {
             valueString(tgtValues),
             firstChangeIndex(srcValues),
             firstChangeIndex(tgtValues),
-            sourcePrecedes
+            sourcePrecedes,
+            consistentWithInteractionSign
           )
           println(row.mkString("\t"))
         }
