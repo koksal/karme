@@ -32,7 +32,7 @@ class PairwiseComparisonDiscretization(
       val isMinimal = (0 until measurementGroups.size).forall { j =>
         !ordering.lt(j, i)
       }
-      isMinimal
+      !isMinimal
     }
   }
 

@@ -95,7 +95,11 @@ object Experiments {
 
     for (name <- e.names) {
       val vs = e.valuesForName(name)
+      println(s"Three-valued clustering for $name (${vs.size} values).")
+
       val mclustRes = new MclustInterface().cluster(vs, 1, 2)
+
+      println("Done with mclust.")
 
       if (mclustRes.g != 2) {
         println(s"There are ${mclustRes.g} optimal components for ${name}.")

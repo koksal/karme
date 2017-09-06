@@ -31,6 +31,7 @@ object Discretization {
         Measurement(id, state)
       }
     }
+    println("Done discretizing.")
 
     Experiment(discreteMeasurements)
   }

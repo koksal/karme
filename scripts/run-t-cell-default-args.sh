@@ -12,7 +12,7 @@ for TRAJECTORY in "${TRAJECTORY_FILES[@]}"
 do
   TRAJECTORY_PATH=data/th17/trajectories/$TRAJECTORY
 
-  for DIFF_RATIO in 0.2
+  for DIFF_RATIO in 0.01
   do
 
     for RADIUS in 20
@@ -27,7 +27,7 @@ do
           for k in 5
           do
 
-            for UNCERTAINTY in 0.2
+            for UNCERTAINTY in 0
             do
               OUTFOLDER=$OUTFOLDER_BASE-$TRAJECTORY-diff-ratio-$DIFF_RATIO-radius-$RADIUS-clustering-$CLUST_METHOD-$CLUST_DISTANCE-$k-uncertainty-$UNCERTAINTY
 
@@ -36,10 +36,7 @@ do
                 --cell-activity-threshold $DIFF_RATIO \
                 --smoothing-radius $RADIUS \
                 --uncertainty-threshold $UNCERTAINTY \
-                --distribution-comparison ranksum \
-                --plot-smoothed-curves \
-                --plot-binarized-data \
-                --plot-three-valued-data
+                --distribution-comparison ranksum
             done
           done
         done

@@ -54,6 +54,8 @@ class InputTransformer(
       makeGraphAndSources(smoothedExp)
     }
 
+    println("Done building graph.")
+
     if (opts.clusteringOpts.cluster && opts.clusteringOpts.refineClusters) {
       val refiner = new ClusteringRefiner(graph, smoothedExp, clustering.get,
         DistributionComparisonTest.fromOptions(
@@ -68,8 +70,6 @@ class InputTransformer(
     plotter.plotDirectedGraph(graph, "graph-before-expansion",
       cellClustering = annotationContext.cellClustering,
       nodeHighlightGroups = List(sources.map(_.state)))
-
-    LinearGraphAnalysis.analyze(smoothedExp, trajectories.head)
 
     graph = new MultiHammingEdgeExpansion(graph).expandMultiHammingEdges()
     plotter.plotDirectedGraph(graph, "graph-after-expansion",
@@ -102,8 +102,12 @@ class InputTransformer(
   def makeGraphAndSources(
     exp: Experiment[Double]
   ): (DirectedBooleanStateGraph, Set[StateGraphVertex]) = {
+    println("Building three-valued experiment.")
+
     val threeValExp = Experiments.continuousExperimentToThreeValued(exp,
       opts.uncertaintyThreshold)
+
+    println("Done building three-valued experiment.")
 
     if (opts.plotThreeValuedData) {
       new HistogramPlotter().plotLabeledHistograms(exp, threeValExp,
@@ -129,6 +133,7 @@ class InputTransformer(
         trajectories, reporter.file("non-smoothed-curves"))
     }
 
+    println("Running smoothing.")
     BinomialMLE.run(normalizedExpAfterFiltering, trajectories,
       opts.smoothingRadius)
   }

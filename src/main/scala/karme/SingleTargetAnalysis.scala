@@ -12,6 +12,7 @@ object SingleTargetAnalysis {
       opts.inputFileOpts).getOrElse(sys.error("No KD experiment."))
 
     for (target <- kdExperiment.targets.toSeq.sorted) {
+      println(s"Running single-target analysis for $target.")
       val ioPairs = runForTarget(target, kdExperiment.sources, opts,
         annotationContext, reporter)
 

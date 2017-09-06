@@ -13,7 +13,7 @@ import karme.printing.SynthesisResultLogger
 import karme.store.ClusteringStore
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
-import karme.transformations.{HierarchicalCellTrees, InputTransformer, TransformResult}
+import karme.transformations.{HierarchicalCellTrees, InputTransformer, LinearGraphAnalysis, TransformResult}
 import karme.visualization.StateGraphPlotter
 
 object Main {
@@ -25,8 +25,8 @@ object Main {
     val annotationContext = AnnotationContext.fromOpts(opts.annotationOpts)
     val inputContext = InputContext.fromOpts(opts.inputFileOpts)
 
-    runInference(opts, reporter, annotationContext, inputContext.rawExperiment,
-      inputContext.trajectories)
+    runLinearInference(opts, reporter, annotationContext,
+      inputContext.rawExperiment, inputContext.trajectories)
   }
 
   def runLinearInference(
@@ -36,11 +36,18 @@ object Main {
     rawExperiment: Experiment[Double],
     trajectories: Seq[CellTrajectory]
   ) = {
-    val cellTree = HierarchicalCellTrees.buildCellHierarchy(
-      rawExperiment.measurements)
+    val inputTransformer = new InputTransformer(
+      rawExperiment,
+      trajectories,
+      opts.inputTransformerOpts,
+      annotationContext
+    )(reporter)
 
-    val treeHeight = HierarchicalCellTrees.height(cellTree)
+    val experiment = inputTransformer.getTransformedContinuousExperiment()
+    val kdExperiment = InputContext.getKnockdownExpOpt(
+      opts.inputFileOpts).getOrElse(sys.error("No KD experiment."))
 
+    LinearGraphAnalysis.analyze(experiment, trajectories.head, kdExperiment)
   }
 
   def runInference(
