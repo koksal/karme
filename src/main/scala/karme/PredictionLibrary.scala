@@ -24,6 +24,29 @@ case class PredictionLibrary(
 
 object PredictionLibrary {
 
+  def checkOppositePredictions(l: PredictionLibrary): Unit = {
+    val sources = l.predictions.map(_.source).toSet
+    println(s"Number of sources: ${sources.size}")
+
+    val pairToPreds = l.predictions.groupBy(p => (p.source, p.target))
+
+    var oppositeFound = false
+    for ((src, tgt) <- pairToPreds.keySet; if src != tgt) {
+      pairToPreds.get((tgt, src)) match {
+        case Some(oppositePredictions) => {
+          println("Opposite edges found in library:")
+          println(pairToPreds((src, tgt)).mkString("\n"))
+          println(pairToPreds((tgt, src)).mkString("\n"))
+          oppositeFound = true
+        }
+        case None =>
+      }
+    }
+    if (!oppositeFound) {
+      println(s"No opposite edges found in ${l.id}")
+    }
+  }
+
   def aggregate(ls: Seq[PredictionLibrary]): PredictionLibrary = {
     val allPredictions = ls.flatMap(_.predictions)
     val ioPairToPredictions = allPredictions.groupBy(p => (p.source, p.target))

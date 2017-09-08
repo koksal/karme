@@ -19,7 +19,7 @@ class LinearGraphDerivativeAnalysis(
   distComp: DistributionComparisonTest
 )(reporter: Reporter) {
 
-  val pValue = 0.05
+  val pValue = 0.01
 
   def analyze(
     experiment: Experiment[Double],
@@ -44,14 +44,22 @@ class LinearGraphDerivativeAnalysis(
       kdExp)
   }
 
+  def updateCounter(
+    counters: Map[String, Int], id: String
+  ): Map[String, Int] = {
+    counters.get(id) match {
+      case Some(cnt) => counters.updated(id, cnt + 1)
+      case None => counters.updated(id, 1)
+    }
+  }
+
   def checkDerivativesAgainstKD(
     names: Seq[String],
     levels: Seq[Int],
     levelToDerivatives: Map[Int, Map[String, Seq[ExpressionDerivative]]],
     kdExp: PredictionLibrary
   ): Unit = {
-    var levelToSuccessCounter = levels.map(l => l -> 0).toMap
-    var levelToFailureCounter = levels.map(l => l -> 0).toMap
+    var counters = Map[String, Int]()
 
     val rowBuffer = new ListBuffer[List[Any]]()
 
@@ -61,11 +69,23 @@ class LinearGraphDerivativeAnalysis(
           val srcDeriv = levelToDerivatives(level)(p.source)
           val tgtDeriv = levelToDerivatives(level)(p.target)
 
-          val validData = canPrecede(srcDeriv, tgtDeriv, p.weight < 0)
-          if (validData) {
-            levelToSuccessCounter += level -> (levelToSuccessCounter(level) + 1)
+          val strict = false
+          val fwdValid = canPrecede(srcDeriv, tgtDeriv, p.weight < 0, strict)
+          val bwdValid = canPrecede(tgtDeriv, srcDeriv, p.weight < 0, strict)
+          if (fwdValid) {
+            counters = updateCounter(counters,
+              s"level ${level} forward success")
           } else {
-            levelToFailureCounter += level -> (levelToFailureCounter(level) + 1)
+            counters = updateCounter(counters,
+              s"level ${level} forward failure")
+          }
+
+          if (bwdValid) {
+            counters = updateCounter(counters,
+              s"level ${level} backward success")
+          } else {
+            counters = updateCounter(counters,
+              s"level ${level} backward failure")
           }
 
           val row = List(
@@ -75,7 +95,8 @@ class LinearGraphDerivativeAnalysis(
             level,
             derivString(srcDeriv),
             derivString(tgtDeriv),
-            validData
+            fwdValid,
+            bwdValid
           )
           rowBuffer.append(row)
         }
@@ -83,7 +104,7 @@ class LinearGraphDerivativeAnalysis(
     }
 
     saveTable(rowBuffer.toList)
-    saveCounts(levelToSuccessCounter, levelToFailureCounter)
+    saveCounts(counters)
 
   }
 
@@ -113,14 +134,15 @@ class LinearGraphDerivativeAnalysis(
   def canPrecede(
     srcDeriv: Seq[ExpressionDerivative],
     tgtDeriv: Seq[ExpressionDerivative],
-    sameSign: Boolean
+    sameSign: Boolean,
+    strict: Boolean
   ): Boolean = {
     assert(srcDeriv.size == tgtDeriv.size)
     val n = srcDeriv.size
 
     (0 until n).exists { i =>
       (0 until n).exists { j =>
-        i <= j &&
+        (if (strict) i < j else i <= j) &&
           srcDeriv(i) != Unchanged &&
           tgtDeriv(j) != Unchanged &&
           (sameSign == (srcDeriv(i) == tgtDeriv(j)))
@@ -136,7 +158,8 @@ class LinearGraphDerivativeAnalysis(
       "resolution",
       "source derivatives",
       "target derivatives",
-      "consistent"
+      "consistent",
+      "opposite consistent"
     )
 
     val w = CSVWriter.open(reporter.file("derivative-analysis.csv"))
@@ -146,22 +169,16 @@ class LinearGraphDerivativeAnalysis(
   }
 
   def saveCounts(
-    levelToSuccessCounter: Map[Int, Int],
-    levelToFailureCounter: Map[Int, Int]
+    counters: Map[String, Int]
   ): Unit = {
-    val successRows = levelToSuccessCounter.map {
-      case (level, count) => List("success", level, count)
+    val headers = List("counter", "count")
+
+    val rows = counters.toList.sortBy(_._1).map {
+      case (k, v) => List(k, v)
     }
-
-    val failureRows = levelToFailureCounter.map {
-      case (level, count) => List("failure", level, count)
-    }
-
-    val headers = List("outcome", "resolution", "count")
-
     val w = CSVWriter.open(reporter.file("derivative-analysis-counts.csv"))
     w.writeRow(headers)
-    w.writeAll(successRows.toList ++ failureRows.toList)
+    w.writeAll(rows)
     w.close()
   }
 }
