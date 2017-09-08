@@ -9,6 +9,6 @@ mkdir -p $OUTFOLDER
 sbt "run-main karme.Main \
   --continuous-experiment data/th17/measurements/measurements.csv \
   --names data/th17/names/knockdown-sources.txt,data/th17/names/knockdown-targets.txt \
-  --knockdown-experiment data/reference/th17/knockdown-fold-changes.csv \
+  --knockdown-experiments data/reference/th17/knockdown-fold-changes.csv \
   --verbose \
   --outfolder $OUTFOLDER $*" | tee $LOGFILE

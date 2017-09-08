@@ -20,7 +20,7 @@ object EnrichrPredictionAggregator {
     val predictions = enrichrFiles flatMap enrichrParser.parse
 
     val outputFile = new File("enrichr-predictions.csv")
-    EnrichrPredictionLogger.saveToFile(predictions, outputFile)
+    PredictionLibraryLogger.saveToFile(predictions, outputFile)
   }
 
 }

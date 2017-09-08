@@ -8,8 +8,8 @@ object SingleTargetAnalysis {
 
     val annotationContext = AnnotationContext.fromOpts(opts.annotationOpts)
 
-    val kdExperiment = InputContext.getKnockdownExpOpt(
-      opts.inputFileOpts).getOrElse(sys.error("No KD experiment."))
+    val kdExperiment = PredictionLibrary.aggregate(
+      InputContext.getKnockdownExperiments(opts.inputFileOpts))
 
     for (target <- kdExperiment.targets.toSeq.sorted) {
       println(s"Running single-target analysis for $target.")

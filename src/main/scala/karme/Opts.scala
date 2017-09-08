@@ -41,7 +41,7 @@ case class InputFileOpts(
   smoothedExperimentFile: Option[File] = None,
   namesFiles: Seq[File] = Seq(),
   trajectoryFiles: Seq[File] = Seq(),
-  knockdownExperimentFile: Option[File] = None
+  knockdownExperimentFiles: Seq[File] = Seq()
 )
 
 case class ClusteringOpts(

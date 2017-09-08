@@ -13,7 +13,9 @@ import karme.printing.SynthesisResultLogger
 import karme.store.ClusteringStore
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
-import karme.transformations.{HierarchicalCellTrees, InputTransformer, LinearGraphAnalysis, TransformResult}
+import karme.transformations.DistributionComparisonTest
+import karme.transformations.LinearGraphDerivativeAnalysis
+import karme.transformations.{InputTransformer, LinearGraphAnalysis, TransformResult}
 import karme.visualization.StateGraphPlotter
 
 object Main {
@@ -44,10 +46,15 @@ object Main {
     )(reporter)
 
     val experiment = inputTransformer.getTransformedContinuousExperiment()
-    val kdExperiment = InputContext.getKnockdownExpOpt(
-      opts.inputFileOpts).getOrElse(sys.error("No KD experiment."))
+    val kdExperiment = PredictionLibrary.aggregate(
+      InputContext.getKnockdownExperiments(opts.inputFileOpts))
 
-    LinearGraphAnalysis.analyze(experiment, trajectories.head, kdExperiment)
+//    new LinearGraphAnalysis(reporter).analyze(experiment,
+//      trajectories.head, kdExperiment)
+    new LinearGraphDerivativeAnalysis(
+      DistributionComparisonTest.fromOptions(
+        opts.inputTransformerOpts.distributionComparisonMethod))(reporter)
+      .analyze(experiment, trajectories.head, kdExperiment)
   }
 
   def runInference(

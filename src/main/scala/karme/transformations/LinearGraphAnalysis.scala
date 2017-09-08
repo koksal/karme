@@ -3,12 +3,17 @@ package karme.transformations
 import karme.{CellTrajectories, PredictionLibrary}
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
+import karme.Experiments.Measurement
+import karme.Reporter
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.visualization.HistogramPlotInterface
 
-object LinearGraphAnalysis {
+class LinearGraphAnalysis(reporter: Reporter) {
 
   val distComp = new RankSumTest()
-  val pValue = 0.01
+  val pValue = 0.05
+
+  val histogramPlotInterface = new HistogramPlotInterface()
 
   def analyze(
     experiment: Experiment[Double],
@@ -25,8 +30,9 @@ object LinearGraphAnalysis {
       l -> makeBooleanStatesForLevel(cellTree, l)
     }.toMap
 
-    checkDistinctStates(experiment.names, levels, levelToBooleanStates)
-    checkAgainstKD(experiment.names, levels, levelToBooleanStates, kdExp)
+    // checkDistinctStates(experiment.names, levels, levelToBooleanStates)
+    // checkAgainstKD(experiment.names, levels, levelToBooleanStates, kdExp)
+    plotGroups(cellTree, experiment.names, levels)
   }
 
   def checkAgainstKD(
@@ -35,6 +41,9 @@ object LinearGraphAnalysis {
     levelToStates: Map[Int, Seq[ConcreteBooleanState]],
     kdExp: PredictionLibrary
   ): Unit = {
+    var precedesCounter = 0
+    var signConsistencyCounter = 0
+
     for (p <- kdExp.predictions.sortBy(p => - math.abs(p.weight))) {
       if (!names.contains(p.source) || !names.contains(p.target)) {
         val row = List(
@@ -50,7 +59,7 @@ object LinearGraphAnalysis {
           val tgtValues = levelToStates(level).map(s => s.value(p.target))
 
           val sourcePrecedes =
-            firstChangeIndex(srcValues) <= firstChangeIndex(tgtValues) &&
+            firstChangeIndex(srcValues) < firstChangeIndex(tgtValues) &&
               firstChangeIndex(srcValues) >= 0 &&
               firstChangeIndex(tgtValues) >= 0
 
@@ -118,4 +127,50 @@ object LinearGraphAnalysis {
     vs.map(v => if (v) "1" else "O").mkString("")
   }
 
+  def plotGroups(
+    cellTree: HierarchicalCellTree,
+    genes: Seq[String],
+    levels: Seq[Int]
+  ): Unit = {
+    for (level <- levels) {
+      val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
+        level)
+
+      for (gene <- genes) {
+        plotAdjacentGroups(groups, gene, level)
+      }
+    }
+  }
+
+  def plotGroupsPerGene(
+    groups: Seq[Seq[Measurement[Double]]],
+    gene: String,
+    level: Int
+  ): Unit = {
+    val pointLabelPairs = groups.zipWithIndex.flatMap {
+      case (ms, i) => {
+        ms.map(m => (m.state.value(gene), i))
+      }
+    }
+    histogramPlotInterface.plot(pointLabelPairs,
+      reporter.file(s"$gene-groups-level-$level.pdf"))
+  }
+
+  def plotAdjacentGroups(
+    groups: Seq[Seq[Measurement[Double]]],
+    gene: String,
+    level: Int
+  ): Unit = {
+    val adjacentGroupPairs = groups.zip(groups.tail)
+
+    for (((g1, g2), i) <- adjacentGroupPairs.zipWithIndex) {
+      val g1PointLabelPairs = g1.map(
+        m => (m.state.value(gene), s"group $i"))
+      val g2PointLabelPairs = g2.map(
+        m => (m.state.value(gene), s"group ${i + 1}"))
+
+      histogramPlotInterface.plot(g1PointLabelPairs ++ g2PointLabelPairs,
+        reporter.file(s"$gene-level-$level-comparison-$i.pdf"))
+    }
+  }
 }

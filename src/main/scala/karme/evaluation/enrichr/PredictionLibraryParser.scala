@@ -5,8 +5,9 @@ import java.io.File
 import com.github.tototoshi.csv.CSVReader
 import karme.{PredictionLibrary, ReferencePrediction}
 import karme.util.FileUtil
+import karme.util.NamingUtil
 
-object EnrichrPredictionLibraryParser {
+object PredictionLibraryParser {
 
   def apply(f: File): PredictionLibrary = {
     val parsedPredictions = parsePredictions(f)
@@ -21,10 +22,14 @@ object EnrichrPredictionLibraryParser {
     val tuples = reader.allWithHeaders()
 
     tuples map { tuple =>
-      val source = tuple(EnrichrPredictionLogger.SOURCE_FIELD)
-      val target = tuple(EnrichrPredictionLogger.TARGET_FIELD)
-      val weight = tuple(EnrichrPredictionLogger.WEIGHT_FIELD)
-      ReferencePrediction(source, target, weight.toDouble)
+      val source = tuple(PredictionLibraryLogger.SOURCE_FIELD)
+      val target = tuple(PredictionLibraryLogger.TARGET_FIELD)
+      val weight = tuple(PredictionLibraryLogger.WEIGHT_FIELD)
+      ReferencePrediction(
+        NamingUtil.canonicalize(source),
+        NamingUtil.canonicalize(target),
+        weight.toDouble
+      )
     }
   }
 

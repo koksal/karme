@@ -16,9 +16,9 @@ class MeasurementGroupOrdering(
     assert(!(xGreater && yGreater))
 
     if (xGreater) {
-      -1
-    } else if (yGreater) {
       1
+    } else if (yGreater) {
+      -1
     } else {
       0
     }

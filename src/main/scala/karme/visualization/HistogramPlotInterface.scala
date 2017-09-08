@@ -20,6 +20,14 @@ class HistogramPlotInterface extends AbstractRInterface {
   }
 
   def plot[T: ClassTag, U: ClassTag](
+    valueLabelPairs: Seq[(T, U)],
+    f: File
+  ): Unit = {
+    val (values, labels) = valueLabelPairs.unzip
+    plot(values, labels, f)
+  }
+
+  def plot[T: ClassTag, U: ClassTag](
     values: Seq[T],
     labels: Seq[U],
     f: File

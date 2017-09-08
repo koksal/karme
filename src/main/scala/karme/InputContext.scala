@@ -2,13 +2,13 @@ package karme
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.evaluation.enrichr.EnrichrPredictionLibraryParser
+import karme.evaluation.enrichr.PredictionLibraryParser
 import karme.parsing.{CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
 
 case class InputContext(
   rawExperiment: Experiment[Double],
   trajectories: Seq[CellTrajectory],
-  knockdownExperiment: Option[PredictionLibrary]
+  knockdownExperiments: Seq[PredictionLibrary]
 )
 
 object InputContext {
@@ -19,7 +19,7 @@ object InputContext {
     InputContext(
       getRawExperiment(opts, genes),
       getTrajectories(opts),
-      getKnockdownExpOpt(opts)
+      getKnockdownExperiments(opts)
     )
   }
 
@@ -38,11 +38,11 @@ object InputContext {
     opts.trajectoryFiles map CellTrajectoryParser.parse
   }
 
-  def getKnockdownExpOpt(
+  def getKnockdownExperiments(
     opts: InputFileOpts
-  ): Option[PredictionLibrary] = {
-    opts.knockdownExperimentFile map {
-      f => EnrichrPredictionLibraryParser(f)
+  ): Seq[PredictionLibrary] = {
+    opts.knockdownExperimentFiles map {
+      f => PredictionLibraryParser(f)
     }
   }
 

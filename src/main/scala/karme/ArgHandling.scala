@@ -54,10 +54,10 @@ object ArgHandling {
         o.copy(inputFileOpts = o.inputFileOpts.copy(trajectoryFiles = vs))
       } text "trajectory files in CSV format"
 
-      opt[File]("knockdown-experiment") action { (f, o)  =>
+      opt[Seq[File]]("knockdown-experiments") action { (fs, o)  =>
         o.copy(inputFileOpts =
-          o.inputFileOpts.copy(knockdownExperimentFile = Some(f)))
-      } text "knockdown experiment file"
+          o.inputFileOpts.copy(knockdownExperimentFiles = fs))
+      } text "knockdown experiment files"
 
       // Annotation files:
 

@@ -1,67 +1,42 @@
 package karme.transformations
 
-import karme.CellTrajectories
-import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.Experiment
+import karme.Experiments.Measurement
+import karme.transformations.ExpressionDerivation.Downregulated
+import karme.transformations.ExpressionDerivation.ExpressionDerivative
+import karme.transformations.ExpressionDerivation.Unchanged
+import karme.transformations.ExpressionDerivation.Upregulated
 
 class HierarchicalDerivatives(
-  experiment: Experiment[Double],
-  trajectory: CellTrajectory
+  distributionComparisonTest: DistributionComparisonTest,
+  pValueThreshold: Double
 ) {
 
-  private val P_VALUE_THRESHOLD = 0.001
+  def makeDerivativesPerGroup(
+    measurementGroups: Seq[Seq[Measurement[Double]]]
+  ): Map[String, Seq[ExpressionDerivative]] = {
+    val n = measurementGroups.size
+    val names = measurementGroups.head.head.state.orderedKeys
 
-  private val orderedExperiment =
-    CellTrajectories.orderMeasurementsByTrajectory(experiment, trajectory)
+    var result = Map[String, Seq[ExpressionDerivative]]()
 
-  private val distribComp: DistributionComparisonTest =
-    new KolmogorovSmirnovTest()
+    for (name <- names) {
+      val ordering = new MeasurementGroupOrdering(measurementGroups, name,
+        distributionComparisonTest, pValueThreshold)
 
-  def analyzeGenes(): Unit = {
-    val cellTree = HierarchicalCellTrees.buildCellHierarchy(
-      orderedExperiment.measurements)
-    val cellTreeHeight = HierarchicalCellTrees.height(cellTree)
-
-    for (name <- experiment.names) {
-      println(s"Analyzing gene $name")
-
-      for (i <- 1 until cellTreeHeight) {
-        val measurementClustersAtHeight =
-          HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree, i)
-        val values = measurementClustersAtHeight map (
-          ms => ms.map(m => m.state.value(name)))
-
-        val valuePairs = values.zip(values.tail)
-
-        print(s"Level $i: ")
-
-        for ((vs1, vs2) <- valuePairs) {
-          val upreg = isUpregulation(vs1, vs2)
-          upreg match {
-            case Some(true) => print("u")
-            case Some(false) => print("d")
-            case None => print("-")
-          }
+      val derivatives = for (i <- 0 until (n - 1)) yield {
+        val compRes = ordering.compare(i, i + 1)
+        if (compRes < 0) {
+          Upregulated
+        } else if (compRes == 0) {
+          Unchanged
+        } else {
+          Downregulated
         }
-
-        println()
       }
+      result += name -> derivatives
     }
-  }
 
-  def isUpregulation(
-    leftVs: Seq[Double], rightVs: Seq[Double]
-  ): Option[Boolean] = {
-    val decreases = distribComp.testPValue(leftVs, rightVs) < P_VALUE_THRESHOLD
-    val increases = distribComp.testPValue(rightVs, leftVs) < P_VALUE_THRESHOLD
-
-    assert(!(decreases && increases))
-
-    if (!increases && !decreases) {
-      None
-    } else {
-      Some(increases)
-    }
+    result
   }
 
 }

@@ -14,7 +14,7 @@ class PairwiseComparisonDiscretization(
     val names = measurementGroups.head.head.state.orderedKeys
 
     val booleanValuesPerName = names map (
-      n => discretizeGene (measurementGroups, n))
+      n => discretizeGene(measurementGroups, n))
 
     booleanValuesPerName.transpose map { valuesPerGroup =>
       GenericState(names.zip(valuesPerGroup).toMap)
