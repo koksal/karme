@@ -1,7 +1,5 @@
 package karme.transformations
 
-import java.io.File
-
 import com.github.tototoshi.csv.CSVWriter
 import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
@@ -12,6 +10,7 @@ import karme.transformations.ExpressionDerivation.Downregulated
 import karme.transformations.ExpressionDerivation.ExpressionDerivative
 import karme.transformations.ExpressionDerivation.Unchanged
 import karme.transformations.ExpressionDerivation.Upregulated
+import karme.util.MathUtil
 
 import scala.collection.mutable.ListBuffer
 
@@ -40,8 +39,16 @@ class LinearGraphDerivativeAnalysis(
       level -> ds
     }).toMap
 
+    val levelToPValues = (for (level <- levels) yield {
+      val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
+        level)
+      val hd = new HierarchicalDerivatives(distComp, pValue)
+      val ps = hd.makePValuesPerGroup(groups)
+      level -> ps
+    }).toMap
+
     checkDerivativesAgainstKD(experiment.names, levels, levelToDerivatives,
-      kdExp)
+      levelToPValues, kdExp)
   }
 
   def updateCounter(
@@ -57,6 +64,7 @@ class LinearGraphDerivativeAnalysis(
     names: Seq[String],
     levels: Seq[Int],
     levelToDerivatives: Map[Int, Map[String, Seq[ExpressionDerivative]]],
+    levelToPValues: Map[Int, Map[String, Seq[Double]]],
     kdExp: PredictionLibrary
   ): Unit = {
     var counters = Map[String, Int]()
@@ -69,9 +77,18 @@ class LinearGraphDerivativeAnalysis(
           val srcDeriv = levelToDerivatives(level)(p.source)
           val tgtDeriv = levelToDerivatives(level)(p.target)
 
-          val strict = false
+          val srcPVals = levelToPValues(level)(p.source)
+          val tgtPVals = levelToPValues(level)(p.target)
+
+          val strict = true
           val fwdValid = canPrecede(srcDeriv, tgtDeriv, p.weight < 0, strict)
           val bwdValid = canPrecede(tgtDeriv, srcDeriv, p.weight < 0, strict)
+
+          val fwdBestP = findBestPrecedencePValue(srcDeriv, tgtDeriv,
+            srcPVals, tgtPVals, p.weight < 0, strict)
+          val bwdBestP = findBestPrecedencePValue(tgtDeriv, srcDeriv,
+            tgtPVals, srcPVals, p.weight < 0, strict)
+
           if (fwdValid) {
             counters = updateCounter(counters,
               s"level ${level} forward success")
@@ -88,6 +105,19 @@ class LinearGraphDerivativeAnalysis(
               s"level ${level} backward failure")
           }
 
+          if (fwdValid && bwdValid) {
+            if (fwdBestP.get == bwdBestP.get) {
+              counters = updateCounter(counters,
+                s"level ${level} forward p-value tie")
+            } else if (fwdBestP.get < bwdBestP.get) {
+              counters = updateCounter(counters,
+                s"level ${level} forward p-value success")
+            } else {
+              counters = updateCounter(counters,
+                s"level ${level} forward p-value failure")
+            }
+          }
+
           val row = List(
             p.source,
             p.target,
@@ -95,8 +125,12 @@ class LinearGraphDerivativeAnalysis(
             level,
             derivString(srcDeriv),
             derivString(tgtDeriv),
+            pValString(srcPVals),
+            pValString(tgtPVals),
             fwdValid,
-            bwdValid
+            bwdValid,
+            fwdBestP.getOrElse(" "),
+            bwdBestP.getOrElse(" ")
           )
           rowBuffer.append(row)
         }
@@ -117,6 +151,11 @@ class LinearGraphDerivativeAnalysis(
     ss.mkString("")
   }
 
+  def pValString(ps: Seq[Double]): String = {
+    val ss = ps.map { p => MathUtil.roundTo(4)(p) }
+    ss.mkString(", ")
+  }
+
   def firstChangeIndex(ds: Seq[ExpressionDerivative]): Int = {
     ds.indexWhere {
       case Unchanged => false
@@ -128,6 +167,39 @@ class LinearGraphDerivativeAnalysis(
     ds.lastIndexWhere {
       case Unchanged => false
       case _ => true
+    }
+  }
+
+  def findBestPrecedencePValue(
+    srcDeriv: Seq[ExpressionDerivative],
+    tgtDeriv: Seq[ExpressionDerivative],
+    srcPVals: Seq[Double],
+    tgtPVals: Seq[Double],
+    sameSign: Boolean,
+    strict: Boolean
+  ): Option[Double] = {
+    assert(srcDeriv.size == tgtDeriv.size)
+    assert(srcPVals.size == tgtPVals.size)
+    assert(srcDeriv.size == srcPVals.size)
+    val n = srcDeriv.size
+
+    var validPValues = Set[Double]()
+    for (i <- 0 until n) {
+      for (j <- 0 until n) {
+        val canPrecede = (if (strict) i < j else i <= j) &&
+          srcDeriv(i) != Unchanged &&
+          tgtDeriv(j) != Unchanged &&
+          (sameSign == (srcDeriv(i) == tgtDeriv(j)))
+        if (canPrecede) {
+          validPValues += math.min(srcPVals(i), tgtPVals(j))
+        }
+      }
+    }
+
+    if (validPValues.isEmpty) {
+      None
+    } else {
+      Some(validPValues.min)
     }
   }
 
@@ -158,8 +230,12 @@ class LinearGraphDerivativeAnalysis(
       "resolution",
       "source derivatives",
       "target derivatives",
+      "source p-values",
+      "target p-values",
       "consistent",
-      "opposite consistent"
+      "opposite consistent",
+      "best p-value",
+      "opposite best p-value"
     )
 
     val w = CSVWriter.open(reporter.file("derivative-analysis.csv"))
