@@ -53,7 +53,8 @@ object Main {
 //      trajectories.head, kdExperiment)
     new LinearGraphDerivativeAnalysis(
       DistributionComparisonTest.fromOptions(
-        opts.inputTransformerOpts.distributionComparisonMethod))(reporter)
+        opts.inputTransformerOpts.distributionComparisonMethod),
+      opts.inputTransformerOpts.distributionComparisonPValue)(reporter)
       .analyze(experiment, trajectories.head, kdExperiment)
   }
 

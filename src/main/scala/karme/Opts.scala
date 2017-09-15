@@ -26,6 +26,7 @@ case class InputTransformerOpts(
   maxHammingDistance: Int = 1,
   clusteringOpts: ClusteringOpts = ClusteringOpts(),
   distributionComparisonMethod: String = "ranksum",
+  distributionComparisonPValue: Double = 0.05,
   plotOriginalData: Boolean = false,
   plotTransformedData: Boolean = false,
   plotBinarizedData: Boolean = false,

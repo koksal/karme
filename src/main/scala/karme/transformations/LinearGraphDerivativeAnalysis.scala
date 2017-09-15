@@ -15,10 +15,9 @@ import karme.util.MathUtil
 import scala.collection.mutable.ListBuffer
 
 class LinearGraphDerivativeAnalysis(
-  distComp: DistributionComparisonTest
+  distComp: DistributionComparisonTest,
+  pValue: Double
 )(reporter: Reporter) {
-
-  val pValue = 0.01
 
   def analyze(
     experiment: Experiment[Double],
@@ -29,7 +28,7 @@ class LinearGraphDerivativeAnalysis(
       trajectory).measurements
     val cellTree = HierarchicalCellTrees.buildCellHierarchy(orderedMs)
 
-    val levels = 1 to 3
+    val levels = 4 to 4
 
     val levelToDerivatives = (for (level <- levels) yield {
       val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
@@ -84,38 +83,41 @@ class LinearGraphDerivativeAnalysis(
           val fwdValid = canPrecede(srcDeriv, tgtDeriv, p.weight < 0, strict)
           val bwdValid = canPrecede(tgtDeriv, srcDeriv, p.weight < 0, strict)
 
-          val fwdBestP = findBestPrecedencePValue(srcDeriv, tgtDeriv,
-            srcPVals, tgtPVals, p.weight < 0, strict)
-          val bwdBestP = findBestPrecedencePValue(tgtDeriv, srcDeriv,
-            tgtPVals, srcPVals, p.weight < 0, strict)
+          val fwdFstChangeValid = canPrecedeForFirstChange(srcDeriv,
+            tgtDeriv, p.weight < 0, strict)
+          val bwdFstChangeValid = canPrecedeForFirstChange(tgtDeriv,
+            srcDeriv, p.weight < 0, strict)
 
-          if (fwdValid) {
+//          if (fwdValid) {
+//            counters = updateCounter(counters,
+//              s"level ${level} forward success")
+//          } else {
+//            counters = updateCounter(counters,
+//              s"level ${level} forward failure")
+//          }
+//
+//          if (bwdValid) {
+//            counters = updateCounter(counters,
+//              s"level ${level} backward success")
+//          } else {
+//            counters = updateCounter(counters,
+//              s"level ${level} backward failure")
+//          }
+
+          if (fwdFstChangeValid) {
             counters = updateCounter(counters,
-              s"level ${level} forward success")
+              s"level ${level} forward first success")
           } else {
             counters = updateCounter(counters,
-              s"level ${level} forward failure")
+              s"level ${level} forward first failure")
           }
 
-          if (bwdValid) {
+          if (bwdFstChangeValid) {
             counters = updateCounter(counters,
-              s"level ${level} backward success")
+              s"level ${level} backward first success")
           } else {
             counters = updateCounter(counters,
-              s"level ${level} backward failure")
-          }
-
-          if (fwdValid && bwdValid) {
-            if (fwdBestP.get == bwdBestP.get) {
-              counters = updateCounter(counters,
-                s"level ${level} forward p-value tie")
-            } else if (fwdBestP.get < bwdBestP.get) {
-              counters = updateCounter(counters,
-                s"level ${level} forward p-value success")
-            } else {
-              counters = updateCounter(counters,
-                s"level ${level} forward p-value failure")
-            }
+              s"level ${level} backward first failure")
           }
 
           val row = List(
@@ -129,8 +131,8 @@ class LinearGraphDerivativeAnalysis(
             pValString(tgtPVals),
             fwdValid,
             bwdValid,
-            fwdBestP.getOrElse(" "),
-            bwdBestP.getOrElse(" ")
+            fwdFstChangeValid,
+            bwdFstChangeValid
           )
           rowBuffer.append(row)
         }
@@ -219,6 +221,30 @@ class LinearGraphDerivativeAnalysis(
           tgtDeriv(j) != Unchanged &&
           (sameSign == (srcDeriv(i) == tgtDeriv(j)))
       }
+    }
+  }
+
+  def canPrecedeForFirstChange(
+    srcDeriv: Seq[ExpressionDerivative],
+    tgtDeriv: Seq[ExpressionDerivative],
+    sameSign: Boolean,
+    strict: Boolean
+  ): Boolean = {
+    val srcFirstChangeIdx = firstChangeIndex(srcDeriv)
+    val tgtFirstChangeIdx = firstChangeIndex(tgtDeriv)
+
+    if (srcFirstChangeIdx < 0 || tgtFirstChangeIdx < 0) {
+      false
+    } else {
+      val precedenceOK = if (strict) {
+        srcFirstChangeIdx < tgtFirstChangeIdx
+      } else {
+        srcFirstChangeIdx <= tgtFirstChangeIdx
+      }
+      val signOK =
+        sameSign == (srcDeriv(srcFirstChangeIdx) == tgtDeriv(tgtFirstChangeIdx))
+
+      precedenceOK && signOK
     }
   }
 

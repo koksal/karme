@@ -156,6 +156,11 @@ object ArgHandling {
           distributionComparisonMethod = s))
       } text "Distribution comparison method: ks or ranksum"
 
+      opt[Double]("distribution-comparison-p-value") action { (v, o) =>
+        o.copy(inputTransformerOpts = o.inputTransformerOpts.copy(
+          distributionComparisonPValue = v))
+      } text "Distribution comparison p-value"
+
       opt[Unit]("refine-clusters") action { (_, o) =>
         o.copy(inputTransformerOpts =
           o.inputTransformerOpts.copy(clusteringOpts =
