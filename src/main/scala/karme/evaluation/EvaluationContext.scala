@@ -1,7 +1,7 @@
 package karme.evaluation
 
+import karme.evaluation.reference.PredictionLibraryParser
 import karme.{EvalOpts, PredictionLibrary}
-import karme.evaluation.enrichr.PredictionLibraryParser
 
 case class EvaluationContext(
   references: Seq[PredictionLibrary]

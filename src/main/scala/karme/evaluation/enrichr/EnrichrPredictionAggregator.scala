@@ -2,6 +2,7 @@ package karme.evaluation.enrichr
 
 import java.io.File
 
+import karme.evaluation.reference.PredictionLibraryLogger
 import karme.parsing.NamesParser
 import karme.util.NamingUtil
 

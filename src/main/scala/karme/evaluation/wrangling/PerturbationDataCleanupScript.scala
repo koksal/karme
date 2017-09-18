@@ -1,11 +1,11 @@
-package karme.evaluation
+package karme.evaluation.wrangling
 
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.CSVWriter
 
-object AdHocCleanup {
+object PerturbationDataCleanupScript {
 
   val TF_FIELD = "TF"
   val GENE_FIELD = "Gene"

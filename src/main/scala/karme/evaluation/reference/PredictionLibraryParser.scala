@@ -1,11 +1,12 @@
-package karme.evaluation.enrichr
+package karme.evaluation.reference
 
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
-import karme.{PredictionLibrary, ReferencePrediction}
 import karme.util.FileUtil
 import karme.util.NamingUtil
+import karme.PredictionLibrary
+import karme.ReferencePrediction
 
 object PredictionLibraryParser {
 

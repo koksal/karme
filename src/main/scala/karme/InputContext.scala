@@ -2,7 +2,7 @@ package karme
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.evaluation.enrichr.PredictionLibraryParser
+import karme.evaluation.reference.PredictionLibraryParser
 import karme.parsing.{CellTrajectoryParser, ContinuousExperimentParser, NamesParser}
 
 case class InputContext(

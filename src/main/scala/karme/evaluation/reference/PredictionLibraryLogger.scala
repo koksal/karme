@@ -1,4 +1,4 @@
-package karme.evaluation.enrichr
+package karme.evaluation.reference
 
 import java.io.File
 
