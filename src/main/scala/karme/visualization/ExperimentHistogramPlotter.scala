@@ -6,7 +6,7 @@ import karme.Experiments.Experiment
 
 import scala.reflect.ClassTag
 
-class HistogramPlotter {
+class ExperimentHistogramPlotter {
 
   private val interface = new HistogramPlotInterface()
 

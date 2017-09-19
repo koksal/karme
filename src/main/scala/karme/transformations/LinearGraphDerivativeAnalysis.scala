@@ -6,6 +6,7 @@ import karme.Experiments.Experiment
 import karme.{CellTrajectories, PredictionLibrary, Reporter}
 import karme.transformations.ExpressionDerivation.{Downregulated, ExpressionDerivative, Unchanged, Upregulated}
 import karme.util.MathUtil
+import karme.visualization.HistogramPlotInterface
 
 import scala.collection.mutable.ListBuffer
 
@@ -14,7 +15,9 @@ class LinearGraphDerivativeAnalysis(
   pValue: Double
 )(reporter: Reporter) {
 
-  val STRICT_COMPARISON = true
+  val STRICT_COMPARISON = false
+
+  val histogramPlotInterface = new HistogramPlotInterface
 
   def analyze(
     experiment: Experiment[Double],
@@ -25,7 +28,7 @@ class LinearGraphDerivativeAnalysis(
       trajectory).measurements
     val cellTree = HierarchicalCellTrees.buildCellHierarchy(orderedMs)
 
-    val levels = 3 to 3
+    val levels = 2 to 4
 
     val levelToDerivatives = (for (level <- levels) yield {
       val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
@@ -35,13 +38,13 @@ class LinearGraphDerivativeAnalysis(
       level -> ds
     }).toMap
 
-    val levelToPValues = (for (level <- levels) yield {
-      val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
-        level)
-      val hd = new HierarchicalDerivatives(distComp, pValue)
-      val ps = hd.makePValuesPerGroup(groups)
-      level -> ps
-    }).toMap
+//    val levelToPValues = (for (level <- levels) yield {
+//      val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
+//        level)
+//      val hd = new HierarchicalDerivatives(distComp, pValue)
+//      val ps = hd.makePValuesPerGroup(groups)
+//      level -> ps
+//    }).toMap
 
 //    checkDerivativesAgainstKD(experiment.names, levels, levelToDerivatives,
 //      levelToPValues, kdExp)
@@ -68,6 +71,10 @@ class LinearGraphDerivativeAnalysis(
 
     var rows = ListBuffer[List[String]]()
 
+    var precisionValues = List[Double]()
+    var recallValues = List[Double]()
+    var foldEnrichmentValues = List[Double]()
+
     for (source <- sources) {
       val (sameSignTargets, diffSignTargets) = findAgreeingTargets(source,
         targets.toSet, levels, levelToDerivatives)
@@ -86,6 +93,12 @@ class LinearGraphDerivativeAnalysis(
 
       val recall = agreeingActualTargets.size.toDouble / actualTargets.size
 
+      if (!precision.isNaN) {
+        precisionValues = precision :: precisionValues
+      }
+      recallValues = recall :: recallValues
+      foldEnrichmentValues = foldEnrichment :: foldEnrichmentValues
+
       rows.append(List(
         source,
         precision.toString,
@@ -97,6 +110,13 @@ class LinearGraphDerivativeAnalysis(
     }
 
     savePrecRecall(rows.toList)
+
+    histogramPlotInterface.plot(precisionValues,
+      reporter.file("precision-distribution.pdf"))
+    histogramPlotInterface.plot(recallValues,
+      reporter.file("recall-distribution.pdf"))
+    histogramPlotInterface.plot(foldEnrichmentValues,
+      reporter.file("fold-enrichment-distribution.pdf"))
   }
 
   def findAgreeingTargets(

@@ -8,7 +8,7 @@ import karme.transformations.clustering.GeneClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
-import karme.visualization.{CurvePlot, HistogramPlotter, StateGraphPlotter}
+import karme.visualization.{CurvePlot, ExperimentHistogramPlotter, StateGraphPlotter}
 import karme._
 
 case class TransformResult(
@@ -103,7 +103,7 @@ class InputTransformer(
     println("Done building three-valued experiment.")
 
     if (opts.plotThreeValuedData) {
-      new HistogramPlotter().plotLabeledHistograms(exp, threeValExp,
+      new ExperimentHistogramPlotter().plotLabeledHistograms(exp, threeValExp,
         reporter.file("three-valued-data"))
     }
 
@@ -138,7 +138,7 @@ class InputTransformer(
       opts.booleanNormalizationMethod)
 
     if (opts.plotBinarizedData) {
-      new HistogramPlotter().plotLabeledHistograms(continuousExperiment,
+      new ExperimentHistogramPlotter().plotLabeledHistograms(continuousExperiment,
         booleanNormalizedExp, reporter.file("binarized-data"))
     }
 
@@ -152,12 +152,12 @@ class InputTransformer(
       NamingUtil.canonicalizeNames(filteredCellExperiment))
 
     if (opts.plotOriginalData) {
-      new HistogramPlotter().plotHistogramsPerVariable(filteredCellExperiment,
+      new ExperimentHistogramPlotter().plotHistogramsPerVariable(filteredCellExperiment,
         reporter.file("original-data"))
     }
 
     if (opts.plotTransformedData) {
-      new HistogramPlotter().plotHistogramsPerVariable(transformedExperiment,
+      new ExperimentHistogramPlotter().plotHistogramsPerVariable(transformedExperiment,
         reporter.file("transformed-data"))
     }
 
