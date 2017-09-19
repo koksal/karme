@@ -2,8 +2,7 @@ package karme.evaluation.enrichr
 
 import java.io.File
 
-import com.github.tototoshi.csv.CSVReader
-import com.github.tototoshi.csv.TSVFormat
+import com.github.tototoshi.csv.{CSVReader, TSVFormat}
 import karme.ReferencePrediction
 import karme.util.NamingUtil
 

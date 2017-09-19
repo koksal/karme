@@ -2,10 +2,9 @@ package karme.visualization
 
 import java.io.File
 
-import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.Reporter
+import karme.{CellTrajectories, Reporter}
 import karme.util.MathUtil
 
 import scala.reflect.ClassTag

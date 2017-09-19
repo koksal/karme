@@ -2,8 +2,7 @@ package karme.util
 
 import java.util.concurrent.ForkJoinPool
 
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.collection.parallel.ParSeq
+import scala.collection.parallel.{ForkJoinTaskSupport, ParSeq}
 
 object ParUtil {
 

@@ -2,7 +2,6 @@ package karme.printing
 
 import java.io.File
 
-import karme.synthesis.FunctionTrees
 import karme.synthesis.SynthesisResult
 import karme.util.FileUtil
 

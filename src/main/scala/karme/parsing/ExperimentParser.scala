@@ -3,8 +3,7 @@ package karme.parsing
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
-import karme.Experiments.Experiment
-import karme.Experiments.Measurement
+import karme.Experiments.{Experiment, Measurement}
 import karme.synthesis.Transitions.GenericState
 import karme.util.NamingUtil
 

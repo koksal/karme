@@ -1,7 +1,6 @@
 package karme.synthesis
 
-import karme.synthesis.Trees.Expr
-import karme.synthesis.Trees.IntLiteral
+import karme.synthesis.Trees.{Expr, IntLiteral}
 
 class EncodingMapping(variableNames: Seq[String]) {
   sealed trait EncodingMappingValue

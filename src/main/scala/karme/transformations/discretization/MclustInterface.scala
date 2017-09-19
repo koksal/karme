@@ -1,7 +1,6 @@
 package karme.transformations.discretization
 
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
 case class MClustResult(
   g: Int, classification: Seq[Int], uncertainty: Seq[Double]

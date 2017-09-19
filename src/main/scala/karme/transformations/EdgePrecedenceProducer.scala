@@ -3,8 +3,7 @@ package karme.transformations
 import karme.Clustering
 import karme.graphs.Graphs
 import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.StateGraphs.UndirectedStateGraphOps
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 
 case class EdgePrecedence(source: String, target: String, distance: Int)
 

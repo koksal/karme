@@ -1,6 +1,5 @@
 package karme.evaluation
 
-import karme.Reporter
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState

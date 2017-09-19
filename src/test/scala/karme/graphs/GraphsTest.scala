@@ -1,10 +1,6 @@
 package karme.graphs
 
-import karme.graphs.Graphs.EdgeDirection
-import karme.graphs.Graphs.Forward
-import karme.graphs.Graphs.UnlabeledDiGraph
-import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.Graphs.VertexLike
+import karme.graphs.Graphs._
 import org.scalatest.FunSuite
 
 class GraphsTest extends FunSuite {

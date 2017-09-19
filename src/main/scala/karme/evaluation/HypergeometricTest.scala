@@ -1,7 +1,6 @@
 package karme.evaluation
 
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
 class HypergeometricTest extends AbstractRInterface {
 

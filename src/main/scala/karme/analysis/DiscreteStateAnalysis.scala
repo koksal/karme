@@ -1,8 +1,6 @@
 package karme.analysis
 
-import karme.Experiments.DiscreteExperiment
-import karme.Experiments.DiscreteMeasurement
-import karme.Experiments.Measurement
+import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, Measurement}
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
 

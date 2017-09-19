@@ -1,12 +1,6 @@
 package karme.synthesis
 
-import karme.synthesis.Trees.And
-import karme.synthesis.Trees.BooleanLiteral
-import karme.synthesis.Trees.Expr
-import karme.synthesis.Trees.Identifier
-import karme.synthesis.Trees.IntLiteral
-import karme.synthesis.Trees.LessThan
-import karme.synthesis.Trees.Variable
+import karme.synthesis.Trees._
 
 object Optimization {
 

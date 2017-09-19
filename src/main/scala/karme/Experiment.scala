@@ -1,8 +1,7 @@
 package karme
 
+import karme.synthesis.Transitions.{ConcreteBooleanState, GenericState}
 import karme.transformations.discretization.MclustInterface
-import karme.synthesis.Transitions.GenericState
-import karme.synthesis.Transitions.ConcreteBooleanState
 
 import scala.collection.mutable
 

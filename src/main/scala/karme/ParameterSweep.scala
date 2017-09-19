@@ -3,17 +3,11 @@ package karme
 import java.io.File
 
 import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 import karme.printing.SynthesisResultLogger
-import karme.synthesis.SynthesisResult
-import karme.synthesis.Synthesizer
+import karme.synthesis.{SynthesisResult, Synthesizer}
 import karme.transformations.InputTransformer
-import karme.util.CollectionUtil
-import karme.util.FileUtil
-import karme.util.ParUtil
-import karme.util.TimingUtil
+import karme.util.{CollectionUtil, FileUtil, ParUtil, TimingUtil}
 
 object ParameterSweep {
 

@@ -1,11 +1,8 @@
 package karme.synthesis
 
-import karme.Reporter
-import karme.SynthOpts
-import karme.synthesis.FunctionTrees.FunConst
-import karme.synthesis.FunctionTrees.FunVar
-import karme.synthesis.Transitions.GenericState
-import karme.synthesis.Transitions.Transition
+import karme.{Reporter, SynthOpts}
+import karme.synthesis.FunctionTrees.{FunConst, FunVar}
+import karme.synthesis.Transitions.{GenericState, Transition}
 import org.scalatest.FunSuite
 
 class SynthesizerTest extends FunSuite {

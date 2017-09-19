@@ -7,12 +7,9 @@ import karme._
 import karme.evaluation.Evaluation.ScoredPrediction
 import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PrecedencePairsPrediction}
 import karme.store.ClusteringStore
-import karme.transformations.EdgePrecedence
-import karme.transformations.RankSumTest
+import karme.transformations.{EdgePrecedence, RankSumTest}
 import karme.transformations.clustering.ReferenceClustering
-import karme.util.CollectionUtil
-import karme.util.FileUtil
-import karme.util.MathUtil
+import karme.util.{CollectionUtil, FileUtil, MathUtil}
 import karme.visualization.HistogramPlotInterface
 
 import scala.util.Random

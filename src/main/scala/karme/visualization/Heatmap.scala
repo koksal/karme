@@ -3,7 +3,6 @@ package karme.visualization
 import java.io.File
 
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
 class Heatmap extends AbstractRInterface {
 

@@ -1,7 +1,6 @@
 package karme.evaluation
 
-import karme.ArgHandling
-import karme.Reporter
+import karme.{ArgHandling, Reporter}
 import karme.util.FileUtil
 
 object Evaluation {

@@ -2,10 +2,9 @@ package karme.printing
 
 import java.io.File
 
-import karme.{Opts, PredictionLibrary}
 import karme.evaluation.ReachabilityEvaluation.ReachabilityEvaluationResult
-import karme.util.FileUtil
-import karme.util.MathUtil
+import karme.util.{FileUtil, MathUtil}
+import karme.{Opts, PredictionLibrary}
 
 object SummaryLogger {
 

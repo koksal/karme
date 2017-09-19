@@ -2,9 +2,7 @@ package karme.simulation
 
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.SynthesisResult
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.MathUtil
 
 object AsyncBooleanNetworkSimulation {
 

@@ -1,7 +1,6 @@
 package karme.util
 
-import karme.Experiments.Experiment
-import karme.Experiments.Measurement
+import karme.Experiments.{Experiment, Measurement}
 
 object NamingUtil {
 

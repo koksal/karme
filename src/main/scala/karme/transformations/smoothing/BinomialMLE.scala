@@ -2,10 +2,7 @@ package karme.transformations.smoothing
 
 import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.BooleanExperiment
-import karme.Experiments.Experiment
-import karme.Experiments.Measurement
-import karme.Experiments.ProbabilisticExperiment
+import karme.Experiments.{BooleanExperiment, Experiment, Measurement, ProbabilisticExperiment}
 import karme.synthesis.Transitions.GenericState
 
 object BinomialMLE {

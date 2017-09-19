@@ -1,12 +1,8 @@
 package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
-import karme.graphs.Graphs.Backward
-import karme.graphs.Graphs.EdgeDirection
-import karme.graphs.Graphs.Forward
-import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedBooleanStateGraph
+import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UnlabeledEdge}
+import karme.graphs.StateGraphs.{StateGraphVertex, UndirectedBooleanStateGraph}
 import karme.transformations.RankSumTest
 
 class GraphOrientationByTrajectory(g: UndirectedBooleanStateGraph) {

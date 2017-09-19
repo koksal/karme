@@ -1,7 +1,6 @@
 package karme.transformations
 
-import karme.Experiments.ContinuousExperiment
-import karme.Experiments.Experiment
+import karme.Experiments.{ContinuousExperiment, Experiment}
 import karme.util.MathUtil
 
 object ExperimentTransformation {

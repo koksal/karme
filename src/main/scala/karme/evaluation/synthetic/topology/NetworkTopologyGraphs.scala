@@ -1,7 +1,6 @@
 package karme.evaluation.synthetic.topology
 
-import karme.graphs.Graphs.UnlabeledDiGraph
-import karme.graphs.Graphs.VertexLike
+import karme.graphs.Graphs.{UnlabeledDiGraph, VertexLike}
 
 object NetworkTopologyGraphs {
   case class NetworkTopologyGraphNode(id: String) extends VertexLike

@@ -2,8 +2,7 @@ package karme.evaluation.wrangling
 
 import java.io.File
 
-import com.github.tototoshi.csv.CSVReader
-import com.github.tototoshi.csv.CSVWriter
+import com.github.tototoshi.csv.{CSVReader, CSVWriter}
 
 object KnockdownExperimentTransformer {
 

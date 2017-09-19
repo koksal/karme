@@ -5,7 +5,6 @@ import java.io.File
 import karme.Experiments.ContinuousExperiment
 
 import scala.collection.mutable
-import scala.io.Source
 
 object ExperimentBoxPlots {
 

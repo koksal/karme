@@ -1,7 +1,6 @@
 package karme.transformations.clustering
 
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
 class WithinssInterface extends AbstractRInterface {
 

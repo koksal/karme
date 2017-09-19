@@ -2,8 +2,7 @@ package karme.transformations
 
 import karme.CellTrajectories.CellTrajectory
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.{StateGraphVertex, UndirectedStateGraphOps}
-import karme.util.TimingUtil
+import karme.graphs.StateGraphs.StateGraphVertex
 
 class NodePartialOrderByPseudotimeRankSum(
   V: Seq[StateGraphVertex],

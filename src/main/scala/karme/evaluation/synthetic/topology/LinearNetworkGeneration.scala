@@ -1,6 +1,6 @@
 package karme.evaluation.synthetic.topology
 import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.{NetworkTopologyGraph, NetworkTopologyGraphNode}
-import karme.graphs.Graphs.{UnlabeledDiGraph, UnlabeledEdge}
+import karme.graphs.Graphs.UnlabeledDiGraph
 
 class LinearNetworkGeneration(nbNodes: Int) extends NetworkTopologyGeneration {
 

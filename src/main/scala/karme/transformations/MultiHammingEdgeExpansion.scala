@@ -1,11 +1,7 @@
 package karme.transformations
 
-import karme.graphs.Graphs.EdgeDirection
-import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
 import karme.synthesis.Transitions.ConcreteBooleanState
 
 import scala.collection.mutable.ListBuffer

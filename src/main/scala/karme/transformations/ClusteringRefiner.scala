@@ -3,13 +3,8 @@ package karme.transformations
 import karme.Clustering
 import karme.Experiments.Experiment
 import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedStateGraphOps
-import karme.transformations.ExpressionDerivation.Downregulated
-import karme.transformations.ExpressionDerivation.ExpressionDerivative
-import karme.transformations.ExpressionDerivation.Unchanged
-import karme.transformations.ExpressionDerivation.Upregulated
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedStateGraphOps}
+import karme.transformations.ExpressionDerivation.{Downregulated, ExpressionDerivative, Unchanged, Upregulated}
 import karme.util.MathUtil
 
 class ClusteringRefiner(

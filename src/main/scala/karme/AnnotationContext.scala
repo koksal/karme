@@ -1,7 +1,6 @@
 package karme
 
-import karme.parsing.ClusteringParser
-import karme.parsing.NamesParser
+import karme.parsing.{ClusteringParser, NamesParser}
 
 case class AnnotationSet(id: String, names: Set[String])
 

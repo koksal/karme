@@ -1,9 +1,7 @@
 package karme.transformations
 
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedStateGraphOps}
 import karme.synthesis.Transitions.Transition
 
 object TransitionProducer {

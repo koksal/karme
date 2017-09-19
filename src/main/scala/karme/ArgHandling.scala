@@ -3,8 +3,7 @@ package karme
 import java.io.File
 
 import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PrecedencePairsPrediction}
-import karme.transformations.discretization.Ckmeans
-import karme.transformations.discretization.Mclust
+import karme.transformations.discretization.{Ckmeans, Mclust}
 import scopt.OptionParser
 
 object ArgHandling {

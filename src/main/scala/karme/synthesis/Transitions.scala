@@ -1,9 +1,6 @@
 package karme.synthesis
 
-import karme.Experiments.High
-import karme.Experiments.Low
-import karme.Experiments.ThreeValued
-import karme.Experiments.Uncertain
+import karme.Experiments.{High, Low, ThreeValued, Uncertain}
 import karme.synthesis.Trees._
 
 object Transitions {

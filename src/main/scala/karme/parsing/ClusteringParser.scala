@@ -5,8 +5,6 @@ import java.io.File
 import com.github.tototoshi.csv.CSVReader
 import karme.util.MapUtil
 
-import scala.collection.mutable
-
 object ClusteringParser {
 
   def apply(f: File): Map[String, Set[String]] = {

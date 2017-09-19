@@ -2,24 +2,11 @@ package karme.graphs
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments
-import karme.Experiments.BooleanExperiment
-import karme.Experiments.BooleanMeasurement
-import karme.Experiments.Experiment
-import karme.Experiments.High
-import karme.Experiments.Measurement
-import karme.Experiments.ThreeValued
-import karme.Experiments.ThreeValuedMeasurement
-import karme.Experiments.ThreeValuedExperiment
-import karme.Experiments.Uncertain
+import karme.Experiments._
 import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.Graphs._
-import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.synthesis.Transitions.GenericState
-import karme.synthesis.Transitions.ThreeValuedState
-import karme.transformations.RankSumTest
-import karme.util.MapUtil
-import karme.util.MathUtil
-import karme.util.UniqueCounter
+import karme.synthesis.Transitions.{ConcreteBooleanState, GenericState, ThreeValuedState}
+import karme.util.{MapUtil, MathUtil, UniqueCounter}
 
 import scala.collection.mutable
 

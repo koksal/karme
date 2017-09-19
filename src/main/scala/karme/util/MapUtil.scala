@@ -1,7 +1,5 @@
 package karme.util
 
-import scala.collection.mutable
-
 object MapUtil {
   def addBinding[A, B](map: Map[A, Set[B]], k: A, v: B): Map[A, Set[B]] = {
     map + (k -> (map.getOrElse(k, Set.empty[B]) + v))

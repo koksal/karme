@@ -1,10 +1,8 @@
 package karme.synthesis
 
-import karme.Reporter
-import karme.SynthOpts
+import karme.{Reporter, SynthOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.SynthesisResultLogger
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._

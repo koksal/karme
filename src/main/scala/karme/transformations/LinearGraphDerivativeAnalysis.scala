@@ -1,16 +1,10 @@
 package karme.transformations
 
 import com.github.tototoshi.csv.CSVWriter
-import karme.CellTrajectories
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.PredictionLibrary
-import karme.ReferencePrediction
-import karme.Reporter
-import karme.transformations.ExpressionDerivation.Downregulated
-import karme.transformations.ExpressionDerivation.ExpressionDerivative
-import karme.transformations.ExpressionDerivation.Unchanged
-import karme.transformations.ExpressionDerivation.Upregulated
+import karme.{CellTrajectories, PredictionLibrary, Reporter}
+import karme.transformations.ExpressionDerivation.{Downregulated, ExpressionDerivative, Unchanged, Upregulated}
 import karme.util.MathUtil
 
 import scala.collection.mutable.ListBuffer

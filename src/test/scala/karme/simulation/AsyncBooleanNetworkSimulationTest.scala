@@ -1,7 +1,6 @@
 package karme.simulation
 
-import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.FunctionTrees.FunVar
+import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
 import karme.synthesis.Transitions.GenericState
 import org.scalatest.FunSuite
 

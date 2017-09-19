@@ -1,10 +1,7 @@
 package karme.transformations
 
 import karme.Experiments.Measurement
-import karme.transformations.ExpressionDerivation.Downregulated
-import karme.transformations.ExpressionDerivation.ExpressionDerivative
-import karme.transformations.ExpressionDerivation.Unchanged
-import karme.transformations.ExpressionDerivation.Upregulated
+import karme.transformations.ExpressionDerivation.{Downregulated, ExpressionDerivative, Unchanged, Upregulated}
 
 class HierarchicalDerivatives(
   distributionComparisonTest: DistributionComparisonTest,

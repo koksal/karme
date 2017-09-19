@@ -1,15 +1,12 @@
 package karme.transformations
 
-import karme.Clustering
 import karme.Experiments.Experiment
-import karme.Reporter
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
+import karme.{Clustering, Reporter}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.transformations.ExpressionDerivation.Unchanged
 import karme.transformations.clustering.DerivativeClustering
 import karme.util.FileUtil
-import karme.visualization.CurvePlot
-import karme.visualization.StateGraphPlotter
+import karme.visualization.{CurvePlot, StateGraphPlotter}
 
 class IterativeGraphRefinement(
   inputTransformer: InputTransformer

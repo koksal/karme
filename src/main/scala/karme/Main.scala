@@ -2,20 +2,13 @@ package karme
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.evaluation.ClusterPairExpansion
-import karme.evaluation.FunctionIOPairs
-import karme.evaluation.PerturbationAnalysis
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
+import karme.evaluation.{ClusterPairExpansion, FunctionIOPairs, PerturbationAnalysis}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.parsing.NamesParser
-import karme.printing.IOPairLogger
-import karme.printing.SynthesisResultLogger
+import karme.printing.{IOPairLogger, SynthesisResultLogger}
 import karme.store.ClusteringStore
-import karme.synthesis.SynthesisResult
-import karme.synthesis.Synthesizer
-import karme.transformations.DistributionComparisonTest
-import karme.transformations.LinearGraphDerivativeAnalysis
-import karme.transformations.{InputTransformer, LinearGraphAnalysis, TransformResult}
+import karme.synthesis.{SynthesisResult, Synthesizer}
+import karme.transformations.{DistributionComparisonTest, InputTransformer, LinearGraphDerivativeAnalysis, TransformResult}
 import karme.visualization.StateGraphPlotter
 
 object Main {

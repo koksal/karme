@@ -2,7 +2,6 @@ package karme.transformations.clustering
 
 import karme.Experiments.Experiment
 import karme.external.AbstractRInterface
-import org.ddahl.rscala.RClient
 
 class HclustInterface extends AbstractRInterface {
 

@@ -1,8 +1,6 @@
 package karme.synthesis.traversal
 
-import karme.synthesis.FunctionTrees.SymFunExpr
-import karme.synthesis.FunctionTrees.SymFunLeaf
-import karme.synthesis.FunctionTrees.SymFunTree
+import karme.synthesis.FunctionTrees.{SymFunExpr, SymFunLeaf, SymFunTree}
 
 import scala.collection.immutable.Queue
 

@@ -3,8 +3,7 @@ package karme
 import java.io.File
 
 import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PredictionType}
-import karme.transformations.discretization.DiscretizationMethod
-import karme.transformations.discretization.Thresholding
+import karme.transformations.discretization.{DiscretizationMethod, Thresholding}
 
 case class Opts(
   inputFileOpts: InputFileOpts = InputFileOpts(),

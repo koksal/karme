@@ -1,9 +1,6 @@
 package karme.transformations.discretization
 
-import karme.Experiments.BooleanExperiment
-import karme.Experiments.ContinuousExperiment
-import karme.Experiments.Experiment
-import karme.Experiments.Measurement
+import karme.Experiments.{BooleanExperiment, ContinuousExperiment, Experiment, Measurement}
 import karme.synthesis.Transitions.GenericState
 
 sealed trait DiscretizationMethod

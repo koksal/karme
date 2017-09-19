@@ -1,12 +1,10 @@
 package karme.transformations
 
-import karme.{CellTrajectories, PredictionLibrary}
 import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.Experiment
-import karme.Experiments.Measurement
-import karme.Reporter
+import karme.Experiments.{Experiment, Measurement}
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.visualization.HistogramPlotInterface
+import karme.{CellTrajectories, PredictionLibrary, Reporter}
 
 class LinearGraphAnalysis(reporter: Reporter) {
 

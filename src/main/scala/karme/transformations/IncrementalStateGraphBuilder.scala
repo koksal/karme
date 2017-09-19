@@ -2,15 +2,10 @@ package karme.transformations
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.Reporter
 import karme.analysis.DiscreteStateAnalysis
-import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.util.MathUtil
-import karme.util.TimingUtil
-import karme.visualization.StateGraphPlotter
 
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],

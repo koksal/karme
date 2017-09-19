@@ -1,9 +1,7 @@
 package karme.transformations.clustering
 
-import karme.Clustering
-import karme.ClusteringOpts
-import karme.Experiments.Experiment
-import karme.Experiments.Measurement
+import karme.{Clustering, ClusteringOpts}
+import karme.Experiments.{Experiment, Measurement}
 import karme.synthesis.Transitions.GenericState
 import karme.util.MathUtil
 

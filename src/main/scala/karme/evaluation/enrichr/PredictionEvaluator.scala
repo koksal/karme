@@ -1,9 +1,9 @@
 package karme.evaluation.enrichr
 
-import karme.{EvalOpts, PredictionLibrary, ReferencePrediction, Reporter}
 import karme.evaluation._
 import karme.synthesis.SynthesisResult
 import karme.transformations.RankSumTest
+import karme.{EvalOpts, PredictionLibrary, ReferencePrediction, Reporter}
 
 class PredictionEvaluator(
   opts: EvalOpts,

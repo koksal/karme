@@ -1,11 +1,9 @@
 package karme.evaluation
 
-import karme.Clustering
-import karme.Reporter
+import karme.{Clustering, Reporter}
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.simulation.AsyncBooleanNetworkSimulation
-import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.FunctionTrees.FunVar
+import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
 import karme.visualization.StateGraphPlotter

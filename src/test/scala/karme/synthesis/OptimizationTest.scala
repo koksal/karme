@@ -1,9 +1,6 @@
 package karme.synthesis
 
-import karme.synthesis.Trees.And
-import karme.synthesis.Trees.GreaterEquals
-import karme.synthesis.Trees.GreaterThan
-import karme.synthesis.Trees.IntLiteral
+import karme.synthesis.Trees.{And, GreaterEquals, GreaterThan, IntLiteral}
 import org.scalatest.FunSuite
 
 class OptimizationTest extends FunSuite {
