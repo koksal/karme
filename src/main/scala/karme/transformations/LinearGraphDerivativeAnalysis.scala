@@ -28,7 +28,7 @@ class LinearGraphDerivativeAnalysis(
       trajectory).measurements
     val cellTree = HierarchicalCellTrees.buildCellHierarchy(orderedMs)
 
-    val levels = 2 to 4
+    val levels = 1 to 4
 
     val levelToDerivatives = (for (level <- levels) yield {
       val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
@@ -38,17 +38,9 @@ class LinearGraphDerivativeAnalysis(
       level -> ds
     }).toMap
 
-//    val levelToPValues = (for (level <- levels) yield {
-//      val groups = HierarchicalCellTrees.findMeasurementSetsAtLevel(cellTree,
-//        level)
-//      val hd = new HierarchicalDerivatives(distComp, pValue)
-//      val ps = hd.makePValuesPerGroup(groups)
-//      level -> ps
-//    }).toMap
-
-//    checkDerivativesAgainstKD(experiment.names, levels, levelToDerivatives,
-//      levelToPValues, kdExp)
-    checkPrecisionRecall(experiment.names, levels, levelToDerivatives, kdExp)
+    checkDerivativesAgainstKD(experiment.names, levels, levelToDerivatives,
+      kdExp)
+//    checkPrecisionRecall(experiment.names, levels, levelToDerivatives, kdExp)
   }
 
   def updateCounter(
@@ -95,6 +87,8 @@ class LinearGraphDerivativeAnalysis(
 
       if (!precision.isNaN) {
         precisionValues = precision :: precisionValues
+      } else {
+        precisionValues = -1 :: precisionValues
       }
       recallValues = recall :: recallValues
       foldEnrichmentValues = foldEnrichment :: foldEnrichmentValues
@@ -166,84 +160,37 @@ class LinearGraphDerivativeAnalysis(
     names: Seq[String],
     levels: Seq[Int],
     levelToDerivatives: Map[Int, Map[String, Seq[ExpressionDerivative]]],
-    levelToPValues: Map[Int, Map[String, Seq[Double]]],
     kdExp: PredictionLibrary
   ): Unit = {
     var counters = Map[String, Int]()
 
-    val rowBuffer = new ListBuffer[List[Any]]()
-
     for (p <- kdExp.predictions.sortBy(p => - math.abs(p.weight))) {
       if (names.contains(p.source) && names.contains(p.target)) {
-        for (level <- levels) {
-          val srcDeriv = levelToDerivatives(level)(p.source)
-          val tgtDeriv = levelToDerivatives(level)(p.target)
+        val fwdFstChangeValid =
+          agreesWithDerivatives(p.source, p.target,
+            p.weight < 0, levels, levelToDerivatives)
+        val bwdFstChangeValid = agreesWithDerivatives(p.target, p.source,
+          p.weight < 0, levels, levelToDerivatives)
 
-          val srcPVals = levelToPValues(level)(p.source)
-          val tgtPVals = levelToPValues(level)(p.target)
+        if (fwdFstChangeValid) {
+          counters = updateCounter(counters,
+            s"forward first success")
+        } else {
+          counters = updateCounter(counters,
+            s"forward first failure")
+        }
 
-          val fwdValid = canPrecede(srcDeriv, tgtDeriv, p.weight < 0, STRICT_COMPARISON)
-          val bwdValid = canPrecede(tgtDeriv, srcDeriv, p.weight < 0, STRICT_COMPARISON)
-
-          val fwdFstChangeValid = canPrecedeForFirstChange(srcDeriv,
-            tgtDeriv, p.weight < 0, STRICT_COMPARISON)
-          val bwdFstChangeValid = canPrecedeForFirstChange(tgtDeriv,
-            srcDeriv, p.weight < 0, STRICT_COMPARISON)
-
-//          if (fwdValid) {
-//            counters = updateCounter(counters,
-//              s"level ${level} forward success")
-//          } else {
-//            counters = updateCounter(counters,
-//              s"level ${level} forward failure")
-//          }
-//
-//          if (bwdValid) {
-//            counters = updateCounter(counters,
-//              s"level ${level} backward success")
-//          } else {
-//            counters = updateCounter(counters,
-//              s"level ${level} backward failure")
-//          }
-
-          if (fwdFstChangeValid) {
-            counters = updateCounter(counters,
-              s"level ${level} forward first success")
-          } else {
-            counters = updateCounter(counters,
-              s"level ${level} forward first failure")
-          }
-
-          if (bwdFstChangeValid) {
-            counters = updateCounter(counters,
-              s"level ${level} backward first success")
-          } else {
-            counters = updateCounter(counters,
-              s"level ${level} backward first failure")
-          }
-
-          val row = List(
-            p.source,
-            p.target,
-            p.weight,
-            level,
-            derivString(srcDeriv),
-            derivString(tgtDeriv),
-            pValString(srcPVals),
-            pValString(tgtPVals),
-            fwdValid,
-            bwdValid,
-            fwdFstChangeValid,
-            bwdFstChangeValid
-          )
-          rowBuffer.append(row)
+        if (bwdFstChangeValid) {
+          counters = updateCounter(counters,
+            s"backward first success")
+        } else {
+          counters = updateCounter(counters,
+            s"backward first failure")
         }
       }
     }
 
-    saveTable(rowBuffer.toList)
     saveCounts(counters)
-
   }
 
   def derivString(ds: Seq[ExpressionDerivative]): String = {
