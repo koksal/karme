@@ -3,43 +3,54 @@ package karme.simulation
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.MapUtil
 
 object AsyncBooleanNetworkSimulation {
 
   val SIMULATION_DEPTH_LIMIT = 100
 
+  def simulateWithTimestamps(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[(ConcreteBooleanState, Set[Int])] = {
+    var stateToTimestamps = Map[ConcreteBooleanState, Set[Int]]()
+
+    var currentStates = Set.empty[ConcreteBooleanState]
+    var nextStates = initialStates
+
+    var step = 0
+    while (currentStates != nextStates && step < SIMULATION_DEPTH_LIMIT) {
+      currentStates = nextStates
+
+      for (state <- currentStates) {
+        stateToTimestamps = MapUtil.addBinding(stateToTimestamps, state, step)
+      }
+
+      nextStates = currentStates flatMap { s =>
+        functions map {
+          case (label, fun) => {
+            updatedState(label, fun, s)
+          }
+        }
+      }
+
+      step += 1
+    }
+
+    if (currentStates != nextStates) {
+      println("Fixpoint not reached in simulation.")
+    } else {
+      println(s"Fixpoint reached in $step steps in simulation.")
+    }
+
+    stateToTimestamps.toSet
+  }
+
   def simulate(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    // for every reachable state, compute all new reachable states using any
-    // applicable function.
-    var reachableStates = Set.empty[ConcreteBooleanState]
-    var processSet = initialStates
-
-    var i = 0
-    while (processSet.nonEmpty && i < SIMULATION_DEPTH_LIMIT) {
-      i += 1
-      for (stateToProcess <- processSet) {
-        reachableStates += stateToProcess
-        processSet -= stateToProcess
-
-        // add any new reachable states to process set
-        // apply each function and see if it generates a new state
-        val statesViaFunctionApplication = functions map {
-          case (label, fun) => {
-            updatedState(label, fun, stateToProcess)
-          }
-        }
-
-        val unseenStates = statesViaFunctionApplication.toSet --
-          (reachableStates ++ processSet)
-
-        processSet ++= unseenStates
-      }
-    }
-
-    reachableStates
+    simulateWithTimestamps(functions, initialStates).map(_._1)
   }
 
   private def updatedState(
