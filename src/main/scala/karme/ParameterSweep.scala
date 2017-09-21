@@ -145,7 +145,7 @@ object ParameterSweep {
   def buildBigramsWithRepetition(
     graph: DirectedBooleanStateGraph
   ): Seq[(String, String)] = {
-    graph.pathNodeSequences(2) map labelPair
+    graph.enumeratePathsWithLen(2) map labelPair
   }
 
   def labelPair(

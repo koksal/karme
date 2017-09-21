@@ -64,15 +64,23 @@ object Graphs {
       (V map (v => v -> computeTargets(v))).toMap
     }
 
+    private lazy val vertexToSources: Map[Vertex, Set[Vertex]] = {
+      MapUtil.reverse(vertexToTargets)
+    }
+
     def targets(v: Vertex): Set[Vertex] = {
       vertexToTargets(v)
     }
 
-    def pathNodeSequences(len: Int): Seq[IndexedSeq[Vertex]] = {
+    def sources(v: Vertex): Set[Vertex] = {
+      vertexToSources(v)
+    }
+
+    def enumeratePathsWithLen(len: Int): Seq[IndexedSeq[Vertex]] = {
       require(len >= 0)
 
       if (len > 0) {
-        val pathsToExtend = pathNodeSequences(len - 1)
+        val pathsToExtend = enumeratePathsWithLen(len - 1)
 
         pathsToExtend flatMap { vs =>
           targets(vs.last) collect {

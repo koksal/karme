@@ -12,4 +12,16 @@ object MapUtil {
       case Some(vs) => map + (k -> (vs - v))
     }
   }
+
+  def reverse[A, B](map: Map[A, Set[B]]): Map[B, Set[A]] = {
+    var reversedMap = Map[B, Set[A]]()
+
+    for ((k, vs) <- map) {
+      for (v <- vs) {
+        reversedMap = addBinding(reversedMap, v, k)
+      }
+    }
+
+    reversedMap
+  }
 }
