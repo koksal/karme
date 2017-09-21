@@ -25,9 +25,12 @@ object Evaluation {
     val stateTimestampPairs = AsyncBooleanNetworkSimulation
       .simulateWithTimestamps(labelToFun, initialStates)
 
+    // 4b. Visualize simulation
+
     // TODO 5. Optionally alter simulated data (sample, flip bits)
 
     // 6. Run inference
+
     // 7. Compare synthesized functions against original functions (visualize inferred GRN)
   }
 

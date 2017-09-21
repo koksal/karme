@@ -75,7 +75,7 @@ object Main {
         clustering.get.clusterToMembers)
     }
 
-    val results = runSynthesis(opts, graph, sources, clustering, reporter)
+    val results = runSynthesis(opts, graph, reporter)
 
     getIOPairs(results, clustering, reporter)
   }
@@ -83,8 +83,6 @@ object Main {
   def runSynthesis(
     opts: Opts,
     directedStateGraph: DirectedBooleanStateGraph,
-    sources: Set[StateGraphVertex],
-    clustering: Option[Clustering],
     reporter: Reporter
   ): Map[String, Set[SynthesisResult]] = {
     val synthesizer = new Synthesizer(opts.synthOpts, reporter)
