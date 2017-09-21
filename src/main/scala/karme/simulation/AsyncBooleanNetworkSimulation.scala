@@ -27,9 +27,9 @@ object AsyncBooleanNetworkSimulation {
       }
 
       nextStates = currentStates flatMap { s =>
-        functions map {
+        functions flatMap {
           case (label, fun) => {
-            updatedState(label, fun, s)
+            updatedStateIfChanged(label, fun, s)
           }
         }
       }
@@ -51,6 +51,19 @@ object AsyncBooleanNetworkSimulation {
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
     simulateWithTimestamps(functions, initialStates).map(_._1)
+  }
+
+  private def updatedStateIfChanged(
+    label: String,
+    fun: FunExpr,
+    inputState: ConcreteBooleanState
+  ): Option[ConcreteBooleanState] = {
+    val updated = updatedState(label, fun, inputState)
+    if (updated != inputState) {
+      Some(updated)
+    } else {
+      None
+    }
   }
 
   private def updatedState(
