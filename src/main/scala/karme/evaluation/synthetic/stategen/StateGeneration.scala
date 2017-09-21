@@ -4,6 +4,6 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 trait StateGeneration {
 
-  def generateInitialState(): ConcreteBooleanState
+  def generateInitialStates(): Set[ConcreteBooleanState]
 
 }

@@ -3,6 +3,7 @@ package karme.evaluation.synthetic
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.LinearNetworkGeneration
+import karme.simulation.AsyncBooleanNetworkSimulation
 
 object Evaluation {
 
@@ -18,12 +19,14 @@ object Evaluation {
     val labelToFun = new RandomFunctionGeneration().generate(topology)
 
     // 3. Pick an initial state
-    val initialState = new RandomStateGeneration(labelToFun.keySet).generate()
+    val initialStates = new RandomStateGeneration(labelToFun.keySet).generateInitialStates()
 
     // 4. Simulate network
-    // TODO collect time stamps in simulation
+    val stateTimestampPairs = AsyncBooleanNetworkSimulation
+      .simulateWithTimestamps(labelToFun, initialStates)
 
-    // 5. Optionally alter simulated data (sample, flip bits)
+    // TODO 5. Optionally alter simulated data (sample, flip bits)
+
     // 6. Run inference
     // 7. Compare synthesized functions against original functions (visualize inferred GRN)
   }

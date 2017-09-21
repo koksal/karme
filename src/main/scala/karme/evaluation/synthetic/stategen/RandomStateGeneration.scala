@@ -5,13 +5,13 @@ import karme.synthesis.Transitions.GenericState
 
 import scala.util.Random
 
-class RandomStateGeneration(variables: Set[String]) {
+class RandomStateGeneration(variables: Set[String]) extends StateGeneration {
 
   private val random = new Random()
 
-  def generate(): ConcreteBooleanState = {
+  def generateInitialStates(): Set[ConcreteBooleanState] = {
     val mapping = variables.map(v => v -> random.nextBoolean()).toMap
-    GenericState(mapping)
+    Set(GenericState(mapping))
   }
 
 }
