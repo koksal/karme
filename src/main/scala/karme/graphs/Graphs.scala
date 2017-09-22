@@ -73,7 +73,7 @@ object Graphs {
     }
 
     def sources(v: Vertex): Set[Vertex] = {
-      vertexToSources(v)
+      vertexToSources.getOrElse(v, Set.empty)
     }
 
     def enumeratePathsWithLen(len: Int): Seq[IndexedSeq[Vertex]] = {
