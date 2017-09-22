@@ -5,7 +5,9 @@ import karme.Reporter
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.LinearNetworkGeneration
+import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
+import karme.synthesis.Synthesizer
 import karme.transformations.DistributionComparisonTest
 import karme.transformations.IncrementalStateGraphBuilder
 
@@ -41,6 +43,9 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     // TODO Optionally alter simulated data (sample, flip bits)
 
     // 6. Run inference
+    val results = new Synthesizer(opts.synthOpts, reporter)
+      .synthesizeForPositiveHardConstraints(graph)
+    SynthesisResultLogger(results, reporter.file("functions.txt"))
 
     // 7. Compare synthesized functions against original functions
     //    (visualize inferred GRN)
