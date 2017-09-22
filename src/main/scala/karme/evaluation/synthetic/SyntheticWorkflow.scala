@@ -24,6 +24,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val initialStates = new RandomStateGeneration(labelToFun.keySet)
       .generateInitialStates()
 
+    // TODO log/visualize created network and initial states
+
     // 4. Simulate network
     val stateTimestampPairs = AsyncBooleanNetworkSimulation
       .simulateWithTimestamps(labelToFun, initialStates)
@@ -38,7 +40,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       Seq(trajectory), DistributionComparisonTest.fromOptions(
         opts.inputTransformerOpts.distributionComparisonMethod))
     val graph = graphBuilder.buildGraph
-    val graphSources = graphBuilder.initialNodes(graph)
+
+    // TODO log/visualize reconstructed graph
 
     // TODO Optionally alter simulated data (sample, flip bits)
 
