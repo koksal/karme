@@ -9,7 +9,7 @@ import karme.printing.{IOPairLogger, SynthesisResultLogger}
 import karme.store.ClusteringStore
 import karme.synthesis.{SynthesisResult, Synthesizer}
 import karme.transformations.{DistributionComparisonTest, InputTransformer, LinearGraphDerivativeAnalysis, TransformResult}
-import karme.visualization.StateGraphPlotter
+import karme.visualization.graph.StateGraphPlotter
 
 object Main {
 

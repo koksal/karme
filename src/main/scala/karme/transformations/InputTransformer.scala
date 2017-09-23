@@ -8,8 +8,9 @@ import karme.transformations.clustering.GeneClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
-import karme.visualization.{CurvePlot, ExperimentHistogramPlotter, StateGraphPlotter}
+import karme.visualization.{CurvePlot, ExperimentHistogramPlotter}
 import karme._
+import karme.visualization.graph.StateGraphPlotter
 
 case class TransformResult(
   graph: DirectedBooleanStateGraph,

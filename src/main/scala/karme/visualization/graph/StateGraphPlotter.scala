@@ -1,19 +1,22 @@
-package karme.visualization
+package karme.visualization.graph
 
 import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
-import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UnlabeledEdge}
+import karme.graphs.Graphs.Backward
+import karme.graphs.Graphs.EdgeDirection
+import karme.graphs.Graphs.Forward
+import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedBooleanStateGraph, UndirectedStateGraphOps}
-import karme.synthesis.Transitions.{ConcreteBooleanState, Transition}
-import karme.util.FileUtil
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.StateGraphs.UndirectedBooleanStateGraph
+import karme.graphs.StateGraphs.UndirectedStateGraphOps
+import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.synthesis.Transitions.Transition
 
-import scala.language.postfixOps
-import scala.sys.process._
-
-class StateGraphPlotter(reporter: Reporter) {
+class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
 
   def plotUndirectedGraph(
     g: UndirectedBooleanStateGraph,
@@ -47,16 +50,6 @@ class StateGraphPlotter(reporter: Reporter) {
     plotGraph(dotString, name)
   }
 
-  private def plotGraph(
-    dotString: String,
-    name: String
-  ): Unit = {
-    val dotFile = File.createTempFile("state-graph", ".dot")
-    val pngFile = reporter.file(s"$name.png")
-    FileUtil.writeToFile(dotFile, dotString)
-    s"dot -Tpng ${dotFile.getAbsolutePath}" #> pngFile !
-  }
-
   private def undirectedDotString(
     g: UndirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
@@ -85,21 +78,6 @@ class StateGraphPlotter(reporter: Reporter) {
     val nodeStr = dotNodes(g.V, clustering, Nil)
     val edgeStr = transitionDotEdges(g, transitions)
     dotGraph(nodeStr, edgeStr, isDirected = true)
-  }
-
-  private def dotGraph(
-    nodeStr: String,
-    edgeStr: String,
-    isDirected: Boolean
-  ): String = {
-    val graphDeclaration = if (isDirected) "digraph" else "graph"
-    s"""${graphDeclaration} G {
-       |graph [layout="neato", overlap="scale"];
-       |${nodeStr}
-       |${edgeStr}
-       |}
-       |""".stripMargin
-
   }
 
   private def dotNodes(
@@ -131,12 +109,8 @@ class StateGraphPlotter(reporter: Reporter) {
       } else {
         clusterCountStrings.mkString(" {", ", ", "}")
       }
-      val nodeStr = s"${node.id} / $counts${clusterString}"
-      sb append (
-        s"""${node.id} [label="${nodeStr}", fillcolor="${color}",
-           |style="filled"];
-           |""".stripMargin)
-      sb append "\n"
+      val nodeLabel = s"${node.id} / $counts${clusterString}"
+      sb append dotNode(node.id, nodeLabel, color)
     }
     sb.toString()
   }
@@ -180,13 +154,6 @@ class StateGraphPlotter(reporter: Reporter) {
     }
 
     sb.toString()
-  }
-
-  private def directedDotEdge(
-    lhsID: String, rhsID: String, labels: Iterable[String]
-  ): String = {
-    s"""${lhsID} -> ${rhsID} [label="${labels.mkString(",")}"]
-       |""".stripMargin
   }
 
   private def transitionDotEdges(

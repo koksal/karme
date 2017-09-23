@@ -29,6 +29,21 @@ object FunctionTrees {
     case FunNot(e) => collectIdentifiers(e)
   }
 
+  def collectIdentifiersWithSigns(
+    fe: FunExpr,
+    currentContextIsPositive: Boolean = true
+  ): Set[(String, Boolean)] = fe match {
+    case FunConst(_) => Set()
+    case FunVar(id) => Set((id, currentContextIsPositive))
+    case FunAnd(l, r) =>
+      collectIdentifiersWithSigns(l, currentContextIsPositive) ++
+        collectIdentifiersWithSigns(r, currentContextIsPositive)
+    case FunOr(l, r) =>
+      collectIdentifiersWithSigns(l, currentContextIsPositive) ++
+        collectIdentifiersWithSigns(r, currentContextIsPositive)
+    case FunNot(e) => collectIdentifiersWithSigns(e, !currentContextIsPositive)
+  }
+
   abstract class SymFunExpr {
     val possibleVars: Set[String]
     val orderedVariableOptions: List[String] = possibleVars.toList.sorted

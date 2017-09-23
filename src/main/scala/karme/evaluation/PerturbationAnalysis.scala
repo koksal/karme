@@ -6,7 +6,7 @@ import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
-import karme.visualization.StateGraphPlotter
+import karme.visualization.graph.StateGraphPlotter
 
 /**
   * Perturbs initial states and functions, and assesses reachability of genes

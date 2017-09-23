@@ -6,7 +6,8 @@ import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.transformations.ExpressionDerivation.Unchanged
 import karme.transformations.clustering.DerivativeClustering
 import karme.util.FileUtil
-import karme.visualization.{CurvePlot, StateGraphPlotter}
+import karme.visualization.CurvePlot
+import karme.visualization.graph.StateGraphPlotter
 
 class IterativeGraphRefinement(
   inputTransformer: InputTransformer
