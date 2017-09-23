@@ -1,5 +1,6 @@
 package karme.simulation
 
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
@@ -44,6 +45,13 @@ object AsyncBooleanNetworkSimulation {
     }
 
     stateToTimestamps.toSet
+  }
+
+  def simulateWithStateGraph(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): DirectedBooleanStateGraph = {
+    ???
   }
 
   def simulate(
