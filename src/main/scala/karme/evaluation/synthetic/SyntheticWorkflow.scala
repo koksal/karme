@@ -33,15 +33,19 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     FileUtil.writeToFile(reporter.file("initial-state.txt"),
       initialStates.mkString("\n"))
 
-    // 4. Simulate network
+    // 4a. Simulate graph and directly create a state graph
+    val graphFromSimulation = AsyncBooleanNetworkSimulation
+      .simulateWithStateGraph(labelToFun, initialStates)
+    new StateGraphPlotter(reporter).plotDirectedGraph(graphFromSimulation,
+      "simulated-state-graph")
+
+    // 4b. Simulate network and create states with timestamps
     val stateTimestampPairs = AsyncBooleanNetworkSimulation
       .simulateWithTimestamps(labelToFun, initialStates)
     FileUtil.writeToFile(reporter.file("simulated-states.txt"),
       stateTimestampPairs.mkString("\n"))
 
-    // TODO plot simulation?
-
-    // 5. Create graph from simulation results
+    // 5. Recover graph from simulated states and timestamps
     // 5a. Make experiment and trajectory from simulation results
     val (experiment, trajectory) = SimulationToExperiment
       .makeExperimentAndTrajectory(stateTimestampPairs)
@@ -55,10 +59,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val graph = graphBuilder.buildGraph
     new StateGraphPlotter(reporter).plotDirectedGraph(graph,
       "reconstructed-state-graph")
-
-    // TODO alternatively, recover graph directly from simulation
-
-    // TODO log/visualize reconstructed graph
 
     // TODO Optionally alter simulated data (sample, flip bits)
 
