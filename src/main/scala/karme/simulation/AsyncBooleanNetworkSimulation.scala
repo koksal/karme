@@ -1,14 +1,23 @@
 package karme.simulation
 
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.Experiments.Measurement
+import karme.graphs.Graphs.UnlabeledDiGraph
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.MapUtil
+import karme.util.{MapUtil, UniqueCounter}
 
 object AsyncBooleanNetworkSimulation {
 
   val SIMULATION_DEPTH_LIMIT = 100
+
+  def simulate(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[ConcreteBooleanState] = {
+    simulateWithTimestamps(functions, initialStates).map(_._1)
+  }
 
   def simulateWithTimestamps(
     functions: Map[String, FunExpr],
@@ -51,14 +60,67 @@ object AsyncBooleanNetworkSimulation {
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): DirectedBooleanStateGraph = {
-    ???
-  }
+    val nodeCounter = new UniqueCounter
+    val measurementCounter = new UniqueCounter
 
-  def simulate(
-    functions: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
-  ): Set[ConcreteBooleanState] = {
-    simulateWithTimestamps(functions, initialStates).map(_._1)
+    var stateToNode = Map[ConcreteBooleanState, StateGraphVertex]()
+
+    def makeNodeId(): String = "v" + nodeCounter.next
+    def makeMeasurementId(): String = "m" + measurementCounter.next
+
+    def makeMeasurement(s: ConcreteBooleanState): Measurement[Boolean] = {
+      Measurement(makeMeasurementId(), s)
+    }
+
+    def makeNodeForState(s: ConcreteBooleanState): StateGraphVertex = {
+      StateGraphVertex(makeNodeId(), s, Seq(makeMeasurement(s)))
+    }
+
+    def getNodeForState(s: ConcreteBooleanState): StateGraphVertex = {
+      stateToNode.get(s) match {
+        case Some(n) => n
+        case None => {
+          val newNode = makeNodeForState(s)
+          stateToNode += s -> newNode
+          newNode
+        }
+      }
+    }
+
+    var stateGraph = UnlabeledDiGraph[StateGraphVertex]()
+    var currentNodes = Set.empty[StateGraphVertex]
+    var nextNodes = Set.empty[StateGraphVertex]
+
+    for (is <- initialStates) {
+      val node = getNodeForState(is)
+      stateGraph = stateGraph.addVertex(node)
+      nextNodes += node
+    }
+
+    var step = 0
+    while (currentNodes != nextNodes && step < SIMULATION_DEPTH_LIMIT) {
+      currentNodes = nextNodes
+      nextNodes = Set.empty
+
+      for (srcNode <- currentNodes) {
+        val targetNodes = functions flatMap {
+          case (label, fun) => {
+            val targetStates = updatedStateIfChanged(label, fun, srcNode.state)
+            targetStates map (s => getNodeForState(s))
+          }
+        }
+
+        for (tgtNode <- targetNodes) {
+          nextNodes += tgtNode
+          stateGraph = stateGraph.addVertex(tgtNode)
+          stateGraph = stateGraph.addEdge(srcNode, tgtNode)
+        }
+      }
+
+      step += 1
+    }
+
+    stateGraph
   }
 
   private def updatedStateIfChanged(
