@@ -120,6 +120,12 @@ object AsyncBooleanNetworkSimulation {
       step += 1
     }
 
+    if (currentNodes != nextNodes) {
+      println("Fixpoint not reached in simulation.")
+    } else {
+      println(s"Fixpoint reached in $step steps in simulation.")
+    }
+
     stateGraph
   }
 
