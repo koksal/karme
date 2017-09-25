@@ -201,6 +201,21 @@ object Graphs {
       new UnlabeledDiGraph(V, E - e, edgeDirections - e)
     }
 
+    def union(other: UnlabeledDiGraph[Vertex]) = {
+      var unionBinding = this.edgeDirections
+      for ((e, ds) <- other.edgeDirections) {
+        for (d <- ds) {
+          unionBinding = MapUtil.addBinding(unionBinding, e, d)
+        }
+      }
+
+      new UnlabeledDiGraph(
+        this.V ++ other.V,
+        this.E ++ other.E,
+        unionBinding
+      )
+    }
+
   }
 
   sealed trait EdgeDirection

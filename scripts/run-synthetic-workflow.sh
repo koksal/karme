@@ -2,15 +2,16 @@
 
 if [ $# -eq 0 ]
 then
-  OUTFOLDER=`mktemp`
+  OUTFOLDER=`mktemp -d ./temp-run-folder.XXX`
 else
   OUTFOLDER=$1
+  mkdir -p $OUTFOLDER
 fi
+
+echo "Output folder: " $OUTFOLDER
 
 LOGFILE=$OUTFOLDER/log.txt
 shift
-
-mkdir -p $OUTFOLDER
 
 sbt "run-main karme.evaluation.synthetic.Evaluation \
   --outfolder $OUTFOLDER $*" | tee $LOGFILE
