@@ -6,12 +6,12 @@ import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.BranchingNetworkGeneration
+import karme.evaluation.synthetic.topology.CyclicNetworkGeneration
 import karme.evaluation.synthetic.topology.DAGGeneration
 import karme.evaluation.synthetic.topology.LinearNetworkGeneration
 import karme.printing.ExperimentLogger
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
-import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
@@ -19,7 +19,6 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.DistributionComparisonTest
 import karme.transformations.IncrementalStateGraphBuilder
 import karme.util.FileUtil
-import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
@@ -153,7 +152,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
   private def makeTopology() = {
     // new BranchingNetworkGeneration(2).generate()
-    new DAGGeneration(2).generate()
+    // new DAGGeneration(2).generate()
+    new CyclicNetworkGeneration(5).generate()
   }
 
 }
