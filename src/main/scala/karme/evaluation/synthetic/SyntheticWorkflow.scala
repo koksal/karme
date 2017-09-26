@@ -6,10 +6,12 @@ import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.BranchingNetworkGeneration
+import karme.evaluation.synthetic.topology.DAGGeneration
 import karme.evaluation.synthetic.topology.LinearNetworkGeneration
 import karme.printing.ExperimentLogger
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
+import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
@@ -18,6 +20,7 @@ import karme.transformations.DistributionComparisonTest
 import karme.transformations.IncrementalStateGraphBuilder
 import karme.util.FileUtil
 import karme.util.MathUtil
+import karme.visualization.HistogramPlotInterface
 import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
 
@@ -56,21 +59,25 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val initialStateSets = new ExhaustiveStateEnumeration(
       labelToFun.keySet.toList).enumerateInitialStates()
 
+    var recoveryRatios = Seq[Double]()
     for ((initialStates, runIndex) <- initialStateSets.zipWithIndex) {
       val runReporter = reporter.subfolderReporter(s"run-$runIndex")
 
       FileUtil.writeToFile(runReporter.file("initial-state.txt"),
         initialStates.mkString("\n"))
 
-      runForModel(labelToFun, initialStates, runReporter)
+      recoveryRatios ++= runForModel(labelToFun, initialStates, runReporter)
     }
+
+    new HistogramPlotInterface().plot(recoveryRatios,
+      reporter.file("recovery-ratios.pdf"))
   }
 
   def runForModel(
     labelToFun: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState],
     runReporter: Reporter
-  ): Unit = {
+  ): Seq[Double] = {
 
     // 4a. Simulate graph and directly create a state graph
     val graphFromSimulation = AsyncBooleanNetworkSimulation
@@ -108,29 +115,45 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
     // 7. Compare synthesized functions against original functions
     //    (visualize inferred GRN)
-    val resultCombinations = makeResultCombinations(results)
-    for ((resultCombination, i) <- resultCombinations.zipWithIndex) {
+    val resultCombinations = SynthesisResult.makeCombinations(results)
+    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
       new NetworkGraphPlotter(runReporter).plot(resultCombination,
         s"inferred-model-$i")
+      val recoveryRatio = computeRecoveryRatio(labelToFun, resultCombination)
+      FileUtil.writeToFile(runReporter.file("recovery-ratio.txt"),
+        recoveryRatio.toString)
+      recoveryRatio
     }
+  }
+
+  private def computeRecoveryRatio(
+    original: Map[String, FunExpr],
+    predicted: Map[String, FunExpr]
+  ): Double = {
+    var misses = 0
+    var successes = 0
+    var failures = 0
+    for ((label, originalFunction) <- original) {
+      predicted.get(label) match {
+        case None => {
+          misses += 1
+        }
+        case Some(predictedFunction) => {
+          if (predictedFunction == originalFunction) {
+            successes += 1
+          } else {
+            failures += 1
+          }
+        }
+      }
+    }
+
+    successes.toDouble / original.size
   }
 
   private def makeTopology() = {
-    new BranchingNetworkGeneration(2).generate()
+    // new BranchingNetworkGeneration(2).generate()
+    new DAGGeneration(2).generate()
   }
 
-  private def makeResultCombinations(
-    labelToResults: Map[String, Set[SynthesisResult]]
-  ): Seq[Map[String, FunExpr]] = {
-    val labels = labelToResults.keySet.toList
-    val setsForProduct = labels map { label =>
-      labelToResults(label).flatMap(_.functions)
-    }
-
-    val product = MathUtil.cartesianProduct(setsForProduct)
-
-    product.toList map { functionCombination =>
-      labels.zip(functionCombination).toMap
-    }
-  }
 }

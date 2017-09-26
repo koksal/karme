@@ -21,6 +21,20 @@ object FunctionTrees {
     case FunNot(e) => !eval(e, in)
   }
 
+  def simplify(fe: FunExpr): FunExpr = fe match {
+    case FunAnd(FunConst(true), r) => simplify(r)
+    case FunAnd(l, FunConst(true)) => simplify(l)
+    case FunAnd(l, r) => FunAnd(simplify(l), simplify(r))
+    case FunOr(FunConst(false), r) => simplify(r)
+    case FunOr(l, FunConst(false)) => simplify(l)
+    case FunOr(l, r) => FunOr(simplify(l), simplify(r))
+    case FunNot(FunNot(e)) => simplify(e)
+    case FunNot(FunAnd(l, r)) => FunOr(simplify(FunNot(l)), simplify(FunNot(r)))
+    case FunNot(FunOr(l, r)) => FunAnd(simplify(FunNot(l)), simplify(FunNot(r)))
+    case FunNot(e) => FunNot(simplify(e))
+    case _ => fe
+  }
+
   def collectIdentifiers(fe: FunExpr): Set[String] = fe match {
     case FunConst(_) => Set()
     case FunVar(id) => Set(id)

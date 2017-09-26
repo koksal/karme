@@ -8,11 +8,11 @@ class LinearNetworkGeneration(nbNodes: Int) extends NetworkTopologyGeneration {
   private val counter = new UniqueCounter
 
   def generate(): NetworkTopologyGraph = {
-    LinearNetworkGeneration.makeGraphFromNodes(makeNodeSequence())
+    LinearNetworkGeneration.makeGraphFromNodes(makeNodeSequence(nbNodes))
   }
 
-  def makeNodeSequence(): Seq[NetworkTopologyGraphNode] = {
-    for (i <- 1 to nbNodes) yield {
+  def makeNodeSequence(len: Int): Seq[NetworkTopologyGraphNode] = {
+    for (i <- 1 to len) yield {
       NetworkTopologyGraphNode(s"v${counter.next}")
     }
   }

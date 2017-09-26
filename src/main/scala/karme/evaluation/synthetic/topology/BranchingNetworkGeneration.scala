@@ -2,15 +2,15 @@ package karme.evaluation.synthetic.topology
 import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.NetworkTopologyGraph
 
 class BranchingNetworkGeneration(
-  nbNodesPerBranch: Int
+  branchLength: Int
 ) extends NetworkTopologyGeneration {
 
-  val linearNetworkGen = new LinearNetworkGeneration(nbNodesPerBranch)
+  val linearNetworkGen = new LinearNetworkGeneration(0)
 
   def generate(): NetworkTopologyGraph = {
-    val prefix = linearNetworkGen.makeNodeSequence()
-    val suffix1 = linearNetworkGen.makeNodeSequence()
-    val suffix2 = linearNetworkGen.makeNodeSequence()
+    val prefix = linearNetworkGen.makeNodeSequence(branchLength)
+    val suffix1 = linearNetworkGen.makeNodeSequence(branchLength)
+    val suffix2 = linearNetworkGen.makeNodeSequence(branchLength)
 
     var graph = LinearNetworkGeneration.makeGraphFromNodes(prefix)
       .union(LinearNetworkGeneration.makeGraphFromNodes(suffix1))
