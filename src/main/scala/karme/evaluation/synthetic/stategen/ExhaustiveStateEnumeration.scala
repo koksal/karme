@@ -8,14 +8,18 @@ class ExhaustiveStateEnumeration(
 ) extends StateEnumeration {
 
   def enumerateInitialStates(): Seq[Set[ConcreteBooleanState]] = {
+    enumerateAllStates().toList map (s => Set(s))
+  }
+
+  def enumerateAllStates(): Set[ConcreteBooleanState] = {
     val setsForProduct = variables map {
       v => Set(true, false)
     }
 
     val product = MathUtil.cartesianProduct(setsForProduct.toList)
 
-    product.toList map { combination =>
-      Set(makeState(combination))
+    product map { combination =>
+      makeState(combination)
     }
   }
 

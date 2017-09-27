@@ -72,6 +72,29 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       reporter.file("recovery-ratios.pdf"))
   }
 
+  def runForPerturbationsFromFixpoints(): Unit = {
+    val topology = makeTopology()
+
+    val labelToFun = new RandomFunctionGeneration().generate(topology)
+    FileUtil.writeToFile(reporter.file("model-functions.txt"),
+      labelToFun.mkString("\n"))
+    new NetworkGraphPlotter(reporter).plot(labelToFun, "hidden-model")
+
+    val allStates = new ExhaustiveStateEnumeration(labelToFun.keySet.toList)
+      .enumerateAllStates()
+
+    val fixpoints = allStates filter { s =>
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
+    }
+
+    println(s"There are ${fixpoints.size} fixpoint states.")
+    FileUtil.writeToFile(reporter.file("fixpoint-states.txt"),
+      fixpoints.mkString("\n"))
+
+
+    // TODO perturb each variable separately, infer & evaluate others
+  }
+
   def runForModel(
     labelToFun: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState],
@@ -152,8 +175,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
   private def makeTopology() = {
     // new BranchingNetworkGeneration(2).generate()
-    // new DAGGeneration(2).generate()
-    new CyclicNetworkGeneration(5).generate()
+    new DAGGeneration(2).generate()
+    // new CyclicNetworkGeneration(5).generate()
   }
 
 }

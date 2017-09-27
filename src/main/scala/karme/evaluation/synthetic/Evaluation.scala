@@ -9,7 +9,7 @@ object Evaluation {
     val opts = ArgHandling.parseOptions(args)
     val reporter = new Reporter(opts.reporterOpts)
 
-    new SyntheticWorkflow(opts, reporter).runMany()
+    new SyntheticWorkflow(opts, reporter).runForPerturbationsFromFixpoints()
   }
 
 }

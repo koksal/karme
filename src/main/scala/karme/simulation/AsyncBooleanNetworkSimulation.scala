@@ -129,6 +129,17 @@ object AsyncBooleanNetworkSimulation {
     stateGraph
   }
 
+  def stateIsFixpoint(
+    functions: Map[String, FunExpr],
+    state: ConcreteBooleanState
+  ): Boolean = {
+    functions forall {
+      case (label, expr) => {
+        updatedState(label, expr, state) == state
+      }
+    }
+  }
+
   private def updatedStateIfChanged(
     label: String,
     fun: FunExpr,
