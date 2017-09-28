@@ -13,6 +13,10 @@ case class SynthesisResult(
     this.copy(functions = functions map FunctionTrees.simplify)
   }
 
+  def canonicalize: SynthesisResult = {
+    this.copy(functions = functions map FunctionTrees.canonicalize)
+  }
+
 }
 
 object SynthesisResult {
@@ -24,6 +28,7 @@ object SynthesisResult {
     val setsForProduct = labelsWithResults map { label =>
       labelToResults(label)
         .map(_.simplify)
+        .map(_.canonicalize)
         .flatMap(_.functions)
     }
 

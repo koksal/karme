@@ -2,6 +2,7 @@ package karme.evaluation.synthetic
 
 import karme.Opts
 import karme.Reporter
+import karme.evaluation.PerturbationAnalysis
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
@@ -91,8 +92,26 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     FileUtil.writeToFile(reporter.file("fixpoint-states.txt"),
       fixpoints.mkString("\n"))
 
+    for ((fixpoint, i) <- fixpoints.zipWithIndex) {
+      perturbState(labelToFun, fixpoint,
+        reporter.subfolderReporter(s"fixpoint-$i"))
+    }
+  }
 
-    // TODO perturb each variable separately, infer & evaluate others
+  def perturbState(
+    labelToFun: Map[String, FunExpr],
+    state: ConcreteBooleanState,
+    runReporter: Reporter
+  ) = {
+    for (label <- labelToFun.keySet) {
+      // TODO perturb state for label, fix label to constant, run for model
+      val overriddenFunctions = PerturbationAnalysis
+        .overrideWithIdentityFunction(labelToFun, label)
+      val perturbedState = state.replaceValue(label, !state.value(label))
+
+      val recoveryRatio = runForModel(overriddenFunctions, Set(perturbedState),
+        runReporter.subfolderReporter(s"perturb-$label"))
+    }
   }
 
   def runForModel(

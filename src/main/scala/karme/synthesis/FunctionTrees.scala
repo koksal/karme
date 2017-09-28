@@ -35,6 +35,34 @@ object FunctionTrees {
     case _ => fe
   }
 
+  def leq(e1: FunExpr, e2: FunExpr): Boolean = (e1, e2) match {
+    case (FunConst(v1), FunConst(v2)) => v1 <= v2
+    case (FunConst(_), _) => true
+    case (FunVar(v1), FunVar(v2)) => v1 <= v2
+    case (FunVar(_), _) => true
+    case (FunNot(l), FunNot(r)) => leq(l, r)
+    case (FunNot(_), _) => true
+    case (FunAnd(l1, r1), FunAnd(l2, r2)) => leq(r1, l2)
+    case (FunAnd(_, _), _) => true
+    case (FunOr(l1, r1), FunOr(l2, r2)) => leq(r1, l2)
+    case _ => sys.error("Should not happen.")
+  }
+
+  def canonicalize(fe: FunExpr): FunExpr = fe match {
+    case FunNot(e) => FunNot(canonicalize(e))
+    case FunAnd(l, r) => {
+      val cl = canonicalize(l)
+      val cr = canonicalize(r)
+      if (leq(cl, cr)) FunAnd(cl, cr) else FunAnd(cr, cl)
+    }
+    case FunOr(l, r) => {
+      val cl = canonicalize(l)
+      val cr = canonicalize(r)
+      if (leq(cl, cr)) FunOr(cl, cr) else FunOr(cr, cl)
+    }
+    case _ => fe
+  }
+
   def collectIdentifiers(fe: FunExpr): Set[String] = fe match {
     case FunConst(_) => Set()
     case FunVar(id) => Set(id)

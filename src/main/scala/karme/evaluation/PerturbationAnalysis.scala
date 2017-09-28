@@ -134,19 +134,11 @@ class PerturbationAnalysis(
     val overriddenStates = overrideStatesWithInitialValue(initialStates,
       perturbation.name, perturbation.value)
 
-    val overriddenFunctions = overrideWithIdentityFunction(
-      labelToOriginalFunction, perturbation.name)
+    val overriddenFunctions = PerturbationAnalysis
+      .overrideWithIdentityFunction(labelToOriginalFunction, perturbation.name)
 
     computeExpressedStateRatios(overriddenFunctions, overriddenStates,
       s"simulation-${perturbation.name}-${perturbation.value}")
-  }
-
-  def overrideWithIdentityFunction(
-    labelToFunction: Map[String, FunExpr],
-    nameToOverride: String
-  ): Map[String, FunExpr] = {
-    val identityFunction = FunVar(nameToOverride)
-    labelToFunction.updated(nameToOverride, identityFunction)
   }
 
   def overrideStatesWithInitialValue(
@@ -193,4 +185,16 @@ class PerturbationAnalysis(
   def ratioToPercentage(r: Double): String = {
     s"${MathUtil.roundTo(2)(r * 100)}%"
   }
+}
+
+object PerturbationAnalysis {
+
+  def overrideWithIdentityFunction(
+    labelToFunction: Map[String, FunExpr],
+    nameToOverride: String
+  ): Map[String, FunExpr] = {
+    val identityFunction = FunVar(nameToOverride)
+    labelToFunction.updated(nameToOverride, identityFunction)
+  }
+
 }

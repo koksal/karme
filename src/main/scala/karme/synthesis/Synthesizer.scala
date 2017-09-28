@@ -26,7 +26,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     }
   }
 
-  def synthesizeFunctionsForAllTransitionSubsets(
+  private def synthesizeFunctionsForAllTransitionSubsets(
     positiveTransitions: Set[Transition],
     negativeTransitions: Set[Transition],
     labels: Set[String]
@@ -45,7 +45,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         softTransitions = labelToNegTrans.getOrElse(label, Set.empty),
         possibleVars = labels
       )
-      labelToSynthesisResults += label -> resultsForLabel
+      labelToSynthesisResults +=
+        label -> (resultsForLabel.map(_.simplify.canonicalize))
     }
 
     labelToSynthesisResults
