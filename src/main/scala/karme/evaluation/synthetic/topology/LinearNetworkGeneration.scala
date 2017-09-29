@@ -1,20 +1,12 @@
 package karme.evaluation.synthetic.topology
 import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.{NetworkTopologyGraph, NetworkTopologyGraphNode}
 import karme.graphs.Graphs.UnlabeledDiGraph
-import karme.util.UniqueCounter
 
 class LinearNetworkGeneration(nbNodes: Int) extends NetworkTopologyGeneration {
 
-  private val counter = new UniqueCounter
-
   def generate(): NetworkTopologyGraph = {
-    LinearNetworkGeneration.makeGraphFromNodes(makeNodeSequence(nbNodes))
-  }
-
-  def makeNodeSequence(len: Int): Seq[NetworkTopologyGraphNode] = {
-    for (i <- 1 to len) yield {
-      NetworkTopologyGraphNode(s"v${counter.next}")
-    }
+    val nodeSeq = (1 to nbNodes).map(i => makeNode())
+    LinearNetworkGeneration.makeGraphFromNodes(nodeSeq)
   }
 
 }
@@ -24,7 +16,7 @@ object LinearNetworkGeneration {
   def makeGraphFromNodes(
     nodeSeq: Seq[NetworkTopologyGraphNode]
   ): NetworkTopologyGraph = {
-    var graph = UnlabeledDiGraph[NetworkTopologyGraphNode](V = nodeSeq.toSet)
+    var graph = UnlabeledDiGraph(V = nodeSeq.toSet)
 
     for ((n1, n2) <- nodeSeq.zip(nodeSeq.tail)) {
       graph = graph.addEdge(n1, n2)

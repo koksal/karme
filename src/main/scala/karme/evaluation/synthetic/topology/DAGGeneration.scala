@@ -5,14 +5,12 @@ class DAGGeneration(
   linearPathLen: Int
 ) extends NetworkTopologyGeneration {
 
-  val linearNetworkGen = new LinearNetworkGeneration(0)
-
   def generate(): NetworkTopologyGraph = {
-    val prefix = linearNetworkGen.makeNodeSequence(linearPathLen)
-    val suffix = linearNetworkGen.makeNodeSequence(linearPathLen)
+    val prefix = makeNodeSeq(linearPathLen)
+    val suffix = makeNodeSeq(linearPathLen)
 
-    val leftDiamondHalf = linearNetworkGen.makeNodeSequence(1)
-    val rightDiamondHalf = linearNetworkGen.makeNodeSequence(1)
+    val leftDiamondHalf = makeNodeSeq(1)
+    val rightDiamondHalf = makeNodeSeq(1)
 
     var graph = LinearNetworkGeneration.makeGraphFromNodes(prefix)
       .union(LinearNetworkGeneration.makeGraphFromNodes(leftDiamondHalf))

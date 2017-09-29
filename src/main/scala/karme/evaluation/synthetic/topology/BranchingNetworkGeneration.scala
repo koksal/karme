@@ -5,12 +5,10 @@ class BranchingNetworkGeneration(
   branchLength: Int
 ) extends NetworkTopologyGeneration {
 
-  val linearNetworkGen = new LinearNetworkGeneration(0)
-
   def generate(): NetworkTopologyGraph = {
-    val prefix = linearNetworkGen.makeNodeSequence(branchLength)
-    val suffix1 = linearNetworkGen.makeNodeSequence(branchLength)
-    val suffix2 = linearNetworkGen.makeNodeSequence(branchLength)
+    val prefix = makeNodeSeq(branchLength)
+    val suffix1 = makeNodeSeq(branchLength)
+    val suffix2 = makeNodeSeq(branchLength)
 
     var graph = LinearNetworkGeneration.makeGraphFromNodes(prefix)
       .union(LinearNetworkGeneration.makeGraphFromNodes(suffix1))

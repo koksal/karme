@@ -3,10 +3,8 @@ import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.NetworkTopology
 
 class CyclicNetworkGeneration(size: Int) extends NetworkTopologyGeneration {
 
-  private val linearNetworkGeneration = new LinearNetworkGeneration(0)
-
   def generate(): NetworkTopologyGraph = {
-    val nodes = linearNetworkGeneration.makeNodeSequence(size)
+    val nodes = makeNodeSeq(size)
 
     var graph = LinearNetworkGeneration.makeGraphFromNodes(nodes)
 
