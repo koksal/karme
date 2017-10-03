@@ -14,4 +14,5 @@ LOGFILE=$OUTFOLDER/log.txt
 shift
 
 sbt "run-main karme.evaluation.synthetic.Evaluation \
+  --verbose \
   --outfolder $OUTFOLDER $*" | tee $LOGFILE

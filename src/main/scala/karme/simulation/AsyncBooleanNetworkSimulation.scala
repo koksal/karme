@@ -106,7 +106,7 @@ object AsyncBooleanNetworkSimulation {
         val targetNodes = functions flatMap {
           case (label, fun) => {
             val targetStates = updatedStateIfChanged(label, fun, srcNode.state)
-            targetStates map (s => getNodeForState(s))
+            targetStates map getNodeForState
           }
         }
 

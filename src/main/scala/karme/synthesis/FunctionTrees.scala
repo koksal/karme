@@ -45,7 +45,7 @@ object FunctionTrees {
     case (FunAnd(l1, r1), FunAnd(l2, r2)) => leq(r1, l2)
     case (FunAnd(_, _), _) => true
     case (FunOr(l1, r1), FunOr(l2, r2)) => leq(r1, l2)
-    case _ => sys.error("Should not happen.")
+    case _ => !leq(e2, e1)
   }
 
   def canonicalize(fe: FunExpr): FunExpr = fe match {

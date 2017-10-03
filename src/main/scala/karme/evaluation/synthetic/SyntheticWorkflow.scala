@@ -3,6 +3,7 @@ package karme.evaluation.synthetic
 import karme.Opts
 import karme.Reporter
 import karme.evaluation.PerturbationAnalysis
+import karme.evaluation.synthetic.examples.CAVModel
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
@@ -11,6 +12,7 @@ import karme.evaluation.synthetic.topology.CyclicNetworkGeneration
 import karme.evaluation.synthetic.topology.DAGGeneration
 import karme.evaluation.synthetic.topology.LinearNetworkGeneration
 import karme.evaluation.synthetic.topology.RandomGraphGeneration
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.printing.ExperimentLogger
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
@@ -74,6 +76,26 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       reporter.file("recovery-ratios.pdf"))
   }
 
+  def runHandCuratedModel(): Unit = {
+    val labelToFun = CAVModel.makeNetwork()
+    val initStates = Set(CAVModel.makeInitialState())
+
+    new NetworkGraphPlotter(reporter).plot(labelToFun, "hidden-model")
+
+    val allStates = new ExhaustiveStateEnumeration(labelToFun.keySet.toList)
+      .enumerateAllStates()
+
+    val fixpoints = allStates filter { s =>
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
+    }
+
+    println(s"There are ${fixpoints.size} fixpoint states.")
+    FileUtil.writeToFile(reporter.file("fixpoint-states.txt"),
+      fixpoints.mkString("\n"))
+
+//    runForModel(labelToFun, initStates, reporter)
+  }
+
   def runForPerturbationsFromFixpoints(): Unit = {
     val topology = makeTopology()
 
@@ -94,23 +116,21 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       fixpoints.mkString("\n"))
 
     for ((fixpoint, i) <- fixpoints.zipWithIndex) {
-      perturbState(labelToFun, fixpoint,
+      perturbVariables(labelToFun, fixpoint,
         reporter.subfolderReporter(s"fixpoint-$i"))
     }
   }
 
-  def perturbState(
+  def perturbVariables(
     labelToFun: Map[String, FunExpr],
     state: ConcreteBooleanState,
     runReporter: Reporter
   ) = {
     for (label <- labelToFun.keySet) {
-      // TODO perturb state for label, fix label to constant, run for model
       val overriddenFunctions = PerturbationAnalysis
-        .overrideWithIdentityFunction(labelToFun, label)
-      val perturbedState = state.replaceValue(label, !state.value(label))
+        .overrideWithConstantFunction(labelToFun, label, !state.value(label))
 
-      val recoveryRatio = runForModel(overriddenFunctions, Set(perturbedState),
+      val recoveryRatio = runForModel(overriddenFunctions, Set(state),
         runReporter.subfolderReporter(s"perturb-$label"))
     }
   }
@@ -124,29 +144,9 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     // 4a. Simulate graph and directly create a state graph
     val graphFromSimulation = AsyncBooleanNetworkSimulation
       .simulateWithStateGraph(labelToFun, initialStates)
+    println(s"# graph nodes: ${graphFromSimulation.V.size}")
     new StateGraphPlotter(runReporter).plotDirectedGraph(graphFromSimulation,
       "simulated-state-graph")
-
-    // 4b. Simulate network and create states with timestamps
-    val stateTimestampPairs = AsyncBooleanNetworkSimulation
-      .simulateWithTimestamps(labelToFun, initialStates)
-    FileUtil.writeToFile(runReporter.file("simulated-states.txt"),
-      stateTimestampPairs.mkString("\n"))
-
-    // 5. Recover graph from simulated states and timestamps
-    // 5a. Make experiment and trajectory from simulation results
-    val (experiment, trajectory) = SimulationToExperiment
-      .makeExperimentAndTrajectory(stateTimestampPairs)
-    ExperimentLogger.saveToFile(experiment,
-      runReporter.file("simulated-experiment.csv"))
-
-    // 5b. Make graph from synthetic experiment
-    val graphBuilder = new IncrementalStateGraphBuilder(experiment,
-      Seq(trajectory), DistributionComparisonTest.fromOptions(
-        opts.inputTransformerOpts.distributionComparisonMethod))
-    val graph = graphBuilder.buildGraph
-    new StateGraphPlotter(runReporter).plotDirectedGraph(graph,
-      "reconstructed-state-graph")
 
     // TODO Optionally alter simulated data (sample, flip bits)
 
@@ -161,11 +161,36 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
       new NetworkGraphPlotter(runReporter).plot(resultCombination,
         s"inferred-model-$i")
-      val recoveryRatio = computeRecoveryRatio(labelToFun, resultCombination)
-      FileUtil.writeToFile(runReporter.file("recovery-ratio.txt"),
-        recoveryRatio.toString)
-      recoveryRatio
+      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
+        resultCombination, initialStates)
+      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
+        stateRecoveryMetric.toString)
+      stateRecoveryMetric
     }
+  }
+
+  private def computeStateRecovery(
+    graphFromSimulation: DirectedBooleanStateGraph,
+    recoveredFunctions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ) = {
+    val recoveredGraph = AsyncBooleanNetworkSimulation
+      .simulateWithStateGraph(recoveredFunctions, initialStates)
+
+    val originalStates = graphFromSimulation.V.map(_.state)
+    val recoveredStates = recoveredGraph.V.map(_.state)
+
+    compareStates(originalStates, recoveredStates)
+  }
+
+  private def compareStates(
+    originalStates: Set[ConcreteBooleanState],
+    recoveredStates: Set[ConcreteBooleanState]
+  ): Double = {
+    val missedStates = originalStates -- recoveredStates
+    val unobservedStates = recoveredStates -- originalStates
+
+    missedStates.size + unobservedStates.size
   }
 
   private def computeRecoveryRatio(

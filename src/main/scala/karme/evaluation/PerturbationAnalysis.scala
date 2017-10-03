@@ -3,6 +3,7 @@ package karme.evaluation
 import karme.{Clustering, Reporter}
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.simulation.AsyncBooleanNetworkSimulation
+import karme.synthesis.FunctionTrees.FunConst
 import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
@@ -195,6 +196,15 @@ object PerturbationAnalysis {
   ): Map[String, FunExpr] = {
     val identityFunction = FunVar(nameToOverride)
     labelToFunction.updated(nameToOverride, identityFunction)
+  }
+
+  def overrideWithConstantFunction(
+    labelToFunction: Map[String, FunExpr],
+    nameToOverride: String,
+    constantValue: Boolean
+  ): Map[String, FunExpr] = {
+    val constFunction = FunConst(constantValue)
+    labelToFunction.updated(nameToOverride, constFunction)
   }
 
 }
