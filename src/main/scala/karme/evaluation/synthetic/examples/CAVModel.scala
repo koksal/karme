@@ -10,6 +10,78 @@ import karme.synthesis.Transitions.GenericState
 
 object CAVModel {
 
+  def makeSimplifiedNetwork(): Map[String, FunExpr] = {
+    Map(
+      "Cebpa" ->
+        FunNot(
+          FunOr(
+            FunVar("Scl"),
+            FunVar("Fog1")
+          )
+        ),
+      "EKLF" ->
+        FunAnd(
+          FunVar("Gata1"),
+          FunNot(
+            FunVar("Fli1")
+          )
+        ),
+      "EgrNab" ->
+        FunAnd(
+          FunAnd(
+            FunVar("Pu_1"),
+            FunVar("cJun")
+          ),
+          FunNot(
+            FunVar("Gfi1")
+          )
+        ),
+      "Fli1" ->
+        FunAnd(
+          FunVar("Gata1"),
+          FunNot(
+            FunVar("EKLF")
+          )
+        ),
+      "Fog1" ->
+        FunVar("Gata1"),
+      "Gata1" ->
+        FunNot(
+          FunVar("Pu_1")
+        ),
+      "Gata2"	->
+        FunNot(
+          FunOr(
+            FunVar("Pu_1"),
+            FunVar ("Fog1")
+          )
+        ),
+      "Gfi1" ->
+        FunAnd(
+          FunVar("Cebpa"),
+          FunNot(
+            FunVar("EgrNab")
+          )
+        ),
+      "Pu_1" ->
+        FunAnd(
+          FunVar("Pu_1"),
+          FunNot(
+            FunVar("Gata2")
+          )
+        ),
+      "Scl" ->
+        FunVar("Gata1"),
+      "cJun" ->
+        FunAnd(
+          FunVar("Pu_1"),
+          FunNot(
+            FunVar("Gfi1")
+          )
+        )
+    )
+  }
+
   def makeNetwork(): Map[String, FunExpr] = {
     Map(
       "Cebpa" ->

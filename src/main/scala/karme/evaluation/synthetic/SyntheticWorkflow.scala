@@ -93,7 +93,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     FileUtil.writeToFile(reporter.file("fixpoint-states.txt"),
       fixpoints.mkString("\n"))
 
-//    runForModel(labelToFun, initStates, reporter)
+    runForModel(labelToFun, initStates, reporter)
   }
 
   def runForPerturbationsFromFixpoints(): Unit = {
@@ -147,6 +147,15 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     println(s"# graph nodes: ${graphFromSimulation.V.size}")
     new StateGraphPlotter(runReporter).plotDirectedGraph(graphFromSimulation,
       "simulated-state-graph")
+
+    val simulatedStates = graphFromSimulation.V.map(_.state)
+    val fixpointsInSimulatedStates = simulatedStates filter { s =>
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
+    }
+    println(s"There are ${fixpointsInSimulatedStates.size} simulated fixpoint" +
+      s" states.")
+    FileUtil.writeToFile(reporter.file("fixpoint-states-in-simulation.txt"),
+      fixpointsInSimulatedStates.mkString("\n"))
 
     // TODO Optionally alter simulated data (sample, flip bits)
 
