@@ -3,6 +3,7 @@ package karme.evaluation
 import karme.{Clustering, Reporter}
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.simulation.AsyncBooleanNetworkSimulation
+import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunConst
 import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
 import karme.synthesis.Transitions.ConcreteBooleanState
@@ -205,6 +206,24 @@ object PerturbationAnalysis {
   ): Map[String, FunExpr] = {
     val constFunction = FunConst(constantValue)
     labelToFunction.updated(nameToOverride, constFunction)
+  }
+
+  def knockoutVariable(
+    labelToFunction: Map[String, FunExpr],
+    label: String
+  ): Map[String, FunExpr] = {
+    overrideWithConstantFunction(labelToFunction, label, false)
+  }
+
+  def overExpressVariable(
+    labelToFunction: Map[String, FunExpr],
+    label: String
+  ): Map[String, FunExpr] = {
+    overrideWithConstantFunction(labelToFunction, label, true)
+  }
+
+  def knockoutInteraction(fe: FunExpr, v: String): FunExpr = {
+    FunctionTrees.replaceVar(fe, v, FunConst(false))
   }
 
 }

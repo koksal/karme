@@ -21,6 +21,19 @@ object FunctionTrees {
     case FunNot(e) => !eval(e, in)
   }
 
+  def replaceVar(
+    fe: FunExpr, id: String, newExpr: FunExpr
+  ): FunExpr = fe match {
+    case FunConst(_) => fe
+    case FunVar(`id`) => newExpr
+    case FunVar(_) => fe
+    case FunAnd(l, r) =>
+      FunAnd(replaceVar(l, id, newExpr), replaceVar(r, id, newExpr))
+    case FunOr(l, r) =>
+      FunOr(replaceVar(l, id, newExpr), replaceVar(r, id, newExpr))
+    case FunNot(e) => FunNot(replaceVar(e, id, newExpr))
+  }
+
   def simplify(fe: FunExpr): FunExpr = fe match {
     case FunAnd(FunConst(true), r) => simplify(r)
     case FunAnd(l, FunConst(true)) => simplify(l)

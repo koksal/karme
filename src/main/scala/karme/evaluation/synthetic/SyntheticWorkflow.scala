@@ -7,27 +7,36 @@ import karme.evaluation.synthetic.examples.CAVModel
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
-import karme.evaluation.synthetic.topology.BranchingNetworkGeneration
-import karme.evaluation.synthetic.topology.CyclicNetworkGeneration
-import karme.evaluation.synthetic.topology.DAGGeneration
-import karme.evaluation.synthetic.topology.LinearNetworkGeneration
 import karme.evaluation.synthetic.topology.RandomGraphGeneration
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.printing.ExperimentLogger
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.transformations.DistributionComparisonTest
-import karme.transformations.IncrementalStateGraphBuilder
 import karme.util.FileUtil
 import karme.visualization.HistogramPlotInterface
 import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
 
 class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
+
+  def runHandCuratedModel(): Unit = {
+    val labelToFun = CAVModel.makeNetwork()
+    val initStates = Set(CAVModel.makeInitialState())
+
+    runForModel(labelToFun, initStates, reporter)
+
+    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
+      println("Running inferred functions...")
+      runForModel(inferredFuns, initStates, reporter)
+    }
+  }
+
+  def testModelForPerturbations(): Unit = {
+
+  }
 
   def run(): Unit = {
     // 1. Create network topology
@@ -74,26 +83,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
     new HistogramPlotInterface().plot(recoveryRatios,
       reporter.file("recovery-ratios.pdf"))
-  }
-
-  def runHandCuratedModel(): Unit = {
-    val labelToFun = CAVModel.makeNetwork()
-    val initStates = Set(CAVModel.makeInitialState())
-
-    new NetworkGraphPlotter(reporter).plot(labelToFun, "hidden-model")
-
-    val allStates = new ExhaustiveStateEnumeration(labelToFun.keySet.toList)
-      .enumerateAllStates()
-
-    val fixpoints = allStates filter { s =>
-      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
-    }
-
-    println(s"There are ${fixpoints.size} fixpoint states.")
-    FileUtil.writeToFile(reporter.file("fixpoint-states.txt"),
-      fixpoints.mkString("\n"))
-
-    runForModel(labelToFun, initStates, reporter)
   }
 
   def runForPerturbationsFromFixpoints(): Unit = {
@@ -157,25 +146,32 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     FileUtil.writeToFile(reporter.file("fixpoint-states-in-simulation.txt"),
       fixpointsInSimulatedStates.mkString("\n"))
 
-    // TODO Optionally alter simulated data (sample, flip bits)
-
-    // 6. Run inference
-    val results = new Synthesizer(opts.synthOpts, runReporter)
-      .synthesizeForPositiveHardConstraints(graphFromSimulation)
-    SynthesisResultLogger(results, runReporter.file("functions.txt"))
-
-    // 7. Compare synthesized functions against original functions
-    //    (visualize inferred GRN)
-    val resultCombinations = SynthesisResult.makeCombinations(results)
-    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
-      new NetworkGraphPlotter(runReporter).plot(resultCombination,
-        s"inferred-model-$i")
-      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
-        resultCombination, initialStates)
-      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
-        stateRecoveryMetric.toString)
-      stateRecoveryMetric
+    val expectedFixpoints = CAVModel.myeloidStableStates().map(_._2).toSet
+    if (expectedFixpoints == fixpointsInSimulatedStates) {
+      println("Fixpoints in simulation are as expected.")
+    } else {
+      println("Fixpoints in simulation are not as expected!")
     }
+
+    Nil
+
+//    // 6. Run inference
+//    val results = new Synthesizer(opts.synthOpts, runReporter)
+//      .synthesizeForPositiveHardConstraints(graphFromSimulation)
+//    SynthesisResultLogger(results, runReporter.file("functions.txt"))
+//
+//    // 7. Compare synthesized functions against original functions
+//    //    (visualize inferred GRN)
+//    val resultCombinations = SynthesisResult.makeCombinations(results)
+//    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
+//      new NetworkGraphPlotter(runReporter).plot(resultCombination,
+//        s"inferred-model-$i")
+//      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
+//        resultCombination, initialStates)
+//      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
+//        stateRecoveryMetric.toString)
+//      stateRecoveryMetric
+//    }
   }
 
   private def computeStateRecovery(
