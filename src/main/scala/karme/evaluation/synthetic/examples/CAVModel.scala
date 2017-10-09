@@ -317,13 +317,23 @@ object CAVModel {
   )
 
   def knockoutExperiments(): Seq[KnockoutExperiment] = {
-    Seq(
-      KnockoutExperiment(Gata2, Set("s3", "s4"), 0),
+    val experimentsWithEvidence = Seq(
       KnockoutExperiment(Gata1, Set("s3", "s4"), 1),
       KnockoutExperiment(Fog1, Set("s3", "s4"), 4),
       KnockoutExperiment(EKLF, Set("s2", "s3", "s4"), 0),
       KnockoutExperiment(Fli1, Set("s1", "s3", "s4"), 0),
-      ???
+      KnockoutExperiment(Cebpa, Set("s1", "s2"), 0),
+      KnockoutExperiment(Pu_1, Set("s1", "s2"), 0),
+      KnockoutExperiment(EgrNab, Set("s1", "s2", "s4"), 1),
+      KnockoutExperiment(Gfi1, Set("s1", "s2", "s3"), 0)
     )
+
+    val experimentsWithoutEvidence = Seq(
+      KnockoutExperiment(Gata2, Set("s3", "s4"), 0),
+      KnockoutExperiment(Scl, Set("s3", "s4"), 2),
+      KnockoutExperiment(cJun, Set("s1", "s2", "s4"), 0)
+    )
+
+    experimentsWithEvidence
   }
 }
