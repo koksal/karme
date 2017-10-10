@@ -34,8 +34,35 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     }
   }
 
-  def testModelForPerturbations(): Unit = {
+  def testKnockouts(): Unit = {
+    for (labelToFun <- CAVModel.makeSimplifiedNetworks()) {
+      println("testing simplified network...")
+      testModelForPerturbations(labelToFun)
+    }
+  }
 
+  def testModelForPerturbations(labelToFun: Map[String, FunExpr]): Unit = {
+    for (ke <- CAVModel.knockoutExperiments()) {
+      val perturbedFuns = PerturbationAnalysis.knockoutVariable(labelToFun,
+        ke.knockoutVar)
+
+      val fixpoints = findSimulationFixpoints(perturbedFuns,
+        Set(CAVModel.makeInitialState()))
+
+      val fixpointCellTypes = CAVModel.myeloidStableStates() filter {
+        case (id, state) => fixpoints.contains(state)
+      }
+
+      val fixpointCellTypeIds = fixpointCellTypes.keySet
+
+      if (fixpointCellTypeIds == ke.observedOriginalAttractors) {
+        println(s"${ke.knockoutVar}: Good! Reached ${fixpointCellTypeIds
+          .mkString(",")}")
+      } else {
+        println(s"${ke.knockoutVar}: BAD!!! Reached ${fixpointCellTypeIds
+          .mkString(",")}")
+      }
+    }
   }
 
   def run(): Unit = {
@@ -124,6 +151,20 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     }
   }
 
+  def findSimulationFixpoints(
+    labelToFun: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[ConcreteBooleanState] = {
+    val graphFromSimulation = AsyncBooleanNetworkSimulation
+      .simulateWithStateGraph(labelToFun, initialStates)
+
+    val simulatedStates = graphFromSimulation.V.map(_.state)
+
+    simulatedStates filter { s =>
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
+    }
+  }
+
   def runForModel(
     labelToFun: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState],
@@ -146,32 +187,23 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     FileUtil.writeToFile(reporter.file("fixpoint-states-in-simulation.txt"),
       fixpointsInSimulatedStates.mkString("\n"))
 
-    val expectedFixpoints = CAVModel.myeloidStableStates().map(_._2).toSet
-    if (expectedFixpoints == fixpointsInSimulatedStates) {
-      println("Fixpoints in simulation are as expected.")
-    } else {
-      println("Fixpoints in simulation are not as expected!")
+    // 6. Run inference
+    val results = new Synthesizer(opts.synthOpts, runReporter)
+      .synthesizeForPositiveHardConstraints(graphFromSimulation)
+    SynthesisResultLogger(results, runReporter.file("functions.txt"))
+
+    // 7. Compare synthesized functions against original functions
+    //    (visualize inferred GRN)
+    val resultCombinations = SynthesisResult.makeCombinations(results)
+    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
+      new NetworkGraphPlotter(runReporter).plot(resultCombination,
+        s"inferred-model-$i")
+      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
+        resultCombination, initialStates)
+      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
+        stateRecoveryMetric.toString)
+      stateRecoveryMetric
     }
-
-    Nil
-
-//    // 6. Run inference
-//    val results = new Synthesizer(opts.synthOpts, runReporter)
-//      .synthesizeForPositiveHardConstraints(graphFromSimulation)
-//    SynthesisResultLogger(results, runReporter.file("functions.txt"))
-//
-//    // 7. Compare synthesized functions against original functions
-//    //    (visualize inferred GRN)
-//    val resultCombinations = SynthesisResult.makeCombinations(results)
-//    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
-//      new NetworkGraphPlotter(runReporter).plot(resultCombination,
-//        s"inferred-model-$i")
-//      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
-//        resultCombination, initialStates)
-//      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
-//        stateRecoveryMetric.toString)
-//      stateRecoveryMetric
-//    }
   }
 
   private def computeStateRecovery(
