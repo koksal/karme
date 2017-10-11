@@ -22,8 +22,8 @@ object AsyncBooleanNetworkSimulation {
   def simulateWithTimestamps(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
-  ): Set[(ConcreteBooleanState, Set[Int])] = {
-    var stateToTimestamps = Map[ConcreteBooleanState, Set[Int]]()
+  ): Set[(ConcreteBooleanState, Seq[Int])] = {
+    var stateToTimestamps = Map[ConcreteBooleanState, Seq[Int]]()
 
     var currentStates = Set.empty[ConcreteBooleanState]
     var nextStates = initialStates
@@ -33,7 +33,8 @@ object AsyncBooleanNetworkSimulation {
       currentStates = nextStates
 
       for (state <- currentStates) {
-        stateToTimestamps = MapUtil.addBinding(stateToTimestamps, state, step)
+        stateToTimestamps = MapUtil.addMultisetBinding(stateToTimestamps,
+          state, step)
       }
 
       nextStates = currentStates flatMap { s =>
@@ -120,11 +121,11 @@ object AsyncBooleanNetworkSimulation {
       step += 1
     }
 
-    if (currentNodes != nextNodes) {
-      println("Fixpoint not reached in simulation.")
-    } else {
-      println(s"Fixpoint reached in $step steps in simulation.")
-    }
+//    if (currentNodes != nextNodes) {
+//      println("Fixpoint not reached in simulation.")
+//    } else {
+//      println(s"Fixpoint reached in $step steps in simulation.")
+//    }
 
     stateGraph
   }

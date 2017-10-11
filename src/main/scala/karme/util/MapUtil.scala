@@ -5,6 +5,12 @@ object MapUtil {
     map + (k -> (map.getOrElse(k, Set.empty[B]) + v))
   }
 
+  def addMultisetBinding[A, B](
+    map: Map[A, Seq[B]], k: A, v: B
+  ): Map[A, Seq[B]] = {
+    map + (k -> (map.getOrElse(k, Nil) ++ List(v)))
+  }
+
   def removeBinding[A, B](map: Map[A, Set[B]], k: A, v: B): Map[A, Set[B]] = {
     map.get(k) match {
       case None => map
