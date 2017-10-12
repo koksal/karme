@@ -26,14 +26,12 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val labelToFun = CAVModel.makeNetwork()
     val initStates = Set(CAVModel.makeInitialState())
 
-//    runForModel(labelToFun, initStates, reporter)
-    val fps = findSimulationFixpoints(labelToFun, initStates)
-    assert(fps == CAVModel.myeloidStableStates().values.toSet)
+    runForModel(labelToFun, initStates, reporter)
 
-//    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
-//      println("Running inferred functions...")
-//      runForModel(inferredFuns, initStates, reporter)
-//    }
+    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
+      println("Running inferred functions...")
+      runForModel(inferredFuns, initStates, reporter)
+    }
   }
 
   def plotTimestamps(): Unit = {
@@ -70,8 +68,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       val perturbedInitialState = CAVModel.makeInitialState().replaceValue(
         ke.knockoutVar, false)
 
-      val allFixpoints = findAllFixpoints(perturbedFuns)
-
       val simulationFixpoints = findSimulationFixpoints(perturbedFuns,
         Set(perturbedInitialState))
 
@@ -81,8 +77,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
       val nonOriginalSimulationFixpoints =
         simulationFixpoints.size - simFixpointCellTypes.size
-
-      val nonOriginalFixpoints = allFixpoints.size - simFixpointCellTypes.size
 
       val fixpointCellTypeIds = simFixpointCellTypes.keySet
 
@@ -100,15 +94,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       } else {
         println(s"BAD!!! Reached ${nonOriginalSimulationFixpoints} new fixpoints.")
       }
-
-      if (nonOriginalFixpoints == ke.nbNewAttractors) {
-        println(s"Good! Overall ${nonOriginalFixpoints} new " +
-          s"fixpoints.")
-      } else {
-        println(s"BAD!!! Overall ${nonOriginalFixpoints} new " +
-          s"fixpoints.")
-      }
-
     }
 
     println()
@@ -235,30 +220,27 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     runReporter: Reporter
   ): Seq[Double] = {
 
-    // 4a. Simulate graph and directly create a state graph
     val graphFromSimulation = AsyncBooleanNetworkSimulation
       .simulateWithStateGraph(labelToFun, initialStates)
     println(s"# graph nodes: ${graphFromSimulation.V.size}")
-    new StateGraphPlotter(runReporter).plotDirectedGraph(graphFromSimulation,
-      "simulated-state-graph")
-
-    val simulatedStates = graphFromSimulation.V.map(_.state)
-    val fixpointsInSimulatedStates = simulatedStates filter { s =>
-      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
-    }
-    println(s"There are ${fixpointsInSimulatedStates.size} simulated fixpoint" +
-      s" states.")
-    FileUtil.writeToFile(reporter.file("fixpoint-states-in-simulation.txt"),
-      fixpointsInSimulatedStates.mkString("\n"))
 
     Nil
-//    // 6. Run inference
+//    new StateGraphPlotter(runReporter).plotDirectedGraph(graphFromSimulation,
+//      "simulated-state-graph")
+//
+//    val simulatedStates = graphFromSimulation.V.map(_.state)
+//    val fixpointsInSimulatedStates = simulatedStates filter { s =>
+//      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
+//    }
+//    println(s"There are ${fixpointsInSimulatedStates.size} simulated fixpoint" +
+//      s" states.")
+//    FileUtil.writeToFile(reporter.file("fixpoint-states-in-simulation.txt"),
+//      fixpointsInSimulatedStates.mkString("\n"))
+//
 //    val results = new Synthesizer(opts.synthOpts, runReporter)
 //      .synthesizeForPositiveHardConstraints(graphFromSimulation)
 //    SynthesisResultLogger(results, runReporter.file("functions.txt"))
 //
-//    // 7. Compare synthesized functions against original functions
-//    //    (visualize inferred GRN)
 //    val resultCombinations = SynthesisResult.makeCombinations(results)
 //    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
 //      new NetworkGraphPlotter(runReporter).plot(resultCombination,
