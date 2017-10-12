@@ -41,14 +41,14 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
           "A" -> false,
           "B" -> true
         )),
-        Set(0)
+        List(0)
       ),
       (
         GenericState(Map(
           "A" -> true,
           "B" -> true
         )),
-        Set(1)
+        List(1)
       )
     )
 
