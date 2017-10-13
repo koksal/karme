@@ -22,6 +22,29 @@ import karme.visualization.graph.StateGraphPlotter
 
 class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
+  def evaluateTimestampOrientation(): Unit = {
+    // create simulation graph AND timestamps
+
+    val labelToFun = CAVModel.makeNetwork()
+    val initStates = Set(CAVModel.makeInitialState())
+
+    val simulatedGraph = AsyncBooleanNetworkSimulation
+      .simulateWithStateGraph(labelToFun, initStates)
+    val simulatedStateTimestamps = AsyncBooleanNetworkSimulation
+      .simulateWithTimestamps(labelToFun, initStates)
+
+    // check whether edge orientations agree with timestamp precedence
+    for (e <- simulatedGraph.E) {
+      val ds = simulatedGraph.edgeDirections(e)
+      assert(ds.size == 1)
+      val d = ds.head
+
+      // get timestamps for each edge, compare with orientation
+      
+    }
+
+  }
+
   def runHandCuratedModel(): Unit = {
     val labelToFun = CAVModel.makeNetwork()
     val initStates = Set(CAVModel.makeInitialState())
