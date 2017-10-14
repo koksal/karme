@@ -8,6 +8,7 @@ import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.RandomGraphGeneration
+import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
@@ -16,6 +17,7 @@ import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.FileUtil
+import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
@@ -30,19 +32,51 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
     val simulatedGraph = AsyncBooleanNetworkSimulation
       .simulateWithStateGraph(labelToFun, initStates)
-    val simulatedStateTimestamps = AsyncBooleanNetworkSimulation
-      .simulateWithTimestamps(labelToFun, initStates)
+    val stateToTimestamps = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithTimestamps(labelToFun, initStates).toMap
 
     // check whether edge orientations agree with timestamp precedence
+    var nbConsistentOrientations = 0
+
     for (e <- simulatedGraph.E) {
       val ds = simulatedGraph.edgeDirections(e)
       assert(ds.size == 1)
       val d = ds.head
 
       // get timestamps for each edge, compare with orientation
-      
+      val timestampsConsistent = if (d == Forward) {
+        checkPrecedence(
+          stateToTimestamps(e.v1.state), stateToTimestamps(e.v2.state)
+        )
+      } else {
+        checkPrecedence(
+          stateToTimestamps(e.v2.state), stateToTimestamps(e.v1.state)
+        )
+      }
+
+      if (timestampsConsistent) {
+        nbConsistentOrientations +=1
+      } else {
+        println("Inconsistent edge:")
+        println(s"${e.v1.id} - ${e.v2.id}, $d")
+        println(stateToTimestamps(e.v1.state))
+        println(stateToTimestamps(e.v2.state))
+      }
     }
 
+    println(s"Nb. consistent orientations: ${nbConsistentOrientations}")
+    println(s"Nb. total orientations: ${simulatedGraph.E.size}")
+
+    new StateGraphPlotter(reporter).plotDirectedGraph(simulatedGraph,
+      "simulated-state-graph")
+  }
+
+  def checkPrecedence(ts1: Seq[Int], ts2: Seq[Int]): Boolean = {
+    ts1.min < ts2.min
+    ts1.min <= ts2.min
+    MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
+    MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
+    ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
   }
 
   def runHandCuratedModel(): Unit = {
@@ -57,12 +91,31 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     }
   }
 
+  def checkAlternativeModelStateSpaces(): Unit = {
+    val initStates = Set(CAVModel.makeInitialState())
+    val stateSets = CAVModel.makeSimplifiedNetworks() map { n =>
+      AsyncBooleanNetworkSimulation
+        .simulateWithStateGraph(n, initStates)
+    }
+
+    val allSetsAreEqual = stateSets.forall(
+      set => stateSets.forall(
+        otherSet => set == otherSet))
+
+    if (allSetsAreEqual) {
+      println("All simulated state sets are equal!")
+    } else {
+      println("Simulated state sets are not equal!")
+    }
+
+  }
+
   def plotTimestamps(): Unit = {
     val labelToFun = CAVModel.makeNetwork()
     val initStates = Set(CAVModel.makeInitialState())
 
     val stateTimestampSetPairs = AsyncBooleanNetworkSimulation
-      .simulateWithTimestamps(labelToFun, initStates)
+      .simulateOneStepWithTimestamps(labelToFun, initStates)
 
     val sortedByMinTimestamp = stateTimestampSetPairs.toList.sortBy {
       case (state, tss) => tss.min
@@ -226,15 +279,21 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     labelToFun: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    val graphFromSimulation = AsyncBooleanNetworkSimulation
-      .simulateWithStateGraph(labelToFun, initialStates)
-
-    val simulatedStates = graphFromSimulation.V.map(_.state)
-    println(s"Simulated states: ${simulatedStates.size}")
+    val simulatedStates = findSimulatedStates(labelToFun, initialStates)
 
     simulatedStates filter { s =>
       AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
     }
+  }
+
+  def findSimulatedStates(
+    labelToFun: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[ConcreteBooleanState] = {
+    val graphFromSimulation = AsyncBooleanNetworkSimulation
+      .simulateWithStateGraph(labelToFun, initialStates)
+
+    graphFromSimulation.V.map(_.state)
   }
 
   def runForModel(

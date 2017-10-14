@@ -29,4 +29,24 @@ object CollectionUtil {
     val nbTotal = s1.union(s2).size
     nbCommon.toDouble / nbTotal
   }
+
+  def nonEmptySubsets[T](xs: Set[T]): Set[Set[T]] = {
+    allSubsets(xs) - Set[T]()
+  }
+
+  def allSubsets[T](xs: Set[T]): Set[Set[T]] = {
+    xs.headOption match {
+      case Some(head) => {
+        allSubsets(xs - head) flatMap { set =>
+          Set(
+            set,
+            set + head
+          )
+        }
+      }
+      case None => {
+        Set(Set())
+      }
+    }
+  }
 }

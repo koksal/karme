@@ -6,6 +6,7 @@ import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.CollectionUtil
 import karme.util.{MapUtil, UniqueCounter}
 
 object AsyncBooleanNetworkSimulation {
@@ -16,12 +17,56 @@ object AsyncBooleanNetworkSimulation {
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    simulateWithTimestamps(functions, initialStates).map(_._1)
+    simulateOneStepWithTimestamps(functions, initialStates).map(_._1)
+  }
+
+  def simulateOneStepWithTimestamps(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[(ConcreteBooleanState, Seq[Int])] = {
+    def applyFunctionAlternatives(
+      s: ConcreteBooleanState
+    ): Set[ConcreteBooleanState] = {
+      functions.flatMap{
+        case (label, fun) => {
+          updatedStateIfChanged(label, fun, s)
+        }
+      }.toSet
+    }
+
+    simulateWithTimestamps(functions, initialStates, applyFunctionAlternatives)
+  }
+
+  def simulateAnyStepsWithTimestamps(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[(ConcreteBooleanState, Seq[Int])] = {
+    def applyAllFunctionSubsets(
+      s: ConcreteBooleanState
+    ): Set[ConcreteBooleanState] = {
+      val functionsThatChangeInputState = functions filter {
+        case (label, fun) => functionChangesState(label, fun, s)
+      }
+
+      CollectionUtil.nonEmptySubsets(functionsThatChangeInputState.toSet) map {
+        functionSubset => {
+          functionSubset.foldLeft(s) {
+            case (acc, (label, fun)) => {
+              updatedState(label, fun, acc)
+            }
+          }
+        }
+
+      }
+    }
+
+    simulateWithTimestamps(functions, initialStates, applyAllFunctionSubsets)
   }
 
   def simulateWithTimestamps(
     functions: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
+    initialStates: Set[ConcreteBooleanState],
+    stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
   ): Set[(ConcreteBooleanState, Seq[Int])] = {
     var stateToTimestamps = Map[ConcreteBooleanState, Seq[Int]]()
 
@@ -37,21 +82,16 @@ object AsyncBooleanNetworkSimulation {
           state, step)
       }
 
-      nextStates = currentStates flatMap { s =>
-        functions flatMap {
-          case (label, fun) => {
-            updatedStateIfChanged(label, fun, s)
-          }
-        }
-      }
+//      nextStates = currentStates flatMap { s =>
+//        functions flatMap {
+//          case (label, fun) => {
+//            updatedStateIfChanged(label, fun, s)
+//          }
+//        }
+//      }
+      nextStates = currentStates flatMap stateTransitionFunction
 
       step += 1
-    }
-
-    if (currentStates != nextStates) {
-      println("Fixpoint not reached in simulation.")
-    } else {
-      println(s"Fixpoint reached in $step steps in simulation.")
     }
 
     stateToTimestamps.toSet
@@ -121,12 +161,6 @@ object AsyncBooleanNetworkSimulation {
       step += 1
     }
 
-//    if (currentNodes != nextNodes) {
-//      println("Fixpoint not reached in simulation.")
-//    } else {
-//      println(s"Fixpoint reached in $step steps in simulation.")
-//    }
-
     stateGraph
   }
 
@@ -152,6 +186,15 @@ object AsyncBooleanNetworkSimulation {
     } else {
       None
     }
+  }
+
+  private def functionChangesState(
+    label: String,
+    fun: FunExpr,
+    inputState: ConcreteBooleanState
+  ): Boolean = {
+    val updated = updatedState(label, fun, inputState)
+    updated != inputState
   }
 
   private def updatedState(

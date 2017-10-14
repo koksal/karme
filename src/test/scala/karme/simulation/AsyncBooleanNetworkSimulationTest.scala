@@ -52,9 +52,8 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
       )
     )
 
-    assertResult(expected)(
-      AsyncBooleanNetworkSimulation.simulateWithTimestamps(labelToFun,
-        initStates))
+    assertResult(expected)(AsyncBooleanNetworkSimulation
+      .simulateOneStepWithTimestamps(labelToFun, initStates))
 
   }
 
