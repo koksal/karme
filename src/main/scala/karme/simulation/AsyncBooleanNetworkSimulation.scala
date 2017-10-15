@@ -20,51 +20,50 @@ object AsyncBooleanNetworkSimulation {
     simulateOneStepWithTimestamps(functions, initialStates).map(_._1)
   }
 
+  def applyFunctionAlternatives(functions: Map[String, FunExpr])(
+    s: ConcreteBooleanState
+  ): Set[ConcreteBooleanState] = {
+    functions.flatMap{
+      case (label, fun) => {
+        updatedStateIfChanged(label, fun, s)
+      }
+    }.toSet
+  }
+
+  def applyAllFunctionSubsets(functions: Map[String, FunExpr])(
+    s: ConcreteBooleanState
+  ): Set[ConcreteBooleanState] = {
+    val functionsThatChangeInputState = functions filter {
+      case (label, fun) => functionChangesState(label, fun, s)
+    }
+
+    CollectionUtil.nonEmptySubsets(functionsThatChangeInputState.toSet) map {
+      functionSubset => {
+        functionSubset.foldLeft(s) {
+          case (acc, (label, fun)) => {
+            updatedState(label, fun, acc)
+          }
+        }
+      }
+
+    }
+  }
+
   def simulateOneStepWithTimestamps(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[(ConcreteBooleanState, Seq[Int])] = {
-    def applyFunctionAlternatives(
-      s: ConcreteBooleanState
-    ): Set[ConcreteBooleanState] = {
-      functions.flatMap{
-        case (label, fun) => {
-          updatedStateIfChanged(label, fun, s)
-        }
-      }.toSet
-    }
-
-    simulateWithTimestamps(functions, initialStates, applyFunctionAlternatives)
+    simulateWithTimestamps(initialStates, applyFunctionAlternatives(functions))
   }
 
   def simulateAnyStepsWithTimestamps(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[(ConcreteBooleanState, Seq[Int])] = {
-    def applyAllFunctionSubsets(
-      s: ConcreteBooleanState
-    ): Set[ConcreteBooleanState] = {
-      val functionsThatChangeInputState = functions filter {
-        case (label, fun) => functionChangesState(label, fun, s)
-      }
-
-      CollectionUtil.nonEmptySubsets(functionsThatChangeInputState.toSet) map {
-        functionSubset => {
-          functionSubset.foldLeft(s) {
-            case (acc, (label, fun)) => {
-              updatedState(label, fun, acc)
-            }
-          }
-        }
-
-      }
-    }
-
-    simulateWithTimestamps(functions, initialStates, applyAllFunctionSubsets)
+    simulateWithTimestamps(initialStates, applyAllFunctionSubsets(functions))
   }
 
   def simulateWithTimestamps(
-    functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState],
     stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
   ): Set[(ConcreteBooleanState, Seq[Int])] = {
@@ -82,13 +81,6 @@ object AsyncBooleanNetworkSimulation {
           state, step)
       }
 
-//      nextStates = currentStates flatMap { s =>
-//        functions flatMap {
-//          case (label, fun) => {
-//            updatedStateIfChanged(label, fun, s)
-//          }
-//        }
-//      }
       nextStates = currentStates flatMap stateTransitionFunction
 
       step += 1
@@ -97,9 +89,23 @@ object AsyncBooleanNetworkSimulation {
     stateToTimestamps.toSet
   }
 
-  def simulateWithStateGraph(
+  def simulateOneStepWithStateGraph(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
+  ): DirectedBooleanStateGraph = {
+    simulateWithStateGraph(initialStates, applyFunctionAlternatives(functions))
+  }
+
+  def simulateAnyStepsWithStateGraph(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): DirectedBooleanStateGraph = {
+    simulateWithStateGraph(initialStates, applyAllFunctionSubsets(functions))
+  }
+
+  def simulateWithStateGraph(
+    initialStates: Set[ConcreteBooleanState],
+    stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
   ): DirectedBooleanStateGraph = {
     val nodeCounter = new UniqueCounter
     val measurementCounter = new UniqueCounter
@@ -144,12 +150,8 @@ object AsyncBooleanNetworkSimulation {
       nextNodes = Set.empty
 
       for (srcNode <- currentNodes) {
-        val targetNodes = functions flatMap {
-          case (label, fun) => {
-            val targetStates = updatedStateIfChanged(label, fun, srcNode.state)
-            targetStates map getNodeForState
-          }
-        }
+        val targetStates = stateTransitionFunction(srcNode.state)
+        val targetNodes = targetStates map getNodeForState
 
         for (tgtNode <- targetNodes) {
           nextNodes += tgtNode

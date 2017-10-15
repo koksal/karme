@@ -31,7 +31,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val initStates = Set(CAVModel.makeInitialState())
 
     val simulatedGraph = AsyncBooleanNetworkSimulation
-      .simulateWithStateGraph(labelToFun, initStates)
+      .simulateAnyStepsWithStateGraph(labelToFun, initStates)
     val stateToTimestamps = AsyncBooleanNetworkSimulation
       .simulateAnyStepsWithTimestamps(labelToFun, initStates).toMap
 
@@ -72,11 +72,11 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
   }
 
   def checkPrecedence(ts1: Seq[Int], ts2: Seq[Int]): Boolean = {
-    ts1.min < ts2.min
     ts1.min <= ts2.min
     MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
     MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
     ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
+    ts1.min < ts2.min
   }
 
   def runHandCuratedModel(): Unit = {
@@ -95,7 +95,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val initStates = Set(CAVModel.makeInitialState())
     val stateSets = CAVModel.makeSimplifiedNetworks() map { n =>
       AsyncBooleanNetworkSimulation
-        .simulateWithStateGraph(n, initStates)
+        .simulateOneStepWithStateGraph(n, initStates)
     }
 
     val allSetsAreEqual = stateSets.forall(
@@ -110,7 +110,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
   }
 
-  def checkAlternativeSemanticsStateSpaes(): Unit = {
+  def checkAlternativeSemanticsStateSpaces(): Unit = {
     val labelToFun = CAVModel.makeNetwork()
     val initStates = Set(CAVModel.makeInitialState())
 
@@ -313,7 +313,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
     val graphFromSimulation = AsyncBooleanNetworkSimulation
-      .simulateWithStateGraph(labelToFun, initialStates)
+      .simulateOneStepWithStateGraph(labelToFun, initialStates)
 
     graphFromSimulation.V.map(_.state)
   }
@@ -325,7 +325,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
   ): Seq[Double] = {
 
     val graphFromSimulation = AsyncBooleanNetworkSimulation
-      .simulateWithStateGraph(labelToFun, initialStates)
+      .simulateOneStepWithStateGraph(labelToFun, initialStates)
     println(s"# graph nodes: ${graphFromSimulation.V.size}")
 
     Nil
@@ -363,7 +363,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     initialStates: Set[ConcreteBooleanState]
   ) = {
     val recoveredGraph = AsyncBooleanNetworkSimulation
-      .simulateWithStateGraph(recoveredFunctions, initialStates)
+      .simulateOneStepWithStateGraph(recoveredFunctions, initialStates)
 
     val originalStates = graphFromSimulation.V.map(_.state)
     val recoveredStates = recoveredGraph.V.map(_.state)
