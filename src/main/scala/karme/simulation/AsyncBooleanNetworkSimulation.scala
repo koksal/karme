@@ -13,7 +13,7 @@ object AsyncBooleanNetworkSimulation {
 
   val SIMULATION_DEPTH_LIMIT = 100
 
-  def simulate(
+  def simulateOneStep(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {

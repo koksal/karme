@@ -33,7 +33,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val simulatedGraph = AsyncBooleanNetworkSimulation
       .simulateWithStateGraph(labelToFun, initStates)
     val stateToTimestamps = AsyncBooleanNetworkSimulation
-      .simulateOneStepWithTimestamps(labelToFun, initStates).toMap
+      .simulateAnyStepsWithTimestamps(labelToFun, initStates).toMap
 
     // check whether edge orientations agree with timestamp precedence
     var nbConsistentOrientations = 0
@@ -108,6 +108,28 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       println("Simulated state sets are not equal!")
     }
 
+  }
+
+  def checkAlternativeSemanticsStateSpaes(): Unit = {
+    val labelToFun = CAVModel.makeNetwork()
+    val initStates = Set(CAVModel.makeInitialState())
+
+    val oneStepStates = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithTimestamps(labelToFun, initStates)
+    val anyStepStates = AsyncBooleanNetworkSimulation
+      .simulateAnyStepsWithTimestamps(labelToFun, initStates)
+
+    if (oneStepStates != anyStepStates) {
+      println("Timestamps are different.")
+    } else {
+      println("Timestamps are the same.")
+    }
+
+    if (oneStepStates.map(_._1) != anyStepStates.map(_._1)) {
+      println("Reached states are different")
+    } else {
+      println("Reached states are the same.")
+    }
   }
 
   def plotTimestamps(): Unit = {

@@ -111,12 +111,13 @@ object FunctionTrees {
     def topLevelConsistencyWithArbitraryStructure(): Expr = {
       And(
         Not(this.isIGNORE),
-        this.localNodeConsistency(canBeNegation = true),
-        And(this.descendants.map(_.localNodeConsistency(canBeNegation = true)): _*)
+        this.localNodeConsistency(canBeConstant = true),
+        And(this.descendants.map(
+          _.localNodeConsistency(canBeConstant = false)): _*)
       )
     }
 
-    def localNodeConsistency(canBeNegation: Boolean): Expr
+    def localNodeConsistency(canBeConstant: Boolean): Expr
     def nbVariables(): Expr
 
     def isTRUE: Expr = Equals(this.nodeValue, encodingMapping.TRUE_NODE)
@@ -155,7 +156,7 @@ object FunctionTrees {
     def children = List(l, r)
     def descendants = l.descendants ::: r.descendants ::: List(l, r)
 
-    def localNodeConsistency(canBeNegation: Boolean): Expr = {
+    def localNodeConsistency(canBeConstant: Boolean): Expr = {
       val andCase = And(
         this.isAND,
         Not(l.isIGNORE),
@@ -166,18 +167,18 @@ object FunctionTrees {
         Not(l.isIGNORE),
         Not(r.isIGNORE)
       )
-      val notCase = if (canBeNegation) {
+      val constCase = if (canBeConstant) {
         And(
-          this.isNOT,
-          Not(l.isIGNORE),
+          this.isCONST,
+          l.isIGNORE,
           r.isIGNORE
         )
       } else {
         BooleanLiteral(false)
       }
-      val constCase = And(
-        this.isCONST,
-        l.isIGNORE,
+      val notCase = And(
+        this.isNOT,
+        Not(l.isIGNORE),
         r.isIGNORE
       )
       val ignoreCase = And(
@@ -260,7 +261,7 @@ object FunctionTrees {
     def children = List()
     def descendants = List()
 
-    def localNodeConsistency(canBeNegation: Boolean): Expr = {
+    def localNodeConsistency(canBeConstant: Boolean): Expr = {
       Or(
         this.isCONST,
         this.isVAR,

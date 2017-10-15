@@ -167,7 +167,7 @@ class PerturbationAnalysis(
     initialStates: Set[ConcreteBooleanState],
     plotLabel: String
   ): Map[String, Double] = {
-    val reachedStates = AsyncBooleanNetworkSimulation.simulate(labelToFunction,
+    val reachedStates = AsyncBooleanNetworkSimulation.simulateOneStep(labelToFunction,
       initialStates)
 
     stateGraphPlotter.plotDirectedGraph(graph, plotLabel,

@@ -18,7 +18,7 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     ))
   )
 
-  test("simulate two functions") {
+  test("one-step simulation with two functions") {
     val expected = Set(
       GenericState(Map(
         "A" -> false,
@@ -31,10 +31,10 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     )
 
     assertResult(expected)(
-      AsyncBooleanNetworkSimulation.simulate(labelToFun, initStates))
+      AsyncBooleanNetworkSimulation.simulateOneStep(labelToFun, initStates))
   }
 
-  test("simulate with timestamps") {
+  test("one-step simulation with timestamps") {
     val expected = Set(
       (
         GenericState(Map(
@@ -54,7 +54,28 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
 
     assertResult(expected)(AsyncBooleanNetworkSimulation
       .simulateOneStepWithTimestamps(labelToFun, initStates))
+  }
 
+  test("any-step simulation with timestamps") {
+    val expected = Set(
+      (
+        GenericState(Map(
+          "A" -> false,
+          "B" -> true
+        )),
+        List(0)
+      ),
+      (
+        GenericState(Map(
+          "A" -> true,
+          "B" -> true
+        )),
+        List(1)
+      )
+    )
+
+    assertResult(expected)(AsyncBooleanNetworkSimulation
+      .simulateAnyStepsWithTimestamps(labelToFun, initStates))
   }
 
 }

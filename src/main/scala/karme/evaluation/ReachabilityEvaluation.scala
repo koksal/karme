@@ -51,7 +51,7 @@ object ReachabilityEvaluation {
         case (l, r) => (l, r.functions.head)
       }
       val simulatedStates =
-        AsyncBooleanNetworkSimulation.simulate(labelToFun, initialStates)
+        AsyncBooleanNetworkSimulation.simulateOneStep(labelToFun, initialStates)
 
       val penalty = simulationPenalty(observedStates, simulatedStates)
 
