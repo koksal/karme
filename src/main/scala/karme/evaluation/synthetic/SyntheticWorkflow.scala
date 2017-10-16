@@ -9,7 +9,9 @@ import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.RandomGraphGeneration
 import karme.graphs.Graphs.Forward
+import karme.graphs.Graphs.UnlabeledDiGraph
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
@@ -24,6 +26,69 @@ import karme.visualization.graph.StateGraphPlotter
 
 class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
+  def synthesizeFromTimestampOrientations(): Unit ={
+    // simulate model and produce graph + timestamps
+    val labelToFun = CAVModel.makeNetwork()
+    val initStates = Set(CAVModel.makeInitialState())
+
+    val simulatedGraph = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithStateGraph(labelToFun, initStates)
+    val stateToTimestamps = AsyncBooleanNetworkSimulation
+      .simulateAnyStepsWithTimestamps(labelToFun, initStates).toMap
+
+    // orient simulated graph with simulated timestamps
+    val reorientedGraph = reorientGraphWithTimestamps(simulatedGraph,
+      stateToTimestamps)
+
+    // synthesize from oriented graph
+    val results = new Synthesizer(opts.synthOpts, reporter)
+      .synthesizeForPositiveHardConstraints(reorientedGraph)
+    SynthesisResultLogger(results, reporter.file("functions.txt"))
+
+    // check high-level property: reachability of stable states (with mutations)
+    val resultCombinations = SynthesisResult.makeCombinations(results)
+    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
+      println(s"Testing inferred model $i:")
+      evaluateModelBehavior(resultCombination)
+    }
+  }
+
+  def evaluateModelBehavior(
+    labelToFun: Map[String, FunExpr]
+  ): Unit = {
+    println(s"Wild-type fixpoint agreement: " +
+      s"${modelHasCorrectWildTypeFixpoints(labelToFun)}")
+    println(s"Number of disagreeing perturbations: " +
+      s"${nbDisagreeingPerturbations(labelToFun)}")
+  }
+
+  def reorientGraphWithTimestamps(
+    originalGraph: DirectedBooleanStateGraph,
+    stateToTimestamps: Map[ConcreteBooleanState, Seq[Int]]
+  ): DirectedBooleanStateGraph = {
+    var newGraph = UnlabeledDiGraph[StateGraphVertex]()
+    for (e <- originalGraph.E) {
+      val ds = originalGraph.edgeDirections(e)
+      assert(ds.size == 1)
+      val d = ds.head
+
+      val leftToRightPrecedence = checkPrecedence(
+        stateToTimestamps(e.v1.state), stateToTimestamps(e.v2.state))
+      val rightToLeftPrecedence = checkPrecedence(
+        stateToTimestamps(e.v2.state), stateToTimestamps(e.v1.state))
+
+      assert(!leftToRightPrecedence || !rightToLeftPrecedence)
+      if (leftToRightPrecedence) {
+        newGraph = newGraph.addEdge(e.v1, e.v2)
+      }
+      if (rightToLeftPrecedence) {
+        newGraph = newGraph.addEdge(e.v2, e.v1)
+      }
+    }
+
+    newGraph
+  }
+
   def evaluateTimestampOrientation(): Unit = {
     // create simulation graph AND timestamps
 
@@ -31,12 +96,13 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val initStates = Set(CAVModel.makeInitialState())
 
     val simulatedGraph = AsyncBooleanNetworkSimulation
-      .simulateAnyStepsWithStateGraph(labelToFun, initStates)
+      .simulateOneStepWithStateGraph(labelToFun, initStates)
     val stateToTimestamps = AsyncBooleanNetworkSimulation
       .simulateAnyStepsWithTimestamps(labelToFun, initStates).toMap
 
     // check whether edge orientations agree with timestamp precedence
     var nbConsistentOrientations = 0
+    var nbConsistentReverseOrientations = 0
 
     for (e <- simulatedGraph.E) {
       val ds = simulatedGraph.edgeDirections(e)
@@ -44,19 +110,28 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       val d = ds.head
 
       // get timestamps for each edge, compare with orientation
+      val leftToRightPrecedence = checkPrecedence(
+        stateToTimestamps(e.v1.state), stateToTimestamps(e.v2.state))
+      val rightToLeftPrecedence = checkPrecedence(
+        stateToTimestamps(e.v2.state), stateToTimestamps(e.v1.state))
+
       val timestampsConsistent = if (d == Forward) {
-        checkPrecedence(
-          stateToTimestamps(e.v1.state), stateToTimestamps(e.v2.state)
-        )
+        leftToRightPrecedence
       } else {
-        checkPrecedence(
-          stateToTimestamps(e.v2.state), stateToTimestamps(e.v1.state)
-        )
+        rightToLeftPrecedence
+      }
+      val timestampsConsistentReverse = if (d == Forward) {
+        rightToLeftPrecedence
+      } else {
+        leftToRightPrecedence
       }
 
       if (timestampsConsistent) {
         nbConsistentOrientations +=1
       } else {
+        if (timestampsConsistentReverse) {
+          nbConsistentReverseOrientations +=1
+        }
         println("Inconsistent edge:")
         println(s"${e.v1.id} - ${e.v2.id}, $d")
         println(stateToTimestamps(e.v1.state))
@@ -65,6 +140,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     }
 
     println(s"Nb. consistent orientations: ${nbConsistentOrientations}")
+    println(s"Nb. consistent reverse orientations: " +
+      s"${nbConsistentReverseOrientations}")
     println(s"Nb. total orientations: ${simulatedGraph.E.size}")
 
     new StateGraphPlotter(reporter).plotDirectedGraph(simulatedGraph,
@@ -72,11 +149,11 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
   }
 
   def checkPrecedence(ts1: Seq[Int], ts2: Seq[Int]): Boolean = {
-    ts1.min <= ts2.min
-    MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
-    MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
     ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
     ts1.min < ts2.min
+    ts1.min <= ts2.min
+    MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
+    MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
   }
 
   def runHandCuratedModel(): Unit = {
@@ -150,15 +227,25 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
   def testKnockouts(): Unit = {
     println("Testing original network...")
-    testModelForPerturbations(CAVModel.makeNetwork())
+    nbDisagreeingPerturbations(CAVModel.makeNetwork())
 
     for (labelToFun <- CAVModel.makeSimplifiedNetworks()) {
       println("testing simplified network...")
-      testModelForPerturbations(labelToFun)
+      nbDisagreeingPerturbations(labelToFun)
     }
   }
 
-  def testModelForPerturbations(labelToFun: Map[String, FunExpr]): Unit = {
+  def modelHasCorrectWildTypeFixpoints(
+    labelToFun: Map[String, FunExpr]
+  ): Boolean = {
+    val simulationFixpoints = findSimulationFixpoints(labelToFun,
+      Set(CAVModel.makeInitialState()))
+    simulationFixpoints == CAVModel.myeloidStableStates().values.toSet
+  }
+
+  def nbDisagreeingPerturbations(labelToFun: Map[String, FunExpr]): Int = {
+    var nbDisagreeing = 0
+
     for (ke <- CAVModel.knockoutExperiments()) {
       val perturbedFuns = PerturbationAnalysis.knockoutVariable(labelToFun,
         ke.knockoutVar)
@@ -173,28 +260,21 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
         case (id, state) => simulationFixpoints.contains(state)
       }
 
-      val nonOriginalSimulationFixpoints =
-        simulationFixpoints.size - simFixpointCellTypes.size
-
       val fixpointCellTypeIds = simFixpointCellTypes.keySet
 
-      println(s"Perturbing ${ke.knockoutVar}...")
+//      println(s"Perturbing ${ke.knockoutVar}...")
 
       if (fixpointCellTypeIds == ke.observedOriginalAttractors) {
-        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
+//        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
       } else {
-        println(s"BAD!!! Reached ${fixpointCellTypeIds
-          .mkString(",")}")
+//        println(s"BAD!!! Reached ${fixpointCellTypeIds
+//          .mkString(",")}")
+        nbDisagreeing += 1
       }
 
-      if (nonOriginalSimulationFixpoints == ke.nbNewAttractors) {
-        println(s"Good! Reached ${nonOriginalSimulationFixpoints} new fixpoints.")
-      } else {
-        println(s"BAD!!! Reached ${nonOriginalSimulationFixpoints} new fixpoints.")
-      }
     }
 
-    println()
+    nbDisagreeing
   }
 
   def run(): Unit = {
@@ -326,35 +406,24 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
     val graphFromSimulation = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(labelToFun, initialStates)
-    println(s"# graph nodes: ${graphFromSimulation.V.size}")
 
-    Nil
-//    new StateGraphPlotter(runReporter).plotDirectedGraph(graphFromSimulation,
-//      "simulated-state-graph")
-//
-//    val simulatedStates = graphFromSimulation.V.map(_.state)
-//    val fixpointsInSimulatedStates = simulatedStates filter { s =>
-//      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
-//    }
-//    println(s"There are ${fixpointsInSimulatedStates.size} simulated fixpoint" +
-//      s" states.")
-//    FileUtil.writeToFile(reporter.file("fixpoint-states-in-simulation.txt"),
-//      fixpointsInSimulatedStates.mkString("\n"))
-//
-//    val results = new Synthesizer(opts.synthOpts, runReporter)
-//      .synthesizeForPositiveHardConstraints(graphFromSimulation)
-//    SynthesisResultLogger(results, runReporter.file("functions.txt"))
-//
-//    val resultCombinations = SynthesisResult.makeCombinations(results)
-//    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
-//      new NetworkGraphPlotter(runReporter).plot(resultCombination,
-//        s"inferred-model-$i")
-//      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
-//        resultCombination, initialStates)
-//      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
-//        stateRecoveryMetric.toString)
-//      stateRecoveryMetric
-//    }
+    new StateGraphPlotter(runReporter).plotDirectedGraph(graphFromSimulation,
+      "simulated-state-graph")
+
+    val results = new Synthesizer(opts.synthOpts, runReporter)
+      .synthesizeForPositiveHardConstraints(graphFromSimulation)
+    SynthesisResultLogger(results, runReporter.file("functions.txt"))
+
+    val resultCombinations = SynthesisResult.makeCombinations(results)
+    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
+      new NetworkGraphPlotter(runReporter).plot(resultCombination,
+        s"inferred-model-$i")
+      val stateRecoveryMetric = computeStateRecovery(graphFromSimulation,
+        resultCombination, initialStates)
+      FileUtil.writeToFile(runReporter.file(s"state-recovery-metric-$i.txt"),
+        stateRecoveryMetric.toString)
+      stateRecoveryMetric
+    }
   }
 
   private def computeStateRecovery(

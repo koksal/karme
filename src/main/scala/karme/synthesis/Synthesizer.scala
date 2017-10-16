@@ -83,24 +83,29 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     transitions: Set[Transition],
     possibleVars: Set[String]
   ): Set[Set[Transition]] = {
-    var remainingTransitions = transitions
-    var partition: Set[Set[Transition]] = Set.empty
+    // first try all transitions eagerly
+    if (synthesizeForMinDepth(transitions, possibleVars).nonEmpty) {
+      Set(transitions)
+    } else {
+      var remainingTransitions = transitions
+      var partition: Set[Set[Transition]] = Set.empty
 
-    while (remainingTransitions.nonEmpty) {
-      var currentTransitionSet: Set[Transition] = Set.empty
-      for (transition <- transitionsByDescendingWeight(remainingTransitions)) {
-        val toTest = currentTransitionSet + transition
-        val expressions = synthesizeForMinDepth(toTest, possibleVars)
-        if (expressions.nonEmpty) {
-          currentTransitionSet = toTest
+      while (remainingTransitions.nonEmpty) {
+        var currentTransitionSet: Set[Transition] = Set.empty
+        for (transition <- transitionsByDescendingWeight(remainingTransitions)) {
+          val toTest = currentTransitionSet + transition
+          val expressions = synthesizeForMinDepth(toTest, possibleVars)
+          if (expressions.nonEmpty) {
+            currentTransitionSet = toTest
+          }
         }
+
+        remainingTransitions = remainingTransitions -- currentTransitionSet
+        partition += currentTransitionSet
       }
 
-      remainingTransitions = remainingTransitions -- currentTransitionSet
-      partition += currentTransitionSet
+      partition
     }
-
-    partition
   }
 
   // assumes that hard transitions are consistent
@@ -158,26 +163,36 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Option[SynthesisResult] = {
-    val exprsForHardTrans = synthesizeForMinDepth(hardTransitions, possibleVars)
+    val exprsForAllTrans = synthesizeForMinDepth(
+      hardTransitions ++ softTransitions, possibleVars)
 
-    if (exprsForHardTrans.nonEmpty) {
-      // If the hard transitions are SAT, proceed with adding soft transitions.
-      var currentSet = hardTransitions
-      var currentExprs = exprsForHardTrans.toSet
-
-      for (t <- transitionsByDescendingWeight(softTransitions)) {
-        // try adding t to current set
-        val toCheck = currentSet + t
-        val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
-        if (exprsWithNewT.nonEmpty) {
-          currentSet = toCheck
-          currentExprs = exprsWithNewT.toSet
-        }
-      }
-
-      Some(SynthesisResult(currentSet, currentExprs))
+    if (exprsForAllTrans.nonEmpty) {
+      reporter.debug("Found expressions with eager check.")
+      Some(SynthesisResult(hardTransitions ++ softTransitions,
+        exprsForAllTrans.toSet))
     } else {
-      None
+      reporter.debug("Did not find expressions with eager check.")
+      val exprsForHardTrans = synthesizeForMinDepth(hardTransitions, possibleVars)
+
+      if (exprsForHardTrans.nonEmpty) {
+        // If the hard transitions are SAT, proceed with adding soft transitions.
+        var currentSet = hardTransitions
+        var currentExprs = exprsForHardTrans.toSet
+
+        for (t <- transitionsByDescendingWeight(softTransitions)) {
+          // try adding t to current set
+          val toCheck = currentSet + t
+          val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
+          if (exprsWithNewT.nonEmpty) {
+            currentSet = toCheck
+            currentExprs = exprsWithNewT.toSet
+          }
+        }
+
+        Some(SynthesisResult(currentSet, currentExprs))
+      } else {
+        None
+      }
     }
   }
 

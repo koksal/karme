@@ -262,8 +262,13 @@ object FunctionTrees {
     def descendants = List()
 
     def localNodeConsistency(canBeConstant: Boolean): Expr = {
+      val constCase = if (canBeConstant) {
+        this.isCONST
+      } else {
+        BooleanLiteral(false)
+      }
       Or(
-        this.isCONST,
+        constCase,
         this.isVAR,
         this.isIGNORE
       )
