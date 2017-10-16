@@ -262,13 +262,13 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
       val fixpointCellTypeIds = simFixpointCellTypes.keySet
 
-//      println(s"Perturbing ${ke.knockoutVar}...")
+      println(s"Perturbing ${ke.knockoutVar}...")
 
       if (fixpointCellTypeIds == ke.observedOriginalAttractors) {
-//        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
+        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
       } else {
-//        println(s"BAD!!! Reached ${fixpointCellTypeIds
-//          .mkString(",")}")
+        println(s"BAD!!! Reached ${fixpointCellTypeIds
+          .mkString(",")}")
         nbDisagreeing += 1
       }
 

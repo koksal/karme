@@ -178,7 +178,7 @@ object FunctionTrees {
       }
       val notCase = And(
         this.isNOT,
-        Not(l.isIGNORE),
+        l.isVAR,
         r.isIGNORE
       )
       val ignoreCase = And(
