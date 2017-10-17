@@ -240,7 +240,10 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
   ): Boolean = {
     val simulationFixpoints = findSimulationFixpoints(labelToFun,
       Set(CAVModel.makeInitialState()))
-    simulationFixpoints == CAVModel.myeloidStableStates().values.toSet
+    val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
+    println(s"Expected fixpoints are a subset of actual fixpoints: " +
+      s"${expectedFixpoints.subsetOf(simulationFixpoints)}")
+    simulationFixpoints == expectedFixpoints
   }
 
   def nbDisagreeingPerturbations(labelToFun: Map[String, FunExpr]): Int = {
