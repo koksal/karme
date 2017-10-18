@@ -56,9 +56,11 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
   def evaluateModelBehavior(
     labelToFun: Map[String, FunExpr]
   ): Unit = {
-    println(s"Wild-type fixpoint agreement: " +
+    println(s"Wild-type fixpoints reached: " +
       s"${modelHasCorrectWildTypeFixpoints(labelToFun)}")
-    println(s"Number of disagreeing perturbations: " +
+    println(s"Wild-type unexpected states reached: " +
+      s"${findUnexpectedFixpoints(labelToFun).size}")
+    println(s"Perturbations disagreeing about expected cell-types: " +
       s"${nbDisagreeingPerturbations(labelToFun)}")
   }
 
@@ -241,9 +243,16 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val simulationFixpoints = findSimulationFixpoints(labelToFun,
       Set(CAVModel.makeInitialState()))
     val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
-    println(s"Expected fixpoints are a subset of actual fixpoints: " +
-      s"${expectedFixpoints.subsetOf(simulationFixpoints)}")
-    simulationFixpoints == expectedFixpoints
+    expectedFixpoints.subsetOf(simulationFixpoints)
+  }
+
+  def findUnexpectedFixpoints(
+    labelToFun: Map[String, FunExpr]
+  ): Set[ConcreteBooleanState] = {
+    val simulationFixpoints = findSimulationFixpoints(labelToFun,
+      Set(CAVModel.makeInitialState()))
+    val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
+    simulationFixpoints -- expectedFixpoints
   }
 
   def nbDisagreeingPerturbations(labelToFun: Map[String, FunExpr]): Int = {
@@ -265,13 +274,12 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
       val fixpointCellTypeIds = simFixpointCellTypes.keySet
 
-      println(s"Perturbing ${ke.knockoutVar}...")
+//      println(s"Perturbing ${ke.knockoutVar}...")
 
       if (fixpointCellTypeIds == ke.observedOriginalAttractors) {
-        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
+//        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
       } else {
-        println(s"BAD!!! Reached ${fixpointCellTypeIds
-          .mkString(",")}")
+//        println(s"BAD!!! Reached ${fixpointCellTypeIds.mkString(",")}")
         nbDisagreeing += 1
       }
 
