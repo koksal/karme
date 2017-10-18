@@ -199,6 +199,22 @@ object CAVModel {
     )
   }
 
+  def makePlosNetwork(): Map[String, FunExpr] = {
+    makeNetwork().updated(Cebpa,
+      FunAnd(
+        FunVar(Cebpa),
+        FunNot(
+          FunAnd(
+            FunVar(Scl),
+            FunAnd(
+              FunVar(Fog1),
+              FunVar(Gata1)
+            )
+          )
+        )
+      )
+    )
+  }
   def makeNetwork(): Map[String, FunExpr] = {
     Map(
       Cebpa ->

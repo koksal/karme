@@ -39,15 +39,23 @@ object AsyncBooleanNetworkSimulation {
 
     CollectionUtil.nonEmptySubsets(functionsThatChangeInputState.toSet) map {
       functionSubset => {
-        functionSubset.foldLeft(s) {
-          case (acc, (label, fun)) => {
-            updatedState(label, fun, acc)
+        var newState = s
+        functionSubset.foreach {
+          case (label, fun) => {
+            val updatedForFun = updatedState(label, fun, s)
+            newState = newState.replaceValue(label, updatedForFun.value(label))
           }
         }
+        newState
       }
-
     }
   }
+
+//  def applyAllFunctions(functions: Map[String, FunExpr])(
+//    s: ConcreteBooleanState
+//  ): Set[ConcreteBooleanState] = {
+//
+//  }
 
   def simulateOneStepWithTimestamps(
     functions: Map[String, FunExpr],

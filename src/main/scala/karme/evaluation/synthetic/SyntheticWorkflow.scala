@@ -34,7 +34,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val simulatedGraph = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(labelToFun, initStates)
     val stateToTimestamps = AsyncBooleanNetworkSimulation
-      .simulateAnyStepsWithTimestamps(labelToFun, initStates).toMap
+      .simulateOneStepWithTimestamps(labelToFun, initStates).toMap
 
     // orient simulated graph with simulated timestamps
     val reorientedGraph = reorientGraphWithTimestamps(simulatedGraph,
@@ -130,14 +130,9 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
       if (timestampsConsistent) {
         nbConsistentOrientations +=1
-      } else {
-        if (timestampsConsistentReverse) {
-          nbConsistentReverseOrientations +=1
-        }
-        println("Inconsistent edge:")
-        println(s"${e.v1.id} - ${e.v2.id}, $d")
-        println(stateToTimestamps(e.v1.state))
-        println(stateToTimestamps(e.v2.state))
+      }
+      if (timestampsConsistentReverse) {
+        nbConsistentReverseOrientations +=1
       }
     }
 
@@ -146,28 +141,28 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       s"${nbConsistentReverseOrientations}")
     println(s"Nb. total orientations: ${simulatedGraph.E.size}")
 
-    new StateGraphPlotter(reporter).plotDirectedGraph(simulatedGraph,
-      "simulated-state-graph")
+//    new StateGraphPlotter(reporter).plotDirectedGraph(simulatedGraph,
+//      "simulated-state-graph")
   }
 
   def checkPrecedence(ts1: Seq[Int], ts2: Seq[Int]): Boolean = {
-    ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
     ts1.min < ts2.min
     ts1.min <= ts2.min
     MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
+    ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
     MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
   }
 
   def runHandCuratedModel(): Unit = {
-    val labelToFun = CAVModel.makeNetwork()
+    val labelToFun = CAVModel.makePlosNetwork()
     val initStates = Set(CAVModel.makeInitialState())
 
     runForModel(labelToFun, initStates, reporter)
 
-    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
-      println("Running inferred functions...")
-      runForModel(inferredFuns, initStates, reporter)
-    }
+//    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
+//      println("Running inferred functions...")
+//      runForModel(inferredFuns, initStates, reporter)
+//    }
   }
 
   def checkAlternativeModelStateSpaces(): Unit = {
@@ -204,8 +199,15 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       println("Timestamps are the same.")
     }
 
-    if (oneStepStates.map(_._1) != anyStepStates.map(_._1)) {
+    val oneStepStateSet = oneStepStates.map(_._1)
+    val anyStepStateSet = anyStepStates.map(_._1)
+
+    if (oneStepStateSet != anyStepStateSet) {
       println("Reached states are different")
+      println(s"Nb. one-step states: ${oneStepStates.size}")
+      println(s"Nb. any-step states: ${anyStepStates.size}")
+      println(s"One-step is subset: " +
+        s"${oneStepStateSet.subsetOf(anyStepStateSet)}")
     } else {
       println("Reached states are the same.")
     }
