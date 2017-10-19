@@ -1,20 +1,34 @@
 package karme.simulation
 
+import karme.synthesis.FunctionTrees.FunConst
+import karme.synthesis.FunctionTrees.FunNot
 import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
 import karme.synthesis.Transitions.GenericState
 import org.scalatest.FunSuite
 
 class AsyncBooleanNetworkSimulationTest extends FunSuite {
 
-  val labelToFun = Map[String, FunExpr](
+  val model1 = Map[String, FunExpr](
     "A" -> FunVar("B"),
     "B" -> FunVar("B")
   )
 
-  val initStates = Set(
+  val initStates1 = Set(
     GenericState(Map(
       "A" -> false,
       "B" -> true
+    ))
+  )
+
+  val model2 = Map[String, FunExpr](
+    "A" -> FunConst(true),
+    "B" -> FunConst(true)
+  )
+
+  val initStates2 = Set(
+    GenericState(Map(
+      "A" -> false,
+      "B" -> false
     ))
   )
 
@@ -31,7 +45,7 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     )
 
     assertResult(expected)(
-      AsyncBooleanNetworkSimulation.simulateOneStep(labelToFun, initStates))
+      AsyncBooleanNetworkSimulation.simulateOneStep(model1, initStates1))
   }
 
   test("one-step simulation with timestamps") {
@@ -53,10 +67,10 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     )
 
     assertResult(expected)(AsyncBooleanNetworkSimulation
-      .simulateOneStepWithTimestamps(labelToFun, initStates))
+      .simulateOneStepWithTimestamps(model1, initStates1))
   }
 
-  test("any-step simulation with timestamps") {
+  test("check any-step timestamps for a two-state simulation") {
     val expected = Set(
       (
         GenericState(Map(
@@ -75,7 +89,43 @@ class AsyncBooleanNetworkSimulationTest extends FunSuite {
     )
 
     assertResult(expected)(AsyncBooleanNetworkSimulation
-      .simulateAnyStepsWithTimestamps(labelToFun, initStates))
+      .simulateAnyStepsWithTimestamps(model1, initStates1))
+  }
+
+  test("check any-step timestamps for a four-state simulation") {
+    val expected = Set(
+      (
+        GenericState(Map(
+          "A" -> false,
+          "B" -> false
+        )),
+        List(0)
+      ),
+      (
+        GenericState(Map(
+          "A" -> true,
+          "B" -> false
+        )),
+        List(1)
+      ),
+      (
+        GenericState(Map(
+          "A" -> false,
+          "B" -> true
+        )),
+        List(1)
+      ),
+      (
+        GenericState(Map(
+          "A" -> true,
+          "B" -> true
+        )),
+        List(1, 2)
+      )
+    )
+
+    assertResult(expected)(AsyncBooleanNetworkSimulation
+      .simulateAnyStepsWithTimestamps(model2, initStates2))
   }
 
 }

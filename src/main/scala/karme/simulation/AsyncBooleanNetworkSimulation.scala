@@ -213,8 +213,7 @@ object AsyncBooleanNetworkSimulation {
     inputState: ConcreteBooleanState
   ): ConcreteBooleanState = {
     val funOutput = FunctionTrees.eval(fun, inputState)
-    val newMapping = inputState.mapping.updated(label, funOutput)
-    new ConcreteBooleanState(newMapping)
+    inputState.replaceValue(label, funOutput)
   }
 
 }

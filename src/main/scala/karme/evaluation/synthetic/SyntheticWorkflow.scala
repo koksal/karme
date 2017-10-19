@@ -2,6 +2,7 @@ package karme.evaluation.synthetic
 
 import karme.Opts
 import karme.Reporter
+import karme.analysis.DiscreteStateAnalysis
 import karme.evaluation.PerturbationAnalysis
 import karme.evaluation.synthetic.examples.CAVModel
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
@@ -10,6 +11,7 @@ import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.RandomGraphGeneration
 import karme.graphs.Graphs.Forward
 import karme.graphs.Graphs.UnlabeledDiGraph
+import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
 import karme.printing.SynthesisResultLogger
@@ -25,6 +27,8 @@ import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
 
 class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
+
+  val histogramPlotInterface = new HistogramPlotInterface()
 
   def synthesizeFromTimestampOrientations(): Unit ={
     // simulate model and produce graph + timestamps
@@ -100,11 +104,12 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val simulatedGraph = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(labelToFun, initStates)
     val stateToTimestamps = AsyncBooleanNetworkSimulation
-      .simulateAnyStepsWithTimestamps(labelToFun, initStates).toMap
+      .simulateOneStepWithTimestamps(labelToFun, initStates).toMap
 
     // check whether edge orientations agree with timestamp precedence
-    var nbConsistentOrientations = 0
-    var nbConsistentReverseOrientations = 0
+    var truePositiveEdges = Set[UnlabeledEdge[StateGraphVertex]]()
+    var falsePositiveEdges = Set[UnlabeledEdge[StateGraphVertex]]()
+    var ambiguousEdges = Set[UnlabeledEdge[StateGraphVertex]]()
 
     for (e <- simulatedGraph.E) {
       val ds = simulatedGraph.edgeDirections(e)
@@ -117,33 +122,49 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       val rightToLeftPrecedence = checkPrecedence(
         stateToTimestamps(e.v2.state), stateToTimestamps(e.v1.state))
 
-      val timestampsConsistent = if (d == Forward) {
-        leftToRightPrecedence
+      val (forwardConsistent, backwardConsistent) = if (d == Forward) {
+        (leftToRightPrecedence, rightToLeftPrecedence)
       } else {
-        rightToLeftPrecedence
-      }
-      val timestampsConsistentReverse = if (d == Forward) {
-        rightToLeftPrecedence
-      } else {
-        leftToRightPrecedence
+        (rightToLeftPrecedence, leftToRightPrecedence)
       }
 
-      if (timestampsConsistent) {
-        nbConsistentOrientations +=1
+      if (forwardConsistent && !backwardConsistent) {
+        truePositiveEdges += e
       }
-      if (timestampsConsistentReverse) {
-        nbConsistentReverseOrientations +=1
+      if (backwardConsistent && !forwardConsistent) {
+        falsePositiveEdges += e
       }
+      if (forwardConsistent && backwardConsistent) {
+        ambiguousEdges += e
+      }
+
+      val row = List(
+        e.v1.id,
+        e.v2.id,
+        d,
+        forwardConsistent,
+        backwardConsistent,
+        stateToTimestamps(e.v1.state).mkString(", "),
+        stateToTimestamps(e.v2.state).mkString(", ")
+      )
+
+      println(row.mkString("\t"))
     }
 
-    println(s"Nb. consistent orientations: ${nbConsistentOrientations}")
+    println(s"Nb. consistent orientations: " +
+      s"${truePositiveEdges.size}")
     println(s"Nb. consistent reverse orientations: " +
-      s"${nbConsistentReverseOrientations}")
-    println(s"Nb. total orientations: ${simulatedGraph.E.size}")
+      s"${falsePositiveEdges.size}")
+    println(s"Nb. ambiguous orientations: " +
+      s"${ambiguousEdges.size}")
+    println(s"Nb. total orientations: " +
+      s"${simulatedGraph.E.size}")
 
-//    new StateGraphPlotter(reporter).plotDirectedGraph(simulatedGraph,
-//      "simulated-state-graph")
+    new StateGraphPlotter(reporter).plotDirectedGraph(simulatedGraph,
+      "simulated-state-graph")
   }
+
+
 
   def checkPrecedence(ts1: Seq[Int], ts2: Seq[Int]): Boolean = {
     ts1.min < ts2.min
@@ -157,7 +178,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val labelToFun = CAVModel.makePlosNetwork()
     val initStates = Set(CAVModel.makeInitialState())
 
-    runForModel(labelToFun, initStates, reporter)
+//    runForModel(labelToFun, initStates, reporter)
+    evaluateModelBehavior(labelToFun)
 
 //    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
 //      println("Running inferred functions...")
@@ -406,7 +428,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
     val graphFromSimulation = AsyncBooleanNetworkSimulation
-      .simulateOneStepWithStateGraph(labelToFun, initialStates)
+      .simulateAnyStepsWithStateGraph(labelToFun, initialStates)
 
     graphFromSimulation.V.map(_.state)
   }

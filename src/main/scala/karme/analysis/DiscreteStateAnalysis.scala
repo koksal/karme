@@ -1,6 +1,8 @@
 package karme.analysis
 
 import karme.Experiments.{DiscreteExperiment, DiscreteMeasurement, Measurement}
+import karme.graphs.Graphs.UnlabeledEdge
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
 
@@ -70,6 +72,10 @@ object DiscreteStateAnalysis {
     s1.orderedValues.zip(s2.orderedValues).count{
       case (v1, v2) => v1 != v2
     }
+  }
+
+  def hammingDistance(e: UnlabeledEdge[StateGraphVertex]): Int = {
+    hammingDistance(e.v1.state, e.v2.state)
   }
 
   // TODO move and parameterize/change arguments
