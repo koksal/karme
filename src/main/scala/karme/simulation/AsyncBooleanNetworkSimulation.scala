@@ -51,12 +51,6 @@ object AsyncBooleanNetworkSimulation {
     }
   }
 
-//  def applyAllFunctions(functions: Map[String, FunExpr])(
-//    s: ConcreteBooleanState
-//  ): Set[ConcreteBooleanState] = {
-//
-//  }
-
   def simulateOneStepWithTimestamps(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]

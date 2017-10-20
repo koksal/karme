@@ -2,8 +2,6 @@ package karme.synthesis
 
 object TypeTrees {
   trait Typed {
-    self =>
-
     private var _type: Option[TypeTree] = None
 
     def getType: TypeTree = _type match {
@@ -11,7 +9,7 @@ object TypeTrees {
       case Some(t) => t
     }
 
-    def setType(tt: TypeTree): self.type = _type match {
+    def setType(tt: TypeTree): this.type = _type match {
       case None => _type = Some(tt); this
       case Some(ot) if (ot != tt) => sys.error("Resetting type info.")
       case _ => this
@@ -19,12 +17,10 @@ object TypeTrees {
   }
 
   trait FixedType extends Typed {
-    self =>
-
     val fixedType: TypeTree
 
     override def getType: TypeTree = fixedType
-    override def setType(tt: TypeTree): self.type = this
+    override def setType(tt: TypeTree): this.type = this
   }
 
   sealed abstract class TypeTree
