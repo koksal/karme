@@ -85,8 +85,10 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
   ): Set[Set[Transition]] = {
     // first try all transitions eagerly
     if (synthesizeForMinDepth(transitions, possibleVars).nonEmpty) {
+      reporter.debug("All hard constraints are consistent.")
       Set(transitions)
     } else {
+      reporter.debug("Hard constraints are not consistent.")
       var remainingTransitions = transitions
       var partition: Set[Set[Transition]] = Set.empty
 
@@ -179,8 +181,11 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         var currentSet = hardTransitions
         var currentExprs = exprsForHardTrans.toSet
 
-        for (t <- transitionsByDescendingWeight(softTransitions)) {
+        for ((t, i) <-
+             transitionsByDescendingWeight(softTransitions).zipWithIndex) {
           // try adding t to current set
+          reporter.debug(s"Testing soft constraint $i / " +
+            s"${softTransitions.size}.")
           val toCheck = currentSet + t
           val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
           if (exprsWithNewT.nonEmpty) {

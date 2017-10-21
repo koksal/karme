@@ -13,9 +13,9 @@ object SimulationToExperiment {
   private val counter = new UniqueCounter()
 
   def makeExperimentAndTrajectory(
-    stateTimestampPairs: Set[(ConcreteBooleanState, Set[Int])]
+    stateTimestampPairs: Set[(ConcreteBooleanState, Seq[Int])]
   ): (Experiment[Boolean], CellTrajectory) = {
-    var measurements = ListBuffer[Measurement[Boolean]]()
+    val measurements = ListBuffer[Measurement[Boolean]]()
     var measurementIDtoTime = Map[String, Double]()
 
     for ((state, timestamps) <- stateTimestampPairs) {

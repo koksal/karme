@@ -2,7 +2,6 @@ package karme.evaluation.synthetic
 
 import karme.Opts
 import karme.Reporter
-import karme.analysis.DiscreteStateAnalysis
 import karme.evaluation.PerturbationAnalysis
 import karme.evaluation.synthetic.examples.CAVModel
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
@@ -20,6 +19,9 @@ import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.transformations.AverageComparisonTest
+import karme.transformations.IncrementalStateGraphBuilder
+import karme.transformations.MultiHammingEdgeExpansion
 import karme.util.FileUtil
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
@@ -56,6 +58,38 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       evaluateModelBehavior(resultCombination)
     }
   }
+
+  def synthesizeWithGraphReconstruction(): Unit = {
+    // simulate model and produce graph + timestamps
+    val labelToFun = CAVModel.makeNetwork()
+    val initStates = Set(CAVModel.makeInitialState())
+
+    val stateToTimestamps = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithTimestamps(labelToFun, initStates)
+
+    val (exp, traj) = SimulationToExperiment.makeExperimentAndTrajectory(
+      stateToTimestamps)
+
+    val graphBuilder = new IncrementalStateGraphBuilder(exp, Seq(traj),
+      new AverageComparisonTest)
+    var graph = graphBuilder.buildGraph
+
+    // expandMultiHammingEdges
+    graph = new MultiHammingEdgeExpansion(graph).expandMultiHammingEdges()
+
+    val results = new Synthesizer(opts.synthOpts, reporter)
+      .synthesizeForPositiveHardConstraints(graph)
+    SynthesisResultLogger(results, reporter.file("functions.txt"))
+
+    // check high-level property: reachability of stable states (with mutations)
+    val resultCombinations = SynthesisResult.makeCombinations(results)
+    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
+      println(s"Testing inferred model $i:")
+      evaluateModelBehavior(resultCombination)
+    }
+  }
+
+
 
   def evaluateModelBehavior(
     labelToFun: Map[String, FunExpr]
