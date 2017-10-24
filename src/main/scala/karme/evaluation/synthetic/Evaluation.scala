@@ -9,7 +9,8 @@ object Evaluation {
     val opts = ArgHandling.parseOptions(args)
     val reporter = new Reporter(opts.reporterOpts)
 
-    new SyntheticWorkflow(opts, reporter).synthesizeWithGraphReconstruction()
+//    new SyntheticWorkflow(opts, reporter).synthesizeWithGraphReconstruction()
+    new StateGraphNoiseEval(opts, reporter).evaluateCAVModelPerturbations()
   }
 
 }

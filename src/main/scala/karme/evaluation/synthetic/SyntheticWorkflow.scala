@@ -4,10 +4,13 @@ import karme.Opts
 import karme.Reporter
 import karme.evaluation.PerturbationAnalysis
 import karme.evaluation.synthetic.examples.CAVModel
+import karme.evaluation.synthetic.examples.CAVModelEvaluation
 import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.evaluation.synthetic.stategen.RandomStateGeneration
 import karme.evaluation.synthetic.topology.RandomGraphGeneration
+import karme.graphs.Graphs.Backward
+import karme.graphs.Graphs.EdgeDirection
 import karme.graphs.Graphs.Forward
 import karme.graphs.Graphs.UnlabeledDiGraph
 import karme.graphs.Graphs.UnlabeledEdge
@@ -55,7 +58,7 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val resultCombinations = SynthesisResult.makeCombinations(results)
     for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
       println(s"Testing inferred model $i:")
-      evaluateModelBehavior(resultCombination)
+      CAVModelEvaluation.evaluateModelBehavior(resultCombination)
     }
   }
 
@@ -64,6 +67,8 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val labelToFun = CAVModel.makeNetwork()
     val initStates = Set(CAVModel.makeInitialState())
 
+    val simulatedGraph = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithStateGraph(labelToFun, initStates)
     val stateToTimestamps = AsyncBooleanNetworkSimulation
       .simulateOneStepWithTimestamps(labelToFun, initStates)
 
@@ -74,32 +79,81 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       new AverageComparisonTest)
     var graph = graphBuilder.buildGraph
 
+//    new StateGraphPlotter(reporter).plotDirectedGraph(graph,
+//      "reconstructed-non-expanded-graph")
+
     // expandMultiHammingEdges
     graph = new MultiHammingEdgeExpansion(graph).expandMultiHammingEdges()
 
+//    println(graph.E.count(e => graph.edgeDirections(e).size > 1))
+//    new StateGraphPlotter(reporter).plotDirectedGraph(graph,
+//      "reconstructed-expanded-graph")
+
+    diffGraphs(simulatedGraph, graph)
+    sys.exit(0)
+
     val results = new Synthesizer(opts.synthOpts, reporter)
-      .synthesizeForPositiveHardConstraints(graph)
+      .synthesizeForPositiveHardConstraints(simulatedGraph)
     SynthesisResultLogger(results, reporter.file("functions.txt"))
 
     // check high-level property: reachability of stable states (with mutations)
     val resultCombinations = SynthesisResult.makeCombinations(results)
     for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
       println(s"Testing inferred model $i:")
-      evaluateModelBehavior(resultCombination)
+      CAVModelEvaluation.evaluateModelBehavior(resultCombination)
     }
   }
 
+  def diffGraphs(
+    g1: DirectedBooleanStateGraph, g2: DirectedBooleanStateGraph
+  ) = {
+    def reverse(d: EdgeDirection): EdgeDirection = d match {
+      case Forward => Backward
+      case Backward => Forward
+    }
 
+    val states1 = g1.V.map(_.state)
+    val states2 = g2.V.map(_.state)
 
-  def evaluateModelBehavior(
-    labelToFun: Map[String, FunExpr]
-  ): Unit = {
-    println(s"Wild-type fixpoints reached: " +
-      s"${modelHasCorrectWildTypeFixpoints(labelToFun)}")
-    println(s"Wild-type unexpected states reached: " +
-      s"${findUnexpectedFixpoints(labelToFun).size}")
-    println(s"Perturbations disagreeing about expected cell-types: " +
-      s"${nbDisagreeingPerturbations(labelToFun)}")
+    println(s"States only in 1: ${(states1 -- states2).size}")
+    println(s"States only in 2: ${(states2 -- states1).size}")
+
+    var nbOrigDirectionCaptured = 0
+    var nbOrigDirectionNonCaptured = 0
+    var nbMissedEdges = 0
+
+    for (e1 <- g1.E) {
+      g2.E.find { e2 =>
+        Set(e1.v1.state, e1.v2.state) == Set(e2.v1.state, e2.v2.state)
+      } match {
+        case Some(e2) => {
+          val ds1 = g1.edgeDirections(e1)
+          val ds2 = g2.edgeDirections(e2)
+          val sameEdgeOrder = e1.v1.state == e2.v1.state
+          if (sameEdgeOrder) {
+            if (ds1.subsetOf(ds2)) {
+              nbOrigDirectionCaptured += 1
+            } else {
+              nbOrigDirectionNonCaptured += 1
+            }
+          } else {
+            if (ds1.subsetOf(ds2.map(reverse))) {
+              nbOrigDirectionCaptured += 1
+            } else {
+              nbOrigDirectionNonCaptured += 1
+            }
+          }
+        }
+        case None => {
+          nbMissedEdges += 1
+        }
+      }
+    }
+
+    println(s"Directions captured: $nbOrigDirectionCaptured")
+    println(s"Directions non-captured: $nbOrigDirectionNonCaptured")
+    println(s"Missed edges: $nbMissedEdges")
+
   }
 
   def reorientGraphWithTimestamps(
@@ -208,19 +262,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
   }
 
-  def runHandCuratedModel(): Unit = {
-    val labelToFun = CAVModel.makePlosNetwork()
-    val initStates = Set(CAVModel.makeInitialState())
-
-//    runForModel(labelToFun, initStates, reporter)
-    evaluateModelBehavior(labelToFun)
-
-//    for (inferredFuns <- CAVModel.makeSimplifiedNetworks()) {
-//      println("Running inferred functions...")
-//      runForModel(inferredFuns, initStates, reporter)
-//    }
-  }
-
   def checkAlternativeModelStateSpaces(): Unit = {
     val initStates = Set(CAVModel.makeInitialState())
     val stateSets = CAVModel.makeSimplifiedNetworks() map { n =>
@@ -285,67 +326,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     }
   }
 
-  def testKnockouts(): Unit = {
-    println("Testing original network...")
-    nbDisagreeingPerturbations(CAVModel.makeNetwork())
-
-    for (labelToFun <- CAVModel.makeSimplifiedNetworks()) {
-      println("testing simplified network...")
-      nbDisagreeingPerturbations(labelToFun)
-    }
-  }
-
-  def modelHasCorrectWildTypeFixpoints(
-    labelToFun: Map[String, FunExpr]
-  ): Boolean = {
-    val simulationFixpoints = findSimulationFixpoints(labelToFun,
-      Set(CAVModel.makeInitialState()))
-    val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
-    expectedFixpoints.subsetOf(simulationFixpoints)
-  }
-
-  def findUnexpectedFixpoints(
-    labelToFun: Map[String, FunExpr]
-  ): Set[ConcreteBooleanState] = {
-    val simulationFixpoints = findSimulationFixpoints(labelToFun,
-      Set(CAVModel.makeInitialState()))
-    val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
-    simulationFixpoints -- expectedFixpoints
-  }
-
-  def nbDisagreeingPerturbations(labelToFun: Map[String, FunExpr]): Int = {
-    var nbDisagreeing = 0
-
-    for (ke <- CAVModel.knockoutExperiments()) {
-      val perturbedFuns = PerturbationAnalysis.knockoutVariable(labelToFun,
-        ke.knockoutVar)
-
-      val perturbedInitialState = CAVModel.makeInitialState().replaceValue(
-        ke.knockoutVar, false)
-
-      val simulationFixpoints = findSimulationFixpoints(perturbedFuns,
-        Set(perturbedInitialState))
-
-      val simFixpointCellTypes = CAVModel.myeloidStableStates() filter {
-        case (id, state) => simulationFixpoints.contains(state)
-      }
-
-      val fixpointCellTypeIds = simFixpointCellTypes.keySet
-
-//      println(s"Perturbing ${ke.knockoutVar}...")
-
-      if (fixpointCellTypeIds == ke.observedOriginalAttractors) {
-//        println(s"Good! Reached ${fixpointCellTypeIds.mkString(",")}")
-      } else {
-//        println(s"BAD!!! Reached ${fixpointCellTypeIds.mkString(",")}")
-        nbDisagreeing += 1
-      }
-
-    }
-
-    nbDisagreeing
-  }
-
   def run(): Unit = {
     // 1. Create network topology
     val topology = makeTopology()
@@ -393,20 +373,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       reporter.file("recovery-ratios.pdf"))
   }
 
-  def findAllFixpoints(
-    labelToFun: Map[String, FunExpr]
-  ): Set[ConcreteBooleanState] = {
-    val allStateSingletons = new ExhaustiveStateEnumeration(
-      labelToFun.keySet.toList).enumerateInitialStates()
-
-    val fixpointSingletons = allStateSingletons filter { s =>
-      assert(s.size == 1)
-      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s.head)
-    }
-
-    fixpointSingletons.map(_.head).toSet
-  }
-
   def runForPerturbationsFromFixpoints(): Unit = {
     val topology = makeTopology()
 
@@ -444,27 +410,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
       val recoveryRatio = runForModel(overriddenFunctions, Set(state),
         runReporter.subfolderReporter(s"perturb-$label"))
     }
-  }
-
-  def findSimulationFixpoints(
-    labelToFun: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
-  ): Set[ConcreteBooleanState] = {
-    val simulatedStates = findSimulatedStates(labelToFun, initialStates)
-
-    simulatedStates filter { s =>
-      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
-    }
-  }
-
-  def findSimulatedStates(
-    labelToFun: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
-  ): Set[ConcreteBooleanState] = {
-    val graphFromSimulation = AsyncBooleanNetworkSimulation
-      .simulateAnyStepsWithStateGraph(labelToFun, initialStates)
-
-    graphFromSimulation.V.map(_.state)
   }
 
   def runForModel(
@@ -549,6 +494,45 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     // new DAGGeneration(2).generate()
     // new CyclicNetworkGeneration(5).generate()
     new RandomGraphGeneration(8).generate()
+  }
+
+}
+
+object SyntheticWorkflow {
+
+  def findSimulationFixpoints(
+    labelToFun: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[ConcreteBooleanState] = {
+    val simulatedStates = findSimulatedStates(labelToFun, initialStates)
+
+    simulatedStates filter { s =>
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
+    }
+  }
+
+  def findSimulatedStates(
+    labelToFun: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState]
+  ): Set[ConcreteBooleanState] = {
+    val graphFromSimulation = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithStateGraph(labelToFun, initialStates)
+
+    graphFromSimulation.V.map(_.state)
+  }
+
+  def findAllFixpoints(
+    labelToFun: Map[String, FunExpr]
+  ): Set[ConcreteBooleanState] = {
+    val allStateSingletons = new ExhaustiveStateEnumeration(
+      labelToFun.keySet.toList).enumerateInitialStates()
+
+    val fixpointSingletons = allStateSingletons filter { s =>
+      assert(s.size == 1)
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s.head)
+    }
+
+    fixpointSingletons.map(_.head).toSet
   }
 
 }

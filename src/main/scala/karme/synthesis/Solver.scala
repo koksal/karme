@@ -2,6 +2,7 @@ package karme.synthesis
 
 import karme.synthesis.Trees._
 import karme.synthesis.TypeTrees._
+import karme.util.TimingUtil
 import z3.scala.{Z3AST, Z3Context, Z3Model, Z3Solver, Z3Sort}
 
 class Solver {
@@ -30,9 +31,11 @@ class Solver {
   def check(expr: Expr): Option[Map[Identifier, Expr]] = {
     restart()
     z3Solver.assertCnstr(toZ3Formula(expr))
-    z3Solver.check() match {
-      case Some(true) => Some(modelToMap(z3Solver.getModel()))
-      case _ => None
+    TimingUtil.time("Z3 dispatch") {
+      z3Solver.check() match {
+        case Some(true) => Some(modelToMap(z3Solver.getModel()))
+        case _ => None
+      }
     }
   }
 

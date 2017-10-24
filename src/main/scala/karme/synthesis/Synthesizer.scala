@@ -21,8 +21,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       val (posTrans, negTrans) =
         TransitionProducer.producePositiveAndNegativeTransitions(graph)
 
-      synthesizeFunctionsForAllTransitionSubsets(posTrans,
-        negTrans, StateGraphs.namesFromStateGraph(graph))
+      synthesizeFunctionsForAllTransitionSubsets(posTrans, negTrans,
+        StateGraphs.namesFromStateGraph(graph))
     }
   }
 
@@ -120,8 +120,6 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     var currentResults = Set.empty[SynthesisResult]
 
     while (unusedTransitions.nonEmpty) {
-      reporter.debug(s"Remaining unused transitions: ${unusedTransitions.size}")
-
       val nextBestUnused =
         transitionsByDescendingWeight(unusedTransitions).head
 
@@ -154,7 +152,11 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
       val fs = synthesizeForMinDepth(hardTransitions, possibleVars)
       assert(fs.nonEmpty)
-      currentResults += SynthesisResult(hardTransitions, fs.toSet)
+      val result = SynthesisResult(hardTransitions, fs.toSet)
+      currentResults += result
+
+      reporter.debug(s"Functions:")
+      reporter.debug(SynthesisResultLogger.resultStr(result))
     }
 
     currentResults
@@ -184,8 +186,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         for ((t, i) <-
              transitionsByDescendingWeight(softTransitions).zipWithIndex) {
           // try adding t to current set
-          reporter.debug(s"Testing soft constraint $i / " +
-            s"${softTransitions.size}.")
+          reporter.debug(s"Testing soft constraint ${i + 1} / " +
+            s"${softTransitions.size} (weight = ${t.weight}).")
           val toCheck = currentSet + t
           val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
           if (exprsWithNewT.nonEmpty) {
