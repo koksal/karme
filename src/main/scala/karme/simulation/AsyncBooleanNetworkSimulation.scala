@@ -6,8 +6,7 @@ import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.CollectionUtil
-import karme.util.{MapUtil, UniqueCounter}
+import karme.util.{CollectionUtil, MapUtil, TimingUtil, UniqueCounter}
 
 object AsyncBooleanNetworkSimulation {
 
@@ -69,26 +68,28 @@ object AsyncBooleanNetworkSimulation {
     initialStates: Set[ConcreteBooleanState],
     stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
   ): Set[(ConcreteBooleanState, Seq[Int])] = {
-    var stateToTimestamps = Map[ConcreteBooleanState, Seq[Int]]()
+    TimingUtil.time("timestamp-generating simulation") {
+      var stateToTimestamps = Map[ConcreteBooleanState, Seq[Int]]()
 
-    var currentStates = Set.empty[ConcreteBooleanState]
-    var nextStates = initialStates
+      var currentStates = Set.empty[ConcreteBooleanState]
+      var nextStates = initialStates
 
-    var step = 0
-    while (currentStates != nextStates && step < SIMULATION_DEPTH_LIMIT) {
-      currentStates = nextStates
+      var step = 0
+      while (currentStates != nextStates && step < SIMULATION_DEPTH_LIMIT) {
+        currentStates = nextStates
 
-      for (state <- currentStates) {
-        stateToTimestamps = MapUtil.addMultisetBinding(stateToTimestamps,
-          state, step)
+        for (state <- currentStates) {
+          stateToTimestamps = MapUtil.addMultisetBinding(stateToTimestamps,
+            state, step)
+        }
+
+        nextStates = currentStates flatMap stateTransitionFunction
+
+        step += 1
       }
 
-      nextStates = currentStates flatMap stateTransitionFunction
-
-      step += 1
+      stateToTimestamps.toSet
     }
-
-    stateToTimestamps.toSet
   }
 
   def simulateOneStepWithStateGraph(
