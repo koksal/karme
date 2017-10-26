@@ -181,7 +181,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       if (exprsForHardTrans.nonEmpty) {
         // If the hard transitions are SAT, proceed with adding soft transitions.
         var currentSet = hardTransitions
-        var currentExprs = exprsForHardTrans.toSet
+        var currentExprs = exprsForHardTrans
 
         for ((t, i) <-
              transitionsByDescendingWeight(softTransitions).zipWithIndex) {
@@ -192,11 +192,11 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
           val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
           if (exprsWithNewT.nonEmpty) {
             currentSet = toCheck
-            currentExprs = exprsWithNewT.toSet
+            currentExprs = exprsWithNewT
           }
         }
 
-        Some(SynthesisResult(currentSet, currentExprs))
+        Some(SynthesisResult(currentSet, currentExprs.toSet))
       } else {
         None
       }
@@ -246,8 +246,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
   private def synthesizeForMinDepth(
     transitions: Iterable[Transition],
     possibleVars: Set[String]
-  ): List[FunExpr] = {
-    var res = List[FunExpr]()
+  ): Iterator[FunExpr] = {
+    var res: Iterator[FunExpr] = Iterator.empty
     var currDepth = 0
     while (res.isEmpty && currDepth <= opts.maxExpressionDepth) {
       res = enumerateFunExprForMinNbVars(transitions, possibleVars, currDepth)
@@ -260,7 +260,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     transitions: Iterable[Transition],
     possibleVars: Set[String],
     depth: Int
-  ): List[FunExpr] = {
+  ): Iterator[FunExpr] = {
     // create symbolic tree
     val symTree = mkFreshSymFunExpr(depth, possibleVars)
     val treeConsistent = symTree.topLevelConsistencyWithArbitraryStructure()
@@ -279,16 +279,15 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         enumerateFunExpr(symTree, And(consistencyAndIO, minimalNbVars))
       }
       case None => {
-        Nil
+        Iterator.empty
       }
     }
-
   }
 
   private def enumerateFunExpr(
     sfe: SymFunExpr,
     constraints: Expr
-  ): List[FunExpr] = {
+  ): Iterator[FunExpr] = {
     def extract(model: Map[Identifier, Expr]): FunExpr =
       funExprValue(sfe, model)
     def symEq(fe: FunExpr): Expr = funExprEquals(sfe, fe)

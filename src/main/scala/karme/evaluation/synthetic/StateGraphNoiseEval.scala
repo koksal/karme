@@ -22,7 +22,7 @@ class StateGraphNoiseEval(opts: Opts, reporter: Reporter) {
       .simulateOneStepWithStateGraph(
         CAVModel.makeNetwork(), Set(CAVModel.makeInitialState()))
 
-    val noisyStateGraph = deleteNodes(simulatedGraph, 0.01)
+    val noisyStateGraph = deleteNodes(simulatedGraph, 0.00)
 
     // todo are stable states still reachable?
 

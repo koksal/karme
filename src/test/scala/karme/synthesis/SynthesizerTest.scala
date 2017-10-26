@@ -32,7 +32,7 @@ class SynthesizerTest extends FunSuite {
     val res = synthesizer.enumerateFunExprForMinNbVars(transitions,
       possibleVars, exprDepth)
 
-    assertResult(List(FunVar("B")))(res)
+    assertResult(List(FunVar("B")))(res.toList)
   }
 
   private def testConstant(v: Boolean): Unit = {
@@ -60,7 +60,7 @@ class SynthesizerTest extends FunSuite {
     val res = synthesizer.enumerateFunExprForMinNbVars(transitions,
       possibleVars, exprDepth)
 
-    assertResult(List(FunConst(v)))(res)
+    assertResult(List(FunConst(v)))(res.toList)
   }
 
   test("Constant function synthesis") {
