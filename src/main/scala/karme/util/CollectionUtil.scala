@@ -1,5 +1,7 @@
 package karme.util
 
+import scala.util.Random
+
 object CollectionUtil {
 
   def orderByCount[T](xs: Seq[T]): Seq[(T, Int)] = {
@@ -48,5 +50,13 @@ object CollectionUtil {
         Set(Set())
       }
     }
+  }
+
+  def randomElement[T](xs: Iterable[T]): T = {
+    randomElements(xs, 1).head
+  }
+
+  def randomElements[T](xs: Iterable[T], size: Int): Seq[T] = {
+    new Random().shuffle(xs.toList).take(size)
   }
 }

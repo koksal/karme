@@ -25,15 +25,53 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.AverageComparisonTest
 import karme.transformations.IncrementalStateGraphBuilder
 import karme.transformations.MultiHammingEdgeExpansion
-import karme.util.FileUtil
-import karme.util.MathUtil
+import karme.util.{CollectionUtil, FileUtil, MathUtil}
 import karme.visualization.HistogramPlotInterface
 import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
 
+import scala.util.Random
+
 class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
   val histogramPlotInterface = new HistogramPlotInterface()
+
+  def extendedSimulation(): Unit = {
+    // simulate from original state
+    val statesInSimulation = AsyncBooleanNetworkSimulation.simulateOneStep(
+      CAVModel.makePlosNetwork(),
+      Set(CAVModel.makeInitialState())
+    )
+    println(s"Old graph size: ${statesInSimulation.size}")
+
+    val allStates = new ExhaustiveStateEnumeration(
+      CAVModel.makeInitialState().orderedKeys
+    ).enumerateAllStates()
+
+    // pick a state outside those observed
+    val unobservedStates = allStates -- statesInSimulation
+    val newInitialState = CollectionUtil.randomElement(unobservedStates)
+
+    // simulate from both states
+    val extendedStateGraph = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithStateGraph(
+        CAVModel.makePlosNetwork(),
+        // Set(CAVModel.makeInitialState(), newInitialState)
+        allStates
+      )
+    println(s"New graph size: ${extendedStateGraph.V.size}")
+
+    // synthesize from all constraints
+    val results = new Synthesizer(opts.synthOpts, reporter)
+      .synthesizeForPositiveHardConstraints(extendedStateGraph)
+    SynthesisResultLogger(results, reporter.file("functions.txt"))
+
+    val resultCombinations = SynthesisResult.makeCombinations(results)
+    for ((resultCombination, i) <- resultCombinations.zipWithIndex) yield {
+      println(s"Testing inferred model $i:")
+      CAVModelEvaluation.evaluateModelBehavior(resultCombination)
+    }
+  }
 
   def synthesizeFromTimestampOrientations(): Unit ={
     // simulate model and produce graph + timestamps
