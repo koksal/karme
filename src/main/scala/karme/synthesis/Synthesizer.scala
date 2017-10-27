@@ -84,7 +84,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     possibleVars: Set[String]
   ): Set[Set[Transition]] = {
     // first try all transitions eagerly
-    if (synthesizeForMinDepth(transitions, possibleVars).nonEmpty) {
+    if (enumerateForMinDepth(transitions, possibleVars).nonEmpty) {
       reporter.debug("All hard constraints are consistent.")
       Set(transitions)
     } else {
@@ -96,8 +96,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         var currentTransitionSet: Set[Transition] = Set.empty
         for (transition <- transitionsByDescendingWeight(remainingTransitions)) {
           val toTest = currentTransitionSet + transition
-          val expressions = synthesizeForMinDepth(toTest, possibleVars)
-          if (expressions.nonEmpty) {
+          if (enumerateForMinDepth(toTest, possibleVars).nonEmpty) {
             currentTransitionSet = toTest
           }
         }
@@ -150,7 +149,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     if (currentResults.isEmpty) {
       reporter.debug("No soft transition is compatible with hard set.")
 
-      val fs = synthesizeForMinDepthAndMinNbVars(hardTransitions, possibleVars)
+      val fs = enumerateForMinDepthAndMinNbVars(hardTransitions, possibleVars)
       assert(fs.nonEmpty)
       val result = SynthesisResult(hardTransitions, fs.toSet)
       currentResults += result
@@ -167,7 +166,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Option[SynthesisResult] = {
-    val exprsForAllTrans = synthesizeForMinDepthAndMinNbVars(
+    val exprsForAllTrans = enumerateForMinDepthAndMinNbVars(
       hardTransitions ++ softTransitions, possibleVars)
 
     if (exprsForAllTrans.nonEmpty) {
@@ -176,9 +175,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         exprsForAllTrans.toSet))
     } else {
       reporter.debug("Did not find expressions with eager check.")
-      val exprsForHardTrans = synthesizeForMinDepth(hardTransitions, possibleVars)
-
-      if (exprsForHardTrans.nonEmpty) {
+      if (enumerateForMinDepth(hardTransitions, possibleVars).nonEmpty) {
         // If the hard transitions are SAT, proceed with adding soft transitions.
         var currentSet = hardTransitions
 
@@ -188,13 +185,12 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
           reporter.debug(s"Testing soft constraint ${i + 1} / " +
             s"${softTransitions.size} (weight = ${t.weight}).")
           val toCheck = currentSet + t
-          val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
-          if (exprsWithNewT.nonEmpty) {
+          if (enumerateForMinDepth(toCheck, possibleVars).nonEmpty) {
             currentSet = toCheck
           }
         }
 
-        val finalExprs = synthesizeForMinDepthAndMinNbVars(currentSet,
+        val finalExprs = enumerateForMinDepthAndMinNbVars(currentSet,
           possibleVars)
         Some(SynthesisResult(currentSet, finalExprs.toSet))
       } else {
@@ -243,7 +239,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     ts.toList.sortBy(_.weight).reverse
   }
 
-  private def synthesizeForMinDepthAndMinNbVars(
+  private def enumerateForMinDepthAndMinNbVars(
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): Iterator[FunExpr] = {
@@ -256,7 +252,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     res
   }
 
-  private def synthesizeForMinDepth(
+  private def enumerateForMinDepth(
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): Iterator[FunExpr] = {
