@@ -150,7 +150,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     if (currentResults.isEmpty) {
       reporter.debug("No soft transition is compatible with hard set.")
 
-      val fs = synthesizeForMinDepth(hardTransitions, possibleVars)
+      val fs = synthesizeForMinDepthAndMinNbVars(hardTransitions, possibleVars)
       assert(fs.nonEmpty)
       val result = SynthesisResult(hardTransitions, fs.toSet)
       currentResults += result
@@ -167,7 +167,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Option[SynthesisResult] = {
-    val exprsForAllTrans = synthesizeForMinDepth(
+    val exprsForAllTrans = synthesizeForMinDepthAndMinNbVars(
       hardTransitions ++ softTransitions, possibleVars)
 
     if (exprsForAllTrans.nonEmpty) {
@@ -181,7 +181,6 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       if (exprsForHardTrans.nonEmpty) {
         // If the hard transitions are SAT, proceed with adding soft transitions.
         var currentSet = hardTransitions
-        var currentExprs = exprsForHardTrans
 
         for ((t, i) <-
              transitionsByDescendingWeight(softTransitions).zipWithIndex) {
@@ -192,11 +191,12 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
           val exprsWithNewT = synthesizeForMinDepth(toCheck, possibleVars)
           if (exprsWithNewT.nonEmpty) {
             currentSet = toCheck
-            currentExprs = exprsWithNewT
           }
         }
 
-        Some(SynthesisResult(currentSet, currentExprs.toSet))
+        val finalExprs = synthesizeForMinDepthAndMinNbVars(currentSet,
+          possibleVars)
+        Some(SynthesisResult(currentSet, finalExprs.toSet))
       } else {
         None
       }
@@ -243,7 +243,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     ts.toList.sortBy(_.weight).reverse
   }
 
-  private def synthesizeForMinDepth(
+  private def synthesizeForMinDepthAndMinNbVars(
     transitions: Iterable[Transition],
     possibleVars: Set[String]
   ): Iterator[FunExpr] = {
@@ -256,11 +256,57 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     res
   }
 
+  private def synthesizeForMinDepth(
+    transitions: Iterable[Transition],
+    possibleVars: Set[String]
+  ): Iterator[FunExpr] = {
+    var res: Iterator[FunExpr] = Iterator.empty
+    var currDepth = 0
+    while (res.isEmpty && currDepth <= opts.maxExpressionDepth) {
+      res = enumerateFunExpr(transitions, possibleVars, currDepth)
+      currDepth += 1
+    }
+    res
+  }
+
   def enumerateFunExprForMinNbVars(
     transitions: Iterable[Transition],
     possibleVars: Set[String],
     depth: Int
   ): Iterator[FunExpr] = {
+    val (symTree, symTreeCons) = makeSymbolicFunExprAndConstraints(
+      transitions, possibleVars, depth)
+
+    findMinNbVars(symTree, symTreeCons) match {
+      case Some(v) => {
+        val minimalNbVars = Equals(
+          symTree.nbVariables(),
+          IntLiteral(v)
+        )
+        enumerateFunExpr(symTree, And(symTreeCons, minimalNbVars))
+      }
+      case None => {
+        Iterator.empty
+      }
+    }
+  }
+
+  def enumerateFunExpr(
+    transitions: Iterable[Transition],
+    possibleVars: Set[String],
+    depth: Int
+  ): Iterator[FunExpr] = {
+    val (symTree, symTreeCons) = makeSymbolicFunExprAndConstraints(
+      transitions, possibleVars, depth)
+
+    enumerateFunExpr(symTree, symTreeCons)
+  }
+
+  private def makeSymbolicFunExprAndConstraints(
+    transitions: Iterable[Transition],
+    possibleVars: Set[String],
+    depth: Int
+  ): (SymFunExpr, Expr) = {
     // create symbolic tree
     val symTree = mkFreshSymFunExpr(depth, possibleVars)
     val treeConsistent = symTree.topLevelConsistencyWithArbitraryStructure()
@@ -269,19 +315,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     val transitionsValid = And(
       transitions.toList map (t => validTransition(symTree, t)): _*)
 
-    val consistencyAndIO = And(treeConsistent, transitionsValid)
-    findMinNbVars(symTree, consistencyAndIO) match {
-      case Some(v) => {
-        val minimalNbVars = Equals(
-          symTree.nbVariables(),
-          IntLiteral(v)
-        )
-        enumerateFunExpr(symTree, And(consistencyAndIO, minimalNbVars))
-      }
-      case None => {
-        Iterator.empty
-      }
-    }
+    (symTree, And(treeConsistent, transitionsValid))
   }
 
   private def enumerateFunExpr(

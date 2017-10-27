@@ -3,21 +3,24 @@ package karme.transformations
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, UndirectedStateGraphOps}
 import karme.synthesis.Transitions.Transition
+import karme.util.TimingUtil
 
 object TransitionProducer {
 
   def producePositiveAndNegativeTransitions(
     directedStateGraph: DirectedBooleanStateGraph
   ): (Set[Transition], Set[Transition]) = {
-    val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
+    TimingUtil.time("Producing transitions") {
+      val stateNames = StateGraphs.namesFromStateGraph(directedStateGraph)
 
-    val positiveTransitions = TransitionProducer.positiveTransitions(
-      directedStateGraph)
+      val positiveTransitions = TransitionProducer.positiveTransitions(
+        directedStateGraph)
 
-    val negativeTransitions = TransitionProducer.negativeTransitions(
-      directedStateGraph, stateNames)
+      val negativeTransitions = TransitionProducer.negativeTransitions(
+        directedStateGraph, stateNames)
 
-    (positiveTransitions, negativeTransitions)
+      (positiveTransitions, negativeTransitions)
+    }
   }
 
   def positiveTransitions(
