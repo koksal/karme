@@ -7,6 +7,36 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 object FunExprSimilarity {
 
+  def findNonRedundantSet(es: Set[FunExpr]): Set[FunExpr] = {
+    // pick a function
+    // find all functions equivalent to it
+    // pick the simplest one among them for final set (e.g. least vars)
+
+    var toProcess = es
+    var nonReduntantSet = Set[FunExpr]()
+
+    while (toProcess.nonEmpty) {
+      val nextFun = toProcess.head
+      toProcess -= nextFun
+      val equivalentFuns = toProcess.filter(
+        f => commonBehaviorRatio(nextFun, f) == 1.0)
+
+      val allEquivalentFuns = equivalentFuns + nextFun
+
+      val simplestEquivalentFun = allEquivalentFuns.minBy(
+        f => FunctionTrees.collectIdentifiers(f).size)
+
+      nonReduntantSet += simplestEquivalentFun
+      toProcess --= allEquivalentFuns
+    }
+
+    if (nonReduntantSet.size < es.size) {
+      println(s"Reduced ${es.size} functions to a non-redundant set of " +
+        s"${nonReduntantSet.size}")
+    }
+    nonReduntantSet
+  }
+
   def commonBehaviorRatio(e1: FunExpr, e2: FunExpr): Double = {
     val allIdentifiers = FunctionTrees.collectIdentifiers(e1)
       .union(FunctionTrees.collectIdentifiers(e2))

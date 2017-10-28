@@ -45,8 +45,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         softTransitions = labelToNegTrans.getOrElse(label, Set.empty),
         possibleVars = labels
       )
-      labelToSynthesisResults +=
-        label -> (resultsForLabel.map(_.simplify.canonicalize))
+      labelToSynthesisResults += label -> resultsForLabel
     }
 
     labelToSynthesisResults
