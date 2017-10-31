@@ -348,22 +348,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     }
   }
 
-  def plotTimestamps(): Unit = {
-    val labelToFun = CAVModel.makeNetwork()
-    val initStates = Set(CAVModel.makeInitialState())
-
-    val stateTimestampSetPairs = AsyncBooleanNetworkSimulation
-      .simulateOneStepWithTimestamps(labelToFun, initStates)
-
-    val sortedByMinTimestamp = stateTimestampSetPairs.toList.sortBy {
-      case (state, tss) => tss.min
-    }
-
-    for (((state, tss), i) <- sortedByMinTimestamp.zipWithIndex) {
-      println(s"State $i: ${tss.mkString(",")}")
-    }
-  }
-
   def run(): Unit = {
     // 1. Create network topology
     val topology = makeTopology()
@@ -500,31 +484,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     val unobservedStates = recoveredStates -- originalStates
 
     missedStates.size + unobservedStates.size
-  }
-
-  private def computeRecoveryRatio(
-    original: Map[String, FunExpr],
-    predicted: Map[String, FunExpr]
-  ): Double = {
-    var misses = 0
-    var successes = 0
-    var failures = 0
-    for ((label, originalFunction) <- original) {
-      predicted.get(label) match {
-        case None => {
-          misses += 1
-        }
-        case Some(predictedFunction) => {
-          if (predictedFunction == originalFunction) {
-            successes += 1
-          } else {
-            failures += 1
-          }
-        }
-      }
-    }
-
-    successes.toDouble / original.size
   }
 
   private def makeTopology() = {
