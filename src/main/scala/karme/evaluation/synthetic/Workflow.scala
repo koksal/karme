@@ -64,7 +64,7 @@ object Workflow {
     }
 
     // logging graphs
-    new StateGraphPlotter().plotDirectedGraph(graphForSynthesis,
+    new StateGraphPlotter(reporter).plotDirectedGraph(graphForSynthesis,
       "graph-for-synthesis")
 
     // perform synthesis
