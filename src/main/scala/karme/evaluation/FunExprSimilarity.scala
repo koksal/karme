@@ -13,7 +13,7 @@ object FunExprSimilarity {
     // pick the simplest one among them for final set (e.g. least vars)
 
     var toProcess = es
-    var nonReduntantSet = Set[FunExpr]()
+    var nonRedundantSet = Set[FunExpr]()
 
     while (toProcess.nonEmpty) {
       val nextFun = toProcess.head
@@ -26,15 +26,15 @@ object FunExprSimilarity {
       val simplestEquivalentFun = allEquivalentFuns.minBy(
         f => FunctionTrees.collectIdentifiers(f).size)
 
-      nonReduntantSet += simplestEquivalentFun
+      nonRedundantSet += simplestEquivalentFun
       toProcess --= allEquivalentFuns
     }
 
-    if (nonReduntantSet.size < es.size) {
+    if (nonRedundantSet.size < es.size) {
       println(s"Reduced ${es.size} functions to a non-redundant set of " +
-        s"${nonReduntantSet.size}")
+        s"${nonRedundantSet.size}")
     }
-    nonReduntantSet
+    nonRedundantSet
   }
 
   def commonBehaviorRatio(e1: FunExpr, e2: FunExpr): Double = {

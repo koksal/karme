@@ -9,13 +9,15 @@ object CAVModelEvaluation {
 
   def evaluateModelBehavior(
     labelToFun: Map[String, FunExpr]
-  ): Unit = {
-    println(s"Wild-type fixpoints missed: " +
-      s"${findMissedFixpoints(labelToFun).size}")
-    println(s"Wild-type unexpected states reached: " +
-      s"${findUnexpectedFixpoints(labelToFun).size}")
-    println(s"Perturbations disagreeing about expected cell-types: " +
-      s"${nbDisagreeingPerturbations(labelToFun)}")
+  ): Map[String, Any] = {
+    Map(
+      "Missed wild-type fixpoints " ->
+        findMissedFixpoints(labelToFun).size,
+      "Unexpected wild-type fixpoints" ->
+        findUnexpectedFixpoints(labelToFun).size,
+      "Perturbations disagreeing about expected cell-types" ->
+        nbDisagreeingPerturbations(labelToFun)
+    )
   }
 
   def findMissedFixpoints(

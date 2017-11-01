@@ -56,7 +56,7 @@ object CollectionUtil {
     randomElements(xs, 1).head
   }
 
-  def randomElements[T](xs: Iterable[T], size: Int): Seq[T] = {
+  def randomElements[T](xs: Iterable[T], size: Int): Iterable[T] = {
     new Random().shuffle(xs.toList).take(size)
   }
 }

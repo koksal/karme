@@ -8,6 +8,7 @@ import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 import karme.transformations.TransitionProducer
+import karme.util.TimingUtil
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
@@ -40,11 +41,15 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       reporter.debug(s"Synthesizing for ${label}")
       reporter.debug("==========================")
 
-      val resultsForLabel = synthesizeForSingleLabel(
-        hardTransitions = labelToPosTrans.getOrElse(label, Set.empty),
-        softTransitions = labelToNegTrans.getOrElse(label, Set.empty),
-        possibleVars = labels
-      )
+      val resultsForLabel = TimingUtil.log(
+        label, reporter.file("synthesis-times.txt")
+      ) {
+        synthesizeForSingleLabel(
+          hardTransitions = labelToPosTrans.getOrElse(label, Set.empty),
+          softTransitions = labelToNegTrans.getOrElse(label, Set.empty),
+          possibleVars = labels
+        )
+      }
       labelToSynthesisResults += label -> resultsForLabel
     }
 

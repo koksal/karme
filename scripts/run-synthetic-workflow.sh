@@ -13,6 +13,6 @@ echo "Output folder: " $OUTFOLDER
 LOGFILE=$OUTFOLDER/log.txt
 shift
 
-sbt "run-main karme.evaluation.synthetic.Evaluation \
+sbt "run-main karme.evaluation.synthetic.Workflow \
   --verbose \
   --outfolder $OUTFOLDER $*" | tee $LOGFILE
