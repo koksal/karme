@@ -23,7 +23,7 @@ object Workflow {
       defaultInitialStates = Set(CAVModel.makeInitialState()),
       randomizedInitialStateInclusionRatio = None,
       nodeDeletionRatio = 0.0,
-      reconstructGraph = false,
+      reconstructGraph = true,
       behaviorEvalFun = CAVModelEvaluation.evaluateModelBehavior
     )
   }
@@ -71,7 +71,6 @@ object Workflow {
       reporter.file("graph-diff.tsv")
     )
 
-    // evaluate behavior, function similarity
     val resultCombinations = SynthesisResult.makeCombinations(synthesisResults)
 
     TSVUtil.saveOrderedTuples(
@@ -80,6 +79,7 @@ object Workflow {
       reporter.file("number-of-models.tsv")
     )
 
+    // evaluate behavior, function similarity, state spaces
     val behaviorEvalTuples = resultCombinations map { c =>
       behaviorEvalFun(c)
     }
@@ -92,6 +92,11 @@ object Workflow {
     TSVUtil.saveTupleMaps(funSimilarityTuples,
       reporter.file("function-similarity-eval.tsv"))
 
+    val stateSpaceEvalTuples = resultCombinations map { c =>
+      StateSpaceEval.compareStateSpaces(graphForSynthesis, c, initialStates)
+    }
+    TSVUtil.saveTupleMaps(stateSpaceEvalTuples,
+      reporter.file("state-space-reproduction-eval.tsv"))
   }
 
 }
