@@ -22,7 +22,8 @@ object SynthesisResultLogger {
   }
 
   def resultStr(r: SynthesisResult): String = {
-    r.functions.map(FunExprPrettyPrinter.apply).mkString("\n")
+    s"Transitions used: ${r.transitions.size}\n" +
+      r.functions.map(FunExprPrettyPrinter.apply).mkString("\n")
   }
 
 }

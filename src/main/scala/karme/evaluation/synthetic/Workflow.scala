@@ -5,6 +5,7 @@ import karme.Opts
 import karme.Reporter
 import karme.evaluation.synthetic.examples.CAVModel
 import karme.evaluation.synthetic.examples.CAVModelEvaluation
+import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
@@ -70,6 +71,9 @@ object Workflow {
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts, reporter)
       .synthesizeForPositiveHardConstraints(graphForSynthesis)
+
+    // log synthesis results
+    SynthesisResultLogger(synthesisResults, reporter.file("functions.txt"))
 
     // evaluate graph reconstruction
     TSVUtil.saveTupleMaps(

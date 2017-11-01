@@ -1,5 +1,6 @@
 package karme.synthesis
 
+import karme.evaluation.FunExprSimilarity
 import karme.{Reporter, SynthOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
@@ -194,9 +195,9 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
           }
         }
 
-        val finalExprs = enumerateForMinDepthAndMinNbVars(currentSet,
-          possibleVars)
-        Some(SynthesisResult(currentSet, finalExprs.toSet))
+        val finalExprs = FunExprSimilarity.findNonRedundantSet(
+          enumerateForMinDepthAndMinNbVars(currentSet, possibleVars).toSet)
+        Some(SynthesisResult(currentSet, finalExprs))
       } else {
         None
       }
