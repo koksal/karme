@@ -86,5 +86,5 @@ case class ReporterOpts(
 case class SyntheticEvalOpts(
   randomizedInitialStateInclusionRatio: Option[Double] = None,
   nodeDeletionRatio: Double = 0.0,
-  reconstructGraph: Boolean = false,
+  reconstructGraph: Boolean = false
 )
