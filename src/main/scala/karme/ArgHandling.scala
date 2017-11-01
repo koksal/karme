@@ -262,6 +262,23 @@ object ArgHandling {
         o.copy(evalOpts = o.evalOpts.copy(randomize = true))
       } text "Randomize predictions before evaluation"
 
+      // Synthetic evaluation options:
+
+      opt[Double]("randomized-initial-states-ratio") action { (v, o) =>
+        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
+          randomizedInitialStateInclusionRatio = Some(v)))
+      }
+
+      opt[Double]("node-deletion-ratio") action { (v, o) =>
+        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
+          nodeDeletionRatio = v))
+      }
+
+      opt[Unit]("reconstruct-graph") action { (_, o) =>
+        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
+          reconstructGraph = true))
+      }
+
       help("help") text "print this help message"
     }
 

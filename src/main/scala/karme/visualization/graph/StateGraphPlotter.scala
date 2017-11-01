@@ -16,7 +16,7 @@ import karme.graphs.StateGraphs.UndirectedStateGraphOps
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.Transition
 
-class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
+class StateGraphPlotter(implicit val reporter: Reporter) extends GraphPlotter {
 
   def plotUndirectedGraph(
     g: UndirectedBooleanStateGraph,

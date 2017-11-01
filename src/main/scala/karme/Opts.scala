@@ -12,6 +12,7 @@ case class Opts(
   evalOpts: EvalOpts = EvalOpts(),
   annotationOpts: AnnotationOpts = AnnotationOpts(),
   reporterOpts: ReporterOpts = ReporterOpts(),
+  syntheticEvalOpts: SyntheticEvalOpts = SyntheticEvalOpts(),
   runPrecedence: Boolean = false,
   runSynthesis: Boolean = false
 )
@@ -80,4 +81,10 @@ case class EvalOpts(
 case class ReporterOpts(
   outFolder: File = new File("."),
   verbose: Boolean = false
+)
+
+case class SyntheticEvalOpts(
+  randomizedInitialStateInclusionRatio: Option[Double] = None,
+  nodeDeletionRatio: Double = 0.0,
+  reconstructGraph: Boolean = false,
 )

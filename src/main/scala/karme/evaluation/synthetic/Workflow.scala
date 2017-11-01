@@ -11,6 +11,7 @@ import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.TSVUtil
+import karme.visualization.graph.StateGraphPlotter
 
 object Workflow {
 
@@ -21,9 +22,10 @@ object Workflow {
     run(
       hiddenModel = CAVModel.makePlosNetwork(),
       defaultInitialStates = Set(CAVModel.makeInitialState()),
-      randomizedInitialStateInclusionRatio = None,
-      nodeDeletionRatio = 0.0,
-      reconstructGraph = true,
+      randomizedInitialStateInclusionRatio =
+        opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
+      nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
+      reconstructGraph = opts.syntheticEvalOpts.reconstructGraph,
       behaviorEvalFun = CAVModelEvaluation.evaluateModelBehavior
     )
   }
@@ -61,6 +63,10 @@ object Workflow {
         simulationStateToTimestamps)
     }
 
+    // logging graphs
+    new StateGraphPlotter().plotDirectedGraph(graphForSynthesis,
+      "graph-for-synthesis")
+
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts, reporter)
       .synthesizeForPositiveHardConstraints(graphForSynthesis)
@@ -97,6 +103,7 @@ object Workflow {
     }
     TSVUtil.saveTupleMaps(stateSpaceEvalTuples,
       reporter.file("state-space-reproduction-eval.tsv"))
+
   }
 
 }
