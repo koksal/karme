@@ -1,7 +1,7 @@
 package karme.evaluation.synthetic.examples.myeloid
 
 import karme.evaluation.PerturbationAnalysis
-import karme.evaluation.synthetic.SyntheticWorkflow
+import karme.evaluation.synthetic.FixpointStates
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
 
@@ -23,7 +23,7 @@ object MyeloidModelEvaluation {
   def findMissedFixpoints(
     labelToFun: Map[String, FunExpr]
   ): Set[ConcreteBooleanState] = {
-    val simulationFixpoints = SyntheticWorkflow.findSimulationFixpoints(
+    val simulationFixpoints = FixpointStates.findSimulationFixpoints(
       labelToFun, Set(MyeloidModel.makeInitialState()))
     val expectedFixpoints = MyeloidModel.stableStates()
     expectedFixpoints -- simulationFixpoints
@@ -32,7 +32,7 @@ object MyeloidModelEvaluation {
   def findUnexpectedFixpoints(
     labelToFun: Map[String, FunExpr]
   ): Set[ConcreteBooleanState] = {
-    val simulationFixpoints = SyntheticWorkflow.findSimulationFixpoints(
+    val simulationFixpoints = FixpointStates.findSimulationFixpoints(
       labelToFun, Set(MyeloidModel.makeInitialState()))
     val expectedFixpoints = MyeloidModel.stableStates()
     simulationFixpoints -- expectedFixpoints
@@ -48,7 +48,7 @@ object MyeloidModelEvaluation {
       val perturbedInitialState = MyeloidModel.makeInitialState().replaceValue(
         ke.knockoutVar, false)
 
-      val simulationFixpoints = SyntheticWorkflow.findSimulationFixpoints(
+      val simulationFixpoints = FixpointStates.findSimulationFixpoints(
         perturbedFuns, Set(perturbedInitialState))
 
       val simFixpointCellTypes = MyeloidModel.namedStableStates() filter {

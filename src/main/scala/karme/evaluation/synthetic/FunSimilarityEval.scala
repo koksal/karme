@@ -9,7 +9,7 @@ object FunSimilarityEval {
     hiddenModel: Map[String, FunExpr],
     inferredModel: Map[String, FunExpr]
   ): Map[String, Any] = {
-    hiddenModel.keySet.map{ v =>
+    hiddenModel.keySet.map { v =>
       val similarity = inferredModel.get(v) match {
         case Some(inferredFun) => {
           FunExprSimilarity.commonBehaviorRatio(hiddenModel(v), inferredFun)

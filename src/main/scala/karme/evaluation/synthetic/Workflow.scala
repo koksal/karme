@@ -108,6 +108,20 @@ object Workflow {
     TSVUtil.saveTupleMaps(stateSpaceEvalTuples,
       reporter.file("state-space-reproduction-eval.tsv"))
 
+    // evaluate fixpoint reachability from perturbed initial states
+    val initStatePerturbEvalTuples = resultCombinations map { c =>
+      InitialStatePerturbationEval.compareInferredFixpointsForPerturbations(
+        hiddenModel, c, initialStates
+      )
+    }
+    TSVUtil.saveTupleMaps(initStatePerturbEvalTuples,
+      reporter.file("inferred-models-init-state-perturbation-eval.tsv"))
+
+    TSVUtil.saveTupleMaps(
+      List(InitialStatePerturbationEval
+        .jaccardSimilarityForPerturbedInitStates(hiddenModel, initialStates)),
+      reporter.file("hidden-model-init-state-perturbation-eval.tsv")
+    )
   }
 
 }
