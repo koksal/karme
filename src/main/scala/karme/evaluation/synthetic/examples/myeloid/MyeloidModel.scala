@@ -1,4 +1,4 @@
-package karme.evaluation.synthetic.examples
+package karme.evaluation.synthetic.examples.myeloid
 
 import karme.synthesis.FunctionTrees.FunAnd
 import karme.synthesis.FunctionTrees.FunExpr
@@ -8,7 +8,7 @@ import karme.synthesis.FunctionTrees.FunVar
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.Transitions.GenericState
 
-object CAVModel {
+object MyeloidModel {
 
   val Cebpa = "Cebpa"
   val EKLF = "EKLF"
@@ -27,15 +27,11 @@ object CAVModel {
   val s3 = "s3"
   val s4 = "s4"
 
-  def makeSimplifiedNetworks(): Seq[Map[String, FunExpr]] = {
-    simplifiedNetworkAlternatives() map {
-      case (key, fun) => {
-        commonSimplifiedNetworkCore().updated(key, fun)
-      }
-    }
+  def stableStates(): Set[ConcreteBooleanState] = {
+    namedStableStates().values.toSet
   }
 
-  def myeloidStableStates(): Map[String, ConcreteBooleanState] = {
+  def namedStableStates(): Map[String, ConcreteBooleanState] = {
     Map(
       "s1" ->
         GenericState(
@@ -104,103 +100,8 @@ object CAVModel {
     )
   }
 
-  private def commonSimplifiedNetworkCore(): Map[String, FunExpr] = {
-    Map(
-      Cebpa ->
-        FunNot(
-          FunOr(
-            FunVar(Scl),
-            FunVar(Fog1)
-          )
-        ),
-      EKLF ->
-        FunAnd(
-          FunVar(Gata1),
-          FunNot(
-            FunVar(Fli1)
-          )
-        ),
-      EgrNab ->
-        FunAnd(
-          FunAnd(
-            FunVar(Pu_1),
-            FunVar(cJun)
-          ),
-          FunNot(
-            FunVar(Gfi1)
-          )
-        ),
-      Fli1 ->
-        FunAnd(
-          FunVar(Gata1),
-          FunNot(
-            FunVar(EKLF)
-          )
-        ),
-      Fog1 ->
-        FunVar(Gata1),
-      Gata1 ->
-        FunNot(
-          FunVar(Pu_1)
-        ),
-      Gata2	->
-        FunNot(
-          FunOr(
-            FunVar(Pu_1),
-            FunVar (Fog1)
-          )
-        ),
-      Gfi1 ->
-        FunAnd(
-          FunVar(Cebpa),
-          FunNot(
-            FunVar(EgrNab)
-          )
-        ),
-      Scl ->
-        FunVar(Gata1),
-      cJun ->
-        FunAnd(
-          FunVar(Pu_1),
-          FunNot(
-            FunVar(Gfi1)
-          )
-        )
-    )
-  }
-
-  private def simplifiedNetworkAlternatives(): Seq[(String, FunExpr)] = {
-    Seq(
-      Pu_1 ->
-        FunAnd(
-          FunVar(Pu_1),
-          FunNot(
-            FunVar(Gata2)
-          )
-        ),
-      Pu_1 ->
-        FunAnd(
-          FunNot(
-            FunVar(Gata1)
-          ),
-          FunNot(
-            FunVar(Gata2)
-          )
-        ),
-      Pu_1 ->
-        FunAnd(
-          FunNot(
-            FunVar(Fog1)
-          ),
-          FunNot(
-            FunVar(Gata2)
-          )
-        )
-    )
-  }
-
-  def makePlosNetwork(): Map[String, FunExpr] = {
-    makeNetwork().updated(Cebpa,
+  def makePLOSNetwork(): Map[String, FunExpr] = {
+    makeCAVNetwork().updated(Cebpa,
       FunAnd(
         FunVar(Cebpa),
         FunNot(
@@ -215,7 +116,8 @@ object CAVModel {
       )
     )
   }
-  def makeNetwork(): Map[String, FunExpr] = {
+
+  def makeCAVNetwork(): Map[String, FunExpr] = {
     Map(
       Cebpa ->
         FunAnd(

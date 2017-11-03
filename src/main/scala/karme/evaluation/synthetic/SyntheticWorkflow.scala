@@ -3,16 +3,8 @@ package karme.evaluation.synthetic
 import karme.Opts
 import karme.Reporter
 import karme.evaluation.PerturbationAnalysis
-import karme.evaluation.synthetic.examples.CAVModel
-import karme.evaluation.synthetic.examples.CAVModelEvaluation
-import karme.evaluation.synthetic.fungen.RandomFunctionGeneration
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
-import karme.evaluation.synthetic.stategen.RandomStateGeneration
-import karme.evaluation.synthetic.topology.RandomGraphGeneration
-import karme.graphs.Graphs.Backward
-import karme.graphs.Graphs.EdgeDirection
 import karme.graphs.Graphs.Forward
-import karme.graphs.Graphs.UnlabeledDiGraph
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
@@ -22,15 +14,11 @@ import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.transformations.AverageComparisonTest
-import karme.transformations.IncrementalStateGraphBuilder
-import karme.transformations.MultiHammingEdgeExpansion
-import karme.util.{CollectionUtil, FileUtil, MathUtil}
+import karme.util.FileUtil
+import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
 import karme.visualization.graph.NetworkGraphPlotter
 import karme.visualization.graph.StateGraphPlotter
-
-import scala.util.Random
 
 class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
 
@@ -106,26 +94,6 @@ class SyntheticWorkflow(opts: Opts, reporter: Reporter) {
     MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
     ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
     MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
-  }
-
-  // TODO to be added to main eval body
-  def checkAlternativeModelStateSpaces(): Unit = {
-    val initStates = Set(CAVModel.makeInitialState())
-    val stateSets = CAVModel.makeSimplifiedNetworks() map { n =>
-      AsyncBooleanNetworkSimulation
-        .simulateOneStepWithStateGraph(n, initStates)
-    }
-
-    val allSetsAreEqual = stateSets.forall(
-      set => stateSets.forall(
-        otherSet => set == otherSet))
-
-    if (allSetsAreEqual) {
-      println("All simulated state sets are equal!")
-    } else {
-      println("Simulated state sets are not equal!")
-    }
-
   }
 
   def perturbVariables(

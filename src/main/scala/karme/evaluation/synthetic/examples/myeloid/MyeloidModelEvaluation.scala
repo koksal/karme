@@ -1,11 +1,11 @@
-package karme.evaluation.synthetic.examples
+package karme.evaluation.synthetic.examples.myeloid
 
 import karme.evaluation.PerturbationAnalysis
 import karme.evaluation.synthetic.SyntheticWorkflow
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
 
-object CAVModelEvaluation {
+object MyeloidModelEvaluation {
 
   def evaluateModelBehavior(
     labelToFun: Map[String, FunExpr]
@@ -24,8 +24,8 @@ object CAVModelEvaluation {
     labelToFun: Map[String, FunExpr]
   ): Set[ConcreteBooleanState] = {
     val simulationFixpoints = SyntheticWorkflow.findSimulationFixpoints(
-      labelToFun, Set(CAVModel.makeInitialState()))
-    val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
+      labelToFun, Set(MyeloidModel.makeInitialState()))
+    val expectedFixpoints = MyeloidModel.stableStates()
     expectedFixpoints -- simulationFixpoints
   }
 
@@ -33,26 +33,26 @@ object CAVModelEvaluation {
     labelToFun: Map[String, FunExpr]
   ): Set[ConcreteBooleanState] = {
     val simulationFixpoints = SyntheticWorkflow.findSimulationFixpoints(
-      labelToFun, Set(CAVModel.makeInitialState()))
-    val expectedFixpoints = CAVModel.myeloidStableStates().values.toSet
+      labelToFun, Set(MyeloidModel.makeInitialState()))
+    val expectedFixpoints = MyeloidModel.stableStates()
     simulationFixpoints -- expectedFixpoints
   }
 
   def nbDisagreeingPerturbations(labelToFun: Map[String, FunExpr]): Int = {
     var nbDisagreeing = 0
 
-    for (ke <- CAVModel.knockoutExperiments()) {
+    for (ke <- MyeloidModel.knockoutExperiments()) {
       val perturbedFuns = PerturbationAnalysis.knockoutVariable(labelToFun,
         ke.knockoutVar)
 
-      val perturbedInitialState = CAVModel.makeInitialState().replaceValue(
+      val perturbedInitialState = MyeloidModel.makeInitialState().replaceValue(
         ke.knockoutVar, false)
 
       val simulationFixpoints = SyntheticWorkflow.findSimulationFixpoints(
         perturbedFuns, Set(perturbedInitialState))
 
-      val simFixpointCellTypes = CAVModel.myeloidStableStates() filter {
-        case (id, state) => simulationFixpoints.contains(state)
+      val simFixpointCellTypes = MyeloidModel.namedStableStates() filter {
+        case (_, state) => simulationFixpoints.contains(state)
       }
 
       val fixpointCellTypeIds = simFixpointCellTypes.keySet
@@ -65,6 +65,5 @@ object CAVModelEvaluation {
 
     nbDisagreeing
   }
-
 
 }

@@ -3,8 +3,8 @@ package karme.evaluation.synthetic
 import karme.ArgHandling
 import karme.Opts
 import karme.Reporter
-import karme.evaluation.synthetic.examples.CAVModel
-import karme.evaluation.synthetic.examples.CAVModelEvaluation
+import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
+import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
@@ -21,13 +21,13 @@ object Workflow {
     implicit val reporter = new Reporter(opts.reporterOpts)
 
     run(
-      hiddenModel = CAVModel.makePlosNetwork(),
-      defaultInitialStates = Set(CAVModel.makeInitialState()),
+      hiddenModel = MyeloidModel.makePLOSNetwork(),
+      defaultInitialStates = Set(MyeloidModel.makeInitialState()),
       randomizedInitialStateInclusionRatio =
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
       reconstructGraph = opts.syntheticEvalOpts.reconstructGraph,
-      behaviorEvalFun = CAVModelEvaluation.evaluateModelBehavior
+      behaviorEvalFun = MyeloidModelEvaluation.evaluateModelBehavior
     )
   }
 
