@@ -110,8 +110,8 @@ object Workflow {
 
     // evaluate fixpoint reachability from perturbed initial states
     val initStatePerturbEvalTuples = resultCombinations map { c =>
-      InitialStatePerturbationEval.compareInferredFixpointsForPerturbations(
-        hiddenModel, c, initialStates
+      InitialStatePerturbationEval.jaccardSimilarityForPerturbedInitStates(
+        c, initialStates
       )
     }
     TSVUtil.saveTupleMaps(initStatePerturbEvalTuples,

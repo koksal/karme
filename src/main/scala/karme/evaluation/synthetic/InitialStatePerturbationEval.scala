@@ -6,26 +6,6 @@ import karme.util.CollectionUtil
 
 object InitialStatePerturbationEval {
 
-  def compareInferredFixpointsForPerturbations(
-    hiddenModel: Map[String, FunExpr],
-    inferredModel: Map[String, FunExpr],
-    initStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
-    hiddenModel.keySet.map { v =>
-      val hiddenPerturbedFixpoints = fixpointsForPerturbedInitStates(
-        hiddenModel, initStates, v
-      )
-      val inferredPerturbedFixopints = fixpointsForPerturbedInitStates(
-        inferredModel, initStates, v
-      )
-      val jaccardSim = CollectionUtil.jaccardSimilarity(
-        hiddenPerturbedFixpoints,
-        inferredPerturbedFixopints
-      )
-      v -> jaccardSim
-    }.toMap
-  }
-
   def jaccardSimilarityForPerturbedInitStates(
     model: Map[String, FunExpr],
     initStates: Set[ConcreteBooleanState]
