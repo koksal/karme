@@ -132,6 +132,25 @@ object Workflow {
     TSVUtil.saveTupleMaps(hiddenVsInferredPerturbedStateEvalTuples,
       reporter.file(
         "hidden-vs-inferred-models-perturbed-state-fixpoints.tsv"))
+
+    // evaluate plain reachability from perturbed initial states
+    TSVUtil.saveTupleMaps(
+      List(InitialStatePerturbationEval
+        .reachableStateSimilarityInitialVsPerturbedState(hiddenModel,
+          initialStates)),
+      reporter.file("hidden-model-init-state-vs-perturbed-state-reachable.tsv")
+    )
+
+    val hiddenVsInferredPerturbedStateReachability = resultCombinations map {
+      c =>
+        InitialStatePerturbationEval
+          .compareModelsForReachableStatesFromPerturbedStates(
+            hiddenModel, c, initialStates)
+    }
+    TSVUtil.saveTupleMaps(hiddenVsInferredPerturbedStateReachability,
+      reporter.file(
+        "hidden-vs-inferred-models-perturbed-state-reachable-states.tsv")
+    )
   }
 
 }

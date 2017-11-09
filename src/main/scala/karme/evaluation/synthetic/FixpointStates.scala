@@ -11,21 +11,12 @@ object FixpointStates {
     labelToFun: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   ): Set[ConcreteBooleanState] = {
-    val simulatedStates = findSimulatedStates(labelToFun, initialStates)
+    val simulatedStates = AsyncBooleanNetworkSimulation.simulateOneStep(
+      labelToFun, initialStates)
 
     simulatedStates filter { s =>
       AsyncBooleanNetworkSimulation.stateIsFixpoint(labelToFun, s)
     }
-  }
-
-  private def findSimulatedStates(
-    labelToFun: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
-  ): Set[ConcreteBooleanState] = {
-    val graphFromSimulation = AsyncBooleanNetworkSimulation
-      .simulateOneStepWithStateGraph(labelToFun, initialStates)
-
-    graphFromSimulation.V.map(_.state)
   }
 
   def findAllFixpoints(
