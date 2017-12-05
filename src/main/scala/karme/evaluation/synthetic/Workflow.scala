@@ -65,8 +65,8 @@ object Workflow {
     }
 
     // logging graphs
-    new StateGraphPlotter(reporter).plotDirectedGraph(graphForSynthesis,
-      "graph-for-synthesis")
+//    new StateGraphPlotter(reporter).plotDirectedGraph(graphForSynthesis,
+//      "graph-for-synthesis")
 
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts, reporter)
@@ -74,6 +74,15 @@ object Workflow {
 
     // log synthesis results
     SynthesisResultLogger(synthesisResults, reporter.file("functions.txt"))
+
+    // evaluate simulation transition completeness w.r.t. all H-1 edges.
+    val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
+      .transitionToAll1HammingRatio(simulationGraph)
+    TSVUtil.saveOrderedTuples(
+      List("transition to H-1 edge ratio"),
+      List(List(transitionToH1EdgeRatio)),
+      reporter.file("transition-to-h-1-edge-ratio.txt")
+    )
 
     // evaluate graph reconstruction
     TSVUtil.saveTupleMaps(

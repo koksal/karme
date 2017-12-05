@@ -1,12 +1,11 @@
 package karme.evaluation.synthetic
 
-import karme.Reporter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.EdgeDirection
 import karme.graphs.Graphs.Forward
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 
-class GraphComparison(implicit reporter: Reporter) {
+class GraphComparison {
 
   def diffGraphs(
     g1: DirectedBooleanStateGraph, g2: DirectedBooleanStateGraph
