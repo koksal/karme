@@ -25,7 +25,8 @@ class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
-    val dotString = undirectedDotString(g, cellClustering, nodeHighlightGroups)
+    val dotString = undirectedDotString(g, cellClustering,
+      nodeHighlightGroups, edgeHighlightGroups)
     plotGraph(dotString, name)
   }
 
@@ -36,7 +37,8 @@ class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
     nodeHighlightGroups: List[Set[ConcreteBooleanState]] = Nil,
     edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]] = Nil
   ): Unit = {
-    val dotString = directedDotString(g, cellClustering, nodeHighlightGroups)
+    val dotString = directedDotString(g, cellClustering, nodeHighlightGroups,
+      edgeHighlightGroups)
     plotGraph(dotString, name)
   }
 
@@ -53,20 +55,22 @@ class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
   private def undirectedDotString(
     g: UndirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
-    nodeHighlightGroups: List[Set[ConcreteBooleanState]]
+    nodeHighlightGroups: List[Set[ConcreteBooleanState]],
+    edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]]
   ): String = {
     val nodeStr = dotNodes(g.V, clustering, nodeHighlightGroups)
-    val edgeStr = undirectedDotEdges(g)
+    val edgeStr = undirectedDotEdges(g, edgeHighlightGroups)
     dotGraph(nodeStr, edgeStr, isDirected = false)
   }
 
   private def directedDotString(
     g: DirectedBooleanStateGraph,
     clustering: Map[String, Set[String]],
-    highlightGroups: List[Set[ConcreteBooleanState]]
+    nodeHighlightGroups: List[Set[ConcreteBooleanState]],
+    edgeHighlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]]
   ): String = {
-    val nodeStr = dotNodes(g.V, clustering, highlightGroups)
-    val edgeStr = directedDotEdges(g)
+    val nodeStr = dotNodes(g.V, clustering, nodeHighlightGroups)
+    val edgeStr = directedDotEdges(g, edgeHighlightGroups)
     dotGraph(nodeStr, edgeStr, isDirected = true)
   }
 
@@ -85,7 +89,7 @@ class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
     clustering: Map[String, Set[String]],
     highlightGroups: List[Set[ConcreteBooleanState]]
   ): String = {
-    val DEFAULT_BACKGROUND_COLOR = "white"
+    val DEFAULT_COLOR = "white"
     val GROUP_COLORS = List("green", "yellow", "tomato")
 
     val sb = new StringBuilder()
@@ -94,7 +98,7 @@ class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
         group.contains(node.state)
       }
       val color = if (highlightGroupIndex < 0) {
-        DEFAULT_BACKGROUND_COLOR
+        DEFAULT_COLOR
       } else {
         GROUP_COLORS(highlightGroupIndex)
       }
@@ -116,39 +120,65 @@ class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
   }
 
   private def undirectedDotEdges(
-    g: UndirectedBooleanStateGraph
+    g: UndirectedBooleanStateGraph,
+    highlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]]
   ): String = {
+    val DEFAULT_COLOR = "black"
+    val GROUP_COLORS = List("green", "yellow", "tomato")
+
     val sb = new StringBuilder()
     for (e <- g.E) {
+      val highlightGroupIndex = highlightGroups.indexWhere { group =>
+        group.contains(e)
+      }
+      val color = if (highlightGroupIndex < 0) {
+        DEFAULT_COLOR
+      } else {
+        GROUP_COLORS(highlightGroupIndex)
+      }
+
       val labels = UndirectedStateGraphOps.edgeLabels(e)
-      sb append s"${e.v1.id} -- ${e.v2.id}"
-      sb append " [label=\""
-      sb append labels.mkString(",")
-      sb append "\"]\n"
+      sb append undirectedDotEdge(e.v1.id, e.v2.id, labels, color)
     }
 
     sb.toString()
   }
 
   private def directedDotEdges(
-    g: DirectedBooleanStateGraph
+    g: DirectedBooleanStateGraph,
+    highlightGroups: List[Set[UnlabeledEdge[StateGraphVertex]]]
   ): String = {
+    val DEFAULT_COLOR = "black"
+    val GROUP_COLORS = List("green", "yellow", "tomato")
+
     val sb = new StringBuilder()
     for (e <- g.E) {
       val labels = UndirectedStateGraphOps.edgeLabels(e)
       val lhsID = e.v1.id
       val rhsID = e.v2.id
       val edgeDirections = g.edgeDirections.getOrElse(e, Set[EdgeDirection]())
+
+      val highlightGroupIndex = highlightGroups.indexWhere { group =>
+        group.contains(e)
+      }
+      val color = if (highlightGroupIndex < 0) {
+        DEFAULT_COLOR
+      } else {
+        GROUP_COLORS(highlightGroupIndex)
+      }
+
       if (edgeDirections contains Forward) {
         for (label <- labels) {
           val labelSuffix = if (e.v1.state.value(label)) "-" else "+"
-          sb append directedDotEdge(lhsID, rhsID, Set(label + labelSuffix))
+          sb append directedDotEdge(lhsID, rhsID, Set(label + labelSuffix),
+            color)
         }
       }
       if (edgeDirections contains Backward) {
         for (label <- labels) {
           val labelSuffix = if (e.v2.state.value(label)) "-" else "+"
-          sb append directedDotEdge(rhsID, lhsID, Set(label + labelSuffix))
+          sb append directedDotEdge(rhsID, lhsID, Set(label + labelSuffix),
+            color)
         }
       }
     }

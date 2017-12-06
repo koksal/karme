@@ -1,6 +1,7 @@
 package karme.evaluation.synthetic
 
 import karme.ArgHandling
+import karme.Experiments.Experiment
 import karme.Opts
 import karme.Reporter
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
@@ -11,6 +12,11 @@ import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.transformations.AverageComparisonTest
+import karme.transformations.DistributionComparisonTest
+import karme.transformations.KolmogorovSmirnovTest
+import karme.transformations.MinimumComparisonTest
+import karme.transformations.RankSumTest
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
@@ -27,6 +33,9 @@ object Workflow {
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
       reconstructGraph = opts.syntheticEvalOpts.reconstructGraph,
+      distributionComparisonTest = new KolmogorovSmirnovTest,
+      distCompPValueThreshold =
+        opts.inputTransformerOpts.distributionComparisonPValue,
       behaviorEvalFun = MyeloidModelEvaluation.evaluateModelBehavior
     )
   }
@@ -37,6 +46,8 @@ object Workflow {
     randomizedInitialStateInclusionRatio: Option[Double],
     nodeDeletionRatio: Double,
     reconstructGraph: Boolean,
+    distributionComparisonTest: DistributionComparisonTest,
+    distCompPValueThreshold: Double,
     behaviorEvalFun: Map[String, FunExpr] => Map[String, Any]
   )(implicit reporter: Reporter, opts: Opts): Unit = {
     // modify initial states per extension ratio
@@ -49,24 +60,27 @@ object Workflow {
     }
 
     // run simulation
-    val simulationGraph = AsyncBooleanNetworkSimulation
+    val (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(hiddenModel, initialStates)
-    val simulationStateToTimestamps = AsyncBooleanNetworkSimulation
-      .simulateOneStepWithTimestamps(hiddenModel, initialStates)
 
     // (optionally) remove nodes per deletion ratio
     var graphForSynthesis = StateGraphPerturbation
       .deleteNodes(simulationGraph, nodeDeletionRatio)
 
+    val experiment = Experiment(simulationGraph.V.toSeq.flatMap(_.measurements))
+
     // (optionally) reconstruct graph per flag
     if (reconstructGraph) {
       graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
-        simulationStateToTimestamps)
+        experiment, trajectory, distributionComparisonTest,
+        distCompPValueThreshold)
     }
 
     // logging graphs
-//    new StateGraphPlotter(reporter).plotDirectedGraph(graphForSynthesis,
-//      "graph-for-synthesis")
+    if (false) {
+      new StateGraphPlotter(reporter)
+        .plotDirectedGraph(graphForSynthesis, "graph-for-synthesis")
+    }
 
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts, reporter)
@@ -82,6 +96,15 @@ object Workflow {
       List("transition to H-1 edge ratio"),
       List(List(transitionToH1EdgeRatio)),
       reporter.file("transition-to-h-1-edge-ratio.txt")
+    )
+
+    // evaluate edge orientation
+    val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
+      simulationGraph, Seq(trajectory), distributionComparisonTest,
+      distCompPValueThreshold)
+    TSVUtil.saveTupleMaps(
+      Seq(orientationEvalTuples),
+      reporter.file("orientation-eval.tsv")
     )
 
     // evaluate graph reconstruction

@@ -4,14 +4,12 @@ import karme.CellTrajectories.CellTrajectory
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.StateGraphVertex
 
-class NodePartialOrderByPseudotimeRankSum(
+class NodePartialOrderByPseudotimePartialOrder(
   V: Seq[StateGraphVertex],
   trajectories: Seq[CellTrajectory],
-  distributionComparisonTest: DistributionComparisonTest
+  distributionComparisonTest: DistributionComparisonTest,
+  pValueThreshold: Double
 ) {
-
-  val P_VALUE_THRESHOLD = 0.05
-
   private var pValueCache:
     Map[(CellTrajectory, String, String), Option[Double]] = Map.empty
 
@@ -66,7 +64,7 @@ class NodePartialOrderByPseudotimeRankSum(
   def significantGT(
     x: StateGraphVertex, y: StateGraphVertex, t: CellTrajectory
   ): Boolean = gtPValue(x, y, t) match {
-    case Some(v) => v <= P_VALUE_THRESHOLD
+    case Some(v) => v <= pValueThreshold
     case None => false
   }
 

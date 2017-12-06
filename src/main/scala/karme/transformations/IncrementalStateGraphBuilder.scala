@@ -10,15 +10,17 @@ import karme.util.MathUtil
 class IncrementalStateGraphBuilder(
   exp: Experiment[Boolean],
   trajectories: Seq[CellTrajectory],
-  distributionComparisonTest: DistributionComparisonTest
+  distributionComparisonTest: DistributionComparisonTest,
+  distributionComparisonPValue: Double
 ) {
 
   val MAX_HAMMING_DISTANCE = 3
 
   val V = StateGraphs.nodesFromExperiment(exp)
 
-  val nodePartialOrdering = new NodePartialOrderByPseudotimeRankSum(V.toSeq,
-    trajectories, distributionComparisonTest).partialOrdering
+  val nodePartialOrdering = new NodePartialOrderByPseudotimePartialOrder(
+    V.toSeq, trajectories, distributionComparisonTest,
+    distributionComparisonPValue).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
     val connectedGraph = buildGraphFromEarliestNodes

@@ -1,5 +1,6 @@
 package karme.simulation
 
+import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Measurement
 import karme.graphs.Graphs.UnlabeledDiGraph
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
@@ -95,25 +96,29 @@ object AsyncBooleanNetworkSimulation {
   def simulateOneStepWithStateGraph(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, CellTrajectory) = {
     simulateWithStateGraph(initialStates, applyFunctionAlternatives(functions))
   }
 
   def simulateAnyStepsWithStateGraph(
     functions: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, CellTrajectory) = {
     simulateWithStateGraph(initialStates, applyAllFunctionSubsets(functions))
   }
 
   def simulateWithStateGraph(
     initialStates: Set[ConcreteBooleanState],
     stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
-  ): DirectedBooleanStateGraph = {
+  ): (DirectedBooleanStateGraph, CellTrajectory) = {
     val nodeCounter = new UniqueCounter
     val measurementCounter = new UniqueCounter
 
-    var stateToNode = Map[ConcreteBooleanState, StateGraphVertex]()
+    var stateToMeasurements =
+      Map[ConcreteBooleanState, Set[Measurement[Boolean]]]()
+    var stateToTargetStates =
+      Map[ConcreteBooleanState, Set[ConcreteBooleanState]]()
+    var measurementIDToTimestamp = Map[String, Double]()
 
     def makeNodeId(): String = "v" + nodeCounter.next
     def makeMeasurementId(): String = "m" + measurementCounter.next
@@ -122,51 +127,59 @@ object AsyncBooleanNetworkSimulation {
       Measurement(makeMeasurementId(), s)
     }
 
-    def makeNodeForState(s: ConcreteBooleanState): StateGraphVertex = {
-      StateGraphVertex(makeNodeId(), s, Seq(makeMeasurement(s)))
+    def addMeasurement(s: ConcreteBooleanState, t: Int) = {
+      val m = makeMeasurement(s)
+      stateToMeasurements = MapUtil.addBinding(stateToMeasurements, s, m)
+      measurementIDToTimestamp += m.id -> t
     }
 
-    def getNodeForState(s: ConcreteBooleanState): StateGraphVertex = {
-      stateToNode.get(s) match {
-        case Some(n) => n
-        case None => {
-          val newNode = makeNodeForState(s)
-          stateToNode += s -> newNode
-          newNode
-        }
-      }
-    }
-
-    var stateGraph = UnlabeledDiGraph[StateGraphVertex]()
-    var currentNodes = Set.empty[StateGraphVertex]
-    var nextNodes = Set.empty[StateGraphVertex]
-
-    for (is <- initialStates) {
-      val node = getNodeForState(is)
-      stateGraph = stateGraph.addVertex(node)
-      nextNodes += node
+    def addStateEdge(
+      src: ConcreteBooleanState, tgt: ConcreteBooleanState
+    ) = {
+      stateToTargetStates = MapUtil.addBinding(stateToTargetStates, src, tgt)
     }
 
     var step = 0
-    while (currentNodes != nextNodes && step < SIMULATION_DEPTH_LIMIT) {
-      currentNodes = nextNodes
-      nextNodes = Set.empty
 
-      for (srcNode <- currentNodes) {
-        val targetStates = stateTransitionFunction(srcNode.state)
-        val targetNodes = targetStates map getNodeForState
+    var currentStates = Set.empty[ConcreteBooleanState]
+    var nextStates = initialStates
 
-        for (tgtNode <- targetNodes) {
-          nextNodes += tgtNode
-          stateGraph = stateGraph.addVertex(tgtNode)
-          stateGraph = stateGraph.addEdge(srcNode, tgtNode)
+    while (currentStates != nextStates && step < SIMULATION_DEPTH_LIMIT) {
+      currentStates = nextStates
+      nextStates = Set.empty
+
+      for (state <- currentStates) {
+        addMeasurement(state, step)
+      }
+
+      for (srcState <- currentStates) {
+        val targetStates = stateTransitionFunction(srcState)
+
+        for (tgtState <- targetStates) {
+          nextStates += tgtState
+          addStateEdge(srcState, tgtState)
         }
       }
 
       step += 1
     }
 
-    stateGraph
+    var stateGraph = UnlabeledDiGraph[StateGraphVertex]()
+    var stateToVertex = Map[ConcreteBooleanState, StateGraphVertex]()
+    for ((state, ms) <- stateToMeasurements) {
+      val v = StateGraphVertex(makeNodeId(), state, ms.toSeq)
+      stateGraph = stateGraph.addVertex(v)
+      stateToVertex += state -> v
+    }
+
+    for ((srcState, tgtStates) <- stateToTargetStates) {
+      for (tgtState <- tgtStates) {
+        stateGraph = stateGraph.addEdge(
+          stateToVertex(srcState), stateToVertex(tgtState))
+      }
+    }
+
+    (stateGraph, measurementIDToTimestamp)
   }
 
   def stateIsFixpoint(

@@ -112,7 +112,9 @@ class InputTransformer(
       threeValExp)
 
     val graphBuilder = new IncrementalStateGraphBuilder(boolExp, trajectories,
-      DistributionComparisonTest.fromOptions(opts.distributionComparisonMethod))
+      DistributionComparisonTest.fromOptions(opts.distributionComparisonMethod),
+      opts.distributionComparisonPValue
+    )
 
     val g = graphBuilder.buildGraph
 

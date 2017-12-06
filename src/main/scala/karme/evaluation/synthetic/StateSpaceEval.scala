@@ -13,7 +13,7 @@ object StateSpaceEval {
     inferredModel: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
   )(implicit reporter: Reporter) = {
-    val simGraphFromInferredModel = AsyncBooleanNetworkSimulation
+    val (simGraphFromInferredModel, _) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(inferredModel, initialStates)
 
     new GraphComparison().diffGraphs(originalGraph, simGraphFromInferredModel)

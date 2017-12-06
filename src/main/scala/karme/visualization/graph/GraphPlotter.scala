@@ -37,10 +37,33 @@ trait GraphPlotter {
 
   }
 
-  def directedDotEdge(
-    lhsID: String, rhsID: String, labels: Iterable[String]
+  def undirectedDotEdge(
+    lhsID: String,
+    rhsID: String,
+    labels: Iterable[String],
+    color: String = "black"
   ): String = {
-    s"""${lhsID} -> ${rhsID} [label="${labels.mkString(",")}"]
+    dotEdge(lhsID, rhsID, labels, false, color)
+  }
+
+  def directedDotEdge(
+    lhsID: String,
+    rhsID: String,
+    labels: Iterable[String],
+    color: String = "black"
+  ): String = {
+    dotEdge(lhsID, rhsID, labels, true, color)
+  }
+
+  private def dotEdge(
+    lhsID: String,
+    rhsID: String,
+    labels: Iterable[String],
+    isDirected: Boolean,
+    color: String
+  ): String = {
+    val operator = if (isDirected) "->" else "--"
+    s"""${lhsID} ${operator} ${rhsID} [label="${labels.mkString(",")}", color="${color}"]
        |""".stripMargin
   }
 
