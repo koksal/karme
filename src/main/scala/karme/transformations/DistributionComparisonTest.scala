@@ -11,6 +11,8 @@ object DistributionComparisonTest {
   def fromOptions(name: String) = name match {
     case "ranksum" => new RankSumTest
     case "ks" => new KolmogorovSmirnovTest
+    case "average" => new AverageComparisonTest
+    case "minimum" => new MinimumComparisonTest
     case _ => sys.error("Unknown distribution comparison method.")
   }
 

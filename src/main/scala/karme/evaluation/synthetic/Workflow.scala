@@ -12,11 +12,7 @@ import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.transformations.AverageComparisonTest
 import karme.transformations.DistributionComparisonTest
-import karme.transformations.KolmogorovSmirnovTest
-import karme.transformations.MinimumComparisonTest
-import karme.transformations.RankSumTest
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
@@ -33,7 +29,8 @@ object Workflow {
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
       reconstructGraph = opts.syntheticEvalOpts.reconstructGraph,
-      distributionComparisonTest = new KolmogorovSmirnovTest,
+      distributionComparisonTest = DistributionComparisonTest.fromOptions(
+        opts.inputTransformerOpts.distributionComparisonMethod),
       distCompPValueThreshold =
         opts.inputTransformerOpts.distributionComparisonPValue,
       behaviorEvalFun = MyeloidModelEvaluation.evaluateModelBehavior
