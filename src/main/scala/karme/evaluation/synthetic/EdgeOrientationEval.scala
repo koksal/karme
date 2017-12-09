@@ -1,28 +1,19 @@
 package karme.evaluation.synthetic
 
-import karme.CellTrajectories.CellTrajectory
 import karme.Reporter
 import karme.graphs.Graphs.Backward
 import karme.graphs.Graphs.Forward
 import karme.graphs.Graphs.UnlabeledEdge
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.graphs.StateGraphs.StateGraphVertex
-import karme.transformations.DistributionComparisonTest
-import karme.transformations.NodePartialOrderByPseudotimePartialOrder
 import karme.visualization.graph.StateGraphPlotter
 
 class EdgeOrientationEval(implicit reporter: Reporter) {
 
   def evaluateOrientation(
     simulationGraph: DirectedBooleanStateGraph,
-    trajectories: Seq[CellTrajectory],
-    distributionComparisonTest: DistributionComparisonTest,
-    pValueThreshold: Double
+    partialOrdering: PartialOrdering[StateGraphVertex]
   ) = {
-    val partialOrdering = new NodePartialOrderByPseudotimePartialOrder(
-      simulationGraph.V.toSeq, trajectories, distributionComparisonTest,
-      pValueThreshold).partialOrdering
-
     var nbCorrectOrientation = 0
     var nbOppositeOrientation = 0
     var nbInconclusiveOrientation = 0

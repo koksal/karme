@@ -111,10 +111,15 @@ class InputTransformer(
     val boolExp = StateGraphs.removeMeasurementsWithUncertainDiscretization(
       threeValExp)
 
-    val graphBuilder = new IncrementalStateGraphBuilder(boolExp, trajectories,
+    val V = StateGraphs.nodesFromExperiment(boolExp)
+
+    val partialOrdering = new NodePartialOrderByTrajectoryComparison(
+      V.toSeq, trajectories,
       DistributionComparisonTest.fromOptions(opts.distributionComparisonMethod),
       opts.distributionComparisonPValue
-    )
+    ).partialOrdering
+
+    val graphBuilder = new IncrementalStateGraphBuilder(V, partialOrdering)
 
     val g = graphBuilder.buildGraph
 

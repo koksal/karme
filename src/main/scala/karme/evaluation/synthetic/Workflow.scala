@@ -13,6 +13,8 @@ import karme.synthesis.SynthesisResult
 import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.DistributionComparisonTest
+import karme.transformations.NodePartialOrderByTrajectoryComparison
+import karme.transformations.OracleNodePartialOrder
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
@@ -28,7 +30,7 @@ object Workflow {
       randomizedInitialStateInclusionRatio =
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
-      reconstructGraph = opts.syntheticEvalOpts.reconstructGraph,
+      nodePartialOrderType = opts.syntheticEvalOpts.nodePartialOrderType,
       distributionComparisonTest = DistributionComparisonTest.fromOptions(
         opts.inputTransformerOpts.distributionComparisonMethod),
       distCompPValueThreshold =
@@ -42,7 +44,7 @@ object Workflow {
     defaultInitialStates: Set[ConcreteBooleanState],
     randomizedInitialStateInclusionRatio: Option[Double],
     nodeDeletionRatio: Double,
-    reconstructGraph: Boolean,
+    nodePartialOrderType: String,
     distributionComparisonTest: DistributionComparisonTest,
     distCompPValueThreshold: Double,
     behaviorEvalFun: Map[String, FunExpr] => Map[String, Any]
@@ -60,18 +62,29 @@ object Workflow {
     val (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(hiddenModel, initialStates)
 
+    // build node partial order
+    val nodePartialOrder = nodePartialOrderType match {
+      case "oracle" => {
+        new OracleNodePartialOrder(simulationGraph).partialOrdering
+      }
+      case "comparison" => {
+        new NodePartialOrderByTrajectoryComparison(
+          simulationGraph.V.toSeq,
+          Seq(trajectory),
+          distributionComparisonTest,
+          distCompPValueThreshold
+        ).partialOrdering
+      }
+    }
+
     // (optionally) remove nodes per deletion ratio
+    // TODO? delete measurements, not graph nodes.
     var graphForSynthesis = StateGraphPerturbation
       .deleteNodes(simulationGraph, nodeDeletionRatio)
 
-    val experiment = Experiment(simulationGraph.V.toSeq.flatMap(_.measurements))
-
-    // (optionally) reconstruct graph per flag
-    if (reconstructGraph) {
-      graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
-        experiment, trajectory, distributionComparisonTest,
-        distCompPValueThreshold)
-    }
+    // reconstruct graph
+    graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
+      simulationGraph.V, nodePartialOrder)
 
     // logging graphs
     if (false) {
@@ -97,8 +110,7 @@ object Workflow {
 
     // evaluate edge orientation
     val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
-      simulationGraph, Seq(trajectory), distributionComparisonTest,
-      distCompPValueThreshold)
+      simulationGraph, nodePartialOrder)
     TSVUtil.saveTupleMaps(
       Seq(orientationEvalTuples),
       reporter.file("orientation-eval.tsv")

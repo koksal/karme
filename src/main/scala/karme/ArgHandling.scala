@@ -274,9 +274,9 @@ object ArgHandling {
           nodeDeletionRatio = v))
       }
 
-      opt[Unit]("reconstruct-graph") action { (_, o) =>
+      opt[String]("partial-order") action { (s, o) =>
         o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
-          reconstructGraph = true))
+          nodePartialOrderType = s))
       }
 
       help("help") text "print this help message"

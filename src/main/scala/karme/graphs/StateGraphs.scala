@@ -12,6 +12,22 @@ import scala.collection.mutable
 
 object StateGraphs {
 
+  case class StateGraphVertex(
+    id: String,
+    state: ConcreteBooleanState,
+    measurements: Seq[BooleanMeasurement]
+  ) extends VertexLike {
+    def names: Seq[String] = {
+      state.orderedKeys
+    }
+  }
+
+  case class ThreeValuedStateGraphVertex(
+    id: String,
+    state: ThreeValuedState,
+    measurements: Seq[ThreeValuedMeasurement]
+  ) extends VertexLike
+
   type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
@@ -95,28 +111,6 @@ object StateGraphs {
     val booleanSeqs = MathUtil.cartesianProduct(booleanSets.toList)
     booleanSeqs map { bs =>
       GenericState(state.orderedKeys.zip(bs).toMap)
-    }
-  }
-
-  case class StateGraphVertex(
-    id: String,
-    state: ConcreteBooleanState,
-    measurements: Seq[BooleanMeasurement]
-  ) extends VertexLike {
-    def names: Seq[String] = {
-      state.orderedKeys
-    }
-  }
-
-  case class ThreeValuedStateGraphVertex(
-    id: String,
-    state: ThreeValuedState,
-    measurements: Seq[ThreeValuedMeasurement]
-  ) extends VertexLike
-
-  object StateGraphOps {
-    def names(g: GraphLike[StateGraphVertex, _, _]): Seq[String] = {
-      g.V.head.state.orderedKeys
     }
   }
 

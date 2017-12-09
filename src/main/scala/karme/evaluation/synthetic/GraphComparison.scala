@@ -1,8 +1,6 @@
 package karme.evaluation.synthetic
 
-import karme.graphs.Graphs.Backward
-import karme.graphs.Graphs.EdgeDirection
-import karme.graphs.Graphs.Forward
+import karme.graphs.Graphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 
 class GraphComparison {
@@ -10,11 +8,6 @@ class GraphComparison {
   def diffGraphs(
     g1: DirectedBooleanStateGraph, g2: DirectedBooleanStateGraph
   ): Map[String, Any] = {
-    def reverse(d: EdgeDirection): EdgeDirection = d match {
-      case Forward => Backward
-      case Backward => Forward
-    }
-
     val states1 = g1.V.map(_.state)
     val states2 = g2.V.map(_.state)
 
@@ -46,7 +39,7 @@ class GraphComparison {
               nbOrigDirectionNonCaptured += 1
             }
           } else {
-            if (ds1.subsetOf(ds2.map(reverse))) {
+            if (ds1.subsetOf(ds2.map(Graphs.reverseDirection))) {
               nbOrigDirectionCaptured += 1
             } else {
               nbOrigDirectionNonCaptured += 1

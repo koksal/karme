@@ -1,6 +1,5 @@
 package karme.transformations
 
-import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
 import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.StateGraphs
@@ -8,19 +7,11 @@ import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.util.MathUtil
 
 class IncrementalStateGraphBuilder(
-  exp: Experiment[Boolean],
-  trajectories: Seq[CellTrajectory],
-  distributionComparisonTest: DistributionComparisonTest,
-  distributionComparisonPValue: Double
+  V: Set[StateGraphVertex],
+  nodePartialOrder: PartialOrdering[StateGraphVertex]
 ) {
 
   val MAX_HAMMING_DISTANCE = 3
-
-  val V = StateGraphs.nodesFromExperiment(exp)
-
-  val nodePartialOrdering = new NodePartialOrderByPseudotimePartialOrder(
-    V.toSeq, trajectories, distributionComparisonTest,
-    distributionComparisonPValue).partialOrdering
 
   def buildGraph: DirectedBooleanStateGraph = {
     val connectedGraph = buildGraphFromEarliestNodes
@@ -153,7 +144,7 @@ class IncrementalStateGraphBuilder(
     edges: Set[(StateGraphVertex, StateGraphVertex, Int)]
   ): Set[(StateGraphVertex, StateGraphVertex, Int)] = {
     edges filter {
-      case (source, target, _) => nodePartialOrdering.lt(source, target)
+      case (source, target, _) => nodePartialOrder.lt(source, target)
     }
   }
 
@@ -177,7 +168,7 @@ class IncrementalStateGraphBuilder(
     vs: Set[StateGraphVertex]
   ) : Set[StateGraphVertex] = {
     vs filter { candidateV =>
-      !vs.exists(otherV => nodePartialOrdering.lt(otherV, candidateV))
+      !vs.exists(otherV => nodePartialOrder.lt(otherV, candidateV))
     }
   }
 

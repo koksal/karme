@@ -8,7 +8,7 @@ trait DistributionComparisonTest {
 
 object DistributionComparisonTest {
 
-  def fromOptions(name: String) = name match {
+  def fromOptions(name: String): DistributionComparisonTest = name match {
     case "ranksum" => new RankSumTest
     case "ks" => new KolmogorovSmirnovTest
     case "average" => new AverageComparisonTest

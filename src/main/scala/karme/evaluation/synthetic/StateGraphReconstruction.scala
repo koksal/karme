@@ -1,23 +1,18 @@
 package karme.evaluation.synthetic
 
-import karme.CellTrajectories.CellTrajectory
-import karme.Experiments.Experiment
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.transformations.DistributionComparisonTest
+import karme.graphs.StateGraphs.StateGraphVertex
 import karme.transformations.IncrementalStateGraphBuilder
 import karme.transformations.MultiHammingEdgeExpansion
 
 object StateGraphReconstruction {
 
   def reconstructStateGraph(
-    experiment: Experiment[Boolean],
-    trajectory: CellTrajectory,
-    distributionComparisonTest: DistributionComparisonTest,
-    distributionComparisonPValue: Double
+    V: Set[StateGraphVertex],
+    nodePartialOrder: PartialOrdering[StateGraphVertex]
   ): DirectedBooleanStateGraph = {
-    val multiHammingGraph = new IncrementalStateGraphBuilder(
-      experiment, Seq(trajectory), distributionComparisonTest,
-      distributionComparisonPValue).buildGraph
+    val multiHammingGraph = new IncrementalStateGraphBuilder(V,
+      nodePartialOrder).buildGraph
 
     new MultiHammingEdgeExpansion(multiHammingGraph).expandMultiHammingEdges()
   }

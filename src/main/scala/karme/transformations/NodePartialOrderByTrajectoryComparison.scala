@@ -4,7 +4,7 @@ import karme.CellTrajectories.CellTrajectory
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.StateGraphVertex
 
-class NodePartialOrderByPseudotimePartialOrder(
+class NodePartialOrderByTrajectoryComparison(
   V: Seq[StateGraphVertex],
   trajectories: Seq[CellTrajectory],
   distributionComparisonTest: DistributionComparisonTest,

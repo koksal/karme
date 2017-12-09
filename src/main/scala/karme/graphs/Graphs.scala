@@ -222,10 +222,15 @@ object Graphs {
   case object Forward extends EdgeDirection
   case object Backward extends EdgeDirection
 
+  def reverseDirection(d: EdgeDirection): EdgeDirection = d match {
+    case Forward => Backward
+    case Backward => Forward
+  }
+
   def lexicographicEdge[Vertex <: VertexLike](
     v1: Vertex, v2: Vertex
   ): UnlabeledEdge[Vertex] = {
-    if (v1.id < v2.id) {
+    if (v1 < v2) {
       UnlabeledEdge(v1, v2)
     } else {
       UnlabeledEdge(v2, v1)
