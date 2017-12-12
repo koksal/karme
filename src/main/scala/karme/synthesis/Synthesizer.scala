@@ -183,21 +183,20 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     } else {
       reporter.debug("Did not find expressions with eager check.")
 
-      val maximalSoftConsPrefix = findMaximalSoftConstraintPrefix(
-        hardTransitions, softTransitions, possibleVars)
+      var currentSet = hardTransitions
+      var remainingSoftTrans = softTransitions
 
-      var currentSet = hardTransitions ++ maximalSoftConsPrefix
-      var remainingSoftTrans = softTransitions -- maximalSoftConsPrefix
+      while (remainingSoftTrans.nonEmpty) {
+        println(s"There are ${remainingSoftTrans.size} soft transitions " +
+          s"remaining.")
+        val (maximalSoftConsPrefix, firstIncompatibleTrans) =
+          findMaximalSoftConstraintPrefix(currentSet,
+            remainingSoftTrans, possibleVars)
 
-      for ((t, i) <-
-           transitionsByDescendingWeight(remainingSoftTrans).zipWithIndex) {
-        // try adding t to current set
-        reporter.debug(s"Testing remaining soft constraint ${i + 1} / " +
-          s"${remainingSoftTrans.size} (weight = ${t.weight}).")
-        val toCheck = currentSet + t
-        if (enumerateForMinDepth(toCheck, possibleVars).nonEmpty) {
-          currentSet = toCheck
-        }
+        currentSet ++= maximalSoftConsPrefix
+
+        remainingSoftTrans --= maximalSoftConsPrefix
+        remainingSoftTrans --= firstIncompatibleTrans
       }
 
       val finalExprs = FunExprSimilarity.findNonRedundantSet(
@@ -210,30 +209,56 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     hardTransitions: Set[Transition],
     softTransitions: Set[Transition],
     possibleVars: Set[String]
-  ): Set[Transition] = {
+  ): (Set[Transition], Option[Transition]) = {
+    assert(softTransitions.nonEmpty)
+
     val sortedSoftTrans = transitionsByDescendingWeight(softTransitions)
 
     var min = 0
     var max = sortedSoftTrans.size - 1
 
-    var lastSat = 0
+    var lastSat: Option[Int] = None
 
-    while (max > min) {
+    while (max >= min) {
       val pivot = (max + min) / 2
-      reporter.debug(s"Testing $pivot first soft constraints...")
-      val toCheck = hardTransitions ++ (sortedSoftTrans.take(pivot))
+      reporter.debug(s"Testing ${pivot + 1} / ${sortedSoftTrans.size} first " +
+        "soft constraints...")
+      val toCheck = hardTransitions ++ (sortedSoftTrans.take(pivot + 1))
 
       if (enumerateForMinDepth(toCheck, possibleVars).nonEmpty) {
         min = pivot + 1
-        lastSat = pivot
+        lastSat = Some(pivot)
       } else {
         max = pivot - 1
       }
     }
 
-    reporter.debug(s"Found maximal soft constraint prefix of size: $lastSat")
+    val firstIncompatible: Option[Transition] = lastSat match {
+      case Some(i) => {
+        if (i < sortedSoftTrans.size - 1) {
+          Some(sortedSoftTrans(i + 1))
+        } else {
+          reporter.debug("No inconsistent transition found in binary search.")
+          None
+        }
+      }
+      case None => {
+        Some(sortedSoftTrans.head)
+      }
+    }
 
-    sortedSoftTrans.take(lastSat).toSet
+    val prefix = lastSat match {
+      case Some(i) => {
+        sortedSoftTrans.take(i + 1)
+      }
+      case None => {
+        Nil
+      }
+    }
+
+    reporter.debug(
+      s"Found maximal soft constraint prefix of size: ${prefix.size}")
+    (prefix.toSet, firstIncompatible)
   }
 
   private def minimalUnsatCore(
