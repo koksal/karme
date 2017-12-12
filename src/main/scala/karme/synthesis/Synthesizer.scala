@@ -43,7 +43,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       reporter.debug("==========================")
 
       val resultsForLabel = TimingUtil.log(
-        label, reporter.file("synthesis-times.txt")
+        label, reporter.file("synthesis-times-in-milliseconds.tsv")
       ) {
         synthesizeForSingleLabel(
           hardTransitions = labelToPosTrans.getOrElse(label, Set.empty),
@@ -77,7 +77,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
     var allResults = Set.empty[SynthesisResult]
     for (subset <- partition) {
-      allResults ++= synthesizeWithHardAndSoftTransitions(subset,
+      allResults ++= synthesizeWithMaximalSoftTransitions(subset,
         softTransitions, possibleVars)
     }
 
@@ -171,6 +171,8 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     softTransitions: Set[Transition],
     possibleVars: Set[String]
   ): Option[SynthesisResult] = {
+    // TODO exponential backoff
+
     val exprsForAllTrans = enumerateForMinDepthAndMinNbVars(
       hardTransitions ++ softTransitions, possibleVars)
 
@@ -180,28 +182,58 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
         exprsForAllTrans.toSet))
     } else {
       reporter.debug("Did not find expressions with eager check.")
-      if (enumerateForMinDepth(hardTransitions, possibleVars).nonEmpty) {
-        // If the hard transitions are SAT, proceed with adding soft transitions.
-        var currentSet = hardTransitions
 
-        for ((t, i) <-
-             transitionsByDescendingWeight(softTransitions).zipWithIndex) {
-          // try adding t to current set
-          reporter.debug(s"Testing soft constraint ${i + 1} / " +
-            s"${softTransitions.size} (weight = ${t.weight}).")
-          val toCheck = currentSet + t
-          if (enumerateForMinDepth(toCheck, possibleVars).nonEmpty) {
-            currentSet = toCheck
-          }
+      val maximalSoftConsPrefix = findMaximalSoftConstraintPrefix(
+        hardTransitions, softTransitions, possibleVars)
+
+      var currentSet = hardTransitions ++ maximalSoftConsPrefix
+      var remainingSoftTrans = softTransitions -- maximalSoftConsPrefix
+
+      for ((t, i) <-
+           transitionsByDescendingWeight(remainingSoftTrans).zipWithIndex) {
+        // try adding t to current set
+        reporter.debug(s"Testing remaining soft constraint ${i + 1} / " +
+          s"${remainingSoftTrans.size} (weight = ${t.weight}).")
+        val toCheck = currentSet + t
+        if (enumerateForMinDepth(toCheck, possibleVars).nonEmpty) {
+          currentSet = toCheck
         }
+      }
 
-        val finalExprs = FunExprSimilarity.findNonRedundantSet(
-          enumerateForMinDepthAndMinNbVars(currentSet, possibleVars).toSet)
-        Some(SynthesisResult(currentSet, finalExprs))
+      val finalExprs = FunExprSimilarity.findNonRedundantSet(
+        enumerateForMinDepthAndMinNbVars(currentSet, possibleVars).toSet)
+      Some(SynthesisResult(currentSet, finalExprs))
+    }
+  }
+
+  private def findMaximalSoftConstraintPrefix(
+    hardTransitions: Set[Transition],
+    softTransitions: Set[Transition],
+    possibleVars: Set[String]
+  ): Set[Transition] = {
+    val sortedSoftTrans = transitionsByDescendingWeight(softTransitions)
+
+    var min = 0
+    var max = sortedSoftTrans.size - 1
+
+    var lastSat = 0
+
+    while (max > min) {
+      val pivot = (max + min) / 2
+      reporter.debug(s"Testing $pivot first soft constraints...")
+      val toCheck = hardTransitions ++ (sortedSoftTrans.take(pivot))
+
+      if (enumerateForMinDepth(toCheck, possibleVars).nonEmpty) {
+        min = pivot + 1
+        lastSat = pivot
       } else {
-        None
+        max = pivot - 1
       }
     }
+
+    reporter.debug(s"Found maximal soft constraint prefix of size: $lastSat")
+
+    sortedSoftTrans.take(lastSat).toSet
   }
 
   private def minimalUnsatCore(

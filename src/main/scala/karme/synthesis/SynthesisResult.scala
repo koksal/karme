@@ -23,9 +23,11 @@ object SynthesisResult {
 
     val product = MathUtil.cartesianProduct(setsForProduct)
 
-    product.toList map { functionCombination =>
+    val combinations = product.toList map { functionCombination =>
       labelsWithResults.zip(functionCombination).toMap
     }
+
+    combinations.filter(_.nonEmpty)
   }
 
 }

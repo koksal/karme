@@ -77,14 +77,16 @@ object Workflow {
       }
     }
 
-    // (optionally) remove nodes per deletion ratio
+    // TODO add trajectory noise
+
+    // remove nodes per deletion ratio
     // TODO? delete measurements, not graph nodes.
-    var graphForSynthesis = StateGraphPerturbation
-      .deleteNodes(simulationGraph, nodeDeletionRatio)
+    val observedNodes = StateGraphPerturbation
+      .deleteNodes(simulationGraph, nodeDeletionRatio).V
 
     // reconstruct graph
-    graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
-      simulationGraph.V, nodePartialOrder)
+    val graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
+      observedNodes, nodePartialOrder)
 
     // logging graphs
     if (false) {

@@ -10,13 +10,12 @@ import karme.visualization.graph.StateGraphPlotter
 
 class EdgeOrientationEval(implicit reporter: Reporter) {
 
+  private val visualizeOrientationSuccess = true
+
   def evaluateOrientation(
     simulationGraph: DirectedBooleanStateGraph,
     partialOrdering: PartialOrdering[StateGraphVertex]
   ) = {
-    var nbCorrectOrientation = 0
-    var nbOppositeOrientation = 0
-    var nbInconclusiveOrientation = 0
     var correctOrientationE = Set[UnlabeledEdge[StateGraphVertex]]()
     var oppositeOrientationE = Set[UnlabeledEdge[StateGraphVertex]]()
     var inconclusiveOrientationE = Set[UnlabeledEdge[StateGraphVertex]]()
@@ -33,31 +32,30 @@ class EdgeOrientationEval(implicit reporter: Reporter) {
 
       if (partialOrdering.lt(fromNode, toNode)) {
         assert(!partialOrdering.lt(toNode, fromNode))
-        nbCorrectOrientation += 1
         correctOrientationE += e
       } else if (partialOrdering.lt(toNode, fromNode)) {
-        nbOppositeOrientation += 1
         oppositeOrientationE += e
       } else {
-        nbInconclusiveOrientation += 1
         inconclusiveOrientationE += e
       }
     }
 
-    new StateGraphPlotter(reporter).plotDirectedGraph(
-      simulationGraph,
-      "simulation-graph-with-orientation-colors",
-      edgeHighlightGroups = List(
-        correctOrientationE,
-        inconclusiveOrientationE,
-        oppositeOrientationE
+    if (visualizeOrientationSuccess) {
+      new StateGraphPlotter(reporter).plotDirectedGraph(
+        simulationGraph,
+        "simulation-graph-with-orientation-colors",
+        edgeHighlightGroups = List(
+          correctOrientationE,
+          inconclusiveOrientationE,
+          oppositeOrientationE
+        )
       )
-    )
+    }
 
     Map(
-      "Nb. correct orientations" -> nbCorrectOrientation,
-      "Nb. opposite orientations" -> nbOppositeOrientation,
-      "Nb. inconclusive orientations" -> nbInconclusiveOrientation
+      "Nb. correct orientations" -> correctOrientationE.size,
+      "Nb. opposite orientations" -> oppositeOrientationE.size,
+      "Nb. inconclusive orientations" -> inconclusiveOrientationE.size
     )
   }
 

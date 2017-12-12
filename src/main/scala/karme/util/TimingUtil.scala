@@ -20,7 +20,7 @@ object TimingUtil {
     val durationInMs = end - start
     FileUtil.writeToFile(
       file,
-      s"$description: $durationInMs ms\n",
+      s"$description\t$durationInMs\n",
       append = true
     )
     result

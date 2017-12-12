@@ -21,6 +21,7 @@ class GraphComparison {
     var nbOrigDirectionCaptured = 0
     var nbOrigDirectionNonCaptured = 0
 
+    // join edges by the pair of states for endpoints.
     for (statePairSet <-
          statePairSetToGraph1Edges.keySet ++ statePairSetToGraph2Edges.keySet) {
       (

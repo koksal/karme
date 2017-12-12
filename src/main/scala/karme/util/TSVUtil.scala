@@ -33,10 +33,12 @@ object TSVUtil {
   def saveTupleMaps(
     tupleMaps: Seq[Map[String, Any]], f: File
   ): Unit = {
-    val headers = tupleMaps.head.keySet.toList.sorted
-    val orderedTuples = tupleMaps map { m =>
-      headers map (h => m(h))
+    if (tupleMaps.nonEmpty) {
+      val headers = tupleMaps.head.keySet.toList.sorted
+      val orderedTuples = tupleMaps map { m =>
+        headers map (h => m(h))
+      }
+      saveOrderedTuples(headers, orderedTuples, f)
     }
-    saveOrderedTuples(headers, orderedTuples, f)
   }
 }
