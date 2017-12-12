@@ -8,7 +8,7 @@ else
   OUTFOLDER_BASE=$1
 fi
 
-./scripts/run-synthetic-workflow.sh $OUTFOLDER_BASE-oracle --partial-order oracle
+# ./scripts/run-synthetic-workflow.sh $OUTFOLDER_BASE-oracle --partial-order oracle
 
 for distcomp in ranksum ks
 do
