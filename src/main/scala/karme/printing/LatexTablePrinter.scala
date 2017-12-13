@@ -24,8 +24,11 @@ object LatexTablePrinter {
     sb append s"${joinCols(header)} \\\\ \\hline"
     sb append "\n"
 
-    for (tuple <- tuples) {
-      sb append (joinCols(header map (h => tuple(h))) + " \\\\")
+    for ((tuple, i) <- tuples.zipWithIndex) {
+      sb append (joinCols(header map (h => tuple(h))))
+      if (i < tuples.size - 1) {
+        sb append " \\\\"
+      }
       sb append "\n"
     }
 

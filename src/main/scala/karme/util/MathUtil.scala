@@ -2,9 +2,11 @@ package karme.util
 
 object MathUtil {
 
-  def median(vs: Iterable[Int]): Double = {
+  def median[T](vs: Iterable[T])(implicit n: Numeric[T]): Double = {
     require(vs.nonEmpty)
-    val sorted = vs.toList.sorted
+    val converted = vs.map(v => n.toDouble(v))
+
+    val sorted = converted.toList.sorted
     if (sorted.size % 2 == 0) {
       val i = sorted.size / 2 - 1
       (sorted(i) + sorted(i+1)) / 2.0

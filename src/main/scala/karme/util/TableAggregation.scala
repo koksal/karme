@@ -4,6 +4,8 @@ import java.io.File
 
 object TableAggregation {
 
+  val takeMedians = true
+
   def main(args: Array[String]): Unit = {
     val (outFileName, inFileNames) = (args.head, args.tail)
     val data = inFileNames map { n =>
@@ -15,8 +17,11 @@ object TableAggregation {
 
     val tables = inFileNames.zip(data.map(_._2)) map {
       case (name, table) => {
-        table.zipWithIndex map {
-          case (row, i) => row + ("Run" -> s"$name ($i)")
+        if (takeMedians) {
+          val medianRow = takeMedian(headers.head, table)
+          Seq(medianRow.updated("Run", name))
+        } else {
+          table map { row => row.updated("Run", name)}
         }
       }
     }
@@ -30,4 +35,15 @@ object TableAggregation {
     )
   }
 
+  def takeMedian(
+    header: Seq[String],
+    rows: Seq[Map[String, String]]
+  ): Map[String, Any] = {
+    val headerToValues = header map { h =>
+      h -> (rows map (r => r(h).toDouble))
+    }
+    headerToValues.map{
+      case (h, vs) => h -> MathUtil.median(vs)
+    }.toMap
+  }
 }
