@@ -95,13 +95,8 @@ object Workflow {
     }
 
     // perform synthesis
-    val synthesize = false
-    val synthesisResults: Map[String, Set[SynthesisResult]] = if (synthesize) {
-      new Synthesizer(opts.synthOpts,
+    val synthesisResults = new Synthesizer(opts.synthOpts,
         reporter).synthesizeForPositiveHardConstraints(graphForSynthesis)
-    } else {
-      Map.empty
-    }
 
     // log synthesis results
     SynthesisResultLogger(synthesisResults, reporter.file("functions.txt"))
