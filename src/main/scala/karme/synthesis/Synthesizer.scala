@@ -4,11 +4,11 @@ import karme.evaluation.FunExprSimilarity
 import karme.{Reporter, SynthOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.printing.SynthesisResultLogger
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 import karme.transformations.TransitionProducer
+import karme.util.TSVUtil
 import karme.util.TimingUtil
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
@@ -66,12 +66,6 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     // is "maximally" consistent
     val partition = findGreedyTransitionPartition(hardTransitions,
       possibleVars)
-    if (partition.size > 1) {
-      reporter.log("Warning: Hard constraints are not consistent.")
-      reporter.log(s"Partitioned hard examples into ${partition.size} set(s).")
-      reporter.log(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
-    }
-    // TODO save into a file
 
     reporter.debug(s"# hard transitions: ${hardTransitions.size}")
     reporter.debug(s"# soft transitions: ${softTransitions.size}")

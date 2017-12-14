@@ -101,6 +101,18 @@ object Workflow {
     // log synthesis results
     SynthesisResultLogger(synthesisResults, reporter.file("functions.txt"))
 
+    // log hard partition sizes
+    val hardPartitionSizeTuples = synthesisResults.toList map {
+      case (key, results) => {
+        Map("Gene" -> key, "Hard partition size" -> results.size)
+      }
+    }
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      List("Gene", "Hard partition size"),
+      hardPartitionSizeTuples,
+      reporter.file("hard-partition-sizes-per-gene.tsv")
+    )
+
     // evaluate simulation transition completeness w.r.t. all H-1 edges.
     val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
       .transitionToAll1HammingRatio(simulationGraph)
