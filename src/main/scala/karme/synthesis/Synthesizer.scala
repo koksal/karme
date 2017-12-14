@@ -71,13 +71,14 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
       reporter.log(s"Partitioned hard examples into ${partition.size} set(s).")
       reporter.log(s"Subset sizes: ${partition.map(_.size).mkString(", ")}")
     }
+    // TODO save into a file
 
     reporter.debug(s"# hard transitions: ${hardTransitions.size}")
     reporter.debug(s"# soft transitions: ${softTransitions.size}")
 
     var allResults = Set.empty[SynthesisResult]
     for (subset <- partition) {
-      allResults ++= synthesizeWithMaximalSoftTransitions(subset,
+      allResults += synthesizeWithMaximalSoftTransitions(subset,
         softTransitions, possibleVars)
     }
 
@@ -114,72 +115,20 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     }
   }
 
-  // assumes that hard transitions are consistent
-  private def synthesizeWithHardAndSoftTransitions(
-    hardTransitions: Set[Transition],
-    softTransitions: Set[Transition],
-    possibleVars: Set[String]
-  ): Set[SynthesisResult] = {
-    var unusedTransitions = softTransitions
-    var currentResults = Set.empty[SynthesisResult]
-
-    while (unusedTransitions.nonEmpty) {
-      val nextBestUnused =
-        transitionsByDescendingWeight(unusedTransitions).head
-
-      // try to extend hard + next best with all soft constraints
-      synthesizeWithMaximalSoftTransitions(hardTransitions + nextBestUnused,
-        softTransitions - nextBestUnused, possibleVars) match {
-        case Some(result @ SynthesisResult(ts, _)) => {
-          reporter.debug(s"Found a maximal transition set of size ${ts.size}.")
-          reporter.debug(s"Functions:")
-          reporter.debug(SynthesisResultLogger.resultStr(result))
-
-          // remove used ts from transitions to check
-          unusedTransitions = unusedTransitions -- ts
-          // add to current results
-          currentResults += result
-        }
-        case None => {
-          reporter.debug("Soft transition incompatible with hard set.")
-
-          // the next best is not compatible with hard transitions
-          unusedTransitions = unusedTransitions - nextBestUnused
-        }
-      }
-    }
-
-    // If no soft transition is consistent with hard set (or there are none),
-    // compute functions for the hard set
-    if (currentResults.isEmpty) {
-      reporter.debug("No soft transition is compatible with hard set.")
-
-      val fs = enumerateForMinDepthAndMinNbVars(hardTransitions, possibleVars)
-      assert(fs.nonEmpty)
-      val result = SynthesisResult(hardTransitions, fs.toSet)
-      currentResults += result
-
-      reporter.debug(s"Functions:")
-      reporter.debug(SynthesisResultLogger.resultStr(result))
-    }
-
-    currentResults
-  }
-
   private def synthesizeWithMaximalSoftTransitions(
     hardTransitions: Set[Transition],
     softTransitions: Set[Transition],
     possibleVars: Set[String]
-  ): Option[SynthesisResult] = {
-    // TODO exponential backoff
-
+  ): SynthesisResult = {
     val exprsForAllTrans = enumerateForMinDepthAndMinNbVars(
       hardTransitions ++ softTransitions, possibleVars)
 
     if (exprsForAllTrans.nonEmpty) {
       reporter.debug("Found expressions with eager check.")
-      Some(SynthesisResult(hardTransitions ++ softTransitions,
-        exprsForAllTrans.toSet))
+      SynthesisResult(
+        hardTransitions ++ softTransitions,
+        exprsForAllTrans.toSet
+      )
     } else {
       reporter.debug("Did not find expressions with eager check.")
 
@@ -201,7 +150,7 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 
       val finalExprs = FunExprSimilarity.findNonRedundantSet(
         enumerateForMinDepthAndMinNbVars(currentSet, possibleVars).toSet)
-      Some(SynthesisResult(currentSet, finalExprs))
+      SynthesisResult(currentSet, finalExprs)
     }
   }
 
