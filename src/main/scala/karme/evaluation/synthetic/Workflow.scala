@@ -1,7 +1,6 @@
 package karme.evaluation.synthetic
 
 import karme.ArgHandling
-import karme.Experiments.Experiment
 import karme.Opts
 import karme.Reporter
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
@@ -125,14 +124,16 @@ object Workflow {
     // evaluate edge orientation
     val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
       simulationGraph, nodePartialOrder)
-    TSVUtil.saveTupleMaps(
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      EdgeOrientationEval.headers,
       Seq(orientationEvalTuples),
       reporter.file("orientation-eval.tsv")
     )
 
     // evaluate graph reconstruction
-    TSVUtil.saveTupleMaps(
-      Seq(new GraphComparison().diffGraphs(simulationGraph, graphForSynthesis)),
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      GraphComparison.headers,
+      Seq(GraphComparison.diffGraphs(simulationGraph, graphForSynthesis)),
       reporter.file("graph-diff.tsv")
     )
 
@@ -160,7 +161,9 @@ object Workflow {
     val stateSpaceEvalTuples = resultCombinations map { c =>
       StateSpaceEval.compareStateSpaces(graphForSynthesis, c, initialStates)
     }
-    TSVUtil.saveTupleMaps(stateSpaceEvalTuples,
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      StateSpaceEval.headers,
+      stateSpaceEvalTuples,
       reporter.file("state-space-reproduction-eval.tsv"))
 
     // evaluate fixpoint reachability from perturbed initial states

@@ -35,10 +35,10 @@ object LatexTablePrinter {
     sb append "\\end{tabular}"
     sb append "\n"
 
-    sb append "\\caption{todo}"
+    sb append "\\caption{TODO}"
     sb append "\n"
 
-    sb append "\\label{todo}"
+    sb append "\\label{TODO}"
     sb append "\n"
 
     sb append "\\end{table}"

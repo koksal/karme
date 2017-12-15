@@ -16,7 +16,9 @@ object StateSpaceEval {
     val (simGraphFromInferredModel, _) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(inferredModel, initialStates)
 
-    new GraphComparison().diffGraphs(originalGraph, simGraphFromInferredModel)
+    GraphComparison.diffGraphs(originalGraph, simGraphFromInferredModel)
   }
+
+  def headers: Seq[String] = GraphComparison.headers
 
 }

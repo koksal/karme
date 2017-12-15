@@ -3,17 +3,18 @@ package karme.evaluation.synthetic
 import karme.graphs.Graphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 
-class GraphComparison {
+object GraphComparison {
 
   def diffGraphs(
-    g1: DirectedBooleanStateGraph, g2: DirectedBooleanStateGraph
+    originalGraph: DirectedBooleanStateGraph,
+    inferredGraph: DirectedBooleanStateGraph
   ): Map[String, Any] = {
-    val states1 = g1.V.map(_.state)
-    val states2 = g2.V.map(_.state)
+    val states1 = originalGraph.V.map(_.state)
+    val states2 = inferredGraph.V.map(_.state)
 
-    val statePairSetToGraph1Edges = g1.E.groupBy(
+    val statePairSetToGraph1Edges = originalGraph.E.groupBy(
       e => Set(e.v1.state, e.v2.state))
-    val statePairSetToGraph2Edges = g2.E.groupBy(
+    val statePairSetToGraph2Edges = inferredGraph.E.groupBy(
       e => Set(e.v1.state, e.v2.state))
 
     var nbMissedEdges = 0
@@ -30,8 +31,8 @@ class GraphComparison {
       ) match {
         case (Some(es1), Some(es2)) => {
           assert(es1.size == 1 && es2.size == 1)
-          val ds1 = g1.edgeDirections(es1.head)
-          val ds2 = g2.edgeDirections(es2.head)
+          val ds1 = originalGraph.edgeDirections(es1.head)
+          val ds2 = inferredGraph.edgeDirections(es2.head)
           val sameEdgeOrder = es1.head.v1.state == es2.head.v1.state
           if (sameEdgeOrder) {
             if (ds1.subsetOf(ds2)) {
@@ -58,12 +59,24 @@ class GraphComparison {
     }
 
     Map(
-      "States only in 1" -> (states1 -- states2).size,
-      "States only in 2" -> (states2 -- states1).size,
-      "Captured directions" -> nbOrigDirectionCaptured,
-      "Non-captured directions" -> nbOrigDirectionNonCaptured,
+      "Missed states" -> (states1 -- states2).size,
+      "Spurious states" -> (states2 -- states1).size,
       "Missed edges" -> nbMissedEdges,
-      "Unobserved edges" -> nbUnobservedEdges
+      "Spurious edges" -> nbUnobservedEdges,
+      "Captured dir." -> nbOrigDirectionCaptured,
+      "Missed dir." -> nbOrigDirectionNonCaptured
+    )
+  }
+
+
+  def headers: Seq[String] = {
+    List(
+      "Missed states",
+      "Spurious states",
+      "Missed edges",
+      "Spurious edges",
+      "Captured dir.",
+      "Missed dir."
     )
   }
 

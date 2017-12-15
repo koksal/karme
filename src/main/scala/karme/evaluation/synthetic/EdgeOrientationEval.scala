@@ -53,10 +53,20 @@ class EdgeOrientationEval(implicit reporter: Reporter) {
     }
 
     Map(
-      "Nb. correct orientations" -> correctOrientationE.size,
-      "Nb. opposite orientations" -> oppositeOrientationE.size,
-      "Nb. inconclusive orientations" -> inconclusiveOrientationE.size
+      "Correct" -> correctOrientationE.size,
+      "Incorrect" -> oppositeOrientationE.size,
+      "Inconclusive" -> inconclusiveOrientationE.size
     )
   }
+
+}
+
+object EdgeOrientationEval {
+
+  def headers: Seq[String] = List(
+    "Correct",
+    "Incorrect",
+    "Inconclusive"
+  )
 
 }

@@ -43,7 +43,15 @@ object TableAggregation {
       h -> (rows map (r => r(h).toDouble))
     }
     headerToValues.map{
-      case (h, vs) => h -> MathUtil.median(vs)
+      case (h, vs) => {
+        val median = MathUtil.median(vs)
+        if (median.toInt == median) {
+          h -> median.toInt
+        } else {
+          h -> MathUtil.roundTo(4)(median)
+        }
+      }
     }.toMap
   }
+
 }
