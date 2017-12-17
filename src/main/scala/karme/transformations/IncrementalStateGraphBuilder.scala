@@ -1,8 +1,6 @@
 package karme.transformations
 
-import karme.Experiments.Experiment
 import karme.analysis.DiscreteStateAnalysis
-import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.util.MathUtil
 
@@ -80,28 +78,13 @@ class IncrementalStateGraphBuilder(
   private def extendAllNodesWithMinimalDistance(
     g: DirectedBooleanStateGraph
   ): DirectedBooleanStateGraph = {
-    val minimalNeighbors = g.V flatMap { v =>
-      minimalHammingNeighbors(Set(v), V, MAX_HAMMING_DISTANCE)
-    }
+    val minimalNeighbors = minimalHammingNeighbors(g.V, V, MAX_HAMMING_DISTANCE)
 
     var newGraph = g
     for ((source, target) <- minimalNeighbors) {
       newGraph = newGraph.addEdge(source, target)
     }
     newGraph
-  }
-
-  private def allHammingNeighbors(
-    reachableNodes: Set[StateGraphVertex],
-    targetNodes: Set[StateGraphVertex],
-    maxHammingDistance: Int
-  ): Set[(StateGraphVertex, StateGraphVertex)] = {
-    val edgesWithDistance = allHammingNeighborsWithDistance(reachableNodes,
-      targetNodes, maxHammingDistance)
-
-    edgesWithDistance map {
-      case (source, target, _) => (source, target)
-    }
   }
 
   private def minimalHammingNeighbors(
