@@ -65,7 +65,7 @@ object AsyncBooleanNetworkSimulation {
     simulateWithTimestamps(initialStates, applyAllFunctionSubsets(functions))
   }
 
-  def simulateWithTimestamps(
+  private def simulateWithTimestamps(
     initialStates: Set[ConcreteBooleanState],
     stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
   ): Set[(ConcreteBooleanState, Seq[Int])] = {
@@ -93,23 +93,51 @@ object AsyncBooleanNetworkSimulation {
     }
   }
 
+  def simulateFixpointGuidedOneStepWithStateGraph(
+    functions: Map[String, FunExpr],
+    initialStates: Set[ConcreteBooleanState],
+    allowedFixpoints: Set[ConcreteBooleanState]
+  ): (DirectedBooleanStateGraph, CellTrajectory) = {
+    val (simulationGraph, trajectory) = simulateWithStateGraph(
+      initialStates,
+      applyFunctionAlternatives(functions),
+      allowDifferentArrivalTimes = false
+    )
+
+    (
+      removeStatesNotReachingFixpoints(simulationGraph, allowedFixpoints),
+      trajectory
+    )
+  }
+
   def simulateOneStepWithStateGraph(
     functions: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
+    initialStates: Set[ConcreteBooleanState],
+    allowDifferentArrivalTimes: Boolean = true
   ): (DirectedBooleanStateGraph, CellTrajectory) = {
-    simulateWithStateGraph(initialStates, applyFunctionAlternatives(functions))
+    simulateWithStateGraph(
+      initialStates,
+      applyFunctionAlternatives(functions),
+      allowDifferentArrivalTimes
+    )
   }
 
   def simulateAnyStepsWithStateGraph(
     functions: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState]
+    initialStates: Set[ConcreteBooleanState],
+    allowDifferentArrivalTimes: Boolean = true
   ): (DirectedBooleanStateGraph, CellTrajectory) = {
-    simulateWithStateGraph(initialStates, applyAllFunctionSubsets(functions))
+    simulateWithStateGraph(
+      initialStates,
+      applyAllFunctionSubsets(functions),
+      allowDifferentArrivalTimes
+    )
   }
 
-  def simulateWithStateGraph(
+  private def simulateWithStateGraph(
     initialStates: Set[ConcreteBooleanState],
-    stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState]
+    stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState],
+    allowDifferentArrivalTimes: Boolean
   ): (DirectedBooleanStateGraph, CellTrajectory) = {
     val nodeCounter = new UniqueCounter
     val measurementCounter = new UniqueCounter
@@ -156,8 +184,13 @@ object AsyncBooleanNetworkSimulation {
         val targetStates = stateTransitionFunction(srcState)
 
         for (tgtState <- targetStates) {
-          nextStates += tgtState
-          addStateEdge(srcState, tgtState)
+          val targetNotReachedInPriorStep =
+            !stateToMeasurements.isDefinedAt(tgtState)
+
+          if (allowDifferentArrivalTimes || targetNotReachedInPriorStep) {
+            nextStates += tgtState
+            addStateEdge(srcState, tgtState)
+          }
         }
       }
 
@@ -222,6 +255,30 @@ object AsyncBooleanNetworkSimulation {
   ): ConcreteBooleanState = {
     val funOutput = FunctionTrees.eval(fun, inputState)
     inputState.replaceValue(label, funOutput)
+  }
+
+  private def removeStatesNotReachingFixpoints(
+    simulationGraph: DirectedBooleanStateGraph,
+    allowedFixpoints: Set[ConcreteBooleanState]
+  ) = {
+    val allowedFixpointNodes = allowedFixpoints.flatMap(
+      s => simulationGraph.V.filter(v => v.state == s))
+
+    val reverseSimulationGraph = simulationGraph.reverse()
+
+    val reachableFromFinalNodes = allowedFixpointNodes flatMap { n =>
+      reverseSimulationGraph.shortestPaths(n).map(_.last)
+    }
+
+    val nonReachableFromFinal = simulationGraph.V -- reachableFromFinalNodes
+
+    var resultGraph = simulationGraph
+
+    for (n <- nonReachableFromFinal) {
+      resultGraph = resultGraph.removeVertex(n)
+    }
+
+    resultGraph
   }
 
 }

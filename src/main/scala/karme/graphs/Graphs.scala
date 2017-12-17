@@ -216,6 +216,12 @@ object Graphs {
       )
     }
 
+    def reverse() = {
+      val reversedDirs = edgeDirections map {
+        case (k, vs) => k -> vs.map(reverseDirection)
+      }
+      new UnlabeledDiGraph(V, E, reversedDirs)
+    }
   }
 
   sealed trait EdgeDirection

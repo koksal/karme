@@ -14,7 +14,7 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.DistributionComparisonTest
 import karme.transformations.NodePartialOrderByTrajectoryComparison
 import karme.transformations.OracleNodePartialOrder
-import karme.util.TSVUtil
+import karme.util.{FileUtil, TSVUtil}
 import karme.visualization.graph.StateGraphPlotter
 
 object Workflow {
@@ -61,6 +61,18 @@ object Workflow {
     val (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithStateGraph(hiddenModel, initialStates)
 
+    val timeTuples = simulationGraph.V.map { v =>
+      Map(
+        "v" -> v.id,
+        "times" -> v.measurements.map(m => trajectory(m.id)).mkString(", ")
+      )
+    }
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      List("v", "times"),
+      timeTuples.toSeq.sortBy(row => row("v")),
+      reporter.file("simulated-trajectory.txt")
+    )
+
     // build node partial order
     val nodePartialOrder = nodePartialOrderType match {
       case "oracle" => {
@@ -83,12 +95,38 @@ object Workflow {
     val observedNodes = StateGraphPerturbation
       .deleteNodes(simulationGraph, nodeDeletionRatio).V
 
+    // evaluate simulation transition completeness w.r.t. all H-1 edges.
+    val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
+      .transitionToAll1HammingRatio(simulationGraph)
+    TSVUtil.saveOrderedTuples(
+      List("transition to H-1 edge ratio"),
+      List(List(transitionToH1EdgeRatio)),
+      reporter.file("transition-to-h-1-edge-ratio.txt")
+    )
+
+    // evaluate edge orientation
+    val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
+      simulationGraph, nodePartialOrder)
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      EdgeOrientationEval.headers,
+      Seq(orientationEvalTuples),
+      reporter.file("orientation-eval.tsv")
+    )
+
     // reconstruct graph
     val graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
       observedNodes, nodePartialOrder)
 
+
+    // evaluate graph reconstruction
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      GraphComparison.headers,
+      Seq(GraphComparison.diffGraphs(simulationGraph, graphForSynthesis)),
+      reporter.file("graph-diff.tsv")
+    )
+
     // logging graphs
-    if (false) {
+    if (true) {
       new StateGraphPlotter(reporter)
         .plotDirectedGraph(graphForSynthesis, "graph-for-synthesis")
     }
@@ -110,31 +148,6 @@ object Workflow {
       List("Gene", "Hard partition size"),
       hardPartitionSizeTuples,
       reporter.file("hard-partition-sizes-per-gene.tsv")
-    )
-
-    // evaluate simulation transition completeness w.r.t. all H-1 edges.
-    val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
-      .transitionToAll1HammingRatio(simulationGraph)
-    TSVUtil.saveOrderedTuples(
-      List("transition to H-1 edge ratio"),
-      List(List(transitionToH1EdgeRatio)),
-      reporter.file("transition-to-h-1-edge-ratio.txt")
-    )
-
-    // evaluate edge orientation
-    val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
-      simulationGraph, nodePartialOrder)
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
-      EdgeOrientationEval.headers,
-      Seq(orientationEvalTuples),
-      reporter.file("orientation-eval.tsv")
-    )
-
-    // evaluate graph reconstruction
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
-      GraphComparison.headers,
-      Seq(GraphComparison.diffGraphs(simulationGraph, graphForSynthesis)),
-      reporter.file("graph-diff.tsv")
     )
 
     val resultCombinations = SynthesisResult.makeCombinations(synthesisResults)
