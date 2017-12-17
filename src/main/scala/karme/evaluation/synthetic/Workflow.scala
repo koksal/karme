@@ -59,7 +59,8 @@ object Workflow {
 
     // run simulation
     val (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
-      .simulateOneStepWithStateGraph(hiddenModel, initialStates)
+      .simulateFixpointGuidedOneStepWithStateGraph(hiddenModel,
+        initialStates, MyeloidModel.stableStates())
 
     val timeTuples = simulationGraph.V.map { v =>
       Map(
