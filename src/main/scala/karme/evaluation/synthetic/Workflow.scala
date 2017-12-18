@@ -14,7 +14,7 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.DistributionComparisonTest
 import karme.transformations.NodePartialOrderByTrajectoryComparison
 import karme.transformations.OracleNodePartialOrder
-import karme.util.{FileUtil, TSVUtil}
+import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
 object Workflow {

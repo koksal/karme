@@ -217,6 +217,82 @@ object MyeloidModel {
     )
   }
 
+  def makeTrimmedStateSpaceNetwork(): Map[String, FunExpr] = {
+    Map(
+      Cebpa ->
+        FunOr(
+          FunNot(
+            FunVar(Fog1)
+          ),
+          FunNot(
+            FunVar(Scl)
+          )
+        ),
+      EKLF ->
+        FunAnd(
+          FunNot(
+            FunVar(Fli1)
+          ),
+          FunVar(Gata1)
+        ),
+      EgrNab ->
+        FunVar(cJun),
+      Fli1 ->
+        FunAnd(
+          FunNot(
+            FunVar(EKLF)
+          ),
+          FunVar(Gata1)
+        ),
+      Fog1 ->
+        FunVar(Gata1),
+      Gata1 ->
+        FunNot(
+          FunVar(Pu_1)
+        ),
+      Gata2 ->
+        FunAnd(
+          FunNot(
+            FunVar(Fog1)
+          ),
+          FunNot(
+            FunVar(Pu_1)
+          )
+        ),
+      Gfi1 ->
+        FunAnd(
+          FunNot(
+            FunVar(cJun)
+          ),
+          FunVar(Pu_1)
+        ),
+      Pu_1 ->
+        FunOr(
+          FunAnd(
+            FunNot(
+              FunVar(Fog1)
+            ),
+            FunNot(
+              FunVar(Gata2)
+            )
+          ),
+          FunOr(
+            FunVar(Gfi1),
+            FunVar(cJun)
+          )
+        ),
+      Scl ->
+        FunVar(Gata1),
+      cJun ->
+        FunAnd(
+          FunNot(
+            FunVar(Gfi1)
+          ),
+          FunVar(Pu_1)
+        )
+    )
+  }
+
   def makeInitialState(): ConcreteBooleanState = {
     GenericState(Map(
       Cebpa -> true,
