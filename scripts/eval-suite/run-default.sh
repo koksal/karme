@@ -6,10 +6,9 @@ then
   exit 1
 else
   OUTFOLDER_BASE=$1
+  shift
 fi
 
 ./scripts/run-synthetic-workflow.sh \
   $OUTFOLDER_BASE/default \
-  --partial-order comparison \
-  --distribution-comparison average \
-  --max-expr-depth 3
+  $*
