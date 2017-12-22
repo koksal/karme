@@ -294,7 +294,6 @@ object AsyncBooleanNetworkSimulation {
     graph: DirectedBooleanStateGraph,
     functions: Map[String, FunExpr]
   ): DirectedBooleanStateGraph = {
-
     val simulationStates = graph.V.map(_.state)
     val fixpointStates = simulationStates filter { s =>
       AsyncBooleanNetworkSimulation.stateIsFixpoint(functions, s)
