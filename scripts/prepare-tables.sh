@@ -10,8 +10,11 @@ fi
 
 # Orientation evaluation 
 ./scripts/aggregate-tables.sh \
-  $PARENT_OUTPUT_FOLDER/aggregate-orientation-eval.tsv \
+  $PARENT_OUTPUT_FOLDER/orientation-eval \
   $PARENT_OUTPUT_FOLDER/*/orientation-eval.tsv
 
 ./scripts/latexify-table.sh \
-  $PARENT_OUTPUT_FOLDER/aggregate-orientation-eval.tsv
+  $PARENT_OUTPUT_FOLDER/orientation-eval-all.tsv
+
+./scripts/latexify-table.sh \
+  $PARENT_OUTPUT_FOLDER/orientation-eval-median.tsv
