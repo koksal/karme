@@ -2,6 +2,7 @@ package karme.simulation
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Measurement
+import karme.evaluation.synthetic.FixpointStates
 import karme.graphs.Graphs.UnlabeledDiGraph
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.FunctionTrees
@@ -93,10 +94,16 @@ object AsyncBooleanNetworkSimulation {
     }
   }
 
-  def simulateFixpointGuidedOneStepWithStateGraph(
+  /**
+    * Computes the trimmed state graph.
+    *
+    * A trimmed state graph is one in which every path from the initial
+    * states to a node is of the same length, and if a node is included in
+    * the graph, it must eventually reach a fixed point state.
+    */
+  def simulateOneStepWithTrimmedStateGraph(
     functions: Map[String, FunExpr],
-    initialStates: Set[ConcreteBooleanState],
-    allowedFixpoints: Set[ConcreteBooleanState]
+    initialStates: Set[ConcreteBooleanState]
   ): (DirectedBooleanStateGraph, CellTrajectory) = {
     val (simulationGraph, trajectory) = simulateWithStateGraph(
       initialStates,
@@ -104,9 +111,11 @@ object AsyncBooleanNetworkSimulation {
       allowDifferentArrivalTimes = false
     )
 
+    val trimmedGraph = trimGraph(simulationGraph, functions)
+
     (
-      removeStatesNotReachingFixpoints(simulationGraph, allowedFixpoints),
-      trajectory
+      trimmedGraph,
+      filterTrajectoryForGraph(trajectory, trimmedGraph)
     )
   }
 
@@ -279,6 +288,28 @@ object AsyncBooleanNetworkSimulation {
     }
 
     resultGraph
+  }
+
+  private def trimGraph(
+    graph: DirectedBooleanStateGraph,
+    functions: Map[String, FunExpr]
+  ): DirectedBooleanStateGraph = {
+
+    val simulationStates = graph.V.map(_.state)
+    val fixpointStates = simulationStates filter { s =>
+      AsyncBooleanNetworkSimulation.stateIsFixpoint(functions, s)
+    }
+
+    removeStatesNotReachingFixpoints(graph, fixpointStates)
+  }
+
+  private def filterTrajectoryForGraph(
+    trajectory: CellTrajectory,
+    graph: DirectedBooleanStateGraph
+  ): CellTrajectory = {
+    val msIDs = graph.V.flatMap(v => v.measurements.map(_.id))
+
+    trajectory filter { case (id, _) => msIDs.contains(id) }
   }
 
 }
