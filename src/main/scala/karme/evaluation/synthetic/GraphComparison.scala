@@ -17,10 +17,11 @@ object GraphComparison {
     val statePairSetToGraph2Edges = inferredGraph.E.groupBy(
       e => Set(e.v1.state, e.v2.state))
 
+    var nbCapturedEdges = 0
     var nbMissedEdges = 0
     var nbUnobservedEdges = 0
-    var nbOrigDirectionCaptured = 0
-    var nbOrigDirectionNonCaptured = 0
+    var nbCapturedOrientations = 0
+    var nbMissedOrientations = 0
 
     // join edges by the pair of states for endpoints.
     for (statePairSet <-
@@ -30,21 +31,23 @@ object GraphComparison {
         statePairSetToGraph2Edges.get(statePairSet)
       ) match {
         case (Some(es1), Some(es2)) => {
+          nbCapturedEdges += 1
+
           assert(es1.size == 1 && es2.size == 1)
           val ds1 = originalGraph.edgeDirections(es1.head)
           val ds2 = inferredGraph.edgeDirections(es2.head)
           val sameEdgeOrder = es1.head.v1.state == es2.head.v1.state
           if (sameEdgeOrder) {
             if (ds1.subsetOf(ds2)) {
-              nbOrigDirectionCaptured += 1
+              nbCapturedOrientations += 1
             } else {
-              nbOrigDirectionNonCaptured += 1
+              nbMissedOrientations += 1
             }
           } else {
             if (ds1.subsetOf(ds2.map(Graphs.reverseDirection))) {
-              nbOrigDirectionCaptured += 1
+              nbCapturedOrientations += 1
             } else {
-              nbOrigDirectionNonCaptured += 1
+              nbMissedOrientations += 1
             }
           }
         }
@@ -59,24 +62,27 @@ object GraphComparison {
     }
 
     Map(
-      "Missed states" -> (states1 -- states2).size,
-      "Spurious states" -> (states2 -- states1).size,
-      "Missed edges" -> nbMissedEdges,
-      "Spurious edges" -> nbUnobservedEdges,
-      "Captured dir." -> nbOrigDirectionCaptured,
-      "Missed dir." -> nbOrigDirectionNonCaptured
+      "Captured V" -> states1.intersect(states2).size,
+      "Missed V" -> (states1 -- states2).size,
+      "Spurious V" -> (states2 -- states1).size,
+      "Captured E" -> nbCapturedEdges,
+      "Missed E" -> nbMissedEdges,
+      "Spurious E" -> nbUnobservedEdges,
+      "Captured D" -> nbCapturedOrientations,
+      "Missed D" -> nbMissedOrientations
     )
   }
 
-
   def headers: Seq[String] = {
     List(
-      "Missed states",
-      "Spurious states",
-      "Missed edges",
-      "Spurious edges",
-      "Captured dir.",
-      "Missed dir."
+      "Captured V",
+      "Missed V",
+      "Spurious V",
+      "Captured E",
+      "Missed E",
+      "Spurious E",
+      "Captured D",
+      "Missed D"
     )
   }
 

@@ -14,7 +14,9 @@ object TableAggregation {
     assert(headerRows.toSet.size == 1)
     val headers = headerRows.head
 
-    val runIDDataPairs = inFileNames.zip(data.map(_._2))
+    val runIDs = inFileNames map stripRunID
+
+    val runIDDataPairs = runIDs.zip(data.map(_._2))
 
     val medianData = runIDDataPairs map {
       case (runID, data) => medianRowForRun(runID, headers, data)
@@ -24,16 +26,14 @@ object TableAggregation {
       case (runID, data) => nonAggregateRowsForRun(runID, headers, data)
     }
 
-    val outHeader = "Run" :: headers
-
     TSVUtil.saveTupleMapsWithOrderedHeaders(
-      outHeader,
+      "Run" :: headers,
       medianData,
       new File(s"$outFilenamePrefix-median.tsv")
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
-      outHeader,
+      "Model" :: headers,
       nonAggregateData,
       new File(s"$outFilenamePrefix-all.tsv")
     )
@@ -53,7 +53,11 @@ object TableAggregation {
     headers: Seq[String],
     data: Seq[Map[String, String]]
   ): Seq[Map[String, Any]] = {
-    data map { row => row.updated("Run", runID)}
+    data.zipWithIndex map {
+      case (row, i) => {
+        row.updated("Model", s"$runID (${i + 1})")
+      }
+    }
   }
 
   def takeMedian(
@@ -73,6 +77,13 @@ object TableAggregation {
         }
       }
     }.toMap
+  }
+
+  def stripRunID(rawID: String): String = {
+    val splitted = rawID.split("/")
+    splitted(splitted.size - 2)
+      .replaceAll("[-_]", " ")
+      .capitalize
   }
 
 }
