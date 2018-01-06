@@ -7,7 +7,12 @@ import karme.printing.LatexTablePrinter
 object LatexifyTable {
 
   def main(args: Array[String]): Unit = {
-    val fn = args.head
+    for (arg <- args) {
+      latexify(arg)
+    }
+  }
+
+  def latexify(fn: String): Unit = {
     val f = new File(fn)
     val (header, table) = TSVUtil.readHeadersAndData(f)
 

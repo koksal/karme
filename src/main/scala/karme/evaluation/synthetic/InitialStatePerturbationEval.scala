@@ -8,72 +8,80 @@ import karme.util.MathUtil
 
 object InitialStatePerturbationEval {
 
+  val geneHeader = "Gene"
+  val commonHeader = "Common"
+  val missedHeader = "Missed"
+  val spuriousHeader = "Spurious"
+  val jaccardHeader = "Jaccard sim."
+
+  val headers = List(
+    geneHeader, commonHeader, missedHeader, spuriousHeader, jaccardHeader
+  )
+
   def compareModelsForFixpointsFromPerturbedStates(
     hiddenModel: Map[String, FunExpr],
     inferredModel: Map[String, FunExpr],
     initStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
-    hiddenModel.keySet.map { v =>
+  ): Seq[Map[String, Any]] = {
+    val geneToSets = hiddenModel.keySet map { v =>
       val hiddenPerturbedFixpoints = fixpointsForPerturbedInitStates(
         hiddenModel, initStates, v
       )
       val inferredPerturbedFixopints = fixpointsForPerturbedInitStates(
         inferredModel, initStates, v
       )
-      v -> setComparisonSummary(
-        hiddenPerturbedFixpoints,
-        inferredPerturbedFixopints
-      )
-    }.toMap
+      v -> (hiddenPerturbedFixpoints, inferredPerturbedFixopints)
+    }
+    setComparisonSummaries(geneToSets)
   }
 
   def compareModelsForReachableStatesFromPerturbedStates(
     hiddenModel: Map[String, FunExpr],
     inferredModel: Map[String, FunExpr],
     initStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
-    hiddenModel.keySet.map { v =>
+  ): Seq[Map[String, Any]] = {
+    val geneToSets = hiddenModel.keySet.map { v =>
       val hiddenPerturbedReachable = reachableStatesForPerturbedInitStates(
         hiddenModel, initStates, v
       )
       val inferredPerturbedReachable = reachableStatesForPerturbedInitStates(
         inferredModel, initStates, v
       )
-      v -> setComparisonSummary(
-        hiddenPerturbedReachable,
-        inferredPerturbedReachable
-      )
-    }.toMap
+      v -> (hiddenPerturbedReachable, inferredPerturbedReachable)
+    }
+    setComparisonSummaries(geneToSets)
   }
 
   def fixpointSimilarityInitialVsPerturbedState(
     model: Map[String, FunExpr],
     initStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
+  ): Seq[Map[String, Any]] = {
     val originalFixpoints = FixpointStates.findSimulationFixpoints(model,
       initStates)
 
-    model.keySet.map { v =>
-      v -> setComparisonSummary(
+    val geneToSets = model.keySet.map { v =>
+      v -> (
         originalFixpoints,
         fixpointsForPerturbedInitStates(model, initStates, v)
       )
-    }.toMap
+    }
+    setComparisonSummaries(geneToSets)
   }
 
   def reachableStateSimilarityInitialVsPerturbedState(
     model: Map[String, FunExpr],
     initStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
+  ): Seq[Map[String, Any]] = {
     val originalReachableStates =
       AsyncBooleanNetworkSimulation.simulateOneStep(model, initStates)
 
-    model.keySet.map { v =>
-      v -> setComparisonSummary(
+    val geneToSets = model.keySet.map { v =>
+      v -> (
         originalReachableStates,
         reachableStatesForPerturbedInitStates(model, initStates, v)
       )
-    }.toMap
+    }
+    setComparisonSummaries(geneToSets)
   }
 
   private def fixpointsForPerturbedInitStates(
@@ -96,11 +104,33 @@ object InitialStatePerturbationEval {
     AsyncBooleanNetworkSimulation.simulateOneStep(model, perturbedStates)
   }
 
-  private def setComparisonSummary[A](s1: Set[A], s2: Set[A]): String = {
+
+  private def setComparisonSummaries[A](
+    geneToSets: Iterable[(String, (Set[A], Set[A]))]
+  ): Seq[Map[String, Any]] = {
+    geneToSets.toList map {
+      case (gene, (s1, s2)) => setComparisonSummary(gene, s1, s2)
+    }
+  }
+
+  private def setComparisonSummary[A](
+    gene: String, s1: Set[A], s2: Set[A]
+  ): Map[String, Any] = {
+    setComparisonSummary(s1, s2).updated(geneHeader, gene)
+  }
+
+  private def setComparisonSummary[A](
+    s1: Set[A], s2: Set[A]
+  ): Map[String, Any] = {
     val nbCommon = s1.intersect(s2).size
     val onlyIn1 = (s1 -- s2).size
     val onlyIn2 = (s2 -- s1).size
     val jaccardSim = CollectionUtil.jaccardSimilarity(s1, s2)
-    s"$nbCommon/$onlyIn1/$onlyIn2/${MathUtil.roundTo(2)(jaccardSim)}"
+    Map(
+      commonHeader -> nbCommon,
+      missedHeader -> onlyIn1,
+      spuriousHeader -> onlyIn2,
+      jaccardHeader -> MathUtil.roundTo(2)(jaccardSim)
+    )
   }
 }

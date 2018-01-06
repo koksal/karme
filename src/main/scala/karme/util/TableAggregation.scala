@@ -64,19 +64,27 @@ object TableAggregation {
     header: Seq[String],
     rows: Seq[Map[String, String]]
   ): Map[String, Any] = {
-    val headerToValues = header map { h =>
-      h -> (rows map (r => r(h).toDouble))
-    }
-    headerToValues.map{
-      case (h, vs) => {
-        val median = MathUtil.median(vs)
-        if (median.toInt == median) {
-          h -> median.toInt
-        } else {
-          h -> MathUtil.roundTo(4)(median)
-        }
+    try {
+      val headerToValues = header map { h =>
+        h -> (rows map (r => r(h).toDouble))
       }
-    }.toMap
+      headerToValues.map{
+        case (h, vs) => {
+          val median = MathUtil.median(vs)
+          if (median.toInt == median) {
+            h -> median.toInt
+          } else {
+            h -> MathUtil.roundTo(4)(median)
+          }
+        }
+      }.toMap
+    } catch {
+      case e: NumberFormatException => {
+        header.map{ h =>
+          (h, "N/A")
+        }.toMap
+      }
+    }
   }
 
   def stripRunID(rawID: String): String = {

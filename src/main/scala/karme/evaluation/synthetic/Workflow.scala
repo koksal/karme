@@ -180,12 +180,15 @@ object Workflow {
       reporter.file("state-space-reproduction-eval.tsv"))
 
     // evaluate fixpoint reachability from perturbed initial states
+    /*
     TSVUtil.saveTupleMaps(
       List(InitialStatePerturbationEval
         .fixpointSimilarityInitialVsPerturbedState(hiddenModel, initialStates)),
       reporter.file("hidden-model-init-state-vs-perturbed-state-fixpoints.tsv")
     )
+    */
 
+    /*
     val initStatePerturbEvalTuples = resultCombinations map { c =>
       InitialStatePerturbationEval.fixpointSimilarityInitialVsPerturbedState(
         c, initialStates
@@ -194,34 +197,45 @@ object Workflow {
     TSVUtil.saveTupleMaps(initStatePerturbEvalTuples,
       reporter.file(
         "inferred-models-init-state-vs-perturbed-state-fixpoints.tsv"))
+        */
 
-    val hiddenVsInferredPerturbedStateEvalTuples = resultCombinations map { c =>
+    val perturbedFixpointEvalPerModel = resultCombinations map { c =>
       InitialStatePerturbationEval.compareModelsForFixpointsFromPerturbedStates(
         hiddenModel, c, initialStates
       )
     }
-    TSVUtil.saveTupleMaps(hiddenVsInferredPerturbedStateEvalTuples,
-      reporter.file(
-        "hidden-vs-inferred-models-perturbed-state-fixpoints.tsv"))
+    for ((tuples, i) <- perturbedFixpointEvalPerModel.zipWithIndex) {
+      TSVUtil.saveTupleMapsWithOrderedHeaders(
+        InitialStatePerturbationEval.headers,
+        tuples,
+        reporter.file(
+          s"hidden-vs-inferred-models-perturbed-state-fixpoints-$i.tsv"))
+    }
 
     // evaluate plain reachability from perturbed initial states
+    /*
     TSVUtil.saveTupleMaps(
       List(InitialStatePerturbationEval
         .reachableStateSimilarityInitialVsPerturbedState(hiddenModel,
           initialStates)),
       reporter.file("hidden-model-init-state-vs-perturbed-state-reachable.tsv")
     )
+    */
 
-    val hiddenVsInferredPerturbedStateReachability = resultCombinations map {
+    val perturbedReachabilityEvalPerModel = resultCombinations map {
       c =>
         InitialStatePerturbationEval
           .compareModelsForReachableStatesFromPerturbedStates(
             hiddenModel, c, initialStates)
     }
-    TSVUtil.saveTupleMaps(hiddenVsInferredPerturbedStateReachability,
-      reporter.file(
-        "hidden-vs-inferred-models-perturbed-state-reachable-states.tsv")
-    )
+    for ((tuples, i) <- perturbedReachabilityEvalPerModel.zipWithIndex) {
+      TSVUtil.saveTupleMapsWithOrderedHeaders(
+        InitialStatePerturbationEval.headers,
+        tuples,
+        reporter.file(
+          s"hidden-vs-inferred-models-perturbed-state-reachable-$i.tsv")
+      )
+    }
   }
 
 }
