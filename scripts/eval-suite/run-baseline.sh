@@ -10,5 +10,5 @@ else
 fi
 
 ./scripts/run-synthetic-workflow.sh \
-  $OUTFOLDER_BASE/default \
+  $OUTFOLDER_BASE/baseline \
   $*

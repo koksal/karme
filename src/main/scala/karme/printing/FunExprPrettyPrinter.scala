@@ -4,20 +4,42 @@ import karme.synthesis.FunctionTrees._
 
 object FunExprPrettyPrinter {
 
-  def apply(fe: FunExpr): String = {
-    prettyString(fe, precedence(fe))
+  def printPlain(fe: FunExpr): String = {
+    plainStr(fe, precedence(fe))
   }
 
-  private def prettyString(fe: FunExpr, outerPrecedence: Int): String = {
+  def printLaTeX(fe: FunExpr): String = {
+    "$" + latexStr(fe, precedence(fe)) + "$"
+  }
+
+  private def plainStr(fe: FunExpr, outerPrecedence: Int): String = {
     val currentPrecedence = precedence(fe)
     val result = fe match {
       case FunConst(v) => v.toString
       case FunVar(id)   => id
-      case FunAnd(l, r) => s"${prettyString(l, currentPrecedence)} && " +
-        s"${prettyString(r, currentPrecedence)}"
-      case FunOr(l, r)  => s"${prettyString(l, currentPrecedence)} || " +
-        s"${prettyString(r, currentPrecedence)}"
-      case FunNot(e)    => s"!${prettyString(e, currentPrecedence)}"
+      case FunAnd(l, r) => s"${plainStr(l, currentPrecedence)} && " +
+        s"${plainStr(r, currentPrecedence)}"
+      case FunOr(l, r)  => s"${plainStr(l, currentPrecedence)} || " +
+        s"${plainStr(r, currentPrecedence)}"
+      case FunNot(e)    => s"!${plainStr(e, currentPrecedence)}"
+    }
+    if (currentPrecedence > outerPrecedence) {
+      s"(${result})"
+    } else {
+      result
+    }
+  }
+
+  private def latexStr(fe: FunExpr, outerPrecedence: Int): String = {
+    val currentPrecedence = precedence(fe)
+    val result = fe match {
+      case FunConst(v) => latexifyBool(v)
+      case FunVar(id) => latexifyId(id)
+      case FunAnd(l, r) => s"${latexStr(l, currentPrecedence)} \\wedge " +
+        s"${latexStr(r, currentPrecedence)}"
+      case FunOr(l, r)  => s"${latexStr(l, currentPrecedence)} \\vee " +
+        s"${latexStr(r, currentPrecedence)}"
+      case FunNot(e)    => s"\\neg ${latexStr(e, currentPrecedence)}"
     }
     if (currentPrecedence > outerPrecedence) {
       s"(${result})"
@@ -32,6 +54,14 @@ object FunExprPrettyPrinter {
     case FunAnd(_, _) => 1
     case FunOr(_, _) => 2
     case FunNot(_) => 0
+  }
+
+  def latexifyId(id: String): String = {
+    id.replaceAllLiterally("_", "\\_")
+  }
+
+  private def latexifyBool(bool: Boolean): String = {
+    s"\\mathit{$bool}"
   }
 
 }

@@ -10,4 +10,4 @@ fi
 
 EXTRA_ARGS="--partial-order comparison --distribution-comparison average --max-expr-depth 3"
 
-./scripts/eval-suite/run-default.sh $OUTFOLDER_BASE $EXTRA_ARGS
+./scripts/eval-suite/run-baseline.sh $OUTFOLDER_BASE $EXTRA_ARGS

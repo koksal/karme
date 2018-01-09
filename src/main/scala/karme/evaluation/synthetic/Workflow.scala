@@ -5,6 +5,7 @@ import karme.Opts
 import karme.Reporter
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
+import karme.printing.LatexFunctionLogger
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
@@ -137,6 +138,7 @@ object Workflow {
 
     // log synthesis results
     SynthesisResultLogger(synthesisResults, reporter.file("functions.txt"))
+    LatexFunctionLogger(synthesisResults, reporter.file("function-table.txt"))
 
     // log hard partition sizes
     val hardPartitionSizeTuples = synthesisResults.toList map {

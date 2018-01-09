@@ -3,7 +3,9 @@ package karme.printing
 object LatexTablePrinter {
 
   def print(
-    header: Seq[String], tuples: Seq[Map[String, String]]
+    header: Seq[String],
+    rowGroups: Seq[Seq[Map[String, Any]]],
+    commonGroupHeaders: Set[String] = Set()
   ): String = {
     val sb = new StringBuilder()
 
@@ -24,12 +26,25 @@ object LatexTablePrinter {
     sb append s"${joinCols(header)} \\\\ \\hline"
     sb append "\n"
 
-    for ((tuple, i) <- tuples.zipWithIndex) {
-      sb append (joinCols(header map (h => tuple(h))))
-      if (i < tuples.size - 1) {
-        sb append " \\\\"
+    for ((rowGroup, groupIndex) <- rowGroups.zipWithIndex) {
+      for ((row, rowIndex) <- rowGroup.zipWithIndex) {
+        val rowValues = header map { h =>
+          if (!commonGroupHeaders.contains(h) || rowIndex == 0) {
+            row(h)
+          } else {
+            ""
+          }
+        }
+        sb append joinCols(rowValues)
+        if (groupIndex < rowGroups.size - 1 || rowIndex < rowGroup.size - 1) {
+          sb append " \\\\"
+        }
+        if (groupIndex < rowGroups.size - 1 && rowIndex == rowGroup.size - 1) {
+          sb append " \\hline"
+        }
+        sb append "\n"
       }
-      sb append "\n"
+
     }
 
     sb append "\\end{tabular}"
@@ -47,6 +62,6 @@ object LatexTablePrinter {
     sb.toString()
   }
 
-  private def joinCols(cols: Seq[String]): String = cols.mkString(" & ")
+  private def joinCols(cols: Seq[Any]): String = cols.mkString(" & ")
 
 }

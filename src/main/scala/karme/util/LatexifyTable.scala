@@ -18,7 +18,7 @@ object LatexifyTable {
 
     FileUtil.writeToFile(
       new File(fn + ".tex"),
-      LatexTablePrinter.print(header, table)
+      LatexTablePrinter.print(header, Seq(table))
     )
   }
 

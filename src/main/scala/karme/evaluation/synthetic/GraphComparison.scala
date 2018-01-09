@@ -5,6 +5,15 @@ import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 
 object GraphComparison {
 
+  val capturedV = "Capt. V"
+  val missedV = "Miss. V"
+  val spuriousV = "Spur. V"
+  val capturedE = "Capt. E"
+  val missedE = "Miss. E"
+  val spuriousE = "Spur. E"
+  val capturedD = "Capt. D"
+  val missedD = "Miss. D"
+
   def diffGraphs(
     originalGraph: DirectedBooleanStateGraph,
     inferredGraph: DirectedBooleanStateGraph
@@ -62,27 +71,27 @@ object GraphComparison {
     }
 
     Map(
-      "Captured V" -> states1.intersect(states2).size,
-      "Missed V" -> (states1 -- states2).size,
-      "Spurious V" -> (states2 -- states1).size,
-      "Captured E" -> nbCapturedEdges,
-      "Missed E" -> nbMissedEdges,
-      "Spurious E" -> nbUnobservedEdges,
-      "Captured D" -> nbCapturedOrientations,
-      "Missed D" -> nbMissedOrientations
+      capturedV -> states1.intersect(states2).size,
+      missedV -> (states1 -- states2).size,
+      spuriousV -> (states2 -- states1).size,
+      capturedE -> nbCapturedEdges,
+      missedE -> nbMissedEdges,
+      spuriousE -> nbUnobservedEdges,
+      capturedD -> nbCapturedOrientations,
+      missedD -> nbMissedOrientations
     )
   }
 
   def headers: Seq[String] = {
     List(
-      "Captured V",
-      "Missed V",
-      "Spurious V",
-      "Captured E",
-      "Missed E",
-      "Spurious E",
-      "Captured D",
-      "Missed D"
+      capturedV,
+      missedV,
+      spuriousV,
+      capturedE,
+      missedE,
+      spuriousE,
+      capturedD,
+      missedD
     )
   }
 
