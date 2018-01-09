@@ -3,6 +3,7 @@ package karme.printing
 import java.io.File
 
 import karme.synthesis.SynthesisResult
+import karme.synthesis.Transitions.Transition
 import karme.util.FileUtil
 
 object LatexFunctionLogger {
@@ -17,8 +18,8 @@ object LatexFunctionLogger {
   private def table(
     labelToResults: Map[String, Set[SynthesisResult]]
   ): String = {
-    val header = List("Gene", "Functions", "Transitions")
-    val commonGroupHeaders = Set("Gene", "Transitions")
+    val header = List("Gene", "Functions", "Weight sum")
+    val commonGroupHeaders = Set("Gene", "Weight sum")
 
     val sortedLabels = labelToResults.keySet.toList.sorted
 
@@ -26,11 +27,13 @@ object LatexFunctionLogger {
       val latexifiedLabel = "$" + FunExprPrettyPrinter.latexifyId(label) + "$"
       val labelResults = labelToResults(label)
       for (result <- labelResults.toList) yield {
+        val transitionWeightSum = weightSum(result.transitions)
+
         for (fe <- result.functions.toList) yield {
           Map(
             "Gene" -> latexifiedLabel,
             "Functions" -> FunExprPrettyPrinter.printLaTeX(fe),
-            "Transitions" -> result.transitions.size
+            "Weight sum" -> transitionWeightSum
           )
         }
       }
@@ -39,4 +42,7 @@ object LatexFunctionLogger {
     LatexTablePrinter.print(header, rowGroups, commonGroupHeaders)
   }
 
+  private def weightSum(ts: Set[Transition]): Double = {
+    ts.toList.map(_.weight).sum
+  }
 }

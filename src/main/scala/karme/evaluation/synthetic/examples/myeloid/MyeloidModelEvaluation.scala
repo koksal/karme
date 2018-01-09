@@ -11,12 +11,12 @@ object MyeloidModelEvaluation {
     labelToFun: Map[String, FunExpr]
   ): Map[String, Any] = {
     Map(
-      "Missed WT FP" ->
+      "Missed WT SS" ->
         findMissedFixpoints(labelToFun).size,
-      "Spurious WT FP" ->
+      "Spurious WT SS" ->
         findUnexpectedFixpoints(labelToFun).size,
-      "KO w/ inexact FP" ->
-        nbDisagreeingKO(labelToFun)
+      "KO w/ inexact CT" ->
+        nbKOwithWrongCellTypes(labelToFun)
     )
   }
 
@@ -38,7 +38,7 @@ object MyeloidModelEvaluation {
     simulationFixpoints -- expectedFixpoints
   }
 
-  def nbDisagreeingKO(labelToFun: Map[String, FunExpr]): Int = {
+  def nbKOwithWrongCellTypes(labelToFun: Map[String, FunExpr]): Int = {
     var nbDisagreeing = 0
 
     for (ke <- MyeloidModel.knockoutExperiments()) {

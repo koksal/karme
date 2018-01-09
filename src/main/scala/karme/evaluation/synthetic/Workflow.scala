@@ -118,7 +118,6 @@ object Workflow {
     val graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
       observedNodes, nodePartialOrder)
 
-
     // evaluate graph reconstruction
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       GraphComparison.headers,
@@ -165,13 +164,15 @@ object Workflow {
       behaviorEvalFun(c)
     }
     TSVUtil.saveTupleMaps(behaviorEvalTuples,
-      reporter.file("behavior-eval.tsv"))
+      reporter.file("stable-state-reachability-across-conditions.tsv"))
 
-    val funSimilarityTuples = resultCombinations map { c =>
+    val funSimilarityPerModel = resultCombinations map { c =>
       FunSimilarityEval.evaluateFunSimilarity(hiddenModel, c)
     }
-    TSVUtil.saveTupleMaps(funSimilarityTuples,
-      reporter.file("function-similarity-eval.tsv"))
+    for ((tuples, i) <- funSimilarityPerModel.zipWithIndex) {
+      TSVUtil.saveTupleMaps(tuples,
+        reporter.file(s"function-similarity-$i.tsv"))
+    }
 
     val stateSpaceEvalTuples = resultCombinations map { c =>
       StateSpaceEval.compareStateSpaces(graphForSynthesis, c, initialStates)

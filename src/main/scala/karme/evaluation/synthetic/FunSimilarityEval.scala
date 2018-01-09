@@ -5,11 +5,14 @@ import karme.synthesis.FunctionTrees.FunExpr
 
 object FunSimilarityEval {
 
+  val geneHeader = "Gene"
+  val similarityHeader = "Similarity"
+
   def evaluateFunSimilarity(
     hiddenModel: Map[String, FunExpr],
     inferredModel: Map[String, FunExpr]
-  ): Map[String, Any] = {
-    hiddenModel.keySet.map { v =>
+  ): Seq[Map[String, Any]] = {
+    hiddenModel.keySet.toList.map { v =>
       val similarity = inferredModel.get(v) match {
         case Some(inferredFun) => {
           FunExprSimilarity.commonBehaviorRatio(hiddenModel(v), inferredFun)
@@ -18,8 +21,11 @@ object FunSimilarityEval {
           "N/A"
         }
       }
-      v -> similarity
-    }.toMap
+      Map(
+        geneHeader -> v,
+        similarityHeader -> similarity
+      )
+    }
   }
 
 }

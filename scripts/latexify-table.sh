@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sbt "run-main karme.util.LatexifyTable $1"
+sbt "run-main karme.util.LatexifyTable $*"

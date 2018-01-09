@@ -8,7 +8,7 @@ import karme.util.MathUtil
 
 object InitialStatePerturbationEval {
 
-  val geneHeader = "Gene"
+  val geneHeader = "Perturbation"
   val commonHeader = "Common"
   val missedHeader = "Missed"
   val spuriousHeader = "Spurious"
@@ -27,10 +27,10 @@ object InitialStatePerturbationEval {
       val hiddenPerturbedFixpoints = fixpointsForPerturbedInitStates(
         hiddenModel, initStates, v
       )
-      val inferredPerturbedFixopints = fixpointsForPerturbedInitStates(
+      val inferredPerturbedFixpoints = fixpointsForPerturbedInitStates(
         inferredModel, initStates, v
       )
-      v -> (hiddenPerturbedFixpoints, inferredPerturbedFixopints)
+      v -> (hiddenPerturbedFixpoints, inferredPerturbedFixpoints)
     }
     setComparisonSummaries(geneToSets)
   }
