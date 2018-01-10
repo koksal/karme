@@ -47,4 +47,48 @@ object TSVUtil {
     }
     saveOrderedTuples(headers, orderedTuples, f)
   }
+
+  def takeRowsMin(
+    colsToExpand: Seq[String],
+    rows: Seq[Map[String, Any]]
+  ): Seq[Map[String, Any]] = {
+    reduceRows(xs => xs.min, colsToExpand, rows)
+  }
+
+  def takeRowsMax(
+    colsToExpand: Seq[String],
+    rows: Seq[Map[String, Any]]
+  ): Seq[Map[String, Any]] = {
+    reduceRows(xs => xs.max, colsToExpand, rows)
+  }
+
+  def takeRowsMedian(
+    colsToExpand: Seq[String],
+    rows: Seq[Map[String, Any]]
+  ): Seq[Map[String, Any]] = {
+    reduceRows(xs => MathUtil.median(xs), colsToExpand, rows)
+  }
+
+  def reduceRows(
+    f: Seq[Double] => Any,
+    colsToExpand: Seq[String],
+    rows: Seq[Map[String, Any]]
+  ): Seq[Map[String, Any]] = {
+    val colsToReduce: Seq[String] = rows.headOption.map{ row =>
+      row.keySet -- colsToExpand.toSet
+    }.getOrElse(Nil).toSeq
+
+    val grouped = rows.groupBy(row => colsToExpand.map(row(_))).toList
+
+    for ((_, groupRows) <- grouped) yield {
+      val reducedPairs = for (c <- colsToReduce) yield {
+        val reduced = f(groupRows.map(r => r(c).toString.toDouble))
+        c -> reduced
+      }
+      val expandedPairs = colsToExpand.map { c =>
+        c -> groupRows.head(c)
+      }
+      (reducedPairs ++ expandedPairs).toMap
+    }
+  }
 }

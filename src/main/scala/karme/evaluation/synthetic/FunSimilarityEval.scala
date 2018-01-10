@@ -8,6 +8,8 @@ object FunSimilarityEval {
   val geneHeader = "Gene"
   val similarityHeader = "Similarity"
 
+  val orderedHeaders = List(geneHeader, similarityHeader)
+
   def evaluateFunSimilarity(
     hiddenModel: Map[String, FunExpr],
     inferredModel: Map[String, FunExpr]

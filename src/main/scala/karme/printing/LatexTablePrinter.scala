@@ -23,7 +23,7 @@ object LatexTablePrinter {
     sb append s"\\begin{tabular}$colFormat"
     sb append "\n"
 
-    sb append s"${joinCols(header)} \\\\ \\hline"
+    sb append s"${header.mkString(" & ")} \\\\ \\hline"
     sb append "\n"
 
     for ((rowGroup, groupIndex) <- rowGroups.zipWithIndex) {
@@ -62,6 +62,10 @@ object LatexTablePrinter {
     sb.toString()
   }
 
-  private def joinCols(cols: Seq[Any]): String = cols.mkString(" & ")
+  private def joinCols(cols: Seq[Any]): String = {
+    cols.map { c =>
+      LatexPrinting.latexMath(LatexPrinting.latexifyId(c.toString))
+    }.mkString(" & ")
+  }
 
 }

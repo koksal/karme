@@ -24,7 +24,8 @@ object LatexFunctionLogger {
     val sortedLabels = labelToResults.keySet.toList.sorted
 
     val rowGroups = (for (label <- sortedLabels) yield {
-      val latexifiedLabel = "$" + FunExprPrettyPrinter.latexifyId(label) + "$"
+      val latexifiedLabel =
+        LatexPrinting.latexMath(LatexPrinting.latexifyId(label))
       val labelResults = labelToResults(label)
       for (result <- labelResults.toList) yield {
         val transitionWeightSum = weightSum(result.transitions)

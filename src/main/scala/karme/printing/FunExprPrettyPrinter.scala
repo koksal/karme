@@ -9,7 +9,7 @@ object FunExprPrettyPrinter {
   }
 
   def printLaTeX(fe: FunExpr): String = {
-    "$" + latexStr(fe, precedence(fe)) + "$"
+    LatexPrinting.latexMath(latexStr(fe, precedence(fe)))
   }
 
   private def plainStr(fe: FunExpr, outerPrecedence: Int): String = {
@@ -33,8 +33,8 @@ object FunExprPrettyPrinter {
   private def latexStr(fe: FunExpr, outerPrecedence: Int): String = {
     val currentPrecedence = precedence(fe)
     val result = fe match {
-      case FunConst(v) => latexifyBool(v)
-      case FunVar(id) => latexifyId(id)
+      case FunConst(v) => LatexPrinting.latexifyBool(v)
+      case FunVar(id) => LatexPrinting.latexifyId(id)
       case FunAnd(l, r) => s"${latexStr(l, currentPrecedence)} \\wedge " +
         s"${latexStr(r, currentPrecedence)}"
       case FunOr(l, r)  => s"${latexStr(l, currentPrecedence)} \\vee " +
@@ -54,14 +54,6 @@ object FunExprPrettyPrinter {
     case FunAnd(_, _) => 1
     case FunOr(_, _) => 2
     case FunNot(_) => 0
-  }
-
-  def latexifyId(id: String): String = {
-    id.replaceAllLiterally("_", "\\_")
-  }
-
-  private def latexifyBool(bool: Boolean): String = {
-    s"\\mathit{$bool}"
   }
 
 }

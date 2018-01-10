@@ -169,10 +169,37 @@ object Workflow {
     val funSimilarityPerModel = resultCombinations map { c =>
       FunSimilarityEval.evaluateFunSimilarity(hiddenModel, c)
     }
-    for ((tuples, i) <- funSimilarityPerModel.zipWithIndex) {
-      TSVUtil.saveTupleMaps(tuples,
-        reporter.file(s"function-similarity-$i.tsv"))
+    printPerModelTuples(
+      FunSimilarityEval.orderedHeaders,
+      List(FunSimilarityEval.geneHeader),
+      funSimilarityPerModel,
+      "function-similarity"
+    )
+
+    val perturbedFixpointEvalPerModel = resultCombinations map { c =>
+      InitialStatePerturbationEval.compareModelsForFixpointsFromPerturbedStates(
+        hiddenModel, c, initialStates
+      )
     }
+    printPerModelTuples(
+      InitialStatePerturbationEval.headers,
+      List(InitialStatePerturbationEval.geneHeader),
+      perturbedFixpointEvalPerModel,
+      "stable-state-reachability-across-environments"
+    )
+
+    val perturbedReachabilityEvalPerModel = resultCombinations map {
+      c =>
+        InitialStatePerturbationEval
+          .compareModelsForReachableStatesFromPerturbedStates(
+            hiddenModel, c, initialStates)
+    }
+    printPerModelTuples(
+      InitialStatePerturbationEval.headers,
+      List(InitialStatePerturbationEval.geneHeader),
+      perturbedReachabilityEvalPerModel,
+      "all-state-reachability-across-environments"
+    )
 
     val stateSpaceEvalTuples = resultCombinations map { c =>
       StateSpaceEval.compareStateSpaces(graphForSynthesis, c, initialStates)
@@ -182,63 +209,41 @@ object Workflow {
       stateSpaceEvalTuples,
       reporter.file("state-space-reproduction-eval.tsv"))
 
-    // evaluate fixpoint reachability from perturbed initial states
-    /*
-    TSVUtil.saveTupleMaps(
-      List(InitialStatePerturbationEval
-        .fixpointSimilarityInitialVsPerturbedState(hiddenModel, initialStates)),
-      reporter.file("hidden-model-init-state-vs-perturbed-state-fixpoints.tsv")
-    )
-    */
+  }
 
-    /*
-    val initStatePerturbEvalTuples = resultCombinations map { c =>
-      InitialStatePerturbationEval.fixpointSimilarityInitialVsPerturbedState(
-        c, initialStates
-      )
-    }
-    TSVUtil.saveTupleMaps(initStatePerturbEvalTuples,
-      reporter.file(
-        "inferred-models-init-state-vs-perturbed-state-fixpoints.tsv"))
-        */
-
-    val perturbedFixpointEvalPerModel = resultCombinations map { c =>
-      InitialStatePerturbationEval.compareModelsForFixpointsFromPerturbedStates(
-        hiddenModel, c, initialStates
-      )
-    }
-    for ((tuples, i) <- perturbedFixpointEvalPerModel.zipWithIndex) {
+  def printPerModelTuples(
+    orderedHeaders: Seq[String],
+    colsToExpand: Seq[String],
+    rowsPerModel: Seq[Seq[Map[String, Any]]],
+    prefix: String
+  )(implicit reporter: Reporter): Unit = {
+    for ((modelRows, i) <- rowsPerModel.zipWithIndex) {
       TSVUtil.saveTupleMapsWithOrderedHeaders(
-        InitialStatePerturbationEval.headers,
-        tuples,
-        reporter.file(
-          s"hidden-vs-inferred-models-perturbed-state-fixpoints-$i.tsv"))
-    }
-
-    // evaluate plain reachability from perturbed initial states
-    /*
-    TSVUtil.saveTupleMaps(
-      List(InitialStatePerturbationEval
-        .reachableStateSimilarityInitialVsPerturbedState(hiddenModel,
-          initialStates)),
-      reporter.file("hidden-model-init-state-vs-perturbed-state-reachable.tsv")
-    )
-    */
-
-    val perturbedReachabilityEvalPerModel = resultCombinations map {
-      c =>
-        InitialStatePerturbationEval
-          .compareModelsForReachableStatesFromPerturbedStates(
-            hiddenModel, c, initialStates)
-    }
-    for ((tuples, i) <- perturbedReachabilityEvalPerModel.zipWithIndex) {
-      TSVUtil.saveTupleMapsWithOrderedHeaders(
-        InitialStatePerturbationEval.headers,
-        tuples,
-        reporter.file(
-          s"hidden-vs-inferred-models-perturbed-state-reachable-$i.tsv")
+        orderedHeaders,
+        modelRows,
+        reporter.file(s"$prefix-$i.tsv")
       )
     }
+
+    val medianRows = TSVUtil.takeRowsMedian(colsToExpand, rowsPerModel.flatten)
+    val minRows = TSVUtil.takeRowsMin(colsToExpand, rowsPerModel.flatten)
+    val maxRows = TSVUtil.takeRowsMax(colsToExpand, rowsPerModel.flatten)
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      orderedHeaders,
+      medianRows,
+      reporter.file(s"$prefix-median.tsv")
+    )
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      orderedHeaders,
+      minRows,
+      reporter.file(s"$prefix-min.tsv")
+    )
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      orderedHeaders,
+      maxRows,
+      reporter.file(s"$prefix-max.tsv")
+    )
   }
 
 }

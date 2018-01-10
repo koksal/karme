@@ -5,7 +5,7 @@ import java.io.File
 object TableAggregation {
 
   def main(args: Array[String]): Unit = {
-    val (outFilenamePrefix, inFileNames) = (args.head, args.tail)
+    val (outFilename, inFileNames) = (args.head, args.tail)
     val data = inFileNames map { n =>
       TSVUtil.readHeadersAndData(new File(n))
     }
@@ -18,34 +18,15 @@ object TableAggregation {
 
     val runIDDataPairs = runIDs.zip(data.map(_._2))
 
-    val medianData = runIDDataPairs map {
-      case (runID, data) => medianRowForRun(runID, headers, data)
-    }
-
     val nonAggregateData = runIDDataPairs flatMap {
       case (runID, data) => nonAggregateRowsForRun(runID, headers, data)
     }
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
-      "Run" :: headers,
-      medianData,
-      new File(s"$outFilenamePrefix-median.tsv")
-    )
-
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
       "Model" :: headers,
       nonAggregateData,
-      new File(s"$outFilenamePrefix-all.tsv")
+      new File(outFilename)
     )
-  }
-
-  def medianRowForRun(
-    runID: String,
-    headers: Seq[String],
-    data: Seq[Map[String, String]]
-  ): Map[String, Any] = {
-    val medianRow = takeMedian(headers, data)
-    medianRow.updated("Run", runID)
   }
 
   def nonAggregateRowsForRun(
@@ -58,33 +39,6 @@ object TableAggregation {
         row.updated("Model", s"$runID (${i + 1})")
       }
     }
-  }
-
-  def takeMedian(
-    header: Seq[String],
-    rows: Seq[Map[String, String]]
-  ): Map[String, Any] = {
-    val headerToValues = header map { h =>
-      h -> (rows map (r => r(h)))
-    }
-    headerToValues.map{
-      case (h, vs) => {
-        try {
-          val doubleValues = vs.map(_.toDouble)
-          val median = MathUtil.median(doubleValues)
-          val rounded = if (median.toInt == median) {
-            median.toInt
-          } else {
-            MathUtil.roundTo(4)(median)
-          }
-          h -> rounded
-        } catch {
-          case e: NumberFormatException => {
-            h -> "N/A"
-          }
-        }
-      }
-    }.toMap
   }
 
   def stripRunID(rawID: String): String = {

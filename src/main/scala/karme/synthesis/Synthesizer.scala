@@ -4,11 +4,12 @@ import karme.evaluation.FunExprSimilarity
 import karme.{Reporter, SynthOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.printing.LatexPrinting
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 import karme.transformations.TransitionProducer
-import karme.util.TSVUtil
+import karme.util.FileUtil
 import karme.util.TimingUtil
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
@@ -38,12 +39,16 @@ class Synthesizer(opts: SynthOpts, reporter: Reporter) {
     val labelToNegTrans = negativeTransitions.groupBy(_.label)
 
     var labelToSynthesisResults = Map[String, Set[SynthesisResult]]()
+
+    val logFile = reporter.file("synthesis-times-in-milliseconds.tsv")
+    FileUtil.writeToFile(logFile, "Gene\tTime (ms)\n")
+
     for (label <- labels) {
       reporter.debug(s"Synthesizing for ${label}")
       reporter.debug("==========================")
 
       val resultsForLabel = TimingUtil.log(
-        label, reporter.file("synthesis-times-in-milliseconds.tsv")
+        label, logFile
       ) {
         synthesizeForSingleLabel(
           hardTransitions = labelToPosTrans.getOrElse(label, Set.empty),
