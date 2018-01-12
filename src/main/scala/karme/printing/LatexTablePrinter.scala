@@ -9,7 +9,7 @@ object LatexTablePrinter {
   ): String = {
     val sb = new StringBuilder()
 
-    sb append "\\begin{table}[h]"
+    sb append "\\begin{table}[ht!]"
     sb append "\n"
 
     sb append "\\centering"

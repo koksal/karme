@@ -84,6 +84,7 @@ case class ReporterOpts(
 )
 
 case class SyntheticEvalOpts(
+  cellTrajectoryNoiseSigma: Double = 0.0,
   randomizedInitialStateInclusionRatio: Option[Double] = None,
   nodeDeletionRatio: Double = 0.0,
   nodePartialOrderType: String = "oracle"

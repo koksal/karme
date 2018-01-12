@@ -264,6 +264,11 @@ object ArgHandling {
 
       // Synthetic evaluation options:
 
+      opt[Double]("cell-trajectory-noise-sigma") action { (v, o) =>
+        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
+          cellTrajectoryNoiseSigma = v))
+      }
+
       opt[Double]("randomized-initial-states-ratio") action { (v, o) =>
         o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
           randomizedInitialStateInclusionRatio = Some(v)))

@@ -27,6 +27,8 @@ object Workflow {
     run(
       hiddenModel = MyeloidModel.makePLOSNetwork(),
       defaultInitialStates = Set(MyeloidModel.makeInitialState()),
+      cellTrajectoryNoiseSigma =
+        opts.syntheticEvalOpts.cellTrajectoryNoiseSigma,
       randomizedInitialStateInclusionRatio =
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
@@ -42,6 +44,7 @@ object Workflow {
   def run(
     hiddenModel: Map[String, FunExpr],
     defaultInitialStates: Set[ConcreteBooleanState],
+    cellTrajectoryNoiseSigma: Double,
     randomizedInitialStateInclusionRatio: Option[Double],
     nodeDeletionRatio: Double,
     nodePartialOrderType: String,
@@ -59,8 +62,11 @@ object Workflow {
     }
 
     // run simulation
-    val (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
+    var (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithTrimmedStateGraph(hiddenModel, initialStates)
+
+    trajectory = new CellTrajectoryNoise(cellTrajectoryNoiseSigma)
+      .addNoise(trajectory)
 
     val timeTuples = simulationGraph.V.map { v =>
       Map(
@@ -88,8 +94,6 @@ object Workflow {
         ).partialOrdering
       }
     }
-
-    // TODO add trajectory noise
 
     // remove nodes per deletion ratio
     // TODO? delete measurements, not graph nodes.
