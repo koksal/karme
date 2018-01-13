@@ -4,6 +4,7 @@ import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Measurement
 import karme.evaluation.synthetic.FixpointStates
 import karme.graphs.Graphs.UnlabeledDiGraph
+import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
@@ -148,7 +149,6 @@ object AsyncBooleanNetworkSimulation {
     stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState],
     allowDifferentArrivalTimes: Boolean
   ): (DirectedBooleanStateGraph, CellTrajectory) = {
-    val nodeCounter = new UniqueCounter
     val measurementCounter = new UniqueCounter
 
     var stateToMeasurements =
@@ -157,7 +157,6 @@ object AsyncBooleanNetworkSimulation {
       Map[ConcreteBooleanState, Set[ConcreteBooleanState]]()
     var measurementIDToTimestamp = Map[String, Double]()
 
-    def makeNodeId(): String = "v" + nodeCounter.next
     def makeMeasurementId(): String = "m" + measurementCounter.next
 
     def makeMeasurement(s: ConcreteBooleanState): Measurement[Boolean] = {
@@ -209,7 +208,7 @@ object AsyncBooleanNetworkSimulation {
     var stateGraph = UnlabeledDiGraph[StateGraphVertex]()
     var stateToVertex = Map[ConcreteBooleanState, StateGraphVertex]()
     for ((state, ms) <- stateToMeasurements) {
-      val v = StateGraphVertex(makeNodeId(), state, ms.toSeq)
+      val v = StateGraphs.makeNode(state, ms.toSeq)
       stateGraph = stateGraph.addVertex(v)
       stateToVertex += state -> v
     }

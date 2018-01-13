@@ -55,7 +55,7 @@ object StateGraphs {
   def makeNode(
     state: ConcreteBooleanState, measurements: Seq[BooleanMeasurement]
   ): StateGraphVertex = {
-    StateGraphVertex(s"v_${stateGraphVertexCounter.next}", state, measurements)
+    StateGraphVertex(s"v${stateGraphVertexCounter.next}", state, measurements)
   }
 
   /**
