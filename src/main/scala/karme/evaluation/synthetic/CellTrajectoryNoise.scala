@@ -8,7 +8,7 @@ class CellTrajectoryNoise(
   sigma: Double
 ) {
 
-  val rand = new Random()
+  val rand = new Random(1)
 
   def noise(): Double = {
     rand.nextGaussian() * sigma

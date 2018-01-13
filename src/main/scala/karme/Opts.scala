@@ -84,6 +84,7 @@ case class ReporterOpts(
 )
 
 case class SyntheticEvalOpts(
+  randomSeed: Int = 0,
   cellTrajectoryNoiseSigma: Double = 0.0,
   randomizedInitialStateInclusionRatio: Option[Double] = None,
   nodeDeletionRatio: Double = 0.0,

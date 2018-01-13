@@ -52,11 +52,13 @@ object CollectionUtil {
     }
   }
 
-  def randomElement[T](xs: Iterable[T]): T = {
-    randomElements(xs, 1).head
+  def randomElement[T](random: Random)(xs: Iterable[T]): T = {
+    randomElements(random)(xs, 1).head
   }
 
-  def randomElements[T](xs: Iterable[T], size: Int): Iterable[T] = {
-    new Random().shuffle(xs.toList).take(size)
+  def randomElements[T](
+    random: Random
+  )(xs: Iterable[T], size: Int): Iterable[T] = {
+    random.shuffle(xs.toList).take(size)
   }
 }

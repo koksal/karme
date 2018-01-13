@@ -18,6 +18,8 @@ import karme.transformations.OracleNodePartialOrder
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
+import scala.util.Random
+
 object Workflow {
 
   def main(args: Array[String]): Unit = {
@@ -27,6 +29,7 @@ object Workflow {
     run(
       hiddenModel = MyeloidModel.makePLOSNetwork(),
       defaultInitialStates = Set(MyeloidModel.makeInitialState()),
+      random = new Random(opts.syntheticEvalOpts.randomSeed),
       cellTrajectoryNoiseSigma =
         opts.syntheticEvalOpts.cellTrajectoryNoiseSigma,
       randomizedInitialStateInclusionRatio =
@@ -44,6 +47,7 @@ object Workflow {
   def run(
     hiddenModel: Map[String, FunExpr],
     defaultInitialStates: Set[ConcreteBooleanState],
+    random: Random,
     cellTrajectoryNoiseSigma: Double,
     randomizedInitialStateInclusionRatio: Option[Double],
     nodeDeletionRatio: Double,
@@ -56,7 +60,7 @@ object Workflow {
     val initialStates = randomizedInitialStateInclusionRatio match {
       case Some(ratio) => {
         StateSetExtension
-          .randomStateSet(defaultInitialStates.head.orderedKeys, ratio)
+          .randomStateSet(defaultInitialStates.head.orderedKeys, ratio, random)
       }
       case None => defaultInitialStates
     }
@@ -98,7 +102,7 @@ object Workflow {
     // remove nodes per deletion ratio
     // TODO? delete measurements, not graph nodes.
     val observedNodes = StateGraphPerturbation
-      .deleteNodes(simulationGraph, nodeDeletionRatio).V
+      .deleteNodes(simulationGraph, nodeDeletionRatio, random).V
 
     // evaluate simulation transition completeness w.r.t. all H-1 edges.
     val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
@@ -119,8 +123,8 @@ object Workflow {
     )
 
     // reconstruct graph
-    val graphForSynthesis = StateGraphReconstruction.reconstructStateGraph(
-      observedNodes, nodePartialOrder)
+    val graphForSynthesis = new StateGraphReconstruction()
+      .reconstructStateGraph(observedNodes, nodePartialOrder)
 
     // evaluate graph reconstruction
     TSVUtil.saveTupleMapsWithOrderedHeaders(

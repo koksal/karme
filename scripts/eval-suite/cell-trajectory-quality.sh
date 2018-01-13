@@ -9,7 +9,7 @@ else
   shift
 fi
 
-for sigma in 0 0.1 0.5 1 2
+for sigma in 0 0.1 0.2 0.5 1
 do
   ./scripts/run-synthetic-workflow.sh \
     $OUTFOLDER_BASE/cell-trajectory-quality/sigma-$sigma \

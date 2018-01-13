@@ -1,15 +1,18 @@
 package karme.transformations
 
+import karme.Reporter
 import karme.analysis.DiscreteStateAnalysis
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.util.MathUtil
+import karme.visualization.graph.StateGraphPlotter
 
 class IncrementalStateGraphBuilder(
   V: Set[StateGraphVertex],
   nodePartialOrder: PartialOrdering[StateGraphVertex]
-) {
+)(implicit reporter: Reporter) {
 
   val MAX_HAMMING_DISTANCE = 3
+  val plotter = new StateGraphPlotter(reporter)
 
   def buildGraph: DirectedBooleanStateGraph = {
     val connectedGraph = buildGraphFromEarliestNodes
@@ -38,11 +41,16 @@ class IncrementalStateGraphBuilder(
     }
 
     var prevGraph = graph
+    var counter = 0
     do {
       prevGraph = graph
+      counter += 1
 
       graph = saturateGraphWithAllMinimalOutgoingEdges(graph)
+      plotter.plotDirectedGraph(graph, s"graph-$counter-a-saturation")
+
       graph = extendReachability(graph)
+      plotter.plotDirectedGraph(graph, s"graph-$counter-b-extension")
     } while (prevGraph != graph)
 
     graph
