@@ -64,7 +64,7 @@ object LatexTablePrinter {
 
   private def joinCols(cols: Seq[Any]): String = {
     cols.map { c =>
-      LatexPrinting.latexMath(LatexPrinting.latexifyId(c.toString))
+      LatexPrinting.latexifyId(c.toString)
     }.mkString(" & ")
   }
 

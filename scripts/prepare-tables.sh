@@ -15,8 +15,8 @@ fi
 
 # Model behavior: Stable states for knockouts
 ./scripts/aggregate-tables.sh \
-  $PARENT_OUTPUT_FOLDER/stable-state-reachability-across-conditions.tsv \
-  $PARENT_OUTPUT_FOLDER/*/stable-state-reachability-across-conditions.tsv
+  $PARENT_OUTPUT_FOLDER/stable-state-reachability-across-conditions-median.tsv \
+  $PARENT_OUTPUT_FOLDER/*/stable-state-reachability-across-conditions-median.tsv
 
 # Model behavior: Stable states for perturbations
 ./scripts/aggregate-tables.sh \
@@ -28,14 +28,27 @@ fi
   $PARENT_OUTPUT_FOLDER/function-similarity-median.tsv \
   $PARENT_OUTPUT_FOLDER/*/function-similarity-median.tsv
 
+# Solution space size
+./scripts/aggregate-tables.sh \
+  $PARENT_OUTPUT_FOLDER/number-of-models.tsv \
+  $PARENT_OUTPUT_FOLDER/*/number-of-models.tsv
+
+# Performance
+./scripts/aggregate-tables.sh \
+  $PARENT_OUTPUT_FOLDER/synthesis-times-in-milliseconds.tsv \
+  $PARENT_OUTPUT_FOLDER/*/synthesis-times-in-milliseconds.tsv
+
+
 # Latexify all tables
 ./scripts/latexify-table.sh \
   $PARENT_OUTPUT_FOLDER/graph-diff.tsv \
-  $PARENT_OUTPUT_FOLDER/stable-state-reachability-across-conditions.tsv \
+  $PARENT_OUTPUT_FOLDER/stable-state-reachability-across-conditions-median.tsv \
   $PARENT_OUTPUT_FOLDER/stable-state-reachability-across-environments-median.tsv \
+  $PARENT_OUTPUT_FOLDER/*/stable-state-reachability-across-conditions-*.tsv \
   $PARENT_OUTPUT_FOLDER/*/stable-state-reachability-across-environments-*.tsv \
   $PARENT_OUTPUT_FOLDER/function-similarity-median.tsv \
   $PARENT_OUTPUT_FOLDER/*/function-similarity-*.tsv \
-  $PARENT_OUTPUT_FOLDER/*/synthesis-times-in-milliseconds.tsv
+  $PARENT_OUTPUT_FOLDER/*/synthesis-times-in-milliseconds.tsv \
+  $PARENT_OUTPUT_FOLDER/number-of-models.tsv
 
 

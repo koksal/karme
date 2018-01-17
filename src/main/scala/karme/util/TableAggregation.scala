@@ -36,7 +36,7 @@ object TableAggregation {
   ): Seq[Map[String, Any]] = {
     data.zipWithIndex map {
       case (row, i) => {
-        row.updated("Model", s"$runID (${i + 1})")
+        row.updated("Model", runID)
       }
     }
   }
@@ -45,7 +45,6 @@ object TableAggregation {
     val splitted = rawID.split("/")
     splitted(splitted.size - 2)
       .replaceAll("[-_]", " ")
-      .capitalize
   }
 
 }

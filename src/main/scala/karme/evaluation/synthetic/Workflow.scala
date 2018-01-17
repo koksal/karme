@@ -169,10 +169,14 @@ object Workflow {
 
     // evaluate behavior, function similarity, state spaces
     val behaviorEvalTuples = resultCombinations map { c =>
-      behaviorEvalFun(c)
+      List(behaviorEvalFun(c))
     }
-    TSVUtil.saveTupleMaps(behaviorEvalTuples,
-      reporter.file("stable-state-reachability-across-conditions.tsv"))
+    printPerModelTuples(
+      MyeloidModelEvaluation.headers,
+      Nil,
+      behaviorEvalTuples,
+      "stable-state-reachability-across-conditions"
+    )
 
     val funSimilarityPerModel = resultCombinations map { c =>
       FunSimilarityEval.evaluateFunSimilarity(hiddenModel, c)

@@ -7,15 +7,23 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 
 object MyeloidModelEvaluation {
 
+  val missedWTSSHeader = "Missed WT SS"
+  val spuriousWTSSHeader = "Spurious WT SS"
+  val koWithInexactCTHeader = "KO w/ inexact CT"
+
+  val headers = List(
+    missedWTSSHeader, spuriousWTSSHeader, koWithInexactCTHeader
+  )
+
   def evaluateModelBehavior(
     labelToFun: Map[String, FunExpr]
   ): Map[String, Any] = {
     Map(
-      "Missed WT SS" ->
+      missedWTSSHeader ->
         findMissedFixpoints(labelToFun).size,
-      "Spurious WT SS" ->
+      spuriousWTSSHeader ->
         findUnexpectedFixpoints(labelToFun).size,
-      "KO w/ inexact CT" ->
+      koWithInexactCTHeader ->
         nbKOwithWrongCellTypes(labelToFun)
     )
   }
