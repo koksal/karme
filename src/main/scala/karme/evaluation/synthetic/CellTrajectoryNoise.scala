@@ -5,13 +5,12 @@ import karme.CellTrajectories.CellTrajectory
 import scala.util.Random
 
 class CellTrajectoryNoise(
-  sigma: Double
+  sigma: Double,
+  random: Random
 ) {
 
-  val rand = new Random(1)
-
   def noise(): Double = {
-    rand.nextGaussian() * sigma
+    random.nextGaussian() * sigma
   }
 
   def addNoise(t: CellTrajectory): CellTrajectory = {

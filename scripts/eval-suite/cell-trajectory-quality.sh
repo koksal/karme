@@ -9,10 +9,14 @@ else
   shift
 fi
 
-for sigma in 0 0.1 0.2 0.5 1 2
+for replicate in `seq 2 5`
 do
-  ./scripts/run-synthetic-workflow.sh \
-    $OUTFOLDER_BASE/cell-trajectory-quality/sigma=$sigma \
-    --cell-trajectory-noise-sigma $sigma \
-    $*
+  for sigma in 0.1 0.2 0.5 1 2
+  do
+    ./scripts/run-synthetic-workflow.sh \
+      $OUTFOLDER_BASE/cell-trajectory-quality/sigma=$sigma/replicate-$replicate \
+      --cell-trajectory-noise-sigma $sigma \
+      --random-seed $replicate \
+      $*
+  done
 done

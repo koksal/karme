@@ -69,7 +69,7 @@ object Workflow {
     var (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithTrimmedStateGraph(hiddenModel, initialStates)
 
-    trajectory = new CellTrajectoryNoise(cellTrajectoryNoiseSigma)
+    trajectory = new CellTrajectoryNoise(cellTrajectoryNoiseSigma, random)
       .addNoise(trajectory)
 
     val timeTuples = simulationGraph.V.map { v =>
