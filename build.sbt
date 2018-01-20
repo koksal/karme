@@ -11,7 +11,7 @@ lazy val root = (project in file(".")).
   settings(
     name := "karme",
     libraryDependencies ++= Seq(
-      "com.github.scopt" %% "scopt" % "3.5.0",
+      "com.github.scopt" %% "scopt" % "3.7.0",
       "org.ddahl" %% "rscala" % "2.2.2",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test",

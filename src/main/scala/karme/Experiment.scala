@@ -2,12 +2,21 @@ package karme
 
 import karme.synthesis.Transitions.{ConcreteBooleanState, GenericState}
 import karme.transformations.discretization.MclustInterface
+import karme.util.UniqueCounter
 
 import scala.collection.mutable
 
 object Experiments {
 
   case class Measurement[T](id: String, state: GenericState[T])
+
+  private val measurementIdCounter = new UniqueCounter()
+
+  def makeMeasurementId(): String = "m" + measurementIdCounter.next
+  def makeMeasurement(s: ConcreteBooleanState): Measurement[Boolean] = {
+    Measurement(makeMeasurementId(), s)
+  }
+
 
   case class Experiment[T](
     measurements: Seq[Measurement[T]]
@@ -133,18 +142,6 @@ object Experiments {
     }
 
     e.copy(measurements = threeValuedMs)
-  }
-
-  def booleanStatesToExperiment(
-    ss: Set[ConcreteBooleanState]
-  ): BooleanExperiment = {
-    assert(ss.nonEmpty)
-    val measurements = ss.toSeq.zipWithIndex map {
-      case (s, i) =>
-        val id = s"m_$i"
-        Measurement(id, s)
-    }
-    Experiment(measurements)
   }
 
   def threeValuedToBooleanSet(v: ThreeValued): Set[Boolean] = v match {

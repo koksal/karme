@@ -31,7 +31,13 @@ object StateGraphs {
   type UndirectedBooleanStateGraph = UnlabeledGraph[StateGraphVertex]
   type DirectedBooleanStateGraph = UnlabeledDiGraph[StateGraphVertex]
 
-  val stateGraphVertexCounter = new UniqueCounter()
+  private val stateGraphVertexCounter = new UniqueCounter()
+
+  def makeNode(
+    state: ConcreteBooleanState, measurements: Seq[BooleanMeasurement]
+  ): StateGraphVertex = {
+    StateGraphVertex(s"v${stateGraphVertexCounter.next}", state, measurements)
+  }
 
   def namesFromStateGraph(g: GraphLike[StateGraphVertex, _, _]): Set[String] = {
     g.V.headOption match {
@@ -50,12 +56,6 @@ object StateGraphs {
     }
 
     V.toSet
-  }
-
-  def makeNode(
-    state: ConcreteBooleanState, measurements: Seq[BooleanMeasurement]
-  ): StateGraphVertex = {
-    StateGraphVertex(s"v${stateGraphVertexCounter.next}", state, measurements)
   }
 
   /**

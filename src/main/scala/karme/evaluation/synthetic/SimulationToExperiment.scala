@@ -1,13 +1,66 @@
 package karme.evaluation.synthetic
 
 import karme.CellTrajectories.CellTrajectory
+import karme.Experiments
+import karme.Experiments.BooleanExperiment
+import karme.Experiments.BooleanMeasurement
 import karme.Experiments.Experiment
-import karme.Experiments.Measurement
+import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.UniqueCounter
 
-import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
-object SimulationToExperiment {
+class SimulationToExperiment(random: Random)(
+  temporalNoiseSigma: Double,
+  measurementNoiseProbability: Double,
+  measurementDropProbability: Double
+) {
+
+  val NB_OBS_PER_STATE = 100
+
+  val temporalNoise = new TemporalNoise(random)(temporalNoiseSigma)
+  val measurementNoise = new MeasurementNoise(random)(measurementNoiseProbability)
+
+  def generateExperiment(
+    baseStateGraph: DirectedBooleanStateGraph,
+    baseTrajectory: CellTrajectory
+  ): (BooleanExperiment, CellTrajectory) = {
+    // generate measurements and times from each timed boolean state
+
+    var measurements = Set[BooleanMeasurement]()
+    var trajectory = Map[String, Double]()
+
+    for (v <- baseStateGraph.V) {
+      val vTimes = v.measurements.map(m => baseTrajectory(m.id))
+      assert(vTimes.toSet.size == 1)
+
+      val (newMs, newTraj) = generateObservationsForState(v.state, vTimes.head)
+      measurements ++= newMs
+      trajectory ++= newTraj
+    }
+
+    (Experiment(measurements.toSeq), trajectory)
+  }
+
+  def generateObservationsForState(
+    baseState: ConcreteBooleanState,
+    baseTime: Double
+  ): (Set[BooleanMeasurement], CellTrajectory) = {
+    var observations = Set[BooleanMeasurement]()
+    var trajectory = Map[String, Double]()
+
+    for (i <- 1 to NB_OBS_PER_STATE) {
+      val time = temporalNoise.addNoise(baseTime)
+      val measuredState = measurementNoise.addNoise(baseState)
+
+      if (random.nextDouble() >= measurementDropProbability) {
+        val measurement = Experiments.makeMeasurement(measuredState)
+        observations += measurement
+        trajectory += measurement.id -> time
+      }
+    }
+
+    (observations, trajectory)
+  }
 
 }

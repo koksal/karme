@@ -5,6 +5,7 @@ import karme.Opts
 import karme.Reporter
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
+import karme.graphs.StateGraphs
 import karme.printing.LatexFunctionLogger
 import karme.printing.SynthesisResultLogger
 import karme.simulation.AsyncBooleanNetworkSimulation
@@ -14,7 +15,6 @@ import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.DistributionComparisonTest
 import karme.transformations.NodePartialOrderByTrajectoryComparison
-import karme.transformations.OracleNodePartialOrder
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
@@ -32,10 +32,12 @@ object Workflow {
       random = new Random(opts.syntheticEvalOpts.randomSeed),
       cellTrajectoryNoiseSigma =
         opts.syntheticEvalOpts.cellTrajectoryNoiseSigma,
+      measurementNoiseProbability =
+        opts.syntheticEvalOpts.measurementNoiseProbability,
+      measurementDropProbability =
+        opts.syntheticEvalOpts.measurementDropProbability,
       randomizedInitialStateInclusionRatio =
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
-      nodeDeletionRatio = opts.syntheticEvalOpts.nodeDeletionRatio,
-      nodePartialOrderType = opts.syntheticEvalOpts.nodePartialOrderType,
       distributionComparisonTest = DistributionComparisonTest.fromOptions(
         opts.inputTransformerOpts.distributionComparisonMethod),
       distCompPValueThreshold =
@@ -49,9 +51,9 @@ object Workflow {
     defaultInitialStates: Set[ConcreteBooleanState],
     random: Random,
     cellTrajectoryNoiseSigma: Double,
+    measurementNoiseProbability: Double,
+    measurementDropProbability: Double,
     randomizedInitialStateInclusionRatio: Option[Double],
-    nodeDeletionRatio: Double,
-    nodePartialOrderType: String,
     distributionComparisonTest: DistributionComparisonTest,
     distCompPValueThreshold: Double,
     behaviorEvalFun: Map[String, FunExpr] => Map[String, Any]
@@ -59,54 +61,47 @@ object Workflow {
     // modify initial states per extension ratio
     val initialStates = randomizedInitialStateInclusionRatio match {
       case Some(ratio) => {
-        StateSetExtension
-          .randomStateSet(defaultInitialStates.head.orderedKeys, ratio, random)
+        new StateSetExtension(random)
+          .randomStateSet(defaultInitialStates.head.orderedKeys, ratio)
       }
       case None => defaultInitialStates
     }
 
     // run simulation
-    var (simulationGraph, trajectory) = AsyncBooleanNetworkSimulation
+    val (baseStateGraph, baseTrajectory) = AsyncBooleanNetworkSimulation
       .simulateOneStepWithTrimmedStateGraph(hiddenModel, initialStates)
 
-    trajectory = new CellTrajectoryNoise(cellTrajectoryNoiseSigma, random)
-      .addNoise(trajectory)
-
-    val timeTuples = simulationGraph.V.map { v =>
+    val timeTuples = baseStateGraph.V.map { v =>
       Map(
         "v" -> v.id,
-        "times" -> v.measurements.map(m => trajectory(m.id)).mkString(", ")
+        "times" -> v.measurements.map(m => baseTrajectory(m.id)).mkString(", ")
       )
     }
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       List("v", "times"),
       timeTuples.toSeq.sortBy(row => row("v")),
-      reporter.file("simulated-trajectory.txt")
+      reporter.file("cell-trajectory-before-noise.tsv")
     )
 
-    // build node partial order
-    val nodePartialOrder = nodePartialOrderType match {
-      case "oracle" => {
-        new OracleNodePartialOrder(simulationGraph).partialOrdering
-      }
-      case "comparison" => {
-        new NodePartialOrderByTrajectoryComparison(
-          simulationGraph.V.toSeq,
-          Seq(trajectory),
-          distributionComparisonTest,
-          distCompPValueThreshold
-        ).partialOrdering
-      }
-    }
+    val (experiment, trajectory) = new SimulationToExperiment(random)(
+      cellTrajectoryNoiseSigma,
+      measurementNoiseProbability,
+      measurementDropProbability
+    ).generateExperiment(baseStateGraph, baseTrajectory)
 
-    // remove nodes per deletion ratio
-    // TODO? delete measurements, not graph nodes.
-    val observedNodes = StateGraphPerturbation
-      .deleteNodes(simulationGraph, nodeDeletionRatio, random).V
+    val nodes = StateGraphs.nodesFromExperiment(experiment)
+
+    // build node partial order
+    val nodePartialOrder = new NodePartialOrderByTrajectoryComparison(
+      nodes.toSeq,
+      Seq(trajectory),
+      distributionComparisonTest,
+      distCompPValueThreshold
+    ).partialOrdering
 
     // evaluate simulation transition completeness w.r.t. all H-1 edges.
     val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
-      .transitionToAll1HammingRatio(simulationGraph)
+      .transitionToAll1HammingRatio(baseStateGraph)
     TSVUtil.saveOrderedTuples(
       List("transition to H-1 edge ratio"),
       List(List(transitionToH1EdgeRatio)),
@@ -115,21 +110,21 @@ object Workflow {
 
     // evaluate edge orientation
     val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
-      simulationGraph, nodePartialOrder)
+      baseStateGraph, nodePartialOrder)
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       EdgeOrientationEval.headers,
       Seq(orientationEvalTuples),
-      reporter.file("orientation-eval.tsv")
+      reporter.file("node-partial-order-eval.tsv")
     )
 
     // reconstruct graph
     val graphForSynthesis = new StateGraphReconstruction()
-      .reconstructStateGraph(observedNodes, nodePartialOrder)
+      .reconstructStateGraph(nodes, nodePartialOrder)
 
     // evaluate graph reconstruction
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       GraphComparison.headers,
-      Seq(GraphComparison.diffGraphs(simulationGraph, graphForSynthesis)),
+      Seq(GraphComparison.diffGraphs(baseStateGraph, graphForSynthesis)),
       reporter.file("graph-diff.tsv")
     )
 

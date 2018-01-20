@@ -6,12 +6,11 @@ import karme.util.CollectionUtil
 
 import scala.util.Random
 
-object StateSetExtension {
+class StateSetExtension(random: Random) {
 
   def randomStateSet(
     variables: Seq[String],
-    stateInclusionRatio: Double,
-    random: Random
+    stateInclusionRatio: Double
   ): Set[ConcreteBooleanState] = {
     val allStates = new ExhaustiveStateEnumeration(variables)
       .enumerateAllStates()

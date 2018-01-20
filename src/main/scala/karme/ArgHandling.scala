@@ -274,19 +274,19 @@ object ArgHandling {
           cellTrajectoryNoiseSigma = v))
       }
 
+      opt[Double]("measurement-noise-prob") action { (v, o) =>
+        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
+          measurementNoiseProbability = v))
+      }
+
+      opt[Double]("measurement-drop-prob") action { (v, o) =>
+        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
+          measurementDropProbability = v))
+      }
+
       opt[Double]("randomized-initial-states-ratio") action { (v, o) =>
         o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
           randomizedInitialStateInclusionRatio = Some(v)))
-      }
-
-      opt[Double]("node-deletion-ratio") action { (v, o) =>
-        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
-          nodeDeletionRatio = v))
-      }
-
-      opt[String]("partial-order") action { (s, o) =>
-        o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
-          nodePartialOrderType = s))
       }
 
       help("help") text "print this help message"

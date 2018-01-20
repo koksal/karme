@@ -1,6 +1,7 @@
 package karme.simulation
 
 import karme.CellTrajectories.CellTrajectory
+import karme.Experiments
 import karme.Experiments.Measurement
 import karme.evaluation.synthetic.FixpointStates
 import karme.graphs.Graphs.UnlabeledDiGraph
@@ -149,22 +150,14 @@ object AsyncBooleanNetworkSimulation {
     stateTransitionFunction: ConcreteBooleanState => Set[ConcreteBooleanState],
     allowDifferentArrivalTimes: Boolean
   ): (DirectedBooleanStateGraph, CellTrajectory) = {
-    val measurementCounter = new UniqueCounter
-
     var stateToMeasurements =
       Map[ConcreteBooleanState, Set[Measurement[Boolean]]]()
     var stateToTargetStates =
       Map[ConcreteBooleanState, Set[ConcreteBooleanState]]()
     var measurementIDToTimestamp = Map[String, Double]()
 
-    def makeMeasurementId(): String = "m" + measurementCounter.next
-
-    def makeMeasurement(s: ConcreteBooleanState): Measurement[Boolean] = {
-      Measurement(makeMeasurementId(), s)
-    }
-
     def addMeasurement(s: ConcreteBooleanState, t: Int) = {
-      val m = makeMeasurement(s)
+      val m = Experiments.makeMeasurement(s)
       stateToMeasurements = MapUtil.addBinding(stateToMeasurements, s, m)
       measurementIDToTimestamp += m.id -> t
     }

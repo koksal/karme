@@ -9,9 +9,9 @@ else
   shift
 fi
 
-for replicate in `seq 2 5`
+for replicate in `seq 0 0`
 do
-  for sigma in 0.1 0.2 0.5 1 2
+  for sigma in 0 0.1 0.2 0.5 1 2
   do
     ./scripts/run-synthetic-workflow.sh \
       $OUTFOLDER_BASE/cell-trajectory-quality/sigma=$sigma/replicate-$replicate \
