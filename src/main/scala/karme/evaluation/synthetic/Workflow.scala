@@ -108,15 +108,6 @@ object Workflow {
       reporter.file("transition-to-h-1-edge-ratio.txt")
     )
 
-    // evaluate edge orientation
-    val orientationEvalTuples = new EdgeOrientationEval().evaluateOrientation(
-      baseStateGraph, nodePartialOrder)
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
-      EdgeOrientationEval.headers,
-      Seq(orientationEvalTuples),
-      reporter.file("node-partial-order-eval.tsv")
-    )
-
     // reconstruct graph
     val graphForSynthesis = new StateGraphReconstruction()
       .reconstructStateGraph(nodes, nodePartialOrder)
