@@ -11,7 +11,8 @@ object TableAggregation {
     }
 
     val headerRows = data.map(_._1)
-    assert(headerRows.toSet.size == 1)
+    assert(headerRows.toSet.size == 1,
+      s"Different headers: ${headerRows.toSet}")
     val headers = headerRows.head
 
     val runIDs = inFileNames map stripRunID

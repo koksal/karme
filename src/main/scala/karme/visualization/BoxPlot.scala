@@ -9,9 +9,8 @@ class BoxPlot extends AbstractRInterface {
   override def LIBRARIES = Seq("ggplot2")
 
   def plot(
-    labelToValues: Map[String, Iterable[Double]],
-    outPrefix: String,
-    outFolder: File
+    labelToValues: Iterable[(String, Iterable[Double])],
+    f: File
   ): Unit = {
     var dataList = List[Double]()
     var labelArray = Array[String]()
@@ -25,11 +24,8 @@ class BoxPlot extends AbstractRInterface {
     R.set("labels", labelArray)
     R.eval("data <- data.frame(value = values, label = labels)")
 
-    R.eval("plot = ggplot(data, aes(label, value)) + geom_boxplot()")
-
-    val folder = new File(outFolder, "box-plots")
-    folder.mkdirs()
-    val f = new File(folder, s"$outPrefix.pdf")
+    R.eval("plot = ggplot(data, aes(label, value)) + geom_boxplot() " +
+      "+ geom_jitter(height = 0.0)")
 
     R.set("fname", f.getAbsolutePath())
     R.eval("ggsave(plot, file = fname)")

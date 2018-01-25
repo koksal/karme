@@ -11,15 +11,13 @@ else
   shift
 fi
 
-SIGMAS=(0 0.1 0.2 0.5 1 2)
-
 for replicate in `seq 1 $REPLICATES`
 do
-  for sigma in ${SIGMAS[*]}
+  for drop_p in 0 0.5 0.99
   do
     ./scripts/run-synthetic-workflow.sh \
-      $OUTFOLDER_BASE/cell-trajectory-quality/sigma=$sigma/replicate-$replicate \
-      --cell-trajectory-noise-sigma $sigma \
+      $OUTFOLDER_BASE/resolution/p=$drop_p/replicate-$replicate \
+      --measurement-drop-prob $drop_p \
       --random-seed $replicate \
       $*
   done

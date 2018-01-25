@@ -1,5 +1,7 @@
 package karme.evaluation.synthetic
 
+import java.io.File
+
 import karme.ArgHandling
 import karme.Opts
 import karme.Reporter
@@ -41,8 +43,7 @@ object Workflow {
       distributionComparisonTest = DistributionComparisonTest.fromOptions(
         opts.inputTransformerOpts.distributionComparisonMethod),
       distCompPValueThreshold =
-        opts.inputTransformerOpts.distributionComparisonPValue,
-      behaviorEvalFun = MyeloidModelEvaluation.evaluateModelBehavior
+        opts.inputTransformerOpts.distributionComparisonPValue
     )
   }
 
@@ -55,8 +56,7 @@ object Workflow {
     measurementDropProbability: Double,
     randomizedInitialStateInclusionRatio: Option[Double],
     distributionComparisonTest: DistributionComparisonTest,
-    distCompPValueThreshold: Double,
-    behaviorEvalFun: Map[String, FunExpr] => Map[String, Any]
+    distCompPValueThreshold: Double
   )(implicit reporter: Reporter, opts: Opts): Unit = {
     // modify initial states per extension ratio
     val initialStates = randomizedInitialStateInclusionRatio match {
@@ -145,103 +145,39 @@ object Workflow {
       reporter.file("hard-partition-sizes-per-gene.tsv")
     )
 
-    val resultCombinations = SynthesisResult.makeCombinations(synthesisResults)
+    val bestSynthesisResults = pickBestResults(synthesisResults)
+
+    val models = SynthesisResult.makeCombinations(bestSynthesisResults)
 
     TSVUtil.saveOrderedTuples(
       List("# models"),
-      List(List(resultCombinations.size)),
+      List(List(models.size)),
       reporter.file("number-of-models.tsv")
     )
 
-    // evaluate behavior, function similarity, state spaces
-    val behaviorEvalTuples = resultCombinations map { c =>
-      List(behaviorEvalFun(c))
-    }
-    printPerModelTuples(
-      MyeloidModelEvaluation.headers,
-      Nil,
-      behaviorEvalTuples,
-      "stable-state-reachability-across-conditions"
-    )
-
-    val funSimilarityPerModel = resultCombinations map { c =>
-      FunSimilarityEval.evaluateFunSimilarity(hiddenModel, c)
-    }
-    printPerModelTuples(
-      FunSimilarityEval.orderedHeaders,
-      List(FunSimilarityEval.geneHeader),
-      funSimilarityPerModel,
-      "function-similarity"
-    )
-
-    val perturbedFixpointEvalPerModel = resultCombinations map { c =>
-      InitialStatePerturbationEval.compareModelsForFixpointsFromPerturbedStates(
-        hiddenModel, c, initialStates
-      )
-    }
-    printPerModelTuples(
-      InitialStatePerturbationEval.headers,
-      List(InitialStatePerturbationEval.geneHeader),
-      perturbedFixpointEvalPerModel,
-      "stable-state-reachability-across-environments"
-    )
-
-    val perturbedReachabilityEvalPerModel = resultCombinations map {
-      c =>
-        InitialStatePerturbationEval
-          .compareModelsForReachableStatesFromPerturbedStates(
-            hiddenModel, c, initialStates)
-    }
-    printPerModelTuples(
-      InitialStatePerturbationEval.headers,
-      List(InitialStatePerturbationEval.geneHeader),
-      perturbedReachabilityEvalPerModel,
-      "all-state-reachability-across-environments"
-    )
-
-    val stateSpaceEvalTuples = resultCombinations map { c =>
-      StateSpaceEval.compareStateSpaces(graphForSynthesis, c, initialStates)
-    }
     TSVUtil.saveTupleMapsWithOrderedHeaders(
-      StateSpaceEval.headers,
-      stateSpaceEvalTuples,
-      reporter.file("state-space-reproduction-eval.tsv"))
+      ClassificationEval.headers,
+      models map MyeloidModelEvaluation.evaluateWildTypeBehavior,
+      reporter.file(s"stable-state-reachability-wildtype.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models flatMap MyeloidModelEvaluation.evaluateKnockoutBehavior,
+      reporter.file(s"stable-state-reachability-knockouts.tsv")
+    )
 
   }
 
-  def printPerModelTuples(
-    orderedHeaders: Seq[String],
-    colsToExpand: Seq[String],
-    rowsPerModel: Seq[Seq[Map[String, Any]]],
-    prefix: String
-  )(implicit reporter: Reporter): Unit = {
-    for ((modelRows, i) <- rowsPerModel.zipWithIndex) {
-      TSVUtil.saveTupleMapsWithOrderedHeaders(
-        orderedHeaders,
-        modelRows,
-        reporter.file(s"$prefix-$i.tsv")
-      )
+  def pickBestResults(
+    results: Map[String, Set[SynthesisResult]]
+  ): Map[String, SynthesisResult] = {
+    val nonemptyResults = results filter (_._2.nonEmpty)
+    nonemptyResults map {
+      case (label, rs) => {
+        label -> rs.maxBy(r => r.transitions.map(_.weight).sum)
+      }
     }
-
-    val medianRows = TSVUtil.takeRowsMedian(colsToExpand, rowsPerModel.flatten)
-    val minRows = TSVUtil.takeRowsMin(colsToExpand, rowsPerModel.flatten)
-    val maxRows = TSVUtil.takeRowsMax(colsToExpand, rowsPerModel.flatten)
-
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
-      orderedHeaders,
-      medianRows,
-      reporter.file(s"$prefix-median.tsv")
-    )
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
-      orderedHeaders,
-      minRows,
-      reporter.file(s"$prefix-min.tsv")
-    )
-    TSVUtil.saveTupleMapsWithOrderedHeaders(
-      orderedHeaders,
-      maxRows,
-      reporter.file(s"$prefix-max.tsv")
-    )
   }
 
 }

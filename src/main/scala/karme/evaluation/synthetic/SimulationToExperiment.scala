@@ -5,6 +5,7 @@ import karme.Experiments
 import karme.Experiments.BooleanExperiment
 import karme.Experiments.BooleanMeasurement
 import karme.Experiments.Experiment
+import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.synthesis.Transitions.ConcreteBooleanState
 
@@ -17,6 +18,9 @@ class SimulationToExperiment(random: Random)(
 ) {
 
   val NB_OBS_PER_STATE = 100
+
+  val protectedStates =
+    MyeloidModel.stableStates() + MyeloidModel.makeInitialState()
 
   val temporalNoise = new TemporalNoise(random)(temporalNoiseSigma)
   val measurementNoise = new MeasurementNoise(random)(measurementNoiseProbability)
@@ -49,11 +53,18 @@ class SimulationToExperiment(random: Random)(
     var observations = Set[BooleanMeasurement]()
     var trajectory = Map[String, Double]()
 
+    val stateIsProtected = protectedStates.contains(baseState)
+
     for (i <- 1 to NB_OBS_PER_STATE) {
       val time = temporalNoise.addNoise(baseTime)
-      val measuredState = measurementNoise.addNoise(baseState)
+      val measuredState = if (stateIsProtected) {
+        baseState
+      } else {
+        measurementNoise.addNoise(baseState)
+      }
 
-      if (random.nextDouble() >= measurementDropProbability) {
+      if (stateIsProtected ||
+        random.nextDouble() >= measurementDropProbability) {
         val measurement = Experiments.makeMeasurement(measuredState)
         observations += measurement
         trajectory += measurement.id -> time

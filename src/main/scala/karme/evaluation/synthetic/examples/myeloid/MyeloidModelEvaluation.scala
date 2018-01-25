@@ -1,55 +1,33 @@
 package karme.evaluation.synthetic.examples.myeloid
 
 import karme.evaluation.PerturbationAnalysis
+import karme.evaluation.synthetic.ClassificationEval
 import karme.evaluation.synthetic.FixpointStates
+import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.Transitions.ConcreteBooleanState
 
 object MyeloidModelEvaluation {
 
-  val missedWTSSHeader = "Missed WT SS"
-  val spuriousWTSSHeader = "Spurious WT SS"
-  val koWithInexactCTHeader = "KO w/ inexact CT"
-
-  val headers = List(
-    missedWTSSHeader, spuriousWTSSHeader, koWithInexactCTHeader
-  )
-
-  def evaluateModelBehavior(
+  def evaluateWildTypeBehavior(
     labelToFun: Map[String, FunExpr]
   ): Map[String, Any] = {
-    Map(
-      missedWTSSHeader ->
-        findMissedFixpoints(labelToFun).size,
-      spuriousWTSSHeader ->
-        findUnexpectedFixpoints(labelToFun).size,
-      koWithInexactCTHeader ->
-        nbKOwithWrongCellTypes(labelToFun)
+    val simulationFixpoints = FixpointStates.findSimulationFixpoints(
+      labelToFun, Set(MyeloidModel.makeInitialState()))
+    val expectedFixpoints = MyeloidModel.stableStates()
+    val allStates = new ExhaustiveStateEnumeration(
+      MyeloidModel.makeInitialState().orderedKeys).enumerateAllStates()
+
+    ClassificationEval.evaluate(
+      simulationFixpoints,
+      expectedFixpoints,
+      allStates -- expectedFixpoints
     )
   }
 
-  def findMissedFixpoints(
+  def evaluateKnockoutBehavior(
     labelToFun: Map[String, FunExpr]
-  ): Set[ConcreteBooleanState] = {
-    val simulationFixpoints = FixpointStates.findSimulationFixpoints(
-      labelToFun, Set(MyeloidModel.makeInitialState()))
-    val expectedFixpoints = MyeloidModel.stableStates()
-    expectedFixpoints -- simulationFixpoints
-  }
-
-  def findUnexpectedFixpoints(
-    labelToFun: Map[String, FunExpr]
-  ): Set[ConcreteBooleanState] = {
-    val simulationFixpoints = FixpointStates.findSimulationFixpoints(
-      labelToFun, Set(MyeloidModel.makeInitialState()))
-    val expectedFixpoints = MyeloidModel.stableStates()
-    simulationFixpoints -- expectedFixpoints
-  }
-
-  def nbKOwithWrongCellTypes(labelToFun: Map[String, FunExpr]): Int = {
-    var nbDisagreeing = 0
-
-    for (ke <- MyeloidModel.knockoutExperiments()) {
+  ): Seq[Map[String, Any]] = {
+    for (ke <- MyeloidModel.knockoutExperiments()) yield {
       val perturbedFuns = PerturbationAnalysis.knockoutVariable(labelToFun,
         ke.knockoutVar)
 
@@ -65,13 +43,12 @@ object MyeloidModelEvaluation {
 
       val fixpointCellTypeIds = simFixpointCellTypes.keySet
 
-      if (fixpointCellTypeIds != ke.observedOriginalAttractors) {
-        nbDisagreeing += 1
-      }
-
+      ClassificationEval.evaluate(
+        fixpointCellTypeIds,
+        ke.observedOriginalAttractors,
+        MyeloidModel.allCellTypeIDs -- ke.observedOriginalAttractors
+      )
     }
-
-    nbDisagreeing
   }
 
 }

@@ -27,6 +27,8 @@ object MyeloidModel {
   val s3 = "s3"
   val s4 = "s4"
 
+  val allCellTypeIDs = Set(s1, s2, s3, s4)
+
   def stableStates(): Set[ConcreteBooleanState] = {
     namedStableStates().values.toSet
   }
