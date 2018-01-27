@@ -1,16 +1,14 @@
 package karme.synthesis
 
 import karme.evaluation.FunExprSimilarity
-import karme.{Reporter, SynthOpts}
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.printing.LatexPrinting
 import karme.synthesis.FunctionTrees._
 import karme.synthesis.Transitions._
 import karme.synthesis.Trees._
 import karme.transformations.TransitionProducer
-import karme.util.FileUtil
-import karme.util.TimingUtil
+import karme.util.{FileUtil, TimingUtil}
+import karme.{Reporter, SynthOpts}
 
 class Synthesizer(opts: SynthOpts, reporter: Reporter) {
 

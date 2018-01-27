@@ -7,8 +7,8 @@ import karme._
 import karme.evaluation.Evaluation.ScoredPrediction
 import karme.evaluation.PredictionTypes.{FunIOPairsPrediction, PrecedencePairsPrediction}
 import karme.store.ClusteringStore
-import karme.transformations.{EdgePrecedence, RankSumTest}
 import karme.transformations.clustering.ReferenceClustering
+import karme.transformations.{EdgePrecedence, RankSumTest}
 import karme.util.{CollectionUtil, FileUtil, MathUtil}
 import karme.visualization.HistogramPlotInterface
 

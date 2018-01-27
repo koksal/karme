@@ -1,24 +1,16 @@
 package karme.evaluation.synthetic
 
-import java.io.File
-
-import karme.ArgHandling
-import karme.Opts
-import karme.Reporter
-import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
-import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
+import karme.evaluation.synthetic.examples.myeloid.{MyeloidModel, MyeloidModelEvaluation}
 import karme.graphs.StateGraphs
-import karme.printing.LatexFunctionLogger
-import karme.printing.SynthesisResultLogger
+import karme.printing.{LatexFunctionLogger, SynthesisResultLogger}
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.SynthesisResult
-import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.transformations.DistributionComparisonTest
-import karme.transformations.NodePartialOrderByTrajectoryComparison
+import karme.synthesis.{SynthesisResult, Synthesizer}
+import karme.transformations.{DistributionComparisonTest, NodePartialOrderByTrajectoryComparison}
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
+import karme.{ArgHandling, Opts, Reporter}
 
 import scala.util.Random
 

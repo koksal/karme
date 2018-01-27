@@ -4,17 +4,10 @@ import java.io.File
 
 import com.github.tototoshi.csv.CSVWriter
 import karme.Reporter
-import karme.graphs.Graphs.Backward
-import karme.graphs.Graphs.EdgeDirection
-import karme.graphs.Graphs.Forward
-import karme.graphs.Graphs.UnlabeledEdge
+import karme.graphs.Graphs.{Backward, EdgeDirection, Forward, UnlabeledEdge}
 import karme.graphs.StateGraphs
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.graphs.StateGraphs.UndirectedBooleanStateGraph
-import karme.graphs.StateGraphs.UndirectedStateGraphOps
-import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.synthesis.Transitions.Transition
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex, UndirectedBooleanStateGraph, UndirectedStateGraphOps}
+import karme.synthesis.Transitions.{ConcreteBooleanState, Transition}
 
 class StateGraphPlotter(val reporter: Reporter) extends GraphPlotter {
 

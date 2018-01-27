@@ -1,24 +1,10 @@
 package karme.evaluation.synthetic
 
-import karme.Opts
-import karme.Reporter
-import karme.evaluation.PerturbationAnalysis
-import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
-import karme.graphs.Graphs.Forward
-import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.printing.SynthesisResultLogger
-import karme.simulation.AsyncBooleanNetworkSimulation
-import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.SynthesisResult
-import karme.synthesis.Synthesizer
+import karme.graphs.Graphs.{Forward, UnlabeledEdge}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.FileUtil
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
-import karme.visualization.graph.NetworkGraphPlotter
-import karme.visualization.graph.StateGraphPlotter
 
 object SyntheticWorkflow {
 

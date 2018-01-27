@@ -3,10 +3,10 @@ package karme.transformations
 import com.github.tototoshi.csv.CSVWriter
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.{CellTrajectories, PredictionLibrary, Reporter}
 import karme.transformations.ExpressionDerivation.{Downregulated, ExpressionDerivative, Unchanged, Upregulated}
 import karme.util.MathUtil
 import karme.visualization.HistogramPlotInterface
+import karme.{CellTrajectories, PredictionLibrary, Reporter}
 
 import scala.collection.mutable.ListBuffer
 

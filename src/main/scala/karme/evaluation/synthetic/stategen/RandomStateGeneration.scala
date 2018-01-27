@@ -1,7 +1,6 @@
 package karme.evaluation.synthetic.stategen
 
-import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.synthesis.Transitions.GenericState
+import karme.synthesis.Transitions.{ConcreteBooleanState, GenericState}
 
 import scala.util.Random
 

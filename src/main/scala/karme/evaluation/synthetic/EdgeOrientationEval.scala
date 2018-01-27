@@ -1,11 +1,8 @@
 package karme.evaluation.synthetic
 
 import karme.Reporter
-import karme.graphs.Graphs.Backward
-import karme.graphs.Graphs.Forward
-import karme.graphs.Graphs.UnlabeledEdge
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
+import karme.graphs.Graphs.{Backward, Forward, UnlabeledEdge}
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.visualization.graph.StateGraphPlotter
 
 class EdgeOrientationEval(implicit reporter: Reporter) {

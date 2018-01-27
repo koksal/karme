@@ -3,14 +3,13 @@ package karme.simulation
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments
 import karme.Experiments.Measurement
-import karme.evaluation.synthetic.FixpointStates
 import karme.graphs.Graphs.UnlabeledDiGraph
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.synthesis.FunctionTrees
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.{CollectionUtil, MapUtil, TimingUtil, UniqueCounter}
+import karme.util.{CollectionUtil, MapUtil, TimingUtil}
 
 object AsyncBooleanNetworkSimulation {
 

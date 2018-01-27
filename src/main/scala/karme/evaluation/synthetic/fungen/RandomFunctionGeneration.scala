@@ -1,12 +1,7 @@
 package karme.evaluation.synthetic.fungen
 import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.NetworkTopologyGraph
 import karme.synthesis.FunctionTrees
-import karme.synthesis.FunctionTrees.FunAnd
-import karme.synthesis.FunctionTrees.FunConst
-import karme.synthesis.FunctionTrees.FunExpr
-import karme.synthesis.FunctionTrees.FunNot
-import karme.synthesis.FunctionTrees.FunOr
-import karme.synthesis.FunctionTrees.FunVar
+import karme.synthesis.FunctionTrees._
 
 import scala.util.Random
 

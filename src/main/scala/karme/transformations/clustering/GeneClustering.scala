@@ -1,9 +1,9 @@
 package karme.transformations.clustering
 
-import karme.{Clustering, ClusteringOpts}
 import karme.Experiments.{Experiment, Measurement}
 import karme.synthesis.Transitions.GenericState
 import karme.util.MathUtil
+import karme.{Clustering, ClusteringOpts}
 
 class GeneClustering(opts: ClusteringOpts) {
 

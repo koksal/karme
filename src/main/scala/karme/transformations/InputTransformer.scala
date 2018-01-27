@@ -2,15 +2,15 @@ package karme.transformations
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.{BooleanExperiment, ContinuousExperiment, Experiment}
+import karme._
 import karme.graphs.StateGraphs
 import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
 import karme.transformations.clustering.GeneClustering
 import karme.transformations.discretization.Discretization
 import karme.transformations.smoothing.BinomialMLE
 import karme.util.NamingUtil
-import karme.visualization.{CurvePlot, ExperimentHistogramPlotter}
-import karme._
 import karme.visualization.graph.StateGraphPlotter
+import karme.visualization.{CurvePlot, ExperimentHistogramPlotter}
 
 case class TransformResult(
   graph: DirectedBooleanStateGraph,

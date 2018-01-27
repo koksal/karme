@@ -5,8 +5,8 @@ import java.io.File
 import karme.Reporter
 import karme.util.FileUtil
 
-import scala.sys.process._
 import scala.language.postfixOps
+import scala.sys.process._
 
 trait GraphPlotter {
 

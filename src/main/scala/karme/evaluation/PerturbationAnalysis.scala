@@ -1,14 +1,13 @@
 package karme.evaluation
 
-import karme.{Clustering, Reporter}
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees
-import karme.synthesis.FunctionTrees.FunConst
-import karme.synthesis.FunctionTrees.{FunExpr, FunVar}
+import karme.synthesis.FunctionTrees.{FunConst, FunExpr, FunVar}
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.MathUtil
 import karme.visualization.graph.StateGraphPlotter
+import karme.{Clustering, Reporter}
 
 /**
   * Perturbs initial states and functions, and assesses reachability of genes

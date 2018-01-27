@@ -4,8 +4,8 @@ import java.io.File
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments.Experiment
-import karme.{CellTrajectories, Reporter}
 import karme.util.MathUtil
+import karme.{CellTrajectories, Reporter}
 
 import scala.reflect.ClassTag
 

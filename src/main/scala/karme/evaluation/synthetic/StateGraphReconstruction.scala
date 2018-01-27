@@ -1,10 +1,8 @@
 package karme.evaluation.synthetic
 
 import karme.Reporter
-import karme.graphs.StateGraphs.DirectedBooleanStateGraph
-import karme.graphs.StateGraphs.StateGraphVertex
-import karme.transformations.IncrementalStateGraphBuilder
-import karme.transformations.MultiHammingEdgeExpansion
+import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
+import karme.transformations.{IncrementalStateGraphBuilder, MultiHammingEdgeExpansion}
 
 class StateGraphReconstruction(implicit reporter: Reporter) {
 

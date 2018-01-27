@@ -1,8 +1,7 @@
 package karme.evaluation.synthetic.examples.myeloid
 
 import karme.evaluation.PerturbationAnalysis
-import karme.evaluation.synthetic.ClassificationEval
-import karme.evaluation.synthetic.FixpointStates
+import karme.evaluation.synthetic.{ClassificationEval, FixpointStates}
 import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.synthesis.FunctionTrees.FunExpr
 

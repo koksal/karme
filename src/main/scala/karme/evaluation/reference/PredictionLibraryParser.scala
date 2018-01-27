@@ -3,8 +3,8 @@ package karme.evaluation.reference
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
-import karme.{PredictionLibrary, ReferencePrediction}
 import karme.util.{FileUtil, NamingUtil}
+import karme.{PredictionLibrary, ReferencePrediction}
 
 object PredictionLibraryParser {
 

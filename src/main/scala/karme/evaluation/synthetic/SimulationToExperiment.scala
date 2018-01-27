@@ -2,9 +2,7 @@ package karme.evaluation.synthetic
 
 import karme.CellTrajectories.CellTrajectory
 import karme.Experiments
-import karme.Experiments.BooleanExperiment
-import karme.Experiments.BooleanMeasurement
-import karme.Experiments.Experiment
+import karme.Experiments.{BooleanExperiment, BooleanMeasurement, Experiment}
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
 import karme.synthesis.Transitions.ConcreteBooleanState

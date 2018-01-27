@@ -3,8 +3,7 @@ package karme.evaluation.synthetic
 import karme.simulation.AsyncBooleanNetworkSimulation
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.CollectionUtil
-import karme.util.MathUtil
+import karme.util.{CollectionUtil, MathUtil}
 
 object InitialStatePerturbationEval {
 

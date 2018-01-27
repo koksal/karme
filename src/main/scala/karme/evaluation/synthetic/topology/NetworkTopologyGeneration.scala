@@ -1,7 +1,6 @@
 package karme.evaluation.synthetic.topology
 
-import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.NetworkTopologyGraph
-import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.NetworkTopologyGraphNode
+import karme.evaluation.synthetic.topology.NetworkTopologyGraphs.{NetworkTopologyGraph, NetworkTopologyGraphNode}
 import karme.util.UniqueCounter
 
 trait NetworkTopologyGeneration {

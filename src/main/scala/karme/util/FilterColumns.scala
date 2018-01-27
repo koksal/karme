@@ -2,7 +2,7 @@ package karme.util
 
 import java.io.File
 
-import com.github.tototoshi.csv.{CSVReader, CSVWriter, TSVFormat}
+import com.github.tototoshi.csv.{CSVReader, TSVFormat}
 
 object FilterColumns {
 
