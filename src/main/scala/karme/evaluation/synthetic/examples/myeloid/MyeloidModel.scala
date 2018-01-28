@@ -1,7 +1,12 @@
 package karme.evaluation.synthetic.examples.myeloid
 
-import karme.synthesis.FunctionTrees._
-import karme.synthesis.Transitions.{ConcreteBooleanState, GenericState}
+import karme.synthesis.FunctionTrees.FunAnd
+import karme.synthesis.FunctionTrees.FunExpr
+import karme.synthesis.FunctionTrees.FunNot
+import karme.synthesis.FunctionTrees.FunOr
+import karme.synthesis.FunctionTrees.FunVar
+import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.synthesis.Transitions.GenericState
 
 object MyeloidModel {
 

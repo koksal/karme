@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPLICATES=3
+REPLICATES=1
 
 if [ $# -eq 0 ]
 then
@@ -11,9 +11,11 @@ else
   shift
 fi
 
+DROP_PROBS=(0 0.5 0.99)
+
 for replicate in `seq 1 $REPLICATES`
 do
-  for drop_p in 0 0.5 0.99
+  for drop_p in ${DROP_PROBS[*]}
   do
     ./scripts/run-synthetic-workflow.sh \
       $OUTFOLDER_BASE/resolution/p=$drop_p/replicate-$replicate \

@@ -21,7 +21,7 @@ object Workflow {
     implicit val reporter = new Reporter(opts.reporterOpts)
 
     run(
-      hiddenModel = MyeloidModel.makePLOSNetwork(),
+      hiddenModel = MyeloidModel.makeTrimmedStateSpaceNetwork(),
       defaultInitialStates = Set(MyeloidModel.makeInitialState()),
       random = new Random(opts.syntheticEvalOpts.randomSeed),
       cellTrajectoryNoiseSigma =
@@ -81,6 +81,9 @@ object Workflow {
       measurementDropProbability
     ).generateExperiment(baseStateGraph, baseTrajectory)
 
+    // TODO evaluate FP and TP for new nodes
+
+
     val nodes = StateGraphs.nodesFromExperiment(experiment)
 
     // build node partial order
@@ -90,15 +93,6 @@ object Workflow {
       distributionComparisonTest,
       distCompPValueThreshold
     ).partialOrdering
-
-    // evaluate simulation transition completeness w.r.t. all H-1 edges.
-    val transitionToH1EdgeRatio = new SimulationGraphAnalysis()
-      .transitionToAll1HammingRatio(baseStateGraph)
-    TSVUtil.saveOrderedTuples(
-      List("transition to H-1 edge ratio"),
-      List(List(transitionToH1EdgeRatio)),
-      reporter.file("transition-to-h-1-edge-ratio.txt")
-    )
 
     // reconstruct graph
     val graphForSynthesis = new StateGraphReconstruction()
@@ -112,10 +106,8 @@ object Workflow {
     )
 
     // logging graphs
-    if (true) {
-      new StateGraphPlotter(reporter)
-        .plotDirectedGraph(graphForSynthesis, "graph-for-synthesis")
-    }
+    new StateGraphPlotter(reporter)
+      .plotDirectedGraph(graphForSynthesis, "graph-for-synthesis")
 
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts,
@@ -149,13 +141,15 @@ object Workflow {
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
-      models map MyeloidModelEvaluation.evaluateWildTypeBehavior,
+      models map (m =>
+        MyeloidModelEvaluation.evaluateWildTypeBehavior(m, hiddenModel)),
       reporter.file(s"stable-state-reachability-wildtype.tsv")
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
-      models flatMap MyeloidModelEvaluation.evaluateKnockoutBehavior,
+      models flatMap (m =>
+        MyeloidModelEvaluation.evaluateKnockoutBehavior(m, hiddenModel)),
       reporter.file(s"stable-state-reachability-knockouts.tsv")
     )
 
