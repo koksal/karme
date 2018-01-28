@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPLICATES=1
+REPLICATES=5
 
 if [ $# -eq 0 ]
 then
@@ -11,7 +11,7 @@ else
   shift
 fi
 
-DROP_PROBS=(0 0.5 0.99)
+DROP_PROBS=(0.95 0.96 0.97 0.98 0.99)
 
 for replicate in `seq 1 $REPLICATES`
 do

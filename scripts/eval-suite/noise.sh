@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPLICATES=3
+REPLICATES=1
 
 if [ $# -eq 0 ]
 then
@@ -11,7 +11,7 @@ else
   shift
 fi
 
-ERROR_PROBS=(0 0.005 0.01)
+ERROR_PROBS=(0.0001 0.001 0.005 0.01)
 
 for replicate in `seq 1 $REPLICATES`
 do

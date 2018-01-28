@@ -49,13 +49,11 @@ object MyeloidModelEvaluation {
       modelToEvaluate, Set(MyeloidModel.makeInitialState()))
     val expectedFixpoints = FixpointStates.findSimulationFixpoints(
       referenceModel, Set(MyeloidModel.makeInitialState()))
-    val allStates = new ExhaustiveStateEnumeration(
-      MyeloidModel.makeInitialState().orderedKeys).enumerateAllStates()
 
     ClassificationEval.evaluate(
       simulationFixpoints,
       expectedFixpoints,
-      allStates -- expectedFixpoints
+      MyeloidModel.allStates -- expectedFixpoints
     )
   }
 

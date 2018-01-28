@@ -1,7 +1,10 @@
 package karme.evaluation.synthetic
 
+import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
+import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.graphs.Graphs
 import karme.graphs.StateGraphs.DirectedBooleanStateGraph
+import karme.synthesis.Transitions.ConcreteBooleanState
 
 object GraphComparison {
 
@@ -13,6 +16,17 @@ object GraphComparison {
   val spuriousE = "Spur. E"
   val capturedD = "Capt. D"
   val missedD = "Miss. D"
+
+  def diffNodes(
+    inferredStates: Set[ConcreteBooleanState],
+    originalStates: Set[ConcreteBooleanState]
+  ): Map[String, Any] = {
+    ClassificationEval.evaluate(
+      predicted = inferredStates,
+      positive = originalStates,
+      negative = MyeloidModel.allStates -- originalStates
+    )
+  }
 
   def diffGraphs(
     originalGraph: DirectedBooleanStateGraph,

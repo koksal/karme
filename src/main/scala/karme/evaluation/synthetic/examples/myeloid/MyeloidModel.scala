@@ -1,5 +1,6 @@
 package karme.evaluation.synthetic.examples.myeloid
 
+import karme.evaluation.synthetic.stategen.ExhaustiveStateEnumeration
 import karme.synthesis.FunctionTrees.FunAnd
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.FunctionTrees.FunNot
@@ -29,8 +30,13 @@ object MyeloidModel {
 
   val allCellTypeIDs = Set(s1, s2, s3, s4)
 
-  def stableStates(): Set[ConcreteBooleanState] = {
+  val stableStates: Set[ConcreteBooleanState] = {
     namedStableStates().values.toSet
+  }
+
+  val allStates: Set[ConcreteBooleanState] = {
+    new ExhaustiveStateEnumeration(makeInitialState().orderedKeys)
+      .enumerateAllStates()
   }
 
   def namedStableStates(): Map[String, ConcreteBooleanState] = {

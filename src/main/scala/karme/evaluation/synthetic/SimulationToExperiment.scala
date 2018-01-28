@@ -18,7 +18,7 @@ class SimulationToExperiment(random: Random)(
   val NB_OBS_PER_STATE = 100
 
   val protectedStates =
-    MyeloidModel.stableStates() + MyeloidModel.makeInitialState()
+    MyeloidModel.stableStates + MyeloidModel.makeInitialState()
 
   val temporalNoise = new TemporalNoise(random)(temporalNoiseSigma)
   val measurementNoise = new MeasurementNoise(random)(measurementNoiseProbability)

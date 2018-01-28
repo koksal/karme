@@ -19,16 +19,25 @@ fi
 #   $PARENT_OUTPUT_FOLDER/cell-trajectory-quality/ssrwt \
 #   $PARENT_OUTPUT_FOLDER/cell-trajectory-quality/sigma=*/stable-state-reachability-wildtype.tsv
 
-for f in $PARENT_OUTPUT_FOLDER/resolution/p=*
-do
-  ./scripts/aggregate-tables.sh \
-    $f/stable-state-reachability-wildtype.tsv \
-    $f/replicate-*/stable-state-reachability-wildtype.tsv
-done
+FILES=(
+  "stable-state-reachability-wildtype.tsv" 
+  "stable-state-reachability-knockouts.tsv"
+  "perturbed-graph-nodes.tsv"
+)
 
-./scripts/aggregate-boxplot.sh \
-  $PARENT_OUTPUT_FOLDER/resolution/ssrwt \
-  $PARENT_OUTPUT_FOLDER/resolution/p=*/stable-state-reachability-wildtype.tsv
+for FILE in ${FILES[*]}
+do
+  for FOLDER in $PARENT_OUTPUT_FOLDER/resolution/p=*
+  do
+    ./scripts/aggregate-tables.sh \
+      $FOLDER/$FILE \
+      $FOLDER/replicate-*/$FILE
+  done
+
+  ./scripts/aggregate-boxplot.sh \
+    $PARENT_OUTPUT_FOLDER/resolution/$FILE \
+    $PARENT_OUTPUT_FOLDER/resolution/p=*/$FILE
+done
 
 # Latexify all tables
 # ./scripts/latexify-table.sh \

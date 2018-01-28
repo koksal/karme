@@ -20,21 +20,19 @@ object BoxPlotAggregation {
       s"Different headers: ${headerRows.toSet}")
     val headers = headerRows.head
     assert(headers.contains("TPR"))
-    assert(headers.contains("FPR"))
+    assert(headers.contains("FDR"))
 
     val valueDataPairs = labels.zip(data.map(_._2))
 
     val tprData = valueDataPairs map {
       case (key, value) => key -> value.map(v => v("TPR").toDouble)
     }
-    val fprData = valueDataPairs map {
-      case (key, value) => key -> value.map(v => v("FPR").toDouble)
+    val fdrData = valueDataPairs map {
+      case (key, value) => key -> value.map(v => v("FDR").toDouble)
     }
 
     new BoxPlot().plot(tprData, new File(s"$outFilePrefix-tpr.pdf"))
-    new BoxPlot().plot(fprData, new File(s"$outFilePrefix-fpr.pdf"))
+    new BoxPlot().plot(fdrData, new File(s"$outFilePrefix-fdr.pdf"))
   }
-
-
 
 }

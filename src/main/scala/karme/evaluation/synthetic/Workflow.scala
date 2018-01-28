@@ -81,10 +81,18 @@ object Workflow {
       measurementDropProbability
     ).generateExperiment(baseStateGraph, baseTrajectory)
 
-    // TODO evaluate FP and TP for new nodes
-
-
     val nodes = StateGraphs.nodesFromExperiment(experiment)
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      Seq(
+        GraphComparison.diffNodes(
+          nodes.map(_.state),
+          baseStateGraph.V.map(_.state)
+        )
+      ),
+      reporter.file("perturbed-graph-nodes.tsv")
+    )
 
     // build node partial order
     val nodePartialOrder = new NodePartialOrderByTrajectoryComparison(

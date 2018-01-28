@@ -3,8 +3,8 @@ package karme.evaluation.synthetic
 object ClassificationEval {
 
   private val tprHeader = "TPR"
-  private val fprHeader = "FPR"
-  val headers = List(tprHeader, fprHeader)
+  private val fdrHeader = "FDR"
+  val headers = List(tprHeader, fdrHeader)
 
   def evaluate[A](
     predicted: Set[A],
@@ -15,11 +15,11 @@ object ClassificationEval {
     val fp = predicted.intersect(negative)
 
     val tpr = tp.size.toDouble / positive.size.toDouble
-    val fpr = fp.size.toDouble / negative.size.toDouble
+    val fdr = fp.size.toDouble / predicted.size.toDouble
 
     Map(
       tprHeader -> tpr,
-      fprHeader -> fpr
+      fdrHeader -> fdr
     )
   }
 }
