@@ -11,7 +11,7 @@ else
   shift
 fi
 
-ERROR_PROBS=(0.001 0.002 0.003 0.004 0.005 0.01 0.05)
+ERROR_PROBS=(0.001 0.002 0.003 0.004 0.005 0.01)
 
 for replicate in `seq 1 $REPLICATES`
 do

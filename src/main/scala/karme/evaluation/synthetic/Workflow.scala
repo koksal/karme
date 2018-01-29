@@ -172,28 +172,36 @@ object Workflow {
       ClassificationEval.headers,
       models map (m =>
         MyeloidModelEvaluation.evaluateWildTypeFixpoints(m, hiddenModel)),
-      reporter.file(s"stable-states-wildtype.tsv")
+      reporter.file("stable-states-wildtype.tsv")
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
       models map (m =>
         MyeloidModelEvaluation.evaluateWildTypeReachability(m, hiddenModel)),
-      reporter.file(s"reachable-states-wildtype.tsv")
+      reporter.file("reachable-states-wildtype.tsv")
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
       models flatMap (m =>
         MyeloidModelEvaluation.evaluateKnockoutFixpoints(m, hiddenModel)),
-      reporter.file(s"stable-states-knockouts.tsv")
+      reporter.file("stable-states-knockouts.tsv")
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
       models flatMap (m =>
         MyeloidModelEvaluation.evaluateKnockoutReachability(m, hiddenModel)),
-      reporter.file(s"reachable-states-knockouts.tsv")
+      reporter.file("reachable-states-knockouts.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      FunSimilarityEval.orderedHeaders,
+      models flatMap (m =>
+        FunSimilarityEval.evaluateFunSimilarity(m, hiddenModel,
+          baseStateGraph.V.map(_.state))),
+      reporter.file("function-similarity.tsv")
     )
   }
 

@@ -15,6 +15,7 @@ FILES=(
   "reachable-states-knockouts.tsv"
   "sampled-states.tsv"
   "reconstructed-states.tsv"
+  "function-similarity.tsv"
 )
 
 for EVAL_TYPE in "noise" "resolution"

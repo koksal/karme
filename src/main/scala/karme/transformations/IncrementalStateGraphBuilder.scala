@@ -47,10 +47,10 @@ class IncrementalStateGraphBuilder(
       counter += 1
 
       graph = saturateGraphWithAllMinimalOutgoingEdges(graph)
-      plotter.plotDirectedGraph(graph, s"graph-$counter-a-saturation")
+      // plotter.plotDirectedGraph(graph, s"graph-$counter-a-saturation")
 
       graph = extendReachability(graph)
-      plotter.plotDirectedGraph(graph, s"graph-$counter-b-extension")
+      // plotter.plotDirectedGraph(graph, s"graph-$counter-b-extension")
     } while (prevGraph != graph)
 
     graph

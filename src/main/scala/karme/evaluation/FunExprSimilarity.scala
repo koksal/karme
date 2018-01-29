@@ -44,9 +44,17 @@ object FunExprSimilarity {
     val allStates = new ExhaustiveStateEnumeration(allIdentifiers.toSeq)
       .enumerateAllStates()
 
-    val agreeingInputs = allStates.count(s => functionsAgreeOnInput(e1, e2, s))
+    commonBehaviorRatio(e1, e2, allStates)
+  }
 
-    agreeingInputs.toDouble / allStates.size
+  def commonBehaviorRatio(
+    e1: FunExpr,
+    e2: FunExpr,
+    states: Set[ConcreteBooleanState]
+  ): Double = {
+    val agreeingInputs = states.count(s => functionsAgreeOnInput(e1, e2, s))
+
+    agreeingInputs.toDouble / states.size
   }
 
   private def functionsAgreeOnInput(

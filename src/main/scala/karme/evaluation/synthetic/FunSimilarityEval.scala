@@ -2,6 +2,7 @@ package karme.evaluation.synthetic
 
 import karme.evaluation.FunExprSimilarity
 import karme.synthesis.FunctionTrees.FunExpr
+import karme.synthesis.Transitions.ConcreteBooleanState
 
 object FunSimilarityEval {
 
@@ -11,13 +12,18 @@ object FunSimilarityEval {
   val orderedHeaders = List(geneHeader, similarityHeader)
 
   def evaluateFunSimilarity(
+    inferredModel: Map[String, FunExpr],
     hiddenModel: Map[String, FunExpr],
-    inferredModel: Map[String, FunExpr]
+    states: Set[ConcreteBooleanState]
   ): Seq[Map[String, Any]] = {
     hiddenModel.keySet.toList.map { v =>
       val similarity = inferredModel.get(v) match {
         case Some(inferredFun) => {
-          FunExprSimilarity.commonBehaviorRatio(hiddenModel(v), inferredFun)
+          FunExprSimilarity.commonBehaviorRatio(
+            hiddenModel(v),
+            inferredFun,
+            states
+          )
         }
         case None => {
           "N/A"

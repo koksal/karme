@@ -6,6 +6,8 @@ import karme.visualization.BoxPlot
 
 object BoxPlotAggregation {
 
+  val columnsToAggregate = Set("TPR", "FDR", "Similarity")
+
   def main(args: Array[String]): Unit = {
     val (outFilePrefix, restArgs) = (args.head, args.tail)
 
@@ -19,20 +21,16 @@ object BoxPlotAggregation {
     assert(headerRows.toSet.size == 1,
       s"Different headers: ${headerRows.toSet}")
     val headers = headerRows.head
-    assert(headers.contains("TPR"))
-    assert(headers.contains("FDR"))
+    val headersToAggregate = headers.toSet.intersect(columnsToAggregate)
 
     val valueDataPairs = labels.zip(data.map(_._2))
 
-    val tprData = valueDataPairs map {
-      case (key, value) => key -> value.map(v => v("TPR").toDouble)
+    for (header <- headersToAggregate) {
+      val headerData = valueDataPairs map {
+        case (key, value) => key -> value.map(v => v(header).toDouble)
+      }
+      new BoxPlot().plot(headerData, new File(s"$outFilePrefix-$header.pdf"))
     }
-    val fdrData = valueDataPairs map {
-      case (key, value) => key -> value.map(v => v("FDR").toDouble)
-    }
-
-    new BoxPlot().plot(tprData, new File(s"$outFilePrefix-tpr.pdf"))
-    new BoxPlot().plot(fdrData, new File(s"$outFilePrefix-fdr.pdf"))
   }
 
 }
