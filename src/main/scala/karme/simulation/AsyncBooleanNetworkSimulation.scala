@@ -257,7 +257,7 @@ object AsyncBooleanNetworkSimulation {
     inputState.replaceValue(label, funOutput)
   }
 
-  private def removeStatesNotReachingFixpoints(
+  def removeStatesNotReachingFixpoints(
     simulationGraph: DirectedBooleanStateGraph,
     allowedFixpoints: Set[ConcreteBooleanState]
   ) = {

@@ -8,35 +8,30 @@ else
   PARENT_OUTPUT_FOLDER=$1
 fi
 
-# for f in $PARENT_OUTPUT_FOLDER/cell-trajectory-quality/sigma=*
-# do
-#   ./scripts/aggregate-tables.sh \
-#     $f/stable-state-reachability-wildtype.tsv \
-#     $f/replicate-*/stable-state-reachability-wildtype.tsv
-# done
-# 
-# ./scripts/aggregate-boxplot.sh \
-#   $PARENT_OUTPUT_FOLDER/cell-trajectory-quality/ssrwt \
-#   $PARENT_OUTPUT_FOLDER/cell-trajectory-quality/sigma=*/stable-state-reachability-wildtype.tsv
-
 FILES=(
-  "stable-state-reachability-wildtype.tsv" 
-  "stable-state-reachability-knockouts.tsv"
-  "perturbed-graph-nodes.tsv"
+  "stable-states-wildtype.tsv" 
+  "stable-states-knockouts.tsv"
+  "reachable-states-wildtype.tsv" 
+  "reachable-states-knockouts.tsv"
+  "sampled-states.tsv"
+  "reconstructed-states.tsv"
 )
 
-for FILE in ${FILES[*]}
+for EVAL_TYPE in "noise" "resolution"
 do
-  for FOLDER in $PARENT_OUTPUT_FOLDER/resolution/p=*
+  for FILE in ${FILES[*]}
   do
-    ./scripts/aggregate-tables.sh \
-      $FOLDER/$FILE \
-      $FOLDER/replicate-*/$FILE
-  done
+    for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
+    do
+      ./scripts/aggregate-tables.sh \
+        $FOLDER/$FILE \
+        $FOLDER/replicate-*/$FILE
+    done
 
-  ./scripts/aggregate-boxplot.sh \
-    $PARENT_OUTPUT_FOLDER/resolution/$FILE \
-    $PARENT_OUTPUT_FOLDER/resolution/p=*/$FILE
+    ./scripts/aggregate-boxplot.sh \
+      $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
+      $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/$FILE
+  done
 done
 
 # Latexify all tables

@@ -12,4 +12,4 @@ EXTRA_ARGS="--distribution-comparison ranksum --distribution-comparison-p-value 
 
 # ./scripts/eval-suite/cell-trajectory-quality.sh $OUTFOLDER_BASE $EXTRA_ARGS
 ./scripts/eval-suite/noise.sh $OUTFOLDER_BASE $EXTRA_ARGS
-# ./scripts/eval-suite/resolution.sh $OUTFOLDER_BASE $EXTRA_ARGS
+./scripts/eval-suite/resolution.sh $OUTFOLDER_BASE $EXTRA_ARGS

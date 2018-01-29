@@ -91,7 +91,7 @@ object Workflow {
           baseStateGraph.V.map(_.state)
         )
       ),
-      reporter.file("perturbed-graph-nodes.tsv")
+      reporter.file("sampled-states.tsv")
     )
 
     // build node partial order
@@ -103,8 +103,23 @@ object Workflow {
     ).partialOrdering
 
     // reconstruct graph
-    val graphForSynthesis = new StateGraphReconstruction()
+    var graphForSynthesis = new StateGraphReconstruction()
       .reconstructStateGraph(nodes, nodePartialOrder)
+
+    graphForSynthesis =
+      AsyncBooleanNetworkSimulation.removeStatesNotReachingFixpoints(
+        graphForSynthesis, MyeloidModel.stableStates)
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      Seq(
+        GraphComparison.diffNodes(
+          graphForSynthesis.V.map(_.state),
+          baseStateGraph.V.map(_.state)
+        )
+      ),
+      reporter.file("reconstructed-states.tsv")
+    )
 
     // evaluate graph reconstruction
     TSVUtil.saveTupleMapsWithOrderedHeaders(
@@ -115,7 +130,13 @@ object Workflow {
 
     // logging graphs
     new StateGraphPlotter(reporter)
-      .plotDirectedGraph(graphForSynthesis, "graph-for-synthesis")
+      .plotDirectedGraph(
+        graphForSynthesis,
+        "graph-for-synthesis",
+        nodeHighlightGroups = List(
+          baseStateGraph.V.map(_.state)
+        )
+      )
 
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts,
@@ -150,17 +171,30 @@ object Workflow {
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
       models map (m =>
-        MyeloidModelEvaluation.evaluateWildTypeBehavior(m, hiddenModel)),
-      reporter.file(s"stable-state-reachability-wildtype.tsv")
+        MyeloidModelEvaluation.evaluateWildTypeFixpoints(m, hiddenModel)),
+      reporter.file(s"stable-states-wildtype.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models map (m =>
+        MyeloidModelEvaluation.evaluateWildTypeReachability(m, hiddenModel)),
+      reporter.file(s"reachable-states-wildtype.tsv")
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
       models flatMap (m =>
-        MyeloidModelEvaluation.evaluateKnockoutBehavior(m, hiddenModel)),
-      reporter.file(s"stable-state-reachability-knockouts.tsv")
+        MyeloidModelEvaluation.evaluateKnockoutFixpoints(m, hiddenModel)),
+      reporter.file(s"stable-states-knockouts.tsv")
     )
 
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models flatMap (m =>
+        MyeloidModelEvaluation.evaluateKnockoutReachability(m, hiddenModel)),
+      reporter.file(s"reachable-states-knockouts.tsv")
+    )
   }
 
   def pickBestResults(
