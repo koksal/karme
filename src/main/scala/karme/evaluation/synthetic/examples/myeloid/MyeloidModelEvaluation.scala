@@ -11,7 +11,7 @@ object MyeloidModelEvaluation {
   def evaluateWildTypeFixpoints(
     modelToEvaluate: Map[String, FunExpr],
     referenceModel: Map[String, FunExpr]
-  ): Map[String, Any] = {
+  ): Map[String, Double] = {
     evaluateFixpoints(
       modelToEvaluate,
       referenceModel,
@@ -22,7 +22,7 @@ object MyeloidModelEvaluation {
   def evaluateWildTypeReachability(
     modelToEvaluate: Map[String, FunExpr],
     referenceModel: Map[String, FunExpr]
-  ): Map[String, Any] = {
+  ): Map[String, Double] = {
     evaluateReachability(
       modelToEvaluate,
       referenceModel,
@@ -33,14 +33,14 @@ object MyeloidModelEvaluation {
   def evaluateKnockoutFixpoints(
     modelToEvaluate: Map[String, FunExpr],
     referenceModel: Map[String, FunExpr]
-  ): Seq[Map[String, Any]] = {
+  ): Seq[Map[String, Double]] = {
     evaluateKnockout(modelToEvaluate, referenceModel, evaluateFixpoints)
   }
 
   def evaluateKnockoutReachability(
     modelToEvaluate: Map[String, FunExpr],
     referenceModel: Map[String, FunExpr]
-  ): Seq[Map[String, Any]] = {
+  ): Seq[Map[String, Double]] = {
     evaluateKnockout(modelToEvaluate, referenceModel, evaluateReachability)
   }
 
@@ -49,8 +49,8 @@ object MyeloidModelEvaluation {
     referenceModel: Map[String, FunExpr],
     evalFun:
       (Map[String, FunExpr], Map[String, FunExpr], Set[ConcreteBooleanState]) =>
-      Map[String, Any]
-  ): Seq[Map[String, Any]] = {
+      Map[String, Double]
+  ): Seq[Map[String, Double]] = {
     for (ke <- MyeloidModel.knockoutExperiments()) yield {
       val perturbedModelToEvaluate =
         PerturbationAnalysis.knockoutVariable(modelToEvaluate, ke.knockoutVar)
@@ -72,7 +72,7 @@ object MyeloidModelEvaluation {
     modelToEvaluate: Map[String, FunExpr],
     referenceModel: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
+  ): Map[String, Double] = {
     val simulationFixpoints = FixpointStates.findSimulationFixpoints(
       modelToEvaluate, initialStates)
     val expectedFixpoints = FixpointStates.findSimulationFixpoints(
@@ -89,7 +89,7 @@ object MyeloidModelEvaluation {
     modelToEvaluate: Map[String, FunExpr],
     referenceModel: Map[String, FunExpr],
     initialStates: Set[ConcreteBooleanState]
-  ): Map[String, Any] = {
+  ): Map[String, Double] = {
     val simulationStates = AsyncBooleanNetworkSimulation
       .simulateOneStep(modelToEvaluate, initialStates)
     val expectedStates = AsyncBooleanNetworkSimulation

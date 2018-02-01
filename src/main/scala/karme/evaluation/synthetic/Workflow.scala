@@ -8,6 +8,7 @@ import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.synthesis.{SynthesisResult, Synthesizer}
 import karme.transformations.{DistributionComparisonTest, NodePartialOrderByTrajectoryComparison}
+import karme.util.CollectionUtil
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 import karme.{ArgHandling, Opts, Reporter}
@@ -134,6 +135,7 @@ object Workflow {
         graphForSynthesis,
         "graph-for-synthesis",
         nodeHighlightGroups = List(
+          MyeloidModel.stableStates,
           baseStateGraph.V.map(_.state)
         )
       )
@@ -160,7 +162,10 @@ object Workflow {
 
     val bestSynthesisResults = pickBestResults(synthesisResults)
 
-    val models = SynthesisResult.makeCombinations(bestSynthesisResults)
+    val models = sampleModels(
+      SynthesisResult.makeCombinations(bestSynthesisResults),
+      random
+    )
 
     TSVUtil.saveOrderedTuples(
       List("# models"),
@@ -214,6 +219,13 @@ object Workflow {
         label -> rs.maxBy(r => r.transitions.map(_.weight).sum)
       }
     }
+  }
+
+  def sampleModels(
+    models: Seq[Map[String, FunExpr]],
+    random: Random
+  ): Seq[Map[String, FunExpr]] = {
+    CollectionUtil.randomElements(random)(models, 50).toSeq
   }
 
 }

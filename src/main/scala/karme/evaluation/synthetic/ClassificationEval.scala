@@ -10,7 +10,7 @@ object ClassificationEval {
     predicted: Set[A],
     positive: Set[A],
     negative: Set[A]
-  ): Map[String, Any] = {
+  ): Map[String, Double] = {
     val tp = predicted.intersect(positive)
     val fp = predicted.intersect(negative)
 
