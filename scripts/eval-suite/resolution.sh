@@ -11,7 +11,8 @@ else
   shift
 fi
 
-DROP_PROBS=(0.95 0.96 0.97 0.98 0.99)
+DROP_PROBS=(0.95 0.99 0.992 0.993 0.994 0.995)
+
 
 for replicate in `seq 1 $REPLICATES`
 do
