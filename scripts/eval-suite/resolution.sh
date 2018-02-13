@@ -13,7 +13,6 @@ fi
 
 DROP_PROBS=(0.95 0.99 0.992 0.993 0.994 0.995)
 
-
 for replicate in `seq 1 $REPLICATES`
 do
   for drop_p in ${DROP_PROBS[*]}
