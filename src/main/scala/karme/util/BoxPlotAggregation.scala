@@ -6,8 +6,6 @@ import karme.visualization.BoxPlot
 
 object BoxPlotAggregation {
 
-  val columnsToAggregate = Set("TPR", "FDR", "Similarity")
-
   def main(args: Array[String]): Unit = {
     val (outFilePrefix, restArgs) = (args.head, args.tail)
 
@@ -21,7 +19,8 @@ object BoxPlotAggregation {
     assert(headerRows.toSet.size == 1,
       s"Different headers: ${headerRows.toSet}")
     val headers = headerRows.head
-    val headersToAggregate = headers.toSet.intersect(columnsToAggregate)
+    val headersToAggregate = headers.toSet.intersect(
+      DataAggregation.columnsToAggregate)
 
     val valueDataPairs = labels.zip(data.map(_._2))
 
