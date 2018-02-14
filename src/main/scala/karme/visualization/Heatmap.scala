@@ -12,8 +12,8 @@ class Heatmap extends AbstractRInterface {
     matrix: Seq[Seq[Double]],
     xName: String,
     yName: String,
-    xLabels: Seq[Any],
-    yLabels: Seq[Any],
+    xLabels: Seq[String],
+    yLabels: Seq[String],
     file: File
   ): Unit = {
     R.set("matrix", matrix.map(_.toArray).toArray)

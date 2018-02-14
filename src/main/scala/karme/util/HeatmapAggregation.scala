@@ -51,8 +51,8 @@ object HeatmapAggregation {
         matrix,
         xLabel,
         yLabel,
-        labelToValues(xLabel),
-        labelToValues(yLabel),
+        labelToValues(xLabel).map(_.toString),
+        labelToValues(yLabel).map(_.toString),
         outFile
       )
     }
