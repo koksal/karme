@@ -28,7 +28,8 @@ object BoxPlotAggregation {
       val headerData = valueDataPairs map {
         case (key, value) => key -> value.map(v => v(header).toDouble)
       }
-      new BoxPlot().plot(headerData, new File(s"$outFilePrefix-$header.pdf"))
+      new BoxPlot().plot(headerData,
+        new File(s"$outFilePrefix-$header-boxplot.pdf"))
     }
   }
 

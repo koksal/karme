@@ -44,7 +44,7 @@ object HeatmapAggregation {
       val matrix = prepareMatrix(labels(0), labels(1), labelToValues,
         headerData)
 
-      val outFile = new File(s"$outFilePrefix-$header.pdf")
+      val outFile = new File(s"$outFilePrefix-$header-heatmap.pdf")
 
 
       heatmap.plot(
@@ -70,14 +70,14 @@ object HeatmapAggregation {
   }
 
   def prepareMatrix(
-    label1: String,
-    label2: String,
+    xLabel: String,
+    yLabel: String,
     labelToValues: Map[String, Seq[Double]],
     pointDataPairs: Map[Map[String, Double], Seq[Double]]
   ): Seq[Seq[Double]] = {
-    for (v1 <- labelToValues(label1)) yield {
-      for (v2 <- labelToValues(label2)) yield {
-        val point = Map(label1 -> v1, label2 -> v2)
+    for (yVal <- labelToValues(yLabel)) yield {
+      for (xVal <- labelToValues(xLabel)) yield {
+        val point = Map(xLabel -> xVal, yLabel -> yVal)
         val values = pointDataPairs(point)
         MathUtil.median(values)
       }
