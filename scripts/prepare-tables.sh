@@ -18,7 +18,8 @@ FILES=(
   "function-similarity.tsv"
 )
 
-for EVAL_TYPE in "noise" "resolution"
+# for EVAL_TYPE in "noise" "resolution" "noise-and-resolution"
+for EVAL_TYPE in "noise-and-resolution"
 do
   for FILE in ${FILES[*]}
   do
@@ -27,11 +28,19 @@ do
       ./scripts/aggregate-tables.sh \
         $FOLDER/$FILE \
         $FOLDER/replicate-*/$FILE
+
     done
 
-    ./scripts/aggregate-boxplot.sh \
-      $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
-      $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/$FILE
+    if [ $EVAL_TYPE = "noise-and-resolution" ]
+    then
+      ./scripts/aggregate-heatmap.sh \
+        $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
+        $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/$FILE
+    else
+      ./scripts/aggregate-boxplot.sh \
+        $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
+        $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/$FILE
+    fi
   done
 done
 

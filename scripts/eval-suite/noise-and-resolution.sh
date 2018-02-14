@@ -22,8 +22,8 @@ do
     do
       ./scripts/run-synthetic-workflow.sh \
         $OUTFOLDER_BASE/noise-and-resolution/noise=$error_p-drop=$drop_p/replicate-$replicate \
-        replicate
         --measurement-noise-prob $error_p \
+        --measurement-drop-prob $drop_p \
         --random-seed $replicate \
         $*
     done
