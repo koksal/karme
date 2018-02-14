@@ -21,7 +21,7 @@ object HeatmapAggregation {
     val yLabel = labels(1)
 
     val labelToValues = labels.map{
-      label => label -> points.map(p => p(label)).toSet.toList.distinct
+      label => label -> points.map(p => p(label)).toList.distinct.sorted
     }.toMap
     assert(points.forall(p => p.keySet == labels.toSet))
 
