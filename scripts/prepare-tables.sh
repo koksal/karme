@@ -8,6 +8,9 @@ else
   PARENT_OUTPUT_FOLDER=$1
 fi
 
+cd target/universal/stage
+PARENT_OUTPUT_FOLDER=../../../$PARENT_OUTPUT_FOLDER
+
 FILES=(
   "stable-states-wildtype.tsv" 
   "stable-states-knockouts.tsv"
@@ -25,26 +28,21 @@ do
     if [ -d "$PARENT_OUTPUT_FOLDER/$EVAL_TYPE" ]; then
       for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
       do
-        ./scripts/aggregate-tables.sh \
+        ./bin/table-aggregation \
           $FOLDER/$FILE \
           $FOLDER/replicate-*/$FILE
-
       done
 
       if [ $EVAL_TYPE = "noise-and-resolution" ]
       then
-        ./scripts/aggregate-heatmap.sh \
+        ./bin/heatmap-aggregation \
           $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
           $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/$FILE
       else
-        ./scripts/aggregate-boxplot.sh \
+        ./bin/box-plot-aggregation \
           $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
           $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/$FILE
       fi
     fi
   done
 done
-
-# Latexify all tables
-# ./scripts/latexify-table.sh \
-#   $PARENT_OUTPUT_FOLDER/cell-trajectory-quality/sigma=*/stable-state-reachability-wildtype.tsv

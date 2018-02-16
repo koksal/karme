@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sbt "run-main karme.util.HeatmapAggregation $*"
+cd target/universal/stage && ./bin/heatmap-aggregation $*
