@@ -31,3 +31,5 @@ javaOptions in run += "-Xmx32G"
 testOptions in Test += Tests.Argument("-oD")
 
 logLevel in run := Level.Warn
+
+enablePlugins(JavaAppPackaging)
