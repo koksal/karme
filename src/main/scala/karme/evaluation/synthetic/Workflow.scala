@@ -130,15 +130,17 @@ object Workflow {
     )
 
     // logging graphs
-    new StateGraphPlotter(reporter)
-      .plotDirectedGraph(
-        graphForSynthesis,
-        "graph-for-synthesis",
-        nodeHighlightGroups = List(
-          MyeloidModel.stableStates,
-          baseStateGraph.V.map(_.state)
+    if (false) {
+      new StateGraphPlotter(reporter)
+        .plotDirectedGraph(
+          graphForSynthesis,
+          "graph-for-synthesis",
+          nodeHighlightGroups = List(
+            MyeloidModel.stableStates,
+            baseStateGraph.V.map(_.state)
+          )
         )
-      )
+    }
 
     // perform synthesis
     val synthesisResults = new Synthesizer(opts.synthOpts,
