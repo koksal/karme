@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPLICATES=3
+REPLICATES=5
 
 if [ $# -eq 0 ]
 then
@@ -11,8 +11,8 @@ else
   shift
 fi
 
-TPR_RANGE=(1 0.75 0.5 0.25)
-FDR_RANGE=(0 0.25 0.5 0.75)
+TPR_RANGE=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1)
+FDR_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
 
 for replicate in `seq 1 $REPLICATES`
 do
