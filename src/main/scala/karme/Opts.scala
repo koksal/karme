@@ -86,7 +86,7 @@ case class ReporterOpts(
 case class SyntheticEvalOpts(
   randomSeed: Int = 0,
   cellTrajectoryNoiseSigma: Double = 0.0,
-  measurementNoiseProbability: Double = 0.0,
-  measurementDropProbability: Double = 0.0,
+  stateFalseDiscoveryRate: Double = 0.0,
+  stateTruePositiveRate: Double = 0.0,
   randomizedInitialStateInclusionRatio: Option[Double] = None
 )

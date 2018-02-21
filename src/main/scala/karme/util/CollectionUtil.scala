@@ -53,7 +53,7 @@ object CollectionUtil {
   }
 
   def randomElement[T](random: Random)(xs: Iterable[T]): T = {
-    randomElements(random)(xs, 1).head
+    xs.toVector(random.nextInt(xs.size))
   }
 
   def randomElements[T](

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPLICATES=5
+REPLICATES=3
 
 if [ $# -eq 0 ]
 then
@@ -11,20 +11,19 @@ else
   shift
 fi
 
-DROP_PROBS=(0.95 0.99 0.992 0.993 0.994 0.995)
-# ERROR_PROBS=(0.001 0.002 0.003 0.004 0.005 0.01)
-ERROR_PROBS=(0.02 0.03)
+TPR_RANGE=(1 0.75 0.5 0.25)
+FDR_RANGE=(0 0.25 0.5 0.75)
 
 for replicate in `seq 1 $REPLICATES`
 do
-  for error_p in ${ERROR_PROBS[*]}
+  for TPR in ${TPR_RANGE[*]}
   do
-    for drop_p in ${DROP_PROBS[*]}
+    for FDR in ${FDR_RANGE[*]}
     do
       ./scripts/run-synthetic-workflow.sh \
-        $OUTFOLDER_BASE/noise-and-resolution/noise=$error_p-drop=$drop_p/replicate-$replicate \
-        --measurement-noise-prob $error_p \
-        --measurement-drop-prob $drop_p \
+        $OUTFOLDER_BASE/noise-and-resolution/TPR=$TPR-FDR=$FDR/replicate-$replicate \
+        --state-tpr $TPR \
+        --state-fdr $FDR \
         --random-seed $replicate \
         $*
     done

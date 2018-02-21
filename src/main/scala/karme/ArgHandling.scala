@@ -274,14 +274,14 @@ object ArgHandling {
           cellTrajectoryNoiseSigma = v))
       }
 
-      opt[Double]("measurement-noise-prob") action { (v, o) =>
+      opt[Double]("state-fdr") action { (v, o) =>
         o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
-          measurementNoiseProbability = v))
+          stateFalseDiscoveryRate = v))
       }
 
-      opt[Double]("measurement-drop-prob") action { (v, o) =>
+      opt[Double]("state-tpr") action { (v, o) =>
         o.copy(syntheticEvalOpts = o.syntheticEvalOpts.copy(
-          measurementDropProbability = v))
+          stateTruePositiveRate = v))
       }
 
       opt[Double]("randomized-initial-states-ratio") action { (v, o) =>

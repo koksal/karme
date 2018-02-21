@@ -8,6 +8,7 @@ else
   PARENT_OUTPUT_FOLDER=$1
 fi
 
+sbt stage
 cd target/universal/stage
 PARENT_OUTPUT_FOLDER=../../../$PARENT_OUTPUT_FOLDER
 
@@ -25,6 +26,8 @@ for EVAL_TYPE in "noise" "resolution" "noise-and-resolution"
 do
   for FILE in ${FILES[*]}
   do
+    echo "Aggregating" $FILE
+
     if [ -d "$PARENT_OUTPUT_FOLDER/$EVAL_TYPE" ]; then
       for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
       do

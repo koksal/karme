@@ -27,10 +27,10 @@ object Workflow {
       random = new Random(opts.syntheticEvalOpts.randomSeed),
       cellTrajectoryNoiseSigma =
         opts.syntheticEvalOpts.cellTrajectoryNoiseSigma,
-      measurementNoiseProbability =
-        opts.syntheticEvalOpts.measurementNoiseProbability,
-      measurementDropProbability =
-        opts.syntheticEvalOpts.measurementDropProbability,
+      stateFalseDiscoveryRate =
+        opts.syntheticEvalOpts.stateFalseDiscoveryRate,
+      stateTruePositiveRate =
+        opts.syntheticEvalOpts.stateTruePositiveRate,
       randomizedInitialStateInclusionRatio =
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       distributionComparisonTest = DistributionComparisonTest.fromOptions(
@@ -45,8 +45,8 @@ object Workflow {
     defaultInitialStates: Set[ConcreteBooleanState],
     random: Random,
     cellTrajectoryNoiseSigma: Double,
-    measurementNoiseProbability: Double,
-    measurementDropProbability: Double,
+    stateFalseDiscoveryRate: Double,
+    stateTruePositiveRate: Double,
     randomizedInitialStateInclusionRatio: Option[Double],
     distributionComparisonTest: DistributionComparisonTest,
     distCompPValueThreshold: Double
@@ -78,8 +78,8 @@ object Workflow {
 
     val (experiment, trajectory) = new SimulationToExperiment(random)(
       cellTrajectoryNoiseSigma,
-      measurementNoiseProbability,
-      measurementDropProbability
+      stateFalseDiscoveryRate,
+      stateTruePositiveRate
     ).generateExperiment(baseStateGraph, baseTrajectory)
 
     val nodes = StateGraphs.nodesFromExperiment(experiment)
@@ -225,7 +225,7 @@ object Workflow {
     models: Seq[Map[String, FunExpr]],
     random: Random
   ): Seq[Map[String, FunExpr]] = {
-    CollectionUtil.randomElements(random)(models, 50).toSeq
+    CollectionUtil.randomElements(random)(models, 10).toSeq
   }
 
 }
