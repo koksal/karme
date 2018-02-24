@@ -130,7 +130,7 @@ object Workflow {
     )
 
     // logging graphs
-    if (false) {
+    if (true) {
       new StateGraphPlotter(reporter)
         .plotDirectedGraph(
           graphForSynthesis,

@@ -16,7 +16,7 @@ class SimulationToExperiment(random: Random)(
   stateTruePositiveRate: Double
 ) {
 
-  val NB_OBS_PER_STATE = 100
+  val NB_OBS_PER_STATE = 10
 
   val protectedStates =
     MyeloidModel.stableStates + MyeloidModel.makeInitialState()
