@@ -11,19 +11,19 @@ else
   shift
 fi
 
-TPR_RANGE=(0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1)
-FDR_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
+TYPE_I_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
+TYPE_II_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
 
 for replicate in `seq 1 $REPLICATES`
 do
-  for TPR in ${TPR_RANGE[*]}
+  for TYPE_I_RATIO in ${TYPE_I_RANGE[*]}
   do
-    for FDR in ${FDR_RANGE[*]}
+    for TYPE_II_RATIO in ${TYPE_II_RANGE[*]}
     do
       ./scripts/run-synthetic-workflow.sh \
-        $OUTFOLDER_BASE/noise-and-resolution/TPR=$TPR-FDR=$FDR/replicate-$replicate \
-        --state-tpr $TPR \
-        --state-fdr $FDR \
+        $OUTFOLDER_BASE/noise-and-resolution/Type_I_Errors=$TYPE_I_RATIO-Type_II_Errors=$TYPE_II_RATIO/replicate-$replicate \
+        --type-i-error-ratio $TYPE_I_RATIO \
+        --type-ii-error-ratio $TYPE_II_RATIO \
         --random-seed $replicate \
         $*
     done

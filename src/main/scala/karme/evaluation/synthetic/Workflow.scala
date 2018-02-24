@@ -27,10 +27,10 @@ object Workflow {
       random = new Random(opts.syntheticEvalOpts.randomSeed),
       cellTrajectoryNoiseSigma =
         opts.syntheticEvalOpts.cellTrajectoryNoiseSigma,
-      stateFalseDiscoveryRate =
-        opts.syntheticEvalOpts.stateFalseDiscoveryRate,
-      stateTruePositiveRate =
-        opts.syntheticEvalOpts.stateTruePositiveRate,
+      typeIErrorRatio =
+        opts.syntheticEvalOpts.typeIErrorRatio,
+      typeIIErrorRatio =
+        opts.syntheticEvalOpts.typeIIErrorRatio,
       randomizedInitialStateInclusionRatio =
         opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
       distributionComparisonTest = DistributionComparisonTest.fromOptions(
@@ -45,8 +45,8 @@ object Workflow {
     defaultInitialStates: Set[ConcreteBooleanState],
     random: Random,
     cellTrajectoryNoiseSigma: Double,
-    stateFalseDiscoveryRate: Double,
-    stateTruePositiveRate: Double,
+    typeIErrorRatio: Double,
+    typeIIErrorRatio: Double,
     randomizedInitialStateInclusionRatio: Option[Double],
     distributionComparisonTest: DistributionComparisonTest,
     distCompPValueThreshold: Double
@@ -78,8 +78,8 @@ object Workflow {
 
     val (experiment, trajectory) = new SimulationToExperiment(random)(
       cellTrajectoryNoiseSigma,
-      stateFalseDiscoveryRate,
-      stateTruePositiveRate
+      typeIErrorRatio,
+      typeIIErrorRatio
     ).generateExperiment(baseStateGraph, baseTrajectory)
 
     val nodes = StateGraphs.nodesFromExperiment(experiment)
@@ -204,11 +204,18 @@ object Workflow {
     )
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
-      FunSimilarityEval.orderedHeaders,
+      FunSimilarityEval.behaviorSimilarityHeaders,
       models flatMap (m =>
-        FunSimilarityEval.evaluateFunSimilarity(m, hiddenModel,
+        FunSimilarityEval.evaluateBehaviorSimilarity(m, hiddenModel,
           baseStateGraph.V.map(_.state))),
-      reporter.file("function-similarity.tsv")
+      reporter.file("function-behavior-similarity.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      FunSimilarityEval.ioPairSimilarityHeaders,
+      models map (m =>
+        FunSimilarityEval.evaluateIOPairSimilarity(m, hiddenModel)),
+      reporter.file("function-io-pair-similarity.tsv")
     )
   }
 

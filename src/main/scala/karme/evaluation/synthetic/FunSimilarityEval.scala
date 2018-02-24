@@ -1,17 +1,20 @@
 package karme.evaluation.synthetic
 
 import karme.evaluation.FunExprSimilarity
+import karme.evaluation.FunctionIOPairs
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.CollectionUtil
 
 object FunSimilarityEval {
 
   val geneHeader = "Gene"
   val similarityHeader = "Similarity"
 
-  val orderedHeaders = List(geneHeader, similarityHeader)
+  val behaviorSimilarityHeaders = List(geneHeader, similarityHeader)
+  val ioPairSimilarityHeaders = List(similarityHeader)
 
-  def evaluateFunSimilarity(
+  def evaluateBehaviorSimilarity(
     inferredModel: Map[String, FunExpr],
     hiddenModel: Map[String, FunExpr],
     states: Set[ConcreteBooleanState]
@@ -34,6 +37,20 @@ object FunSimilarityEval {
         similarityHeader -> similarity
       )
     }
+  }
+
+  def evaluateIOPairSimilarity(
+    inferredModel: Map[String, FunExpr],
+    hiddenModel: Map[String, FunExpr]
+  ): Map[String, Any] = {
+    val inferredModelIOPairs = FunctionIOPairs.modelInputOutputPairs(
+      inferredModel)
+    val hiddenModelIOPairs = FunctionIOPairs.modelInputOutputPairs(hiddenModel)
+
+    Map(
+      similarityHeader ->
+        CollectionUtil.jaccardIndex(inferredModelIOPairs, hiddenModelIOPairs)
+    )
   }
 
 }

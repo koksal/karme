@@ -58,7 +58,7 @@ class PairEvaluator(
       scCluster <- singleCellGeneClustering.allClusters
     } {
       // what is the jaccard similarity between the two
-      val jacSimilarity = CollectionUtil.jaccardSimilarity(
+      val jacSimilarity = CollectionUtil.jaccardIndex(
         referenceGeneClustering.clusterToMembers(refCluster),
         singleCellGeneClustering.clusterToMembers(scCluster)
       )

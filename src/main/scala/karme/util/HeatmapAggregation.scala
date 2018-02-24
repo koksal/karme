@@ -46,15 +46,18 @@ object HeatmapAggregation {
 
       val outFile = new File(s"$outFilePrefix-$header-heatmap.pdf")
 
-
-      heatmap.plot(
-        matrix,
-        xLabel,
-        yLabel,
-        labelToValues(xLabel).map(_.toString),
-        labelToValues(yLabel).map(_.toString),
-        outFile
-      )
+      if (matrix.flatten.distinct.size > 1) {
+        heatmap.plot(
+          matrix,
+          sanitizeLabel(xLabel),
+          sanitizeLabel(yLabel),
+          labelToValues(xLabel).map(_.toString),
+          labelToValues(yLabel).map(_.toString),
+          outFile
+        )
+      } else {
+        println(s"Skipping $outFile because there is only one distinct value.")
+      }
     }
 
   }
@@ -82,6 +85,10 @@ object HeatmapAggregation {
         MathUtil.median(values)
       }
     }
+  }
+
+  def sanitizeLabel(label: String): String = {
+    label.replaceAll("_", " ")
   }
 
 }

@@ -19,7 +19,8 @@ FILES=(
   "reachable-states-knockouts.tsv"
   "sampled-states.tsv"
   "reconstructed-states.tsv"
-  "function-similarity.tsv"
+  "function-behavior-similarity.tsv"
+  "function-io-pair-similarity.tsv"
 )
 
 for EVAL_TYPE in "noise" "resolution" "noise-and-resolution"

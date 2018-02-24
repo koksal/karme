@@ -12,8 +12,8 @@ import scala.util.Random
 
 class SimulationToExperiment(random: Random)(
   temporalNoiseSigma: Double,
-  stateFalseDiscoveryRate: Double,
-  stateTruePositiveRate: Double
+  stateTypeIErrorRatio: Double,
+  stateTypeIIErrorRatio: Double
 ) {
 
   val NB_OBS_PER_STATE = 10
@@ -43,7 +43,7 @@ class SimulationToExperiment(random: Random)(
     }
 
     // remove measurements as long as the state is not protected
-    while (tpr(measurements, baseStates) > stateTruePositiveRate) {
+    while (typeIIErrorRatio(measurements, baseStates) < stateTypeIIErrorRatio) {
       val randMeasurement = CollectionUtil.randomElement(random)(measurements)
 
       if (!protectedStates.contains(randMeasurement.state)) {
@@ -53,7 +53,7 @@ class SimulationToExperiment(random: Random)(
     }
 
     // add measurements that add new states until FDR is reached
-    while (fdr(measurements, baseStates) < stateFalseDiscoveryRate) {
+    while (typeIErrorRatio(measurements, baseStates) < stateTypeIErrorRatio) {
       val randMeasurement = CollectionUtil.randomElement(random)(measurements)
 
       if (!protectedStates.contains(randMeasurement.state)) {
@@ -70,22 +70,22 @@ class SimulationToExperiment(random: Random)(
     (Experiment(measurements.toSeq), trajectory)
   }
 
-  def tpr(
-    measurements: Set[BooleanMeasurement],
-    baseStates: Set[ConcreteBooleanState]
-  ): Double = {
-    val measurementStates = measurements.map(_.state)
-    val tp = measurementStates.intersect(baseStates)
-    tp.size.toDouble / baseStates.size.toDouble
-  }
-
-  def fdr(
+  def typeIErrorRatio(
     measurements: Set[BooleanMeasurement],
     baseStates: Set[ConcreteBooleanState]
   ): Double = {
     val measurementStates = measurements.map(_.state)
     val fp = measurementStates.diff(baseStates)
     fp.size.toDouble / measurementStates.size.toDouble
+  }
+
+  def typeIIErrorRatio(
+    measurements: Set[BooleanMeasurement],
+    baseStates: Set[ConcreteBooleanState]
+  ): Double = {
+    val measurementStates = measurements.map(_.state)
+    val fn = baseStates -- measurementStates
+    fn.size.toDouble / baseStates.size.toDouble
   }
 
   def generateObservationsForState(
@@ -123,7 +123,7 @@ class SimulationToExperiment(random: Random)(
       }
 
       if (stateIsProtected ||
-        random.nextDouble() >= stateTruePositiveRate) {
+        random.nextDouble() >= stateTypeIIErrorRatio) {
         val measurement = Experiments.makeMeasurement(measuredState)
         observations += measurement
         trajectory += measurement.id -> time

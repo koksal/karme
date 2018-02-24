@@ -124,7 +124,7 @@ object InitialStatePerturbationEval {
     val nbCommon = s1.intersect(s2).size
     val onlyIn1 = (s1 -- s2).size
     val onlyIn2 = (s2 -- s1).size
-    val jaccardSim = CollectionUtil.jaccardSimilarity(s1, s2)
+    val jaccardSim = CollectionUtil.jaccardIndex(s1, s2)
     Map(
       commonHeader -> nbCommon,
       missedHeader -> onlyIn1,
