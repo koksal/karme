@@ -1,6 +1,7 @@
 package karme.evaluation.synthetic
 
 import karme.evaluation.synthetic.examples.myeloid.{MyeloidModel, MyeloidModelEvaluation}
+import karme.evaluation.synthetic.expdesign.ExperimentGuideByStableStates
 import karme.graphs.StateGraphs
 import karme.printing.{LatexFunctionLogger, SynthesisResultLogger}
 import karme.simulation.AsyncBooleanNetworkSimulation
@@ -169,6 +170,8 @@ object Workflow {
       random
     )
 
+    guideExperiment(models)
+
     TSVUtil.saveOrderedTuples(
       List("# models"),
       List(List(models.size)),
@@ -235,6 +238,17 @@ object Workflow {
     random: Random
   ): Seq[Map[String, FunExpr]] = {
     CollectionUtil.randomElements(random)(models, 10).toSeq
+  }
+
+  def guideExperiment(
+    models: Seq[Map[String, FunExpr]]
+  ): Unit = {
+    println("Most distinguishing experiment: ")
+    println(ExperimentGuideByStableStates.mostDistinguishingExperiment(
+      MyeloidModel.knockoutExperiments(),
+      models,
+      Set(MyeloidModel.makeInitialState())
+    ))
   }
 
 }
