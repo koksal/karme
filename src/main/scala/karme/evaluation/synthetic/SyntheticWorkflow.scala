@@ -21,7 +21,7 @@ import karme.visualization.graph.StateGraphPlotter
 
 import scala.util.Random
 
-class SyntheticWorkflow(reporter: Reporter, opts: Opts)(
+class SyntheticWorkflow(
   hiddenModel: Map[String, FunExpr],
   defaultInitialStates: Set[ConcreteBooleanState],
   random: Random,
@@ -31,7 +31,7 @@ class SyntheticWorkflow(reporter: Reporter, opts: Opts)(
   randomizedInitialStateInclusionRatio: Option[Double],
   distributionComparisonTest: DistributionComparisonTest,
   distCompPValueThreshold: Double
-) {
+)(implicit reporter: Reporter, opts: Opts) {
 
   def run(): Unit = {
     // modify initial states per extension ratio

@@ -13,7 +13,7 @@ object Workflow {
     implicit val opts = ArgHandling.parseOptions(args)
     implicit val reporter = new Reporter(opts.reporterOpts)
 
-    new SyntheticWorkflow(reporter, opts)(
+    new SyntheticWorkflow(
       hiddenModel = MyeloidModel.makeTrimmedStateSpaceNetwork(),
       defaultInitialStates = Set(MyeloidModel.makeInitialState()),
       random = new Random(opts.syntheticEvalOpts.randomSeed),
@@ -29,7 +29,7 @@ object Workflow {
         opts.inputTransformerOpts.distributionComparisonMethod),
       distCompPValueThreshold =
         opts.inputTransformerOpts.distributionComparisonPValue
-    ).run()
+    )(reporter, opts).run()
   }
 
 }
