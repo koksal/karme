@@ -1,82 +1,236 @@
 package karme.evaluation.synthetic
 
-import karme.graphs.Graphs.{Forward, UnlabeledEdge}
-import karme.graphs.StateGraphs.{DirectedBooleanStateGraph, StateGraphVertex}
+import karme.Opts
+import karme.Reporter
+import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
+import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
+import karme.evaluation.synthetic.expdesign.ExperimentGuideByStableStates
+import karme.graphs.StateGraphs
+import karme.printing.LatexFunctionLogger
+import karme.printing.SynthesisResultLogger
+import karme.simulation.AsyncBooleanNetworkSimulation
+import karme.synthesis.FunctionTrees.FunExpr
+import karme.synthesis.SynthesisResult
+import karme.synthesis.Synthesizer
 import karme.synthesis.Transitions.ConcreteBooleanState
-import karme.util.MathUtil
-import karme.visualization.HistogramPlotInterface
+import karme.transformations.DistributionComparisonTest
+import karme.transformations.NodePartialOrderByTrajectoryComparison
+import karme.util.CollectionUtil
+import karme.util.TSVUtil
+import karme.visualization.graph.StateGraphPlotter
 
-object SyntheticWorkflow {
+import scala.util.Random
 
-  val histogramPlotInterface = new HistogramPlotInterface()
+class SyntheticWorkflow(reporter: Reporter, opts: Opts)(
+  hiddenModel: Map[String, FunExpr],
+  defaultInitialStates: Set[ConcreteBooleanState],
+  random: Random,
+  cellTrajectoryNoiseSigma: Double,
+  typeIErrorRatio: Double,
+  typeIIErrorRatio: Double,
+  randomizedInitialStateInclusionRatio: Option[Double],
+  distributionComparisonTest: DistributionComparisonTest,
+  distCompPValueThreshold: Double
+) {
 
-  // TODO keep as an evaluation
-  def evaluateTimestampOrientation(
-    originalGraph: DirectedBooleanStateGraph,
-    stateToTimestamps: Map[ConcreteBooleanState, Seq[Int]]
-  ): Unit = {
-    // check whether edge orientations agree with timestamp precedence
-    var truePositiveEdges = Set[UnlabeledEdge[StateGraphVertex]]()
-    var falsePositiveEdges = Set[UnlabeledEdge[StateGraphVertex]]()
-    var ambiguousEdges = Set[UnlabeledEdge[StateGraphVertex]]()
-
-    for (e <- originalGraph.E) {
-      val ds = originalGraph.edgeDirections(e)
-      assert(ds.size == 1)
-      val d = ds.head
-
-      // get timestamps for each edge, compare with orientation
-      val leftToRightPrecedence = checkPrecedence(
-        stateToTimestamps(e.v1.state), stateToTimestamps(e.v2.state))
-      val rightToLeftPrecedence = checkPrecedence(
-        stateToTimestamps(e.v2.state), stateToTimestamps(e.v1.state))
-
-      val (forwardConsistent, backwardConsistent) = if (d == Forward) {
-        (leftToRightPrecedence, rightToLeftPrecedence)
-      } else {
-        (rightToLeftPrecedence, leftToRightPrecedence)
+  def run(): Unit = {
+    // modify initial states per extension ratio
+    val initialStates = randomizedInitialStateInclusionRatio match {
+      case Some(ratio) => {
+        new StateSetExtension(random)
+          .randomStateSet(defaultInitialStates.head.orderedKeys, ratio)
       }
-
-      if (forwardConsistent && !backwardConsistent) {
-        truePositiveEdges += e
-      }
-      if (backwardConsistent && !forwardConsistent) {
-        falsePositiveEdges += e
-      }
-      if (forwardConsistent && backwardConsistent) {
-        ambiguousEdges += e
-      }
-
-      val row = List(
-        e.v1.id,
-        e.v2.id,
-        d,
-        forwardConsistent,
-        backwardConsistent,
-        stateToTimestamps(e.v1.state).mkString(", "),
-        stateToTimestamps(e.v2.state).mkString(", ")
-      )
-
-//      println(row.mkString("\t"))
+      case None => defaultInitialStates
     }
 
-    println(s"Nb. consistent orientations: " +
-      s"${truePositiveEdges.size}")
-    println(s"Nb. consistent reverse orientations: " +
-      s"${falsePositiveEdges.size}")
-    println(s"Nb. ambiguous orientations: " +
-      s"${ambiguousEdges.size}")
-    println(s"Nb. total orientations: " +
-      s"${originalGraph.E.size}")
+    // run simulation
+    val (baseStateGraph, baseTrajectory) = AsyncBooleanNetworkSimulation
+      .simulateOneStepWithTrimmedStateGraph(hiddenModel, initialStates)
+
+    val timeTuples = baseStateGraph.V.map { v =>
+      Map(
+        "v" -> v.id,
+        "times" -> v.measurements.map(m => baseTrajectory(m.id)).mkString(", ")
+      )
+    }
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      List("v", "times"),
+      timeTuples.toSeq.sortBy(row => row("v")),
+      reporter.file("cell-trajectory-before-noise.tsv")
+    )
+
+    val (experiment, trajectory) = new SimulationToExperiment(random)(
+      cellTrajectoryNoiseSigma,
+      typeIErrorRatio,
+      typeIIErrorRatio
+    ).generateExperiment(baseStateGraph, baseTrajectory)
+
+    val nodes = StateGraphs.nodesFromExperiment(experiment)
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      Seq(
+        GraphComparison.diffNodes(
+          nodes.map(_.state),
+          baseStateGraph.V.map(_.state)
+        )
+      ),
+      reporter.file("sampled-states.tsv")
+    )
+
+    // build node partial order
+    val nodePartialOrder = new NodePartialOrderByTrajectoryComparison(
+      nodes.toSeq,
+      Seq(trajectory),
+      distributionComparisonTest,
+      distCompPValueThreshold
+    ).partialOrdering
+
+    // reconstruct graph
+    var graphForSynthesis = new StateGraphReconstruction()
+      .reconstructStateGraph(nodes, nodePartialOrder)
+
+    graphForSynthesis =
+      AsyncBooleanNetworkSimulation.removeStatesNotReachingFixpoints(
+        graphForSynthesis, MyeloidModel.stableStates)
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      Seq(
+        GraphComparison.diffNodes(
+          graphForSynthesis.V.map(_.state),
+          baseStateGraph.V.map(_.state)
+        )
+      ),
+      reporter.file("reconstructed-states.tsv")
+    )
+
+    // evaluate graph reconstruction
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      GraphComparison.headers,
+      Seq(GraphComparison.diffGraphs(baseStateGraph, graphForSynthesis)),
+      reporter.file("graph-diff.tsv")
+    )
+
+    // logging graphs
+    if (true) {
+      new StateGraphPlotter(reporter)
+        .plotDirectedGraph(
+          graphForSynthesis,
+          "graph-for-synthesis",
+          nodeHighlightGroups = List(
+            MyeloidModel.stableStates,
+            baseStateGraph.V.map(_.state)
+          )
+        )
+    }
+
+    // perform synthesis
+    val synthesisResults = new Synthesizer(opts.synthOpts, reporter)
+      .synthesizeForPositiveHardConstraints(graphForSynthesis)
+
+    // log synthesis results
+    SynthesisResultLogger(synthesisResults, reporter.file("functions.txt"))
+    LatexFunctionLogger(synthesisResults, reporter.file("function-table.txt"))
+
+    // log hard partition sizes
+    val hardPartitionSizeTuples = synthesisResults.toList map {
+      case (key, results) => {
+        Map("Gene" -> key, "Hard partition size" -> results.size)
+      }
+    }
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      List("Gene", "Hard partition size"),
+      hardPartitionSizeTuples,
+      reporter.file("hard-partition-sizes-per-gene.tsv")
+    )
+
+    val bestSynthesisResults = pickBestResults(synthesisResults)
+
+    val models = sampleModels(
+      SynthesisResult.makeCombinations(bestSynthesisResults),
+      random
+    )
+
+    guideExperiment(models)
+
+    TSVUtil.saveOrderedTuples(
+      List("# models"),
+      List(List(models.size)),
+      reporter.file("number-of-models.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models map (m =>
+        MyeloidModelEvaluation.evaluateWildTypeFixpoints(m, hiddenModel)),
+      reporter.file("stable-states-wildtype.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models map (m =>
+        MyeloidModelEvaluation.evaluateWildTypeReachability(m, hiddenModel)),
+      reporter.file("reachable-states-wildtype.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models flatMap (m =>
+        MyeloidModelEvaluation.evaluateKnockoutFixpoints(m, hiddenModel)),
+      reporter.file("stable-states-knockouts.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      ClassificationEval.headers,
+      models flatMap (m =>
+        MyeloidModelEvaluation.evaluateKnockoutReachability(m, hiddenModel)),
+      reporter.file("reachable-states-knockouts.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      FunSimilarityEval.behaviorSimilarityHeaders,
+      models flatMap (m =>
+        FunSimilarityEval.evaluateBehaviorSimilarity(m, hiddenModel,
+          baseStateGraph.V.map(_.state))),
+      reporter.file("function-behavior-similarity.tsv")
+    )
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      FunSimilarityEval.ioPairSimilarityHeaders,
+      models map (m =>
+        FunSimilarityEval.evaluateIOPairSimilarity(m, hiddenModel)),
+      reporter.file("function-io-pair-similarity.tsv")
+    )
   }
 
-  // TODO to be kept with above
-  def checkPrecedence(ts1: Seq[Int], ts2: Seq[Int]): Boolean = {
-    ts1.min < ts2.min
-    ts1.min <= ts2.min
-    MathUtil.mean(ts1.map(_.toDouble)) <= MathUtil.mean(ts2.map(_.toDouble))
-    ts1.exists(t1 => ts2.exists(t2 => t1 < t2))
-    MathUtil.mean(ts1.map(_.toDouble)) < MathUtil.mean(ts2.map(_.toDouble))
+  def pickBestResults(
+    results: Map[String, Set[SynthesisResult]]
+  ): Map[String, SynthesisResult] = {
+    val nonemptyResults = results filter (_._2.nonEmpty)
+    nonemptyResults map {
+      case (label, rs) => {
+        label -> rs.maxBy(r => r.transitions.map(_.weight).sum)
+      }
+    }
+  }
+
+  def sampleModels(
+    models: Seq[Map[String, FunExpr]],
+    random: Random
+  ): Seq[Map[String, FunExpr]] = {
+    CollectionUtil.randomElements(random)(models, 10).toSeq
+  }
+
+  def guideExperiment(
+    models: Seq[Map[String, FunExpr]]
+  ): Unit = {
+    println("Most distinguishing experiment: ")
+    println(ExperimentGuideByStableStates.mostDistinguishingExperiment(
+      MyeloidModel.knockoutExperiments(),
+      models,
+      Set(MyeloidModel.makeInitialState())
+    ))
   }
 
 }
