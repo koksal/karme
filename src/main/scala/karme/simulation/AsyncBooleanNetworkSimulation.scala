@@ -262,7 +262,7 @@ object AsyncBooleanNetworkSimulation {
     allowedFixpoints: Set[ConcreteBooleanState]
   ) = {
     val allowedFixpointNodes = allowedFixpoints.flatMap(
-      s => simulationGraph.V.filter(v => v.state == s))
+      s => simulationGraph.V.filter(v => v.state.partiallyMatches(s)))
 
     val reverseSimulationGraph = simulationGraph.reverse()
 

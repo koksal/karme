@@ -16,20 +16,11 @@ object Workflow {
     new SyntheticWorkflow(
       hiddenModel = MyeloidModel.makeTrimmedStateSpaceNetwork(),
       defaultInitialStates = Set(MyeloidModel.makeInitialState()),
-      random = new Random(opts.syntheticEvalOpts.randomSeed),
-      cellTrajectoryNoiseSigma =
-        opts.syntheticEvalOpts.cellTrajectoryNoiseSigma,
-      typeIErrorRatio =
-        opts.syntheticEvalOpts.typeIErrorRatio,
-      typeIIErrorRatio =
-        opts.syntheticEvalOpts.typeIIErrorRatio,
-      randomizedInitialStateInclusionRatio =
-        opts.syntheticEvalOpts.randomizedInitialStateInclusionRatio,
-      distributionComparisonTest = DistributionComparisonTest.fromOptions(
-        opts.inputTransformerOpts.distributionComparisonMethod),
-      distCompPValueThreshold =
-        opts.inputTransformerOpts.distributionComparisonPValue
-    )(reporter, opts).run()
+      targetStates = MyeloidModel.stableStates,
+      inputTransformerOpts = opts.inputTransformerOpts,
+      synthOpts = opts.synthOpts,
+      syntheticEvalOpts = opts.syntheticEvalOpts
+    )(reporter).run()
   }
 
 }

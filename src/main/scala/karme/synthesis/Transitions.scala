@@ -7,22 +7,32 @@ object Transitions {
   case class GenericState[T](mapping: Map[String, T]) {
     val orderedKeys: Seq[String] = mapping.keys.toList.sorted
     val orderedValues: Seq[T] = orderedKeys map (k => mapping(k))
+
     def value(name: String): T = mapping(name)
+
     def size: Int = orderedKeys.size
+
     def mapKeys(f: String => String): GenericState[T] = {
       val newMapping = mapping map {
         case (k, v) => f(k) -> v
       }
       GenericState(newMapping)
     }
+
     def mapValues[U](f: T => U): GenericState[U] = {
       val newMapping = mapping map {
         case (k, v) => k -> f(v)
       }
       GenericState(newMapping)
     }
+
     def replaceValue(name: String, newValue: T): GenericState[T] = {
       this.copy(mapping = this.mapping + (name -> newValue))
+    }
+
+    def partiallyMatches(other: GenericState[T]): Boolean = {
+      val commonKeys = this.mapping.keySet.intersect(other.mapping.keySet)
+      commonKeys.forall(key => this.value(key) == other.value(key))
     }
   }
 

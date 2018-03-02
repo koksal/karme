@@ -52,6 +52,30 @@ object CollectionUtil {
     }
   }
 
+  def combinations[T](xs: Set[T], k: Int): Set[Set[T]] = {
+    assert(k >= 0)
+
+    if (k > xs.size) {
+      Set()
+    } else if (k == 0) {
+      Set(Set())
+    } else {
+      xs.headOption match {
+        case Some(head) => {
+          val withHead = combinations(xs - head, k - 1) map { set =>
+            set + head
+          }
+          val withoutHead = combinations(xs - head, k)
+
+          withHead ++ withoutHead
+        }
+        case None => {
+          throw new Exception("Cannot happen.")
+        }
+      }
+    }
+  }
+
   def randomElement[T](random: Random)(xs: Iterable[T]): T = {
     xs.toVector(random.nextInt(xs.size))
   }

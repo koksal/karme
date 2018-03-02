@@ -1,7 +1,9 @@
 package karme.evaluation.synthetic
 
-import karme.Opts
+import karme.InputTransformerOpts
 import karme.Reporter
+import karme.SynthOpts
+import karme.SyntheticEvalOpts
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
 import karme.evaluation.synthetic.expdesign.ExperimentGuideByStableStates
@@ -24,18 +26,18 @@ import scala.util.Random
 class SyntheticWorkflow(
   hiddenModel: Map[String, FunExpr],
   defaultInitialStates: Set[ConcreteBooleanState],
-  random: Random,
-  cellTrajectoryNoiseSigma: Double,
-  typeIErrorRatio: Double,
-  typeIIErrorRatio: Double,
-  randomizedInitialStateInclusionRatio: Option[Double],
-  distributionComparisonTest: DistributionComparisonTest,
-  distCompPValueThreshold: Double
-)(implicit reporter: Reporter, opts: Opts) {
+  targetStates: Set[ConcreteBooleanState],
+  inputTransformerOpts: InputTransformerOpts,
+  synthOpts: SynthOpts,
+  syntheticEvalOpts: SyntheticEvalOpts
+)(implicit reporter: Reporter) {
+
+  val random = new Random(syntheticEvalOpts.randomSeed)
 
   def run(): Unit = {
     // modify initial states per extension ratio
-    val initialStates = randomizedInitialStateInclusionRatio match {
+    val initialStates = syntheticEvalOpts
+      .randomizedInitialStateInclusionRatio match {
       case Some(ratio) => {
         new StateSetExtension(random)
           .randomStateSet(defaultInitialStates.head.orderedKeys, ratio)
@@ -60,9 +62,9 @@ class SyntheticWorkflow(
     )
 
     val (experiment, trajectory) = new SimulationToExperiment(random)(
-      cellTrajectoryNoiseSigma,
-      typeIErrorRatio,
-      typeIIErrorRatio
+      syntheticEvalOpts.cellTrajectoryNoiseSigma,
+      syntheticEvalOpts.typeIErrorRatio,
+      syntheticEvalOpts.typeIIErrorRatio
     ).generateExperiment(baseStateGraph, baseTrajectory)
 
     val nodes = StateGraphs.nodesFromExperiment(experiment)
@@ -82,8 +84,9 @@ class SyntheticWorkflow(
     val nodePartialOrder = new NodePartialOrderByTrajectoryComparison(
       nodes.toSeq,
       Seq(trajectory),
-      distributionComparisonTest,
-      distCompPValueThreshold
+      DistributionComparisonTest.fromOptions(
+        inputTransformerOpts.distributionComparisonMethod),
+      inputTransformerOpts.distributionComparisonPValue
     ).partialOrdering
 
     // reconstruct graph
@@ -92,7 +95,7 @@ class SyntheticWorkflow(
 
     graphForSynthesis =
       AsyncBooleanNetworkSimulation.removeStatesNotReachingFixpoints(
-        graphForSynthesis, MyeloidModel.stableStates)
+        graphForSynthesis, targetStates)
 
     TSVUtil.saveTupleMapsWithOrderedHeaders(
       ClassificationEval.headers,
@@ -126,7 +129,7 @@ class SyntheticWorkflow(
     }
 
     // perform synthesis
-    val synthesisResults = new Synthesizer(opts.synthOpts, reporter)
+    val synthesisResults = new Synthesizer(synthOpts, reporter)
       .synthesizeForPositiveHardConstraints(graphForSynthesis)
 
     // log synthesis results
