@@ -8,7 +8,7 @@ object PartialStateEnumeration {
   def makePartialStates(
     completeStates: Set[ConcreteBooleanState],
     nbVarsToHide: Int
-  ): Set[Set[ConcreteBooleanState]] = {
+  ): Set[(Set[String], Set[ConcreteBooleanState])] = {
     assert(completeStates.nonEmpty, "No states to make partial.")
 
     val names = completeStates.head.orderedKeys
@@ -18,7 +18,8 @@ object PartialStateEnumeration {
     for (
       varsToHide <- CollectionUtil.combinations(names.toSet, nbVarsToHide)
     ) yield {
-      completeStates map (s => removeVars(s, varsToHide))
+      val partialStates = completeStates map (s => removeVars(s, varsToHide))
+      (varsToHide, partialStates)
     }
   }
 

@@ -14,8 +14,9 @@ object TargetKnowledgeEval {
     val partialTargetSets = PartialStateEnumeration.makePartialStates(
       MyeloidModel.stableStates, 1)
 
-    for ((partialTargets, i) <- partialTargetSets.zipWithIndex) {
-      val subReporter = mainReporter.subfolderReporter(s"partial-targets-$i")
+    for ((hiddenVars, partialTargets) <- partialTargetSets) {
+      val subReporterName = s"hidden=${hiddenVars.mkString(",")}"
+      val subReporter = mainReporter.subfolderReporter(subReporterName)
 
       new SyntheticWorkflow(
         hiddenModel = MyeloidModel.makeTrimmedStateSpaceNetwork(),

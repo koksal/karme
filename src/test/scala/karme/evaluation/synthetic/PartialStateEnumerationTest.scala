@@ -12,12 +12,18 @@ class PartialStateEnumerationTest extends FunSuite {
     )
 
     val expected = Set(
-      Set(
-        GenericState(Map("a" -> true))
+      (
+        Set("b"),
+        Set(
+          GenericState(Map("a" -> true))
+        )
       ),
-      Set(
-        GenericState(Map("b" -> true)),
-        GenericState(Map("b" -> false))
+      (
+        Set("a"),
+        Set(
+          GenericState(Map("b" -> true)),
+          GenericState(Map("b" -> false))
+        )
       )
     )
 
