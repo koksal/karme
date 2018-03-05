@@ -53,6 +53,7 @@ object HeatmapAggregation {
           sanitizeLabel(yLabel),
           labelToValues(xLabel).map(_.toString),
           labelToValues(yLabel).map(_.toString),
+          Some((0, 1)),
           outFile
         )
       } else {
