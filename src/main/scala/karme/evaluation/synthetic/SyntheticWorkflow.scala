@@ -6,6 +6,7 @@ import karme.SynthOpts
 import karme.SyntheticEvalOpts
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
+import karme.evaluation.synthetic.expdesign.ExperimentGuideByReachableStates
 import karme.evaluation.synthetic.expdesign.ExperimentGuideByStableStates
 import karme.graphs.StateGraphs
 import karme.printing.LatexFunctionLogger
@@ -235,7 +236,7 @@ class SyntheticWorkflow(
   def guideExperiment(
     models: Seq[Map[String, FunExpr]]
   ): Unit = {
-    val (exp, maxDist) = new ExperimentGuideByStableStates(reporter)
+    val (exp, maxDist) = new ExperimentGuideByReachableStates(reporter)
       .mostDistinguishingExperiment(
         MyeloidModel.knockoutExperiments(),
         models,
