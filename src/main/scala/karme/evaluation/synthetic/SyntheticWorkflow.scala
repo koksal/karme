@@ -7,7 +7,6 @@ import karme.SyntheticEvalOpts
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
 import karme.evaluation.synthetic.expdesign.ExperimentGuideByReachableStates
-import karme.evaluation.synthetic.expdesign.ExperimentGuideByStableStates
 import karme.graphs.StateGraphs
 import karme.printing.LatexFunctionLogger
 import karme.printing.SynthesisResultLogger
@@ -34,7 +33,7 @@ class SyntheticWorkflow(
   syntheticEvalOpts: SyntheticEvalOpts
 )(implicit reporter: Reporter) {
 
-  val GUIDE_EXPERIMENTS = true
+  val GUIDE_EXPERIMENTS = false
   val PLOT_STATE_GRAPHS = false
 
   val random = new Random(syntheticEvalOpts.randomSeed)
@@ -162,7 +161,6 @@ class SyntheticWorkflow(
 
     if (GUIDE_EXPERIMENTS) {
       guideExperiment(models)
-      sys.exit(0)
     }
 
     TSVUtil.saveOrderedTuples(

@@ -35,6 +35,7 @@ trait ExperimentGuide {
     initialStates: Set[ConcreteBooleanState]
   ): (KnockoutExperiment, Double)  = {
     val expToMaxPairwiseDist = experiments map { experiment =>
+      println(s"Testing experiment ${experiment.knockoutVar}")
 
       val perturbedModels = models map (m =>
         PerturbationAnalysis.knockoutVariable(m, experiment.knockoutVar))

@@ -20,9 +20,6 @@ do
     do
       hiddenVarFolder=$(basename "$f3")
 
-      echo "FROM: " $parent/$twoDimFolder/$replicateFolder/$hiddenVarFolder
-      echo "TO: " $parent/$hiddenVarFolder/$twoDimFolder/$replicateFolder
-
       mkdir -p $parent/$hiddenVarFolder/$twoDimFolder
       cp -r \
         $parent/$twoDimFolder/$replicateFolder/$hiddenVarFolder \

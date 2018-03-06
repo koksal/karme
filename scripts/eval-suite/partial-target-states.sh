@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPLICATES=5
+REPLICATES=3
 
 if [ $# -eq 0 ]
 then
