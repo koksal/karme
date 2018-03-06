@@ -18,6 +18,7 @@ import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.transformations.DistributionComparisonTest
 import karme.transformations.NodePartialOrderByTrajectoryComparison
 import karme.util.CollectionUtil
+import karme.util.FileUtil
 import karme.util.TSVUtil
 import karme.visualization.graph.StateGraphPlotter
 
@@ -31,6 +32,9 @@ class SyntheticWorkflow(
   synthOpts: SynthOpts,
   syntheticEvalOpts: SyntheticEvalOpts
 )(implicit reporter: Reporter) {
+
+  val GUIDE_EXPERIMENTS = true
+  val PLOT_STATE_GRAPHS = false
 
   val random = new Random(syntheticEvalOpts.randomSeed)
 
@@ -116,7 +120,7 @@ class SyntheticWorkflow(
     )
 
     // logging graphs
-    if (true) {
+    if (PLOT_STATE_GRAPHS) {
       new StateGraphPlotter(reporter)
         .plotDirectedGraph(
           graphForSynthesis,
@@ -155,7 +159,10 @@ class SyntheticWorkflow(
       random
     )
 
-    guideExperiment(models)
+    if (GUIDE_EXPERIMENTS) {
+      guideExperiment(models)
+      sys.exit(0)
+    }
 
     TSVUtil.saveOrderedTuples(
       List("# models"),
@@ -228,12 +235,17 @@ class SyntheticWorkflow(
   def guideExperiment(
     models: Seq[Map[String, FunExpr]]
   ): Unit = {
-    println("Most distinguishing experiment: ")
-    println(ExperimentGuideByStableStates.mostDistinguishingExperiment(
-      MyeloidModel.knockoutExperiments(),
-      models,
-      Set(MyeloidModel.makeInitialState())
-    ))
+    val (exp, maxDist) = new ExperimentGuideByStableStates(reporter)
+      .mostDistinguishingExperiment(
+        MyeloidModel.knockoutExperiments(),
+        models,
+        Set(MyeloidModel.makeInitialState())
+      )
+
+    FileUtil.writeToFile(
+      reporter.file("most-distinguishing-experiment.txt"),
+      s"${exp.knockoutVar}, $maxDist"
+    )
   }
 
 }

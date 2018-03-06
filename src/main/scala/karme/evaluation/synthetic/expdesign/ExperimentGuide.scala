@@ -1,11 +1,16 @@
 package karme.evaluation.synthetic.expdesign
 
+import karme.Reporter
 import karme.evaluation.PerturbationAnalysis
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel.KnockoutExperiment
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
+import karme.util.TSVUtil
 
 trait ExperimentGuide {
+
+  val reporter: Reporter
+  val id: String
 
   type EvalDomain
 
@@ -28,9 +33,8 @@ trait ExperimentGuide {
     experiments: Seq[KnockoutExperiment],
     models: Seq[Map[String, FunExpr]],
     initialStates: Set[ConcreteBooleanState]
-  ): KnockoutExperiment  = {
-    experiments maxBy { experiment =>
-      println(s"Testing $experiment:")
+  ): (KnockoutExperiment, Double)  = {
+    val expToMaxPairwiseDist = experiments map { experiment =>
 
       val perturbedModels = models map (m =>
         PerturbationAnalysis.knockoutVariable(m, experiment.knockoutVar))
@@ -42,9 +46,31 @@ trait ExperimentGuide {
         evaluateModel(m, perturbedInitialStates))
 
       val maxPairwiseDist = maxPairwiseDistance(evaluationValues)
-      println(s"Maximum pairwise distance: $maxPairwiseDist")
-      maxPairwiseDist
+      experiment -> maxPairwiseDist
     }
+
+    logExperimentDistances(expToMaxPairwiseDist.toMap)
+
+    expToMaxPairwiseDist.maxBy(_._2)
+  }
+
+  private def logExperimentDistances(
+    expToDist: Map[KnockoutExperiment, Double]
+  ) : Unit = {
+    val varHeader = "Variable"
+    val maxDistHeader = "Maximum pairwise distance"
+
+    val tuples = expToDist.toList map {
+      case (exp, dist) => {
+        Map(varHeader -> exp.knockoutVar, maxDistHeader -> dist)
+      }
+    }
+
+    TSVUtil.saveTupleMapsWithOrderedHeaders(
+      List(varHeader, maxDistHeader),
+      tuples,
+      reporter.file(s"max-pairwise-model-distance-$id.tsv")
+    )
   }
 
 }

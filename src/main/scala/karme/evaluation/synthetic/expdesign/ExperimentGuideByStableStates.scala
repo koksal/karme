@@ -1,11 +1,16 @@
 package karme.evaluation.synthetic.expdesign
 
+import karme.Reporter
 import karme.evaluation.synthetic.FixpointStates
 import karme.synthesis.FunctionTrees.FunExpr
 import karme.synthesis.Transitions.ConcreteBooleanState
 import karme.util.CollectionUtil
 
-object ExperimentGuideByStableStates extends ExperimentGuide {
+class ExperimentGuideByStableStates(
+  val reporter: Reporter
+) extends ExperimentGuide {
+
+  val id = "stable-states"
 
   type EvalDomain = Set[ConcreteBooleanState]
 

@@ -23,21 +23,41 @@ FILES=(
   "function-io-pair-similarity.tsv"
 )
 
-for EVAL_TYPE in "noise" "resolution" "noise-and-resolution"
+for EVAL_TYPE in "noise" "resolution" "noise-and-resolution" "partial-targets"
 do
   for FILE in ${FILES[*]}
   do
     echo "Aggregating" $FILE
+    echo "Eval type: " $EVAL_TYPE
 
     if [ -d "$PARENT_OUTPUT_FOLDER/$EVAL_TYPE" ]; then
-      for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
-      do
-        ./bin/table-aggregation \
-          $FOLDER/$FILE \
-          $FOLDER/replicate-*/$FILE
-      done
 
-      if [ $EVAL_TYPE = "noise-and-resolution" ]
+      if [ $EVAL_TYPE = "partial-targets" ]
+      then
+        for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/*=*
+        do
+          ./bin/table-aggregation \
+            $FOLDER/$FILE \
+            $FOLDER/replicate-*/$FILE
+        done
+      else
+        for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
+        do
+          ./bin/table-aggregation \
+            $FOLDER/$FILE \
+            $FOLDER/replicate-*/$FILE
+        done
+      fi
+
+      if [ $EVAL_TYPE = "partial-targets" ]
+      then
+        for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*
+        do
+          ./bin/heatmap-aggregation \
+            $FOLDER/$FILE \
+            $FOLDER/*/$FILE
+        done
+      elif [ $EVAL_TYPE = "noise-and-resolution" ]
       then
         ./bin/heatmap-aggregation \
           $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \

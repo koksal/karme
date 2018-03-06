@@ -8,7 +8,7 @@ else
   OUTFOLDER_BASE=$1
 fi
 
-EXTRA_ARGS="--distribution-comparison ranksum --distribution-comparison-p-value 0.05 --max-expr-depth 3"
+EXTRA_ARGS="--distribution-comparison ranksum --distribution-comparison-p-value 0.05 --max-expr-depth 3 --verbose"
 
-# ./scripts/eval-suite/noise-and-resolution.sh $OUTFOLDER_BASE $EXTRA_ARGS
-./scripts/eval-suite/partial-target-states.sh $OUTFOLDER_BASE $EXTRA_ARGS
+./scripts/eval-suite/noise-and-resolution.sh $OUTFOLDER_BASE $EXTRA_ARGS
+# ./scripts/eval-suite/partial-target-states.sh $OUTFOLDER_BASE $EXTRA_ARGS
