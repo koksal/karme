@@ -10,6 +10,8 @@ class BoxPlot extends AbstractRInterface {
 
   def plot(
     labelToValues: Iterable[(String, Iterable[Double])],
+    xName: String,
+    yName: String,
     f: File
   ): Unit = {
     var dataList = List[Double]()
@@ -24,8 +26,16 @@ class BoxPlot extends AbstractRInterface {
     R.set("labels", labelArray)
     R.eval("data <- data.frame(value = values, label = labels)")
 
-    R.eval("plot = ggplot(data, aes(label, value)) + geom_boxplot() " +
-      "+ geom_jitter(height = 0.0)")
+    R.eval(s"""plot =
+      | ggplot(
+      |   data,
+      |   aes(label, value)
+      |   ) +
+      |   xlab("$xName") +
+      |   ylab("$yName") +
+      |   geom_boxplot() +
+      |   geom_jitter(height = 0.0)"""
+      .stripMargin)
 
     R.set("fname", f.getAbsolutePath())
     R.eval("ggsave(plot, file = fname)")

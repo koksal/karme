@@ -12,7 +12,7 @@ object HeatmapAggregation {
     val (outFilePrefix, restArgs) = (args.head, args.tail)
 
     val files = restArgs map (a => new File(a))
-    val points = files map fileToPoint
+    val points = files map DataAggregation.parentTo2DPoint
 
     val labels = points.head.keySet.toList.sorted
     assert(labels.size == 2)
@@ -58,17 +58,6 @@ object HeatmapAggregation {
         )
       } else {
         println(s"Skipping $outFile because there is only one distinct value.")
-      }
-    }
-
-  }
-
-  private def fileToPoint(f: File): Map[String, Double] = {
-    val parentName = f.getAbsoluteFile.getParentFile.getName
-    val pairFormat = raw"(\w+)=([0-9\.]+)-(\w+)=([0-9\.]+)".r
-    parentName match {
-      case pairFormat(label1, value1, label2, value2) => {
-        Map(label1 -> value1.toDouble, label2 -> value2.toDouble)
       }
     }
   }

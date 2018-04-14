@@ -11,7 +11,10 @@ object BoxPlotAggregation {
 
     val fnames = restArgs.sorted
     val files = fnames.map(a => new File(a))
-    val labels = files.map(f => f.getAbsoluteFile.getParentFile.getName)
+    val keyValuePairs = files map DataAggregation.grandParentToKeyValue
+
+    val labels = keyValuePairs.map(_._2)
+    val sortedUniqueLabels = labels.distinct.sorted
 
     val data = files map TSVUtil.readHeadersAndData
 
@@ -22,13 +25,21 @@ object BoxPlotAggregation {
     val headersToAggregate = headers.toSet.intersect(
       DataAggregation.columnsToAggregate)
 
-    val valueDataPairs = labels.zip(data.map(_._2))
+    val labelDataPairs = labels.zip(data.map(_._2))
 
     for (header <- headersToAggregate) {
-      val headerData = valueDataPairs map {
-        case (key, value) => key -> value.map(v => v(header).toDouble)
+      val labelToAllValues = for (label <- sortedUniqueLabels) yield {
+        val allValues = labelDataPairs.filter(_._1 == label).flatMap {
+          case (_, rows) =>
+            rows.map(row => row(header).toDouble)
+        }
+
+        label -> allValues.toList
       }
-      new BoxPlot().plot(headerData,
+      new BoxPlot().plot(
+        labelToAllValues,
+        "Hidden variable",
+        header,
         new File(s"$outFilePrefix-$header-boxplot.pdf"))
     }
   }

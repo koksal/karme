@@ -23,7 +23,8 @@ FILES=(
   "function-io-pair-similarity.tsv"
 )
 
-for EVAL_TYPE in "noise" "resolution" "noise-and-resolution" "partial-targets"
+# for EVAL_TYPE in "noise" "resolution" "noise-and-resolution" "partial-targets"
+for EVAL_TYPE in "partial-targets"
 do
   for FILE in ${FILES[*]}
   do
@@ -32,31 +33,39 @@ do
 
     if [ -d "$PARENT_OUTPUT_FOLDER/$EVAL_TYPE" ]; then
 
-      if [ $EVAL_TYPE = "partial-targets" ]
-      then
-        for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/*=*
-        do
-          ./bin/table-aggregation \
-            $FOLDER/$FILE \
-            $FOLDER/replicate-*/$FILE
-        done
-      else
-        for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
-        do
-          ./bin/table-aggregation \
-            $FOLDER/$FILE \
-            $FOLDER/replicate-*/$FILE
-        done
-      fi
+      # echo "Running table aggregation"
+      # if [ $EVAL_TYPE = "partial-targets" ]
+      # then
+      #   for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/*=*
+      #   do
+      #     ./bin/table-aggregation \
+      #       $FOLDER/$FILE \
+      #       $FOLDER/replicate-*/$FILE
+      #   done
+      # else
+      #   for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*
+      #   do
+      #     ./bin/table-aggregation \
+      #       $FOLDER/$FILE \
+      #       $FOLDER/replicate-*/$FILE
+      #   done
+      # fi
 
+      echo "Running heatmap aggregation"
       if [ $EVAL_TYPE = "partial-targets" ]
       then
-        for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*
-        do
-          ./bin/heatmap-aggregation \
-            $FOLDER/$FILE \
-            $FOLDER/*/$FILE
-        done
+        # for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*
+        # do
+        #   if [ -d "$FOLDER" ]
+        #   then
+        #     ./bin/heatmap-aggregation \
+        #       $FOLDER/$FILE \
+        #       $FOLDER/*/$FILE
+        #   fi
+        # done
+        ./bin/box-plot-aggregation \
+          $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/$FILE \
+          $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*=*/*/$FILE
       elif [ $EVAL_TYPE = "noise-and-resolution" ]
       then
         ./bin/heatmap-aggregation \
