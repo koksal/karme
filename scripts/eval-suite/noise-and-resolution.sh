@@ -16,10 +16,8 @@ sbt stage
 cd target/universal/stage
 OUTFOLDER_BASE=../../../$OUTFOLDER_BASE
 
-# TYPE_I_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
-# TYPE_II_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
-TYPE_I_RANGE=(0 0.4)
-TYPE_II_RANGE=(0 0.4)
+TYPE_I_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
+TYPE_II_RANGE=(0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8)
 
 for replicate in `seq 1 $REPLICATES`
 do
