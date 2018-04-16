@@ -25,7 +25,6 @@ class ExperimentGuideByReachableStates(
     t1: Set[ConcreteBooleanState],
     t2: Set[ConcreteBooleanState]
   ): Double = {
-    println(s"Comparing sets: ${t1.size}, ${t2.size}")
     1 - CollectionUtil.jaccardIndex(t1, t2)
   }
 }

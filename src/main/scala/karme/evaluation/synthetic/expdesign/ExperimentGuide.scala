@@ -22,11 +22,17 @@ trait ExperimentGuide {
   def distance(t1: EvalDomain, t2: EvalDomain): Double
 
   def maxPairwiseDistance(ts: Seq[EvalDomain]): Double = {
-    val (t1, t2) = ts.zip(ts) maxBy {
-      case (t1, t2) => distance(t1, t2)
+    var maxDistance = 0.0
+
+    for {
+      t1 <- ts
+      t2 <- ts
+    } {
+      val d = distance(t1, t2)
+      maxDistance = math.max(maxDistance, d)
     }
 
-    distance(t1, t2)
+    maxDistance
   }
 
   def mostDistinguishingExperiment(

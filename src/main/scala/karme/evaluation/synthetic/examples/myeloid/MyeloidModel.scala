@@ -341,6 +341,6 @@ object MyeloidModel {
       KnockoutExperiment(cJun, Set(s1, s2, s4), 0)
     )
 
-    experimentsWithEvidence
+    experimentsWithEvidence ++ experimentsWithoutEvidence
   }
 }

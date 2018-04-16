@@ -33,7 +33,7 @@ class SyntheticWorkflow(
   syntheticEvalOpts: SyntheticEvalOpts
 )(implicit reporter: Reporter) {
 
-  val GUIDE_EXPERIMENTS = false
+  val GUIDE_EXPERIMENTS = true
   val PLOT_STATE_GRAPHS = false
 
   val random = new Random(syntheticEvalOpts.randomSeed)
