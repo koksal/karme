@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# REPLICATES=5
-REPLICATES=1
+REPLICATES=5
 
 if [ $# -eq 0 ]
 then
