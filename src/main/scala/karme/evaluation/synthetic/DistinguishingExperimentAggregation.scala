@@ -16,8 +16,11 @@ object DistinguishingExperimentAggregation {
         t => (t("Variable"), t("Maximum pairwise distance").toDouble))
     }
 
-    val allPairs = pairsByFile.flatten
-    val maxPairs = pairsByFile map {
+    val pairsByFileWithResults = pairsByFile filter {
+      pairs => pairs.exists(p => p._2 > 0)
+    }
+    val allPairs = pairsByFileWithResults.flatten
+    val maxPairs = pairsByFileWithResults.map{
       pairs => pairs.maxBy(_._2)
     }
 
