@@ -7,6 +7,7 @@ import karme.SyntheticEvalOpts
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModel
 import karme.evaluation.synthetic.examples.myeloid.MyeloidModelEvaluation
 import karme.evaluation.synthetic.expdesign.ExperimentGuideByReachableStates
+import karme.evaluation.synthetic.expdesign.ExperimentGuideByStableStates
 import karme.graphs.StateGraphs
 import karme.printing.LatexFunctionLogger
 import karme.printing.SynthesisResultLogger
@@ -234,7 +235,7 @@ class SyntheticWorkflow(
   def guideExperiment(
     models: Seq[Map[String, FunExpr]]
   ): Unit = {
-    val (exp, maxDist) = new ExperimentGuideByReachableStates(reporter)
+    val (exp1, maxDist1) = new ExperimentGuideByReachableStates(reporter)
       .mostDistinguishingExperiment(
         MyeloidModel.knockoutExperiments(),
         models,
@@ -242,8 +243,20 @@ class SyntheticWorkflow(
       )
 
     FileUtil.writeToFile(
-      reporter.file("most-distinguishing-experiment.txt"),
-      s"${exp.knockoutVar}, $maxDist"
+      reporter.file("most-distinguishing-experiment-reachable-states.txt"),
+      s"${exp1.knockoutVar}, $maxDist1"
+    )
+
+    val (exp2, maxDist2) = new ExperimentGuideByStableStates(reporter)
+      .mostDistinguishingExperiment(
+        MyeloidModel.knockoutExperiments(),
+        models,
+        Set(MyeloidModel.makeInitialState())
+      )
+
+    FileUtil.writeToFile(
+      reporter.file("most-distinguishing-experiment-stable-states.txt"),
+      s"${exp2.knockoutVar}, $maxDist2"
     )
   }
 
