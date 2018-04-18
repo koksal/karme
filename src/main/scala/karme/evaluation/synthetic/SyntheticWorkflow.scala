@@ -36,6 +36,7 @@ class SyntheticWorkflow(
 
   val GUIDE_EXPERIMENTS = true
   val PLOT_STATE_GRAPHS = false
+  val NB_MODELS_TO_SAMPLE = 100
 
   val random = new Random(syntheticEvalOpts.randomSeed)
 
@@ -229,7 +230,7 @@ class SyntheticWorkflow(
     models: Seq[Map[String, FunExpr]],
     random: Random
   ): Seq[Map[String, FunExpr]] = {
-    CollectionUtil.randomElements(random)(models, 10).toSeq
+    CollectionUtil.randomElements(random)(models, NB_MODELS_TO_SAMPLE).toSeq
   }
 
   def guideExperiment(
