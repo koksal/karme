@@ -35,7 +35,7 @@ object ClassificationEval {
     )
   }
 
-  private def getF1Score(precision: Double, recall: Double): Double = {
+  def getF1Score(precision: Double, recall: Double): Double = {
     val sum = precision + recall
     val product = precision * recall
 

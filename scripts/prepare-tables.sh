@@ -33,7 +33,6 @@ do
 
     if [ -d "$PARENT_OUTPUT_FOLDER/$EVAL_TYPE" ]; then
 
-      # echo "Running table aggregation"
       # if [ $EVAL_TYPE = "partial-targets" ]
       # then
       #   for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*/*=*
@@ -51,7 +50,6 @@ do
       #   done
       # fi
 
-      echo "Running heatmap aggregation"
       if [ $EVAL_TYPE = "partial-targets" ]
       then
         # for FOLDER in $PARENT_OUTPUT_FOLDER/$EVAL_TYPE/*

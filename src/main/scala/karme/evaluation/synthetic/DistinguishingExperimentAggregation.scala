@@ -2,6 +2,7 @@ package karme.evaluation.synthetic
 
 import java.io.File
 
+import karme.util.DataAggregation
 import karme.util.TSVUtil
 import karme.visualization.BoxPlot
 
@@ -10,39 +11,57 @@ object DistinguishingExperimentAggregation {
   def main(args: Array[String]): Unit = {
     val files = args.map(a => new File(a))
 
-    val pairsByFile = files map { f =>
-      val (headers, tuples) = TSVUtil.readHeadersAndData(f)
-      tuples.map(
-        t => (t("Variable"), t("Maximum pairwise distance").toDouble))
+    var pointToPairs = files map { f =>
+      (DataAggregation.grandParentTo2DPoint(f), extractPairs(f))
     }
 
-    val pairsByFileWithResults = pairsByFile filter {
-      pairs => pairs.exists(p => p._2 > 0)
+    pointToPairs = pointToPairs filter {
+      case (point, pairs) => {
+        pairs.exists(pair => pair._2 > 0)
+      }
     }
-    val allPairs = pairsByFileWithResults.flatten
-    val maxPairs = pairsByFileWithResults.map{
-      pairs => pairs.maxBy(_._2)
+    val allPairs = pointToPairs flatMap {
+      case (point, pairs) => pairs.map(pair => (point, pair))
+    }
+
+    val maxPairs = pointToPairs map {
+      case (point, pairs) => (point, pairs.maxBy(_._2))
     }
 
     processPairs(allPairs, new File("all-distinguishing-numbers.pdf"))
     processPairs(maxPairs, new File("max-distinguishing-numbers.pdf"))
   }
 
+  private def extractPairs(f: File): Iterable[(String, Double)] = {
+    val (headers, tuples) = TSVUtil.readHeadersAndData(f)
+    tuples.map(
+      t => (t("Variable"), t("Maximum pairwise distance").toDouble))
+  }
+
   def processPairs(
-    pairs: Iterable[(String, Double)],
+    pointLabelValues: Iterable[(Map[String, Double], (String, Double))],
     f: File
   ) = {
-    val (zeroPairs, nonZeroPairs) = pairs.partition(_._2 == 0)
+    val (zeroData, nonZeroData) = pointLabelValues.partition(_._2._2 == 0)
 
-    println(s"Nb. all pairs: ${pairs.size}")
-    println(s"Nb. zero pairs: ${zeroPairs.size}")
-    println(s"Nb. nonzero pairs: ${nonZeroPairs.size}")
+    println(s"Nb. all pairs: ${pointLabelValues.size}")
+    println(s"Nb. zero pairs: ${zeroData.size}")
+    println(s"Nb. nonzero pairs: ${nonZeroData.size}")
 
-    val labelToValues = pairs.groupBy(_._1).toList.map {
-      case (name, pairs) => (name, pairs.map(_._2).toList)
+    val labelToValues = pointLabelValues.groupBy(_._2._1).toList.map {
+      case (label, labelData) => {
+        val labelPairs = labelData.map {
+          d => {
+            val color = DataAggregation.twoDimPointToColor(d._1)
+            val value = d._2._2
+            (value, color)
+          }
+        }
+        (label, labelPairs.toList)
+      }
     }
 
-    new BoxPlot().plot(
+    new BoxPlot().plotWithColors(
       labelToValues,
       "Knockout variable",
       "Distinguishing factor",

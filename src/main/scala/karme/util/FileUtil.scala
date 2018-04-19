@@ -35,4 +35,8 @@ object FileUtil {
     folder.listFiles()
   }
 
+  def getParent(f: File): File = {
+    f.getAbsoluteFile.getParentFile
+  }
+
 }
