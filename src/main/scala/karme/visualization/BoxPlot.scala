@@ -3,6 +3,9 @@ package karme.visualization
 import java.io.File
 
 import karme.external.AbstractRInterface
+import karme.util.CollectionUtil
+
+import scala.util.Random
 
 class BoxPlot extends AbstractRInterface {
 
@@ -25,7 +28,7 @@ class BoxPlot extends AbstractRInterface {
       labels = labels ::: (1 to vs.size).map(x => label).toList
     }
 
-    plot(labels, values, Some(colors), xName, yName, f)
+    randomizeOrderAndPlot(labels, values, Some(colors), xName, yName, f)
   }
 
   def plot(
@@ -42,10 +45,10 @@ class BoxPlot extends AbstractRInterface {
       labels = labels ::: (1 to vs.size).map(x => label).toList
     }
 
-    plot(labels, values, None, xName, yName, f)
+    randomizeOrderAndPlot(labels, values, None, xName, yName, f)
   }
 
-  def plot(
+  private def randomizeOrderAndPlot(
     labels: List[String],
     values: List[Double],
     colorsOpt: Option[List[String]],
@@ -53,6 +56,34 @@ class BoxPlot extends AbstractRInterface {
     yName: String,
     f: File
   ): Unit = {
+    val permutation =
+      CollectionUtil.randomPermutation(new Random())(labels.size)
+
+    plot(
+      CollectionUtil.permuteElements(labels, permutation),
+      CollectionUtil.permuteElements(values, permutation),
+      colorsOpt.map(
+        colors => CollectionUtil.permuteElements(colors, permutation)),
+      xName,
+      yName,
+      f
+    )
+  }
+
+  private def plot(
+    labels: Seq[String],
+    values: Seq[Double],
+    colorsOpt: Option[Seq[String]],
+    xName: String,
+    yName: String,
+    f: File
+  ): Unit = {
+    assert(labels.size == values.size)
+    colorsOpt match {
+      case Some(colors) => assert(labels.size == colors.size)
+      case None =>
+    }
+
     R.set("values", values.toArray)
     R.set("labels", labels.toArray)
 

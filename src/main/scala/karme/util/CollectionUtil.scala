@@ -90,4 +90,15 @@ object CollectionUtil {
   )(xs: Iterable[T], size: Int): Iterable[T] = {
     random.shuffle(xs.toList).take(size)
   }
+
+  def randomPermutation(random: Random)(size: Int): Seq[Int] = {
+    val range = 0 until size
+    random.shuffle(range.toList)
+  }
+
+  def permuteElements[T](xs: Seq[T], permutation: Seq[Int]): Seq[T] = {
+    assert(xs.size == permutation.size)
+    val vector = xs.toVector
+    permutation map (i => vector(i))
+  }
 }

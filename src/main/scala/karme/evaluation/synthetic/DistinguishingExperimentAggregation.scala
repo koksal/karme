@@ -24,8 +24,17 @@ object DistinguishingExperimentAggregation {
       case (point, pairs) => pairs.map(pair => (point, pair))
     }
 
-    val maxPairs = pointToPairs map {
-      case (point, pairs) => (point, pairs.maxBy(_._2))
+    val maxPairs = pointToPairs flatMap {
+      case (point, pairs) => {
+        val maxVal = pairs.map(_._2).max
+        val allMax = pairs.filter(_._2 == maxVal)
+        allMax map (pair => (point, pair))
+      }
+    }
+
+    val nameToMaxPairs = maxPairs.groupBy(_._2._1).toList.sortBy(- _._2.size)
+    for ((name, groupedPairs) <- nameToMaxPairs) {
+      println(s"$name: ${groupedPairs.size}")
     }
 
     processPairs(allPairs, new File("all-distinguishing-numbers.pdf"))
